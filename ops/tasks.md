@@ -1,70 +1,26 @@
 ## In Progress
 
 ## Active
-- [ ] Phase 2: Headless Core Prototype — Implementation
-  - [ ] Execute Part 1: scaffold Node/TypeScript service (`package.json`, `tsconfig.json`, `src/index.ts`)
-  - [ ] Execute Part 1: config and filesystem layout helpers
-  - [ ] Execute Part 1: credential redaction
-  - [ ] Execute Part 1: profile lock and workspace metadata
-  - [ ] Execute Part 1: browser mode launch options
-  - [ ] Execute Part 2: FeatherSession class and SessionManager
-  - [ ] Execute Part 2: FeatherLogger JSONL event writer
-  - [ ] Execute Part 2: DebugCapture and DebugBundle
-  - [ ] Execute Part 3: all 9 command handlers
-  - [ ] Execute Part 4: HTTP transport, token middleware, routes, `src/index.ts`
-  - [ ] Execute Part 5: integration test suite
-  - [ ] Execute Part 5: resource measurement scenario
-  - [ ] Execute Part 5: manual verification against exit criteria
+- [ ] Phase 2 → Phase 3 transition
+  - [ ] Manual verification: run `docs/specs/phase-2-verification-checklist.md` against live service
+  - [ ] Phase 3 planning: decide next phase scope (yt-dlp adapter, GUI layer, or other)
 
 ## Done
+- [x] Phase 2: Headless Core Prototype — Implementation (COMPLETE, 2026-05-31)
+  - [x] Part 1: scaffold, config, FS layout, types, redaction, profile lock, browser modes (30 tests)
+  - [x] Part 2: FeatherSession, SessionManager, FeatherLogger, DebugCapture, DebugBundle (56 tests)
+  - [x] Part 3: all 9 command handlers (98 unit tests)
+  - [x] Part 4: Fastify HTTP transport, token middleware, routes, src/index.ts, 7 integration tests
+  - [x] Part 5a: api-flow integration test (9 tests)
+  - [x] Part 5b: profile-lock integration test (4 tests)
+  - [x] Part 5c: disposable-cleanup integration test (3 tests)
+  - [x] Part 5d: proxy-redaction integration test (4 tests)
+  - [x] Part 5e: ProcessSampler, MeasurementRunner, writeArtifacts reporter
+  - [x] Part 5f: measurement scenario test (4 tests)
+  - [x] Part 5g: manual verification checklist
+
 - [x] Phase 2 Step 0: Research and plan Phase 2 prototype
-  - [x] Define the smallest prototype scope around ADR-0002
-  - [x] Choose localhost HTTP JSON as the first local API transport
-  - [x] Define the workspace/profile configuration model
-  - [x] Define session lifecycle, profile lock, and proxy launch behavior
-  - [x] Define the first debug bundle and resource measurement plan
-  - [x] Decide that real `yt-dlp` execution waits beyond the smallest Phase 2 prototype
-  - [x] Write research findings in `research/2026-05-31-phase-2-headless-core-prototype-plan.md`
-  - [x] Write prototype plan/spec in `docs/specs/phase-2-headless-core-prototype-plan.md`
-
-- [x] Phase 2: Write implementation plan
-  - [x] Write Part 1 (foundation: scaffold, config, FS layout, types, redaction, lock, modes)
-  - [x] Write Part 2 (session layer: FeatherSession, SessionManager, FeatherLogger, DebugCapture, DebugBundle)
-  - [x] Write Part 3 (commands: all 9 command handlers with unit tests)
-  - [x] Write Part 4 (transport: Fastify server, middleware, routes, src/index.ts)
-  - [x] Write Part 5 (integration tests, resource measurement, manual verification)
-
-- [x] Phase 0: Workspace setup
-  - [x] Create project directory
-  - [x] Create baseline directory structure
-  - [x] Add roadmap, progress, phase, task, context, and log files
-  - [x] Add `/start` and `/stop` command definitions
-  - [x] Add `/init` orientation command and agent instructions
-  - [x] Initialize git tracking
-  - [x] Review Phase 0 setup with Roi
-
-- [x] Phase 1: Research and Architecture Decision
-  - [x] Step 0: Research and plan Phase 1
-  - [x] Gather current primary-source research on browser architecture candidates
-  - [x] Compare Electron, CEF, Qt WebEngine, Chromium fork/distribution, and Playwright persistent Chromium profile shell
-  - [x] Evaluate daily-driver-first versus agentic-AI-first path
-  - [x] Write research findings in `research/`
-  - [x] Write architecture decision/spec in `docs/specs/`
-  - [x] Update roadmap and project tracking files
-  - [x] Verify task state and commit Phase 1 decision work
-
-- [x] Phase 1 Restart: Headless Core Architecture Decision
-  - [x] Step 0: Research and plan Phase 1 restart
-  - [x] Re-evaluate architecture candidates for a headless-first core
-  - [x] Compare Playwright-managed Chromium, Tauri/WebView, CEF, Qt WebEngine, Chromium fork/distribution paths, and Rust/C++ control-layer options
-  - [x] Define non-goals: no GUI scaffolding, no Chrome-extension dependency, no full Chromium compile unless justified by research
-  - [x] Specify the first internal automation API shape
-  - [x] Specify profile/session/proxy isolation requirements
-  - [x] Specify native/integrated feature strategy, including when to wrap mature open-source tools
-  - [x] Write fresh research findings in `research/2026-05-31-headless-core-architecture-restart.md`
-  - [x] Write a fresh architecture decision in `docs/specs/adr-0002-headless-core-foundation.md`
-  - [x] Update roadmap and tracking files after the decision
-
-## Superseded
-- [x] Previous Phase 1 direction: Playwright-managed visible Chromium shell with extension compatibility
-- [x] Previous Phase 2 plan: Minimal Browser Shell
+- [x] Phase 2: Write implementation plan (5 files, docs/superpowers/plans/)
+- [x] Phase 1 Restart: headless core ADR (ADR-0002)
+- [x] Phase 1: browser architecture research and ADR (ADR-0001, superseded)
+- [x] Phase 0: workspace setup
