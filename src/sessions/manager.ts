@@ -4,6 +4,8 @@ import { chromium } from "playwright";
 import { FeatherSession, SessionNotFoundError } from "./session";
 import { buildLaunchOptions } from "../browser/modes";
 import { redactProxy } from "../logs/redact";
+import { FeatherLogger } from "../logs/logger";
+import { EVENTS } from "../logs/events";
 import type { FeatherPaths } from "../fs-layout";
 import type { ProfileLock } from "../profiles/lock";
 import type { WorkspaceMetadata } from "../profiles/workspace";
@@ -25,12 +27,15 @@ export interface LaunchSessionInput {
 
 export class SessionManager {
   private readonly registry: Map<string, FeatherSession> = new Map();
+  private readonly logger: FeatherLogger;
 
   constructor(
     private readonly paths: FeatherPaths,
     private readonly lock: ProfileLock,
     private readonly workspace: WorkspaceMetadata
-  ) {}
+  ) {
+    this.logger = new FeatherLogger(paths);
+  }
 
   async launch(input: LaunchSessionInput): Promise<FeatherSession> {
     const workspaceId = input.workspaceId ?? "default";
@@ -71,6 +76,19 @@ export class SessionManager {
 
     session.setContext(context);
     this.registry.set(session.sessionId, session);
+
+    await this.logger.log({
+      ts: new Date().toISOString(),
+      level: "info",
+      event: EVENTS.SESSION_LAUNCH_COMPLETED,
+      sessionId: session.sessionId,
+      data: {
+        workspaceId,
+        profileKind,
+        browserMode,
+        proxy: proxySummary,
+      },
+    });
 
     return session;
   }

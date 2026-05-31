@@ -110,7 +110,7 @@ describe("Authenticated routes", () => {
     expect(res.status).toBe(200);
     const body = await res.json() as any;
     expect(body.ok).toBe(true);
-    expect(Array.isArray(body.data.sessions)).toBe(true);
+    expect(Array.isArray(body.data)).toBe(true);
   });
 
   it("POST /v1/sessions with valid body and correct token returns session", async () => {

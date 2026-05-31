@@ -105,7 +105,7 @@ export function registerRoutes(app: FastifyInstance, manager: SessionManager, pa
     const requestId = getRequestId(request);
     try {
       const sessions = await listSessionsHandler.execute({}, { requestId });
-      await reply.status(200).send(ok(requestId, { sessions }));
+      await reply.status(200).send(ok(requestId, sessions));
     } catch (err) { await handleRouteError(err, request, reply); }
   });
 
@@ -172,8 +172,8 @@ export function registerRoutes(app: FastifyInstance, manager: SessionManager, pa
     try {
       const { sessionId } = request.params as { sessionId: string };
       const input = CloseSchema.parse(request.body ?? {});
-      await closeHandler.execute({ sessionId, ...input }, { requestId });
-      await reply.status(200).send(ok(requestId, { sessionId, closed: true }));
+      const closeResult = await closeHandler.execute({ sessionId, ...input }, { requestId });
+      await reply.status(200).send(ok(requestId, closeResult));
     } catch (err) { await handleRouteError(err, request, reply); }
   });
 }

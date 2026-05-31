@@ -79,19 +79,19 @@ export class FeatherSession {
     return this._context;
   }
 
-  getPage(pageId?: string): Page {
+  getPage(pageId?: string): { pageId: string; page: Page } {
     if (!pageId) {
       const first = Array.from(this._pages.entries())[0];
       if (!first) {
         throw new PageNotFoundError("(default)");
       }
-      return first[1];
+      return { pageId: first[0], page: first[1] };
     }
     const page = this._pages.get(pageId);
     if (!page) {
       throw new PageNotFoundError(pageId);
     }
-    return page;
+    return { pageId, page };
   }
 
   getDefaultPageId(): string | undefined {
