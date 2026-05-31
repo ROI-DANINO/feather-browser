@@ -1,11 +1,18 @@
 ## Feather Browser — Session Memory
-Last updated: 2026-05-31 1133
+Last updated: 2026-05-31 1149
 
 ### Where we are
-Phase 2 Headless Core Prototype is **complete**.
+Phase 2 Headless Core Prototype is **complete** — implementation and documentation done.
 - 129 tests passing: 98 unit / 27 integration / 4 measurement
-- Latest commit: `991c6e9` (proxy-redaction integration test)
-- All 9 Phase 2 exit criteria implemented and covered by tests
+- Last impl commit: `991c6e9` (proxy-redaction integration test)
+- Last docs commit: `a39bf6c` (full documentation suite)
+
+### Documentation written this session
+- `docs/api-reference.md` — all 10 HTTP endpoints, auth model, schemas, error codes, curl examples
+- `docs/architecture.md` — layer diagram, component descriptions, data flow, design decisions, src/ tree
+- `docs/phase-2-completion.md` — build parts→commits table, capabilities, test coverage, exit criteria ✅
+- `README.md` — rewritten with correct quick start and auth instructions
+- `PROGRESS.md` / `ROADMAP.md` — Phase 2 marked complete
 
 ### Next session options
 1. **Manual verification** — run `docs/specs/phase-2-verification-checklist.md` against `npm run dev`
@@ -40,15 +47,25 @@ tests/
   unit/               98 tests (vitest)
   integration/        27 tests (real chromium-headless-shell)
   measurement/        4 tests (real chromium-headless-shell)
-docs/specs/
-  phase-2-verification-checklist.md  manual exit criteria checklist
+docs/
+  api-reference.md    HTTP API reference (all endpoints)
+  architecture.md     system design and component map
+  phase-2-completion.md  Phase 2 summary and exit criteria
+  specs/              ADRs + phase plans + verification checklist
 ```
+
+### Auth model (important — the README previously got this wrong)
+- Token is `randomBytes(32).toString("hex")` generated at startup in `startHttpServer()`
+- Written to `paths.tokenFile()` at mode `0o600`
+- **No `FEATHER_TOKEN` env var is read by the service**
+- Header: `X-Feather-Token: <token>`
 
 ### Known tech debt
 - `routes.ts` uses `manager as any` for 4 handler constructors (Navigate, Snapshot, Extract, Screenshot) because their internal `IManager` interface expects `getPage()` → `{ pageId, page }` but `FeatherSession.getPage()` returns `Page` directly. Needs proper fix.
+- `snapshot` endpoint: Zod schema accepts `limits.textChars` and `limits.links` but the handler ignores both fields entirely — hardcoded to 20000 chars / 200 links. Schema is a placeholder.
 
 ### Key flags for future sessions
-- **Context compaction**: happened mid-session. If the agent seems confused about types/method signatures, grep the source — don't trust summaries.
+- **Context compaction**: happened mid-session during Phase 2 build. If the agent seems confused about types/method signatures, grep the source — don't trust summaries.
 - **Agent crash recovery**: background agents die if the CC process exits. Check `git log` before re-dispatching — partial commits survive.
 - **No Docker/Podman**: containerization abandoned as too slow. Run `npm install` on host.
 - **chromium-headless-shell**: default test mode. `chromium-new-headless` requires system Chrome; manual-only for now.
@@ -59,3 +76,4 @@ docs/specs/
 - "research → plan → build → iterate" workflow
 - Phase-gated: only current phase gets detailed tasks
 - Wants a lightweight browser for personal use AND for agents (internal APIs)
+- Likes "the whole razzle dazzle professional stuff" — full agent teams, peers, parallel dispatch
