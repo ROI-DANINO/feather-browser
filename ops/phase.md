@@ -1,6 +1,6 @@
 ---
 phase: headless-core-prototype
-plan: phase-2-step-0
-step: "step-0-research-and-plan"
+plan: phase-2-implementation-plan
+step: "write-implementation-plan-before-code"
 detour: []
 ---

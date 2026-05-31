@@ -5,8 +5,8 @@ session: phase-2-headless-core-prototype-planning
 
 ## Active plan
 Plan: Phase 2 - Headless Core Prototype
-Step: Step 0 - Research and plan the Phase 2 prototype
-Why: The restarted Phase 1 decision is complete. ADR-0002 selects a Playwright-managed Chromium headless core with persistent isolated profiles and a Feather-owned local control service.
+Step: Write implementation plan before code
+Why: Phase 2 Step 0 is complete. The prototype boundary is defined in `docs/specs/phase-2-headless-core-prototype-plan.md`.
 
 ## Key decisions
 - Work uses a phase-gated roadmap.
@@ -23,6 +23,11 @@ Why: The restarted Phase 1 decision is complete. ADR-0002 selects a Playwright-m
 - Feather should own the local control API, profile/session/proxy policy, structured logs, replay/debug metadata, and adapter boundaries.
 - New headless Chromium is the default high-fidelity mode; Chromium headless shell is an optional lower-resource mode for suitable extraction jobs.
 - Raw CDP is an internal escape hatch, not the public Phase 2 API.
+- Phase 2 Step 0 selected localhost HTTP JSON as the first local control transport, bound to `127.0.0.1` with token protection.
+- The prototype defaults to new headless Chromium via Playwright `channel: "chromium"` and measures it against Chromium headless shell.
+- The first API flow is launch, status, navigate, snapshot, extract, screenshot, debug bundle, and close.
+- Persistent workspace sessions, disposable sessions, profile locks, session-scoped proxy launch config, structured JSONL logs, and per-session debug bundles are in Phase 2 scope.
+- Real `yt-dlp` execution is deferred; the adapter boundary is documented for later.
 
 ## Voice snapshot
 "the way i like to workon stuf is reaserch plan build iterate."
@@ -32,10 +37,10 @@ Why: The restarted Phase 1 decision is complete. ADR-0002 selects a Playwright-m
 "i want it to be a real lightweght broweser for me and for my agents to use seamlessly with internal apis"
 
 ## Next action
-Start Phase 2 Step 0: research and plan the smallest prototype that proves launch/control, persistent and disposable profile isolation, per-session proxy launch, local API shape, debug metadata, and resource measurements.
+Write the Phase 2 implementation plan from `docs/specs/phase-2-headless-core-prototype-plan.md`. Do not start code until that plan exists.
 
 ## Latest handoff
-No new `/stop` handoff was written for the Phase 1 completion. The latest historical handoff remains `ops/sessions/phase-1-headless-core-restart-20260531.md`; current state is in ADR-0002, `PROGRESS.md`, and `ops/tasks.md`.
+No new `/stop` handoff was written in this session. Current state is in ADR-0002, `research/2026-05-31-phase-2-headless-core-prototype-plan.md`, `docs/specs/phase-2-headless-core-prototype-plan.md`, `PROGRESS.md`, and `ops/tasks.md`.
 
 ## Available tools
 Skills: superpowers:brainstorming, superpowers:writing-plans, superpowers:verification-before-completion
