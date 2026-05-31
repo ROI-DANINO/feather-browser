@@ -1,5 +1,7 @@
 # Feather Browser
 
+**https://github.com/ROI-DANINO/feather-browser**
+
 A headless-first Chromium browser core for agentic automation, built around Playwright-managed sessions with a local HTTP control API.
 
 ## Status

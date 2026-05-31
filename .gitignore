@@ -6,6 +6,13 @@ context/
 work/
 research/
 docs/superpowers/
+docs/commands/
+.claude/
+skills/
+AGENTS.md
+index.md
+schema.md
+raw/
 node_modules/
 dist/
 build/
