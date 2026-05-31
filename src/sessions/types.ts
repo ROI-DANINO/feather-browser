@@ -1,3 +1,5 @@
+import type { Page } from "playwright";
+
 export type BrowserMode = "chromium-new-headless" | "chromium-headless-shell";
 export type ProfileKind = "persistent" | "disposable";
 export type SessionState = "launching" | "running" | "closing" | "closed" | "failed";
@@ -58,4 +60,18 @@ export interface SnapshotResult {
 
 export interface CommandContext {
   requestId: string;
+}
+
+export interface ISession {
+  readonly sessionId: string;
+  readonly workspaceId: string;
+  readonly profileKind: ProfileKind;
+  readonly browserMode: BrowserMode;
+  readonly proxy: ProxySummary | null;
+  readonly profilePath: string;
+  readonly startedAt: string;
+  readonly debugDir: string;
+  getPage(pageId?: string): { pageId: string; page: Page };
+  getPageInfoList(): Promise<PageInfo[]>;
+  toRecord(): Omit<SessionRecord, "pages">;
 }

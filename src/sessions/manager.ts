@@ -14,6 +14,7 @@ import type {
   ProfileKind,
   ProxyConfig,
   ProxySummary,
+  ISession,
 } from "./types";
 
 export interface LaunchSessionInput {
@@ -25,7 +26,14 @@ export interface LaunchSessionInput {
   debug?: { trace?: boolean; screenshots?: boolean };
 }
 
-export class SessionManager {
+export interface ISessionManager {
+  launch(input: LaunchSessionInput): Promise<ISession>;
+  get(sessionId: string): ISession;
+  list(): ISession[];
+  close(sessionId: string, opts?: { force?: boolean; quarantineDisposableProfile?: boolean }): Promise<void>;
+}
+
+export class SessionManager implements ISessionManager {
   private readonly registry: Map<string, FeatherSession> = new Map();
   private readonly logger: FeatherLogger;
 
@@ -71,6 +79,14 @@ export class SessionManager {
       await this.workspace.ensureExists(workspaceId);
     }
 
+    await this.logger.log({
+      ts: new Date().toISOString(),
+      level: "info",
+      event: EVENTS.SESSION_LAUNCH_REQUESTED,
+      sessionId: session.sessionId,
+      data: { workspaceId, profileKind, browserMode, proxy: proxySummary },
+    });
+
     const launchOpts = buildLaunchOptions(browserMode, proxy ?? undefined, input.viewport);
     const context = await chromium.launchPersistentContext(profilePath, launchOpts);
 
@@ -110,6 +126,13 @@ export class SessionManager {
     const session = this.get(sessionId);
     session.setState("closing");
 
+    await this.logger.log({
+      ts: new Date().toISOString(),
+      level: "info",
+      event: EVENTS.SESSION_CLOSE_REQUESTED,
+      sessionId: session.sessionId,
+    });
+
     try {
       const context = session.getContext();
       if (opts?.force) {
@@ -119,11 +142,25 @@ export class SessionManager {
       }
     } catch (err) {
       session.setState("failed");
+      await this.logger.log({
+        ts: new Date().toISOString(),
+        level: "error",
+        event: EVENTS.SESSION_CLOSE_FAILED,
+        sessionId: session.sessionId,
+        data: { error: (err as any)?.message ?? "unknown" },
+      });
       throw err;
     }
 
     session.setState("closed");
     this.registry.delete(sessionId);
+
+    await this.logger.log({
+      ts: new Date().toISOString(),
+      level: "info",
+      event: EVENTS.SESSION_CLOSE_COMPLETED,
+      sessionId: session.sessionId,
+    });
 
     if (session.profileKind === "persistent") {
       await this.lock.release(session.workspaceId);
