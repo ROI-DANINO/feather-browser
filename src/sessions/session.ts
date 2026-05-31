@@ -7,6 +7,7 @@ import type {
   ProxySummary,
   PageInfo,
   SessionRecord,
+  ISession,
 } from "./types";
 
 const newId = (prefix: string): string =>
@@ -28,7 +29,7 @@ export class PageNotFoundError extends Error {
   }
 }
 
-export class FeatherSession {
+export class FeatherSession implements ISession {
   readonly sessionId: string;
   readonly workspaceId: string;
   readonly profileKind: ProfileKind;

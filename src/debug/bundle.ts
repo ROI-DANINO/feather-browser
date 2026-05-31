@@ -1,8 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
-import type { FeatherSession } from "../sessions/session";
 import type { FeatherPaths } from "../fs-layout";
-import type { ProfileKind, BrowserMode, ProxySummary } from "../sessions/types";
+import type { ISession, ProfileKind, BrowserMode, ProxySummary } from "../sessions/types";
 
 export interface BundleManifest {
   sessionId: string;
@@ -41,7 +40,7 @@ function getPlaywrightVersion(): string {
 
 export class DebugBundle {
   constructor(
-    private readonly session: FeatherSession,
+    private readonly session: ISession,
     private readonly paths: FeatherPaths
   ) {}
 
