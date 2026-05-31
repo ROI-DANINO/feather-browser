@@ -77,10 +77,10 @@ Milestones:
 Goal: Make the session and page lifecycle reliably observable. Produce a clean, stable API contract. Prepare a minimal event stream for a future UI. Keep agent concepts entirely out of the core.
 
 Milestones:
-- Step 0: research and plan Phase 3.
+- Step 0: research and plan Phase 3. ✓
+- API contract cleanup: extract a shared `ISessionManager` interface; resolve the `manager as any` casts in the transport layer; fix `toRecord()` page ownership. ✓
+- Complete lifecycle event logging: emit all catalogued events at the correct lifecycle points (launch requested/completed/failed, close requested/completed/failed). ✓
 - Dynamic page/tab tracking: hook `context.on("page")` so pages opened after session launch are tracked in the page map. Emit tab lifecycle events (created, closed, updated).
-- Complete lifecycle event logging: emit all catalogued events at the correct lifecycle points (launch requested/completed/failed, close requested/completed/failed).
-- API contract cleanup: extract a shared `ISessionManager` interface; resolve the `manager as any` casts in the transport layer; fix `toRecord()` page ownership.
 - Enrich `PageInfo` with load state so callers can distinguish in-progress navigation from a settled page.
 - Stale lock recovery: check whether a locking pid is still alive before blocking a workspace launch.
 - Thin SSE event stream: a read-only `GET /v1/events` endpoint that emits browser lifecycle events for a future UI to consume. No WebSocket, no agent protocol.

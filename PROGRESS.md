@@ -2,11 +2,47 @@
 
 ## Current Phase
 
-Phase 2 complete. Phase 3 not yet started.
+Phase 3 in progress. Started 2026-05-31.
 
 ## Current State
 
-Phase 2 Headless Core Prototype is complete as of 2026-05-31. All 9 exit criteria met. 129 tests passing (98 unit, 27 integration, 4 measurement). Ready to plan Phase 3.
+Phase 3 Browser Core Stabilization & UI Readiness is active. Two of the eight identified gaps are closed. 98 unit tests passing.
+
+## Phase 3 Progress
+
+### Closed
+
+**Step 1 — API contract cleanup** (commit e2bd145, 2026-05-31)
+- `ISession` interface added to `sessions/types.ts` covering all fields and methods consumed by command handlers and `DebugBundle`.
+- `FeatherSession implements ISession`.
+- `ISessionManager` interface added to `sessions/manager.ts`; `SessionManager implements ISessionManager`.
+- `registerRoutes()` now accepts `ISessionManager`; the four `manager as any` casts for Navigate/Snapshot/Extract/Screenshot handlers are removed.
+- `DebugBundle` now accepts `ISession` rather than the concrete `FeatherSession`; debug layer no longer imports the session implementation directly.
+- `DebugBundleHandler` uses the shared `ISession` import; `session as any` cast removed.
+
+**Step 2 — Complete lifecycle event logging** (commit e2bd145, 2026-05-31)
+- `SESSION_LAUNCH_REQUESTED` emitted after `FeatherSession` is constructed and all preconditions (dirs, lock, workspace) are met, immediately before `launchPersistentContext`.
+- `SESSION_CLOSE_REQUESTED` emitted at the start of `close()` after state transitions to `"closing"`.
+- `SESSION_CLOSE_COMPLETED` emitted after the context closes and state transitions to `"closed"`.
+- `SESSION_CLOSE_FAILED` emitted in the error path with the error message.
+
+### Remaining gaps from Phase 3 scope decision
+
+3. Tab lifecycle events missing — `EVENTS` catalog needs `TAB_CREATED`, `TAB_CLOSED`, `TAB_UPDATED`.
+4. `toRecord()` always returns `pages: []` — misleading contract; page list is fetched separately by handlers.
+5. Dynamic page tracking — `context.on("page")` not wired in `FeatherSession.setContext()`.
+6. `PageInfo` lacks `loadState`.
+7. ProfileLock does not check locking pid liveness — stale locks block workspaces permanently.
+8. Open measurement question — actual RAM/CPU delta between browser modes is unrecorded.
+
+### Pending design decision before Step 3
+
+Step 3 (dynamic page tracking + tab lifecycle events) requires a decision on where the internal event bus lives:
+- Option A: lightweight `EventEmitter` on `FeatherSession` — consumers hold a session reference.
+- Option B: lightweight `EventEmitter` on `SessionManager` — one bus for all sessions, events tagged with `sessionId`.
+- Option C: logger only for now — emit tab events to JSONL, wire the event bus in a later step when SSE is designed.
+
+This decision shapes the SSE endpoint in the step after it. Not implementing Step 3 until it is settled.
 
 ## Architecture Decisions
 
