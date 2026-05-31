@@ -9,7 +9,7 @@ export function createTokenAuth(token: string) {
   return async function tokenAuth(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     const provided = request.headers["x-feather-token"];
     if (provided !== token) {
-      await reply.status(401).send({
+      return reply.status(401).send({
         ok: false,
         requestId: (request as any).requestId ?? "unknown",
         error: { code: "UNAUTHORIZED", message: "Invalid or missing X-Feather-Token." },
