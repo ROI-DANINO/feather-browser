@@ -29,15 +29,6 @@ export class ProfileLock {
     proxySummary: ProxySummary | null
   ): Promise<void> {
     const lockPath = this.paths.lockFile(workspaceId);
-    try {
-      const existing = await fs.promises.readFile(lockPath, "utf8");
-      const data: LockData = JSON.parse(existing);
-      throw new ProfileLockedError(workspaceId, data);
-    } catch (err: any) {
-      if (err instanceof ProfileLockedError) throw err;
-      if (err.code !== "ENOENT") throw err;
-    }
-
     const data: LockData = {
       sessionId,
       pid: process.pid,
@@ -46,7 +37,24 @@ export class ProfileLock {
       browserMode,
       proxySummary,
     };
-    await fs.promises.writeFile(lockPath, JSON.stringify(data, null, 2), "utf8");
+
+    let fd: fs.promises.FileHandle | undefined;
+    try {
+      fd = await fs.promises.open(lockPath, "wx");
+    } catch (err: any) {
+      if (err.code === "EEXIST") {
+        const existing = await fs.promises.readFile(lockPath, "utf8");
+        const existingData: LockData = JSON.parse(existing);
+        throw new ProfileLockedError(workspaceId, existingData);
+      }
+      throw err;
+    }
+
+    try {
+      await fd.writeFile(JSON.stringify(data, null, 2), "utf8");
+    } finally {
+      await fd.close();
+    }
   }
 
   async isLocked(workspaceId: string): Promise<boolean> {
