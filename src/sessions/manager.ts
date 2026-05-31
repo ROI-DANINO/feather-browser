@@ -153,7 +153,6 @@ export class SessionManager implements ISessionManager {
     }
 
     session.setState("closed");
-    this.registry.delete(sessionId);
 
     await this.logger.log({
       ts: new Date().toISOString(),
@@ -178,5 +177,7 @@ export class SessionManager implements ISessionManager {
         await fs.promises.rm(sessionDir, { recursive: true, force: true });
       }
     }
+
+    this.registry.delete(sessionId);
   }
 }
