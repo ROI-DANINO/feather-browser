@@ -11,3 +11,6 @@ Format: `YYYY-MM-DD | ACTION | source -> target | note`
 2026-05-31 | DECISION | research -> docs/specs/adr-0001-browser-foundation.md | Selected Playwright-managed persistent Chromium profile plus local shell/control UI for Phase 2 planning.
 2026-05-31 | PHASE | phase-1 -> phase-2 | Completed Phase 1 and opened Phase 2 Step 0 planning.
 2026-05-31 | STOP | conversation -> ops/sessions/phase-2-planning-handoff-20260531-0642.md | Paused before Phase 2 Step 0 and wrote fresh-chat goal prompt.
+2026-05-31 | PIVOT | conversation -> project docs | Restarted Phase 1 around a headless-first browser core, native/integrated features, and GUI-later roadmap.
+2026-05-31 | SUPERSEDE | docs/specs/adr-0001-browser-foundation.md -> phase-1-restart | Marked previous visible-shell architecture decision as superseded.
+2026-05-31 | HANDOFF | conversation -> ops/sessions/phase-1-headless-core-restart-20260531.md | Wrote fresh restart handoff and updated `.remember/remember.md`.

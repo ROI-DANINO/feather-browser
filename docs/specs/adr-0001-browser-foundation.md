@@ -4,7 +4,9 @@ Date: 2026-05-31
 
 ## Status
 
-Accepted for Phase 2 planning.
+Superseded on 2026-05-31.
+
+This decision is retained as historical research. It was superseded when the project direction changed from visible-shell-first and extension-compatibility-first to headless-core-first, native/integrated-feature-first, and GUI-later.
 
 ## Context
 

@@ -1,13 +1,17 @@
 ## In Progress
 
 ## Active
-- [ ] Phase 2: Minimal Browser Shell
-  - [ ] Step 0: Research and plan Phase 2
-  - [ ] Define the smallest Playwright-managed persistent Chromium prototype
-  - [ ] Choose the control surface shape: CLI, local web UI, or desktop UI
-  - [ ] Specify profile/workspace configuration
-  - [ ] Specify Playwright endpoint and agent permission model
-  - [ ] Write Phase 2 implementation tasks only after Step 0 planning
+- [ ] Phase 1: Headless Core Architecture Decision
+  - [ ] Step 0: Research and plan Phase 1 restart
+  - [ ] Re-evaluate architecture candidates for a headless-first core
+  - [ ] Compare Playwright-managed Chromium, Tauri/WebView, CEF, Qt WebEngine, Chromium fork/distribution paths, and Rust/C++ control-layer options
+  - [ ] Define non-goals: no GUI scaffolding, no Chrome-extension dependency, no full Chromium compile unless justified by research
+  - [ ] Specify the first internal automation API shape
+  - [ ] Specify profile/session/proxy isolation requirements
+  - [ ] Specify native/integrated feature strategy, including when to wrap mature open-source tools
+  - [ ] Write fresh research findings in `research/`
+  - [ ] Write a fresh architecture decision in `docs/specs/`
+  - [ ] Update roadmap and tracking files after the decision
 
 ## Done
 - [x] Phase 0: Workspace setup
@@ -28,3 +32,7 @@
   - [x] Write architecture decision/spec in `docs/specs/`
   - [x] Update roadmap and project tracking files
   - [x] Verify task state and commit Phase 1 decision work
+
+## Superseded
+- [x] Previous Phase 1 direction: Playwright-managed visible Chromium shell with extension compatibility
+- [x] Previous Phase 2 plan: Minimal Browser Shell

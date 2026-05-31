@@ -2,7 +2,9 @@
 
 ## Destination
 
-Build a lightweight, highly configurable browser experience that can use Chrome extensions or equivalent Chromium extension support, exposes Playwright-compatible automation for agents, and keeps a calm, keyboard-friendly, user-owned interface.
+Build a hyper-lightweight Chromium-compatible browser/control system for seamless agentic automation first, then wrap the proven core in a calm, bold, minimalist visual browser for personal daily use.
+
+Feather should not depend on Chrome extensions as its product strategy. Critical capabilities should be native or integrated project features, using mature open-source tools where they reduce risk and cost.
 
 ## Roadmap Model
 
@@ -29,57 +31,68 @@ Exit criteria:
 - A paused session can be handed off with `/stop`.
 - Phase 1 can be planned from a clean tracking baseline.
 
-## Phase 1: Research and Architecture Decision
+## Phase 1: Headless Core Architecture Decision
 
-Goal: Decide the technical foundation.
+Goal: Decide the technical foundation for a headless-first browser core.
 
-Status: Complete.
+Status: Restarted.
 
-Decision:
-- Phase 2 should start with a Playwright-managed persistent Chromium profile plus a custom local shell/control UI.
-- The project should prioritize an agentic-AI-first prototype without becoming agent-only; the first build should remain visible and usable by a human.
-- Electron may be useful for control UI ideas but is not the browser core because arbitrary Chrome extension compatibility is an Electron non-goal.
-- CEF, Qt WebEngine, and a Chromium fork remain possible later paths if the prototype proves the need for deeper browser chrome ownership.
+Superseded decision:
+- The previous Phase 1 decision selected a Playwright-managed persistent Chromium profile plus a custom local shell/control UI.
+- That decision was useful research, but it optimized for a visible shell and extension compatibility.
+- The project direction is now headless-first, native/integrated-feature-first, and GUI-later.
 
 Exit criteria:
-- Architecture decision record is written in `docs/specs/adr-0001-browser-foundation.md`.
-- Research findings are written in `research/2026-05-31-browser-architecture-options.md`.
+- Fresh architecture decision record is written in `docs/specs/`.
+- Fresh research findings are written in `research/`.
 - Non-goals and constraints are explicit.
-- Phase 2 can begin with Step 0: research and plan the minimal browser shell/control plane.
+- Phase 2 can begin with Step 0: research and plan the headless core prototype.
 
-## Phase 2: Minimal Browser Shell
+Research candidates:
+- Playwright-managed Chromium persistent profiles.
+- Tauri/WebView approaches.
+- CEF.
+- Qt WebEngine.
+- Chromium fork/distribution paths.
+- Rust/C++ control-layer options.
+- Native integration patterns for open-source tools such as `yt-dlp`.
 
-Goal: Build the smallest usable browser/control surface that proves the chosen foundation.
+## Phase 2: Headless Core Prototype
+
+Goal: Build the smallest functional headless core that proves the chosen foundation.
 
 Milestones:
 - Step 0: research and plan Phase 2.
-- Launch a human-visible persistent Chromium workspace.
+- Launch and control isolated headless browser sessions.
 - Create a minimal profile/workspace configuration model.
-- Provide a local control UI or CLI for launch, status, and endpoint discovery.
-- Validate Playwright connection and basic agent workflow.
+- Provide a local CLI or API surface for launch, status, endpoint discovery, and control.
+- Validate internal automation API shape for navigation, DOM inspection, extraction, and session control.
+- Validate proxy/network configuration boundaries.
 - Capture basic session metadata for debugging.
 
-## Phase 3: Extension and Customization Layer
+## Phase 3: Native Feature And Integration Layer
 
-Goal: Validate extension compatibility and deep user configuration.
+Goal: Build critical browser capabilities as native or integrated features instead of depending on Chrome extensions.
 
 Milestones:
 - Step 0: research and plan Phase 3.
-- Extension strategy tested.
-- Theme/layout configuration.
-- Command palette or shortcut system.
+- Media download integration strategy.
+- RTL handling and toggles.
+- Scraping reliability and session realism controls.
 - Import/export settings.
+- Permission and policy model for internal APIs.
 
-## Phase 4: Agentic Automation Layer
+## Phase 4: Visual GUI Wrapper
 
-Goal: Expose reliable Playwright-driven control for AI agents.
+Goal: Wrap the proven core in a gorgeous, bold, minimalist graphical interface inspired by Zen Browser.
 
 Milestones:
 - Step 0: research and plan Phase 4.
-- Agent profile isolation.
-- Playwright endpoint or control protocol.
-- Permission model.
-- Session logs and replay/debug tools.
+- UI architecture choice.
+- Workspace/profile controls.
+- Command palette or shortcut system.
+- Theme/layout configuration.
+- Human-visible browsing flow.
 
 ## Phase 5: Daily Browser Hardening
 
