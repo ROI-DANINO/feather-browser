@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { chromium } from "playwright";
+import { chromium, type BrowserContext } from "playwright";
 import { FeatherSession, SessionNotFoundError } from "./session";
 import { buildLaunchOptions } from "../browser/modes";
 import { redactProxy } from "../logs/redact";
@@ -16,6 +16,23 @@ import type {
   ProxySummary,
   ISession,
 } from "./types";
+
+const CLOSE_TIMEOUT_MS = 10_000;
+
+async function closeContextWithTimeout(context: BrowserContext, timeoutMs: number): Promise<void> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = setTimeout(
+      () => reject(new Error(`context.close() timed out after ${timeoutMs}ms`)),
+      timeoutMs
+    );
+  });
+  try {
+    await Promise.race([context.close(), timeoutPromise]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 export interface LaunchSessionInput {
   workspaceId?: string;
@@ -136,9 +153,9 @@ export class SessionManager implements ISessionManager {
     try {
       const context = session.getContext();
       if (opts?.force) {
-        try { await context.close(); } catch { /* ignore */ }
+        try { await closeContextWithTimeout(context, CLOSE_TIMEOUT_MS); } catch { /* ignore */ }
       } else {
-        await context.close();
+        await closeContextWithTimeout(context, CLOSE_TIMEOUT_MS);
       }
     } catch (err) {
       session.setState("failed");
