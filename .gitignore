@@ -1,0 +1,14 @@
+.superpowers/
+.remember/tmp/
+node_modules/
+dist/
+build/
+.next/
+.cache/
+coverage/
+.env
+.env.*
+*.log
+*.tmp
+.DS_Store
+
