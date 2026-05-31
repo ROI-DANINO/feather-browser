@@ -27,6 +27,21 @@ These were unresolved at Phase 2 close and should inform Phase 3 planning:
 - Which debug bundle fields prove most useful once real failures are captured in production-like runs?
 - Should Phase 3 add the `yt-dlp` subprocess adapter first, or harden profile/proxy/session reliability first?
 
+## Phase 3 Scope Decision
+
+Phase 3 is scoped as Browser Core Stabilization & UI Readiness. The earlier candidates (yt-dlp adapter, GUI scaffolding) are deferred: yt-dlp to Phase 5+, GUI scaffolding to Phase 4. Phase 3 stays inside the existing headless core.
+
+Concrete gaps identified in the Phase 2 codebase that Phase 3 must close:
+
+1. Dynamic page tracking — `FeatherSession.setContext()` snapshots only pages existing at context creation. `context.on("page")` is not wired, so pages opened after launch are invisible. `DebugCapture` already does this correctly and is the pattern to follow.
+2. Incomplete lifecycle logging — `SessionManager` only emits `SESSION_LAUNCH_COMPLETED`. All other catalogued events (`SESSION_LAUNCH_REQUESTED`, `SESSION_CLOSE_*`, tab events) are never emitted.
+3. Tab lifecycle events missing — the `EVENTS` catalog has no tab/page events beyond per-command operation events. Tab created/closed/updated are absent.
+4. `toRecord()` always returns `pages: []` — page list is fetched separately by handlers and merged in, but the method contract is misleading.
+5. Four `manager as any` casts in `routes.ts` — known tech debt; needs a shared `ISessionManager` interface.
+6. `PageInfo` lacks `loadState` — callers cannot distinguish a page mid-navigation from a settled tab.
+7. ProfileLock does not check whether the locking pid is still alive — stale locks from crashed processes permanently block a workspace.
+8. Open measurement question — actual RAM/CPU delta between browser modes is unrecorded.
+
 ## Next
 
-Plan Phase 3: decide scope (yt-dlp adapter vs profile/proxy hardening vs GUI scaffolding).
+Begin Phase 3. Recommended first task: wire `context.on("page")` in `FeatherSession.setContext()` and emit tab lifecycle events, as this is the root cause of the most downstream reliability issues.
