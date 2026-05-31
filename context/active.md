@@ -1,6 +1,6 @@
 ---
 updated: 2026-05-31
-session: phase-2-minimal-browser-shell
+session: phase-2-planning-handoff-20260531-0642
 ---
 
 ## Active plan
@@ -25,6 +25,9 @@ Why: Plan the first build around the selected Playwright-managed persistent Chro
 
 ## Next action
 Start Phase 2 Step 0: research and plan the minimal browser shell/control plane. Keep Phase 2 tasks detailed in `ops/tasks.md`; keep later phases high-level in `ROADMAP.md`.
+
+## Latest handoff
+See `ops/sessions/phase-2-planning-handoff-20260531-0642.md`.
 
 ## Available tools
 Skills: superpowers:brainstorming, superpowers:writing-plans, superpowers:verification-before-completion

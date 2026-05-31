@@ -10,3 +10,4 @@ Format: `YYYY-MM-DD | ACTION | source -> target | note`
 2026-05-31 | RESEARCH | web -> research/2026-05-31-browser-architecture-options.md | Compared Electron, CEF, Qt WebEngine, Chromium fork/distribution, Playwright persistent Chromium profile shell, and WebView2/Tauri.
 2026-05-31 | DECISION | research -> docs/specs/adr-0001-browser-foundation.md | Selected Playwright-managed persistent Chromium profile plus local shell/control UI for Phase 2 planning.
 2026-05-31 | PHASE | phase-1 -> phase-2 | Completed Phase 1 and opened Phase 2 Step 0 planning.
+2026-05-31 | STOP | conversation -> ops/sessions/phase-2-planning-handoff-20260531-0642.md | Paused before Phase 2 Step 0 and wrote fresh-chat goal prompt.
