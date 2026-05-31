@@ -1,6 +1,6 @@
-Left unfinished: Phase 2 Step 0 has not been planned yet.
-Next session focus: Research and plan the smallest headless core prototype around ADR-0002.
-First action: Run `/start` and review `ops/tasks.md`.
-Decision file: docs/specs/adr-0002-headless-core-foundation.md
-Research file: research/2026-05-31-headless-core-architecture-restart.md
-Files to load: ops/tasks.md, context/active.md, ROADMAP.md, PROGRESS.md
+Left unfinished: Phase 2 implementation has not started. The plan is written but no code exists.
+Next session focus: Execute the implementation plan starting from Part 1, Task 1 (project scaffold).
+First action: Run `/start`, then begin Task 1 from `docs/superpowers/plans/2026-05-31-phase-2-part1-foundation.md`.
+Plan files: `docs/superpowers/plans/` — 5 parts, ~195K total.
+Execution skill: `superpowers:executing-plans` or `superpowers:subagent-driven-development`.
+Tech stack locked: Node 20+, TypeScript 5, CommonJS, `playwright` package, Fastify 4, Zod 3, Vitest, pidusage.
