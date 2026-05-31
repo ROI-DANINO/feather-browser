@@ -1,6 +1,6 @@
 ---
-phase: headless-core-architecture-decision
-plan: phase-1-restart
+phase: headless-core-prototype
+plan: phase-2-step-0
 step: "step-0-research-and-plan"
 detour: []
 ---

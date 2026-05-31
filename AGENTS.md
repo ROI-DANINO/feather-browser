@@ -71,9 +71,11 @@ Do not start web research, architecture comparison, or implementation before the
 
 Phase 0 workspace setup is complete.
 
-Phase 1 is reset and active: Research and Architecture Decision for the headless core.
+Phase 1 restart is complete: ADR-0002 selects a Playwright-managed Chromium headless core with persistent isolated profiles and a Feather-owned local control service.
 
-The previous Phase 1 decision favored a visible Playwright-managed Chromium shell with extension compatibility. That direction is superseded by the updated headless-first vision and should be revisited through fresh research before implementation.
+Phase 2 is active: Headless Core Prototype. Start with Step 0: research and plan the smallest prototype before implementation.
+
+The previous Phase 1 decision favored a visible Playwright-managed Chromium shell with extension compatibility. That direction is superseded by ADR-0002 and should remain historical context only.
 
 ## Phase Guardrails
 
@@ -95,6 +97,8 @@ Do not design or scaffold GUI components in this phase.
 ### Phase 2: Headless Core Prototype
 
 Objective: build the smallest functional headless core that proves resource usage, automation control, profile/session isolation, proxy configuration, and internal API shape.
+
+Start with Step 0: research and plan the prototype around ADR-0002 before writing implementation code.
 
 ### Phase 3: Visual GUI Wrapper
 

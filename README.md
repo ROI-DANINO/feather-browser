@@ -2,7 +2,7 @@
 
 Feather Browser is an exploratory project for a hyper-lightweight Chromium-compatible browser core for agentic automation first, and later a calm Zen-inspired visual browser for personal daily use.
 
-The project is currently restarting its architecture research around a headless-first core. The browser should eventually feel seamless for both the user and agents, but the first technical proof should focus on resource use, profile/session isolation, internal automation APIs, scraping reliability, and practical integration of mature open-source tools where they beat rebuilding from scratch.
+The project has completed its restarted architecture decision around a headless-first core. ADR-0002 selects a Playwright-managed Chromium headless core with persistent isolated profiles and a Feather-owned local control service. The browser should eventually feel seamless for both the user and agents, but the first technical proof should focus on resource use, profile/session isolation, internal automation APIs, scraping reliability, and practical integration of mature open-source tools where they beat rebuilding from scratch.
 
 This project follows a phase-gated workflow:
 

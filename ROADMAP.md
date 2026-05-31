@@ -35,7 +35,7 @@ Exit criteria:
 
 Goal: Decide the technical foundation for a headless-first browser core.
 
-Status: Restarted.
+Status: Complete.
 
 Superseded decision:
 - The previous Phase 1 decision selected a Playwright-managed persistent Chromium profile plus a custom local shell/control UI.
@@ -60,6 +60,8 @@ Research candidates:
 ## Phase 2: Headless Core Prototype
 
 Goal: Build the smallest functional headless core that proves the chosen foundation.
+
+Status: Active. Start with Step 0 before implementation.
 
 Milestones:
 - Step 0: research and plan Phase 2.

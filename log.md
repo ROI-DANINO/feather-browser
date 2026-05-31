@@ -14,3 +14,6 @@ Format: `YYYY-MM-DD | ACTION | source -> target | note`
 2026-05-31 | PIVOT | conversation -> project docs | Restarted Phase 1 around a headless-first browser core, native/integrated features, and GUI-later roadmap.
 2026-05-31 | SUPERSEDE | docs/specs/adr-0001-browser-foundation.md -> phase-1-restart | Marked previous visible-shell architecture decision as superseded.
 2026-05-31 | HANDOFF | conversation -> ops/sessions/phase-1-headless-core-restart-20260531.md | Wrote fresh restart handoff and updated `.remember/remember.md`.
+2026-05-31 | RESEARCH | web -> research/2026-05-31-headless-core-architecture-restart.md | Compared current headless-core candidates against the restarted Phase 1 criteria.
+2026-05-31 | DECISION | research -> docs/specs/adr-0002-headless-core-foundation.md | Selected Playwright-managed Chromium headless core with persistent isolated profiles and a Feather-owned local control service.
+2026-05-31 | PHASE | phase-1-restart -> phase-2 | Completed restarted Phase 1 and activated Phase 2 Step 0 planning.

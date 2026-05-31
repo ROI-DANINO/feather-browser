@@ -1,12 +1,12 @@
 ---
 updated: 2026-05-31
-session: phase-1-headless-core-restart
+session: phase-2-headless-core-prototype-planning
 ---
 
 ## Active plan
-Plan: Phase 1 Restart — Headless Core Architecture Decision
-Step: Step 0 — Research and plan Phase 1 restart
-Why: The project direction changed from visible-shell-first and extension-compatible to headless-core-first, native/integrated-feature-first, and GUI-later.
+Plan: Phase 2 - Headless Core Prototype
+Step: Step 0 - Research and plan the Phase 2 prototype
+Why: The restarted Phase 1 decision is complete. ADR-0002 selects a Playwright-managed Chromium headless core with persistent isolated profiles and a Feather-owned local control service.
 
 ## Key decisions
 - Work uses a phase-gated roadmap.
@@ -19,6 +19,10 @@ Why: The project direction changed from visible-shell-first and extension-compat
 - The browser should eventually have a visual GUI for personal use, but GUI work is future scope.
 - Chrome extensions are no longer the core strategy; critical capabilities should be native or integrated through Feather-owned interfaces.
 - Mature open-source tools are preferred when they beat rebuilding from scratch.
+- ADR-0002 selects Playwright-managed Chromium as the Phase 2 foundation.
+- Feather should own the local control API, profile/session/proxy policy, structured logs, replay/debug metadata, and adapter boundaries.
+- New headless Chromium is the default high-fidelity mode; Chromium headless shell is an optional lower-resource mode for suitable extraction jobs.
+- Raw CDP is an internal escape hatch, not the public Phase 2 API.
 
 ## Voice snapshot
 "the way i like to workon stuf is reaserch plan build iterate."
@@ -28,10 +32,10 @@ Why: The project direction changed from visible-shell-first and extension-compat
 "i want it to be a real lightweght broweser for me and for my agents to use seamlessly with internal apis"
 
 ## Next action
-Start Phase 1 restart Step 0: research and plan the headless-core architecture decision. Keep active tasks detailed in `ops/tasks.md`; keep later phases high-level in `ROADMAP.md`.
+Start Phase 2 Step 0: research and plan the smallest prototype that proves launch/control, persistent and disposable profile isolation, per-session proxy launch, local API shape, debug metadata, and resource measurements.
 
 ## Latest handoff
-See `ops/sessions/phase-1-headless-core-restart-20260531.md`.
+No new `/stop` handoff was written for the Phase 1 completion. The latest historical handoff remains `ops/sessions/phase-1-headless-core-restart-20260531.md`; current state is in ADR-0002, `PROGRESS.md`, and `ops/tasks.md`.
 
 ## Available tools
 Skills: superpowers:brainstorming, superpowers:writing-plans, superpowers:verification-before-completion
