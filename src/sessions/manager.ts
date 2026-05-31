@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { chromium } from "playwright";
+import { chromium, type BrowserContext } from "playwright";
 import { FeatherSession, SessionNotFoundError } from "./session";
 import { buildLaunchOptions } from "../browser/modes";
 import { redactProxy } from "../logs/redact";
@@ -14,7 +14,25 @@ import type {
   ProfileKind,
   ProxyConfig,
   ProxySummary,
+  ISession,
 } from "./types";
+
+const CLOSE_TIMEOUT_MS = 10_000;
+
+async function closeContextWithTimeout(context: BrowserContext, timeoutMs: number): Promise<void> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = setTimeout(
+      () => reject(new Error(`context.close() timed out after ${timeoutMs}ms`)),
+      timeoutMs
+    );
+  });
+  try {
+    await Promise.race([context.close(), timeoutPromise]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 export interface LaunchSessionInput {
   workspaceId?: string;
@@ -25,7 +43,14 @@ export interface LaunchSessionInput {
   debug?: { trace?: boolean; screenshots?: boolean };
 }
 
-export class SessionManager {
+export interface ISessionManager {
+  launch(input: LaunchSessionInput): Promise<ISession>;
+  get(sessionId: string): ISession;
+  list(): ISession[];
+  close(sessionId: string, opts?: { force?: boolean; quarantineDisposableProfile?: boolean }): Promise<void>;
+}
+
+export class SessionManager implements ISessionManager {
   private readonly registry: Map<string, FeatherSession> = new Map();
   private readonly logger: FeatherLogger;
 
@@ -71,6 +96,14 @@ export class SessionManager {
       await this.workspace.ensureExists(workspaceId);
     }
 
+    await this.logger.log({
+      ts: new Date().toISOString(),
+      level: "info",
+      event: EVENTS.SESSION_LAUNCH_REQUESTED,
+      sessionId: session.sessionId,
+      data: { workspaceId, profileKind, browserMode, proxy: proxySummary },
+    });
+
     const launchOpts = buildLaunchOptions(browserMode, proxy ?? undefined, input.viewport);
     const context = await chromium.launchPersistentContext(profilePath, launchOpts);
 
@@ -110,20 +143,40 @@ export class SessionManager {
     const session = this.get(sessionId);
     session.setState("closing");
 
+    await this.logger.log({
+      ts: new Date().toISOString(),
+      level: "info",
+      event: EVENTS.SESSION_CLOSE_REQUESTED,
+      sessionId: session.sessionId,
+    });
+
     try {
       const context = session.getContext();
       if (opts?.force) {
-        try { await context.close(); } catch { /* ignore */ }
+        try { await closeContextWithTimeout(context, CLOSE_TIMEOUT_MS); } catch { /* ignore */ }
       } else {
-        await context.close();
+        await closeContextWithTimeout(context, CLOSE_TIMEOUT_MS);
       }
     } catch (err) {
       session.setState("failed");
+      await this.logger.log({
+        ts: new Date().toISOString(),
+        level: "error",
+        event: EVENTS.SESSION_CLOSE_FAILED,
+        sessionId: session.sessionId,
+        data: { error: (err as any)?.message ?? "unknown" },
+      });
       throw err;
     }
 
     session.setState("closed");
-    this.registry.delete(sessionId);
+
+    await this.logger.log({
+      ts: new Date().toISOString(),
+      level: "info",
+      event: EVENTS.SESSION_CLOSE_COMPLETED,
+      sessionId: session.sessionId,
+    });
 
     if (session.profileKind === "persistent") {
       await this.lock.release(session.workspaceId);
@@ -141,5 +194,7 @@ export class SessionManager {
         await fs.promises.rm(sessionDir, { recursive: true, force: true });
       }
     }
+
+    this.registry.delete(sessionId);
   }
 }

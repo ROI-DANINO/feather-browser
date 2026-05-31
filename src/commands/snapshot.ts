@@ -21,23 +21,27 @@ export class SnapshotHandler implements CommandHandler<SnapshotInput, SnapshotRe
     const { pageId: resolvedPageId, page } = session.getPage(pageId);
     const url = page.url();
     const title = await page.title();
-    const rawText = await page.evaluate(
-      /* istanbul ignore next */
-      // eslint-disable-next-line @typescript-eslint/no-implied-eval
-      new Function('return document.body.innerText') as () => string
-    );
+    const rawText = await page.evaluate(() => document.body.innerText);
     const text = rawText.slice(0, 20000);
-    const allLinks = await page.evaluate(
-      /* istanbul ignore next */
-      // eslint-disable-next-line @typescript-eslint/no-implied-eval
-      new Function('return Array.from(document.links).map(function(a){return{text:a.innerText.trim(),href:a.href}})') as () => Array<{ text: string; href: string }>
+    const allLinks = await page.evaluate(() =>
+      Array.from(document.links).map((a) => ({
+        text: (a as HTMLAnchorElement).innerText.trim(),
+        href: (a as HTMLAnchorElement).href,
+      }))
     );
     const links = allLinks.slice(0, 200);
-    const description = await page.evaluate(
-      /* istanbul ignore next */
-      // eslint-disable-next-line @typescript-eslint/no-implied-eval
-      new Function('var m=document.querySelector(\'meta[name="description"]\');return m?m.getAttribute("content"):"";') as () => string
-    );
-    return { pageId: resolvedPageId, url, title, text, links, meta: { description }, limits: { textChars: 20000, links: 200 } };
+    const description = await page.evaluate(() => {
+      const m = document.querySelector('meta[name="description"]');
+      return m ? m.getAttribute("content") ?? "" : "";
+    });
+    return {
+      pageId: resolvedPageId,
+      url,
+      title,
+      text,
+      links,
+      meta: { description },
+      limits: { textChars: 20000, links: 200 },
+    };
   }
 }

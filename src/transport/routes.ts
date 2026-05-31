@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z, ZodError } from "zod";
 import { createTokenAuth } from "./middleware";
-import type { SessionManager } from "../sessions/manager";
+import type { ISessionManager } from "../sessions/manager";
 import type { FeatherPaths } from "../fs-layout";
 import { LaunchSessionHandler } from "../commands/launch";
 import { GetSessionHandler, ListSessionsHandler } from "../commands/status";
@@ -74,17 +74,17 @@ async function handleRouteError(err: unknown, request: FastifyRequest, reply: Fa
   await reply.status(errorStatus(code)).send(fail(requestId, code, message));
 }
 
-export function registerRoutes(app: FastifyInstance, manager: SessionManager, paths: FeatherPaths, token: string): void {
+export function registerRoutes(app: FastifyInstance, manager: ISessionManager, paths: FeatherPaths, token: string): void {
   const tokenAuth = createTokenAuth(token);
 
   // Instantiate handlers once
   const launchHandler = new LaunchSessionHandler(manager);
   const getSessionHandler = new GetSessionHandler(manager);
   const listSessionsHandler = new ListSessionsHandler(manager);
-  const navigateHandler = new NavigateHandler(manager as any);
-  const snapshotHandler = new SnapshotHandler(manager as any);
-  const extractHandler = new ExtractHandler(manager as any);
-  const screenshotHandler = new ScreenshotHandler(manager as any);  // NOTE: no paths arg
+  const navigateHandler = new NavigateHandler(manager);
+  const snapshotHandler = new SnapshotHandler(manager);
+  const extractHandler = new ExtractHandler(manager);
+  const screenshotHandler = new ScreenshotHandler(manager);  // NOTE: no paths arg
   const debugBundleHandler = new DebugBundleHandler(manager, paths);
   const closeHandler = new CloseSessionHandler(manager);
 
