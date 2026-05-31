@@ -61,7 +61,7 @@ Research candidates:
 
 Goal: Build the smallest functional headless core that proves the chosen foundation.
 
-Status: Active. Start with Step 0 before implementation.
+Status: Complete. Completed 2026-05-31. All 9 exit criteria met. 129 tests passing.
 
 Milestones:
 - Step 0: research and plan Phase 2.
