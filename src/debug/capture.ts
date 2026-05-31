@@ -39,13 +39,14 @@ export class DebugCapture {
 
   async start(): Promise<void> {
     this.context.on("requestfinished", (request) => {
-      const response = request.response();
-      this.networkEvents.push({
-        url: request.url(),
-        method: request.method(),
-        status: response ? response.status() : null,
-        failure: null,
-        timing: request.timing() ?? null,
+      void Promise.resolve(request.response()).then((response) => {
+        this.networkEvents.push({
+          url: request.url(),
+          method: request.method(),
+          status: response ? response.status() : null,
+          failure: null,
+          timing: request.timing() ?? null,
+        });
       });
     });
 
