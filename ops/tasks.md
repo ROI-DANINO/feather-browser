@@ -4,6 +4,7 @@
   - [x] Create baseline directory structure
   - [x] Add roadmap, progress, phase, task, context, and log files
   - [x] Add `/start` and `/stop` command definitions
+  - [x] Add `/init` orientation command and agent instructions
   - [x] Initialize git tracking
   - [ ] Review Phase 0 setup with Roi
 

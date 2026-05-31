@@ -14,6 +14,7 @@ The project direction is an exploratory browser build. The immediate work is set
 - Only the active phase gets detailed tasks.
 - Later phases stay as roadmap milestones until the previous phase is complete.
 - `/start` and `/stop` are part of the project workflow.
+- Fresh goal sessions should run `/init` after understanding the project and before research.
 
 ## Open Questions
 
@@ -22,5 +23,4 @@ The project direction is an exploratory browser build. The immediate work is set
 
 ## Next Action
 
-Finish Phase 0 and then plan Phase 1: Research and Architecture Decision.
-
+Review Phase 0 setup, then start Phase 1: Research and Architecture Decision.

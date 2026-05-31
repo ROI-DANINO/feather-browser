@@ -12,6 +12,7 @@ Why: Create the project tracking system before research or implementation begins
 - Work uses a phase-gated roadmap.
 - Only the current phase gets detailed tasks.
 - Phase 0 is workspace setup, including `/start` and `/stop` session tracking.
+- Fresh goal sessions should run `/init` after project orientation and before research.
 
 ## Voice snapshot
 "the way i like to workon stuf is reaserch plan build iterate."
@@ -19,9 +20,8 @@ Why: Create the project tracking system before research or implementation begins
 "phase 0 is workspace setup with dir structior and and /start /stop commends to track sessions"
 
 ## Next action
-Review the Phase 0 workspace setup, then initialize git tracking.
+Review the Phase 0 workspace setup, then begin Phase 1 research planning.
 
 ## Available tools
 Skills: superpowers:brainstorming, superpowers:writing-plans, superpowers:verification-before-completion
 MCPs:
-

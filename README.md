@@ -11,3 +11,4 @@ This project follows a phase-gated workflow:
 
 Only the current phase gets detailed tasks. Later phases stay as roadmap milestones until the previous phase is finished.
 
+Fresh agent sessions should read `AGENTS.md`, understand the current project state, run `/init`, and only then begin research or planning.
