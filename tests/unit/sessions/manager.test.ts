@@ -196,3 +196,103 @@ describe("SessionManager.openTab", () => {
     expect(tabLog![0].data).toMatchObject({ pageId: expect.stringMatching(/^page_/) });
   });
 });
+
+describe("SessionManager.launch — dynamic page tracking", () => {
+  it("registers a 'page' event listener on the browser context", async () => {
+    const { chromium } = await import("playwright");
+    const mockContextOn = vi.fn();
+    (chromium.launchPersistentContext as vi.Mock).mockResolvedValueOnce({
+      pages: () => [],
+      newPage: vi.fn(),
+      close: vi.fn().mockResolvedValue(undefined),
+      on: mockContextOn,
+      tracing: { start: vi.fn(), stop: vi.fn() },
+    });
+    await manager.launch({ profile: { kind: "disposable" } });
+    expect(mockContextOn).toHaveBeenCalledWith("page", expect.any(Function));
+  });
+
+  it("adds a dynamically opened page to the session page map", async () => {
+    const { chromium } = await import("playwright");
+    const mockContextOn = vi.fn();
+    const mockPage = { url: () => "http://dynamic.com", title: async () => "Dynamic", on: vi.fn() };
+    (chromium.launchPersistentContext as vi.Mock).mockResolvedValueOnce({
+      pages: () => [],
+      newPage: vi.fn(),
+      close: vi.fn().mockResolvedValue(undefined),
+      on: mockContextOn,
+      tracing: { start: vi.fn(), stop: vi.fn() },
+    });
+    const session = await manager.launch({ profile: { kind: "disposable" } });
+    const [, pageCallback] = mockContextOn.mock.calls.find(([evt]: [string]) => evt === "page")!;
+    pageCallback(mockPage);
+    const pages = await session.getPageInfoList();
+    expect(pages).toHaveLength(1);
+    expect(pages[0].url).toBe("http://dynamic.com");
+  });
+
+  it("removes a page from the session map when it closes", async () => {
+    const { chromium } = await import("playwright");
+    const mockContextOn = vi.fn();
+    const mockPageOn = vi.fn();
+    const mockPage = { url: () => "http://dynamic.com", title: async () => "Dynamic", on: mockPageOn };
+    (chromium.launchPersistentContext as vi.Mock).mockResolvedValueOnce({
+      pages: () => [],
+      newPage: vi.fn(),
+      close: vi.fn().mockResolvedValue(undefined),
+      on: mockContextOn,
+      tracing: { start: vi.fn(), stop: vi.fn() },
+    });
+    const session = await manager.launch({ profile: { kind: "disposable" } });
+    const [, pageCallback] = mockContextOn.mock.calls.find(([evt]: [string]) => evt === "page")!;
+    pageCallback(mockPage);
+    expect(await session.getPageInfoList()).toHaveLength(1);
+    const [, closeCallback] = mockPageOn.mock.calls.find(([evt]: [string]) => evt === "close")!;
+    closeCallback();
+    expect(await session.getPageInfoList()).toHaveLength(0);
+  });
+
+  it("logs TAB_CREATED when a dynamic page opens", async () => {
+    const { chromium } = await import("playwright");
+    const mockContextOn = vi.fn();
+    const mockPage = { url: () => "about:blank", title: async () => "", on: vi.fn() };
+    (chromium.launchPersistentContext as vi.Mock).mockResolvedValueOnce({
+      pages: () => [],
+      newPage: vi.fn(),
+      close: vi.fn().mockResolvedValue(undefined),
+      on: mockContextOn,
+      tracing: { start: vi.fn(), stop: vi.fn() },
+    });
+    const logSpy = vi.spyOn(manager["logger"], "log");
+    const session = await manager.launch({ profile: { kind: "disposable" } });
+    const [, pageCallback] = mockContextOn.mock.calls.find(([evt]: [string]) => evt === "page")!;
+    pageCallback(mockPage);
+    const tabCreatedLog = logSpy.mock.calls.find(([entry]) => entry.event === "tab.created");
+    expect(tabCreatedLog).toBeDefined();
+    expect(tabCreatedLog![0].sessionId).toBe(session.sessionId);
+    expect(tabCreatedLog![0].data).toMatchObject({ pageId: expect.stringMatching(/^page_/) });
+  });
+
+  it("logs TAB_CLOSED when a dynamic page closes", async () => {
+    const { chromium } = await import("playwright");
+    const mockContextOn = vi.fn();
+    const mockPageOn = vi.fn();
+    const mockPage = { url: () => "about:blank", title: async () => "", on: mockPageOn };
+    (chromium.launchPersistentContext as vi.Mock).mockResolvedValueOnce({
+      pages: () => [],
+      newPage: vi.fn(),
+      close: vi.fn().mockResolvedValue(undefined),
+      on: mockContextOn,
+      tracing: { start: vi.fn(), stop: vi.fn() },
+    });
+    const logSpy = vi.spyOn(manager["logger"], "log");
+    await manager.launch({ profile: { kind: "disposable" } });
+    const [, pageCallback] = mockContextOn.mock.calls.find(([evt]: [string]) => evt === "page")!;
+    pageCallback(mockPage);
+    const [, closeCallback] = mockPageOn.mock.calls.find(([evt]: [string]) => evt === "close")!;
+    closeCallback();
+    const tabClosedLog = logSpy.mock.calls.find(([entry]) => entry.event === "tab.closed");
+    expect(tabClosedLog).toBeDefined();
+    expect(tabClosedLog![0].data).toMatchObject({ pageId: expect.stringMatching(/^page_/) });
+  });
+});
