@@ -6,7 +6,7 @@ This file is a constraint and guide for all contributors and AI sessions working
 
 Feather Browser is a minimalist, stability-first browser project. The current goal is a reliable headless browser core with a clean HTTP API. It is not an agent platform, a desktop application, or a production service yet.
 
-Long-term vision: a hyper-lightweight Chromium-compatible browser core for agentic automation first, and later a calm, Zen-inspired visual browser for personal daily use.
+Long-term vision: a Hybrid Browser — a hyper-lightweight Chromium-compatible daily driver with a Zen-inspired shell, and a "Cookie Mine" where human browsing builds a shared persistent trust context that local AI agents piggyback on via the Fastify MCP-compatible hub. The human browser (Phase 4) is the trust foundation that Phase 5+ agent automation depends on.
 
 ## Mission And Role
 
@@ -20,6 +20,7 @@ Act as a Senior Software Architect and elite pair programmer. Focus on productio
 - Do not depend on Chrome extensions as core product strategy.
 - Build critical capabilities as native Feather-owned features behind clean internal interfaces.
 - Prioritize low RAM/CPU use, modularity, scraping reliability, profile/session isolation, and agent-friendly control.
+- The Phase 4 human browser session is the trust foundation for Phase 5+ agent automation (Cookie Mine model). Phase 4 is a prerequisite for Phase 5+, not a sequentially deferred layer.
 - Keep all code, documentation, and technical discussion in English.
 
 ## Current Phase
