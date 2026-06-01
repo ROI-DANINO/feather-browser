@@ -1,5 +1,7 @@
 # ADR-0003: Hybrid Browser with Shared Persistent Context (Cookie Mine)
 
+Date: 2026-06-01
+
 ## Status
 
 Accepted — 2026-06-01
@@ -15,7 +17,7 @@ with different profiles). However, the long-term vision for Feather is a **Hybri
 single running browser instance that serves both human daily browsing and background AI agent
 automation simultaneously.
 
-The "Cookie Mine" model requires:
+The "Cookie Mine" model (the practice of letting human browsing accumulate cookies, session tokens, and behavioral trust signals that AI agents then reuse) requires:
 
 1. A long-running primary browser context owned by the human user (Phase 4 UI).
 2. AI agents that can open new pages (tabs) within that human context, piggybacking on its
@@ -58,14 +60,16 @@ Specifically:
 Phase 4 (Visual Desktop Shell) is now a **prerequisite** for Phase 5+ agent automation in the
 Cookie Mine model. The human session must be running before agents can piggyback on its context.
 
-Previously Phase 4 was described as a polish layer added after the headless core was proven.
+In the existing roadmap, Phase 4 (Visual Desktop Shell) was treated as deferred scope with no
+architectural dependency on earlier phases — added after the core was stable, not required by it.
 This ADR makes Phase 4 architecturally foundational: without the human session holding the
 persistent profile, agents have no shared trust context to leverage.
 
 ### What Changes in Phase 5+
 
-- `SessionManager`: new `openTab(sessionId)` method that returns a `PageInfo` from an existing
-  running session rather than launching a new `BrowserContext`.
+- `SessionManager`: new `openTab(sessionId)` method that returns a `PageInfo` (a serialisable
+  record of the new tab's ID, URL, and load state) from an existing running session rather than
+  launching a new `BrowserContext`.
 - Routes: new `POST /v1/sessions/:id/tabs` endpoint that calls `openTab`.
 - Phase 4 UI: keeps the primary session alive as a background process that Phase 5+ agents
   reference by `sessionId`.
