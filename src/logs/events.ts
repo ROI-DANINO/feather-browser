@@ -15,6 +15,7 @@ export const EVENTS = {
   SESSION_CLOSE_REQUESTED: "session.close.requested",
   SESSION_CLOSE_COMPLETED: "session.close.completed",
   SESSION_CLOSE_FAILED: "session.close.failed",
+  TAB_OPENED: "tab.opened",
 } as const;
 
 export type EventName = (typeof EVENTS)[keyof typeof EVENTS];

@@ -29,6 +29,14 @@ export class PageNotFoundError extends Error {
   }
 }
 
+export class SessionNotRunningError extends Error {
+  readonly code = "SESSION_NOT_RUNNING";
+  constructor(sessionId: string, state: string) {
+    super(`Session '${sessionId}' cannot open a tab: state is "${state}".`);
+    this.name = "SessionNotRunningError";
+  }
+}
+
 export class FeatherSession implements ISession {
   readonly sessionId: string;
   readonly workspaceId: string;
@@ -109,6 +117,16 @@ export class FeatherSession implements ISession {
       });
     }
     return results;
+  }
+
+  async openTab(): Promise<{ pageId: string; page: Page }> {
+    if (this._state !== "running") {
+      throw new SessionNotRunningError(this.sessionId, this._state);
+    }
+    const page = await this._context!.newPage();
+    const pageId = newId("page");
+    this._pages.set(pageId, page);
+    return { pageId, page };
   }
 
   setState(state: SessionState): void {
