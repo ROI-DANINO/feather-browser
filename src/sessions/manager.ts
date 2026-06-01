@@ -110,6 +110,28 @@ export class SessionManager implements ISessionManager {
     const context = await chromium.launchPersistentContext(profilePath, launchOpts);
 
     session.setContext(context);
+
+    context.on("page", (page) => {
+      const pageId = session.addPage(page);
+      void this.logger.log({
+        ts: new Date().toISOString(),
+        level: "info",
+        event: EVENTS.TAB_CREATED,
+        sessionId: session.sessionId,
+        data: { pageId },
+      });
+      page.on("close", () => {
+        session.removePage(pageId);
+        void this.logger.log({
+          ts: new Date().toISOString(),
+          level: "info",
+          event: EVENTS.TAB_CLOSED,
+          sessionId: session.sessionId,
+          data: { pageId },
+        });
+      });
+    });
+
     this.registry.set(session.sessionId, session);
 
     await this.logger.log({
