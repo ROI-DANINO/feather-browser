@@ -57,3 +57,11 @@ describe("FeatherSession.openTab", () => {
     expect(a.pageId).not.toBe(b.pageId);
   });
 });
+
+describe("FeatherSession.toRecord", () => {
+  it("does not include a pages property", () => {
+    const session = makeRunningSession();
+    const record = session.toRecord();
+    expect(record).not.toHaveProperty("pages");
+  });
+});

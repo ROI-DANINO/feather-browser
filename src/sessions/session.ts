@@ -137,7 +137,7 @@ export class FeatherSession implements ISession {
     return this._state;
   }
 
-  toRecord(): SessionRecord {
+  toRecord(): Omit<SessionRecord, "pages"> {
     return {
       sessionId: this.sessionId,
       workspaceId: this.workspaceId,
@@ -148,7 +148,6 @@ export class FeatherSession implements ISession {
       debugDir: this.debugDir,
       proxy: this.proxy,
       startedAt: this.startedAt,
-      pages: [],
       profileLocked: this.profileKind === "persistent",
     };
   }
