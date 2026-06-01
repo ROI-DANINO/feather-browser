@@ -122,6 +122,10 @@ Milestones:
 
 Goal: Add agent-oriented systems on top of the stable human browser shell. Implement the Cookie Mine model: agents open new pages (tabs) within the human's running session via the Fastify MCP-compatible hub, piggybacking on accumulated trust signals. Harden the result for daily use.
 
+Planning notes (check before starting Phase 5+):
+- Microsoft ships an official Playwright MCP server. Evaluate it before designing Feather's MCP hub — Feather may build on top of it rather than reimplement from scratch.
+- The MCP spec is evolving rapidly (stateless HTTP core, Tasks extension RC expected mid-2026). Check current spec state before committing to the hub design to avoid rework.
+
 Milestones:
 - Step 0: research and plan Phase 5+.
 - Cookie Mine: tab open pathway in SessionManager — agents open new pages within the existing human session rather than launching isolated contexts (see ADR-0003).

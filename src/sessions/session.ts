@@ -110,10 +110,12 @@ export class FeatherSession implements ISession {
   async getPageInfoList(): Promise<PageInfo[]> {
     const results: PageInfo[] = [];
     for (const [pageId, page] of this._pages.entries()) {
+      const loadState = await page.evaluate(() => document.readyState);
       results.push({
         pageId,
         url: page.url(),
         title: await page.title(),
+        loadState,
       });
     }
     return results;

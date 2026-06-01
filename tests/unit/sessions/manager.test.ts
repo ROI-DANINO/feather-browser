@@ -7,11 +7,12 @@ vi.mock("playwright", () => ({
   chromium: {
     launchPersistentContext: vi.fn().mockResolvedValue({
       pages: () => [
-        { url: () => "about:blank", title: async () => "New Tab" },
+        { url: () => "about:blank", title: async () => "New Tab", evaluate: async () => "complete" },
       ],
       newPage: vi.fn().mockResolvedValue({
         url: () => "about:blank",
         title: async () => "",
+        evaluate: async () => "complete",
       }),
       close: vi.fn().mockResolvedValue(undefined),
       on: vi.fn(),
@@ -215,7 +216,7 @@ describe("SessionManager.launch — dynamic page tracking", () => {
   it("adds a dynamically opened page to the session page map", async () => {
     const { chromium } = await import("playwright");
     const mockContextOn = vi.fn();
-    const mockPage = { url: () => "http://dynamic.com", title: async () => "Dynamic", on: vi.fn() };
+    const mockPage = { url: () => "http://dynamic.com", title: async () => "Dynamic", on: vi.fn(), evaluate: async () => "complete" };
     (chromium.launchPersistentContext as vi.Mock).mockResolvedValueOnce({
       pages: () => [],
       newPage: vi.fn(),
@@ -235,7 +236,7 @@ describe("SessionManager.launch — dynamic page tracking", () => {
     const { chromium } = await import("playwright");
     const mockContextOn = vi.fn();
     const mockPageOn = vi.fn();
-    const mockPage = { url: () => "http://dynamic.com", title: async () => "Dynamic", on: mockPageOn };
+    const mockPage = { url: () => "http://dynamic.com", title: async () => "Dynamic", on: mockPageOn, evaluate: async () => "complete" };
     (chromium.launchPersistentContext as vi.Mock).mockResolvedValueOnce({
       pages: () => [],
       newPage: vi.fn(),

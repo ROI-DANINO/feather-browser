@@ -21,6 +21,7 @@ export interface PageInfo {
   pageId: string;
   url: string;
   title: string;
+  loadState: string;
 }
 
 export interface SessionRecord {

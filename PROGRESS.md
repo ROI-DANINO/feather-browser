@@ -6,7 +6,7 @@ Phase 3 in progress. Started 2026-05-31.
 
 ## Current State
 
-Phase 3 Browser Core Stabilization & UI Readiness is active. Two of the eight Phase 3 gaps are closed. 112 unit tests passing. The Hybrid Browser vision and Cookie Mine tab-open pathway have been documented (ADR-0003) and implemented (see below).
+Phase 3 Browser Core Stabilization & UI Readiness is active. Seven of the eight Phase 3 gaps are closed. 124 unit tests passing. One gap remains: Gap 8 (measurement — run benchmark, record real RAM/CPU numbers in docs). After Gap 8, the SSE event stream endpoint is next.
 
 ## Phase 3 Progress
 
@@ -39,23 +39,30 @@ Phase 3 Browser Core Stabilization & UI Readiness is active. Two of the eight Ph
 - `POST /v1/sessions/:sessionId/tabs` route registered with token auth.
 - 11 new unit tests covering all new behaviour. Full suite: 112 passing.
 
-### Remaining gaps from Phase 3 scope decision
+**Gaps 3, 4, 5 — Dynamic page tracking + tab lifecycle events** (2026-06-02)
+- `toRecord()` return type fixed to `Omit<SessionRecord, "pages">` — matches `ISession` contract.
+- `FeatherSession.addPage()` / `removePage()` added; manager wires `context.on("page")` listener in `launch()`.
+- `TAB_CREATED` and `TAB_CLOSED` events emitted via JSONL logger (Option C: logger-only, no event bus yet).
+- `TAB_UPDATED` deferred to SSE design step.
+- 124 unit tests passing.
 
-3. Tab lifecycle events missing — `EVENTS` catalog needs `TAB_CREATED`, `TAB_CLOSED`, `TAB_UPDATED` (for pages opened dynamically via `context.on("page")`; `TAB_OPENED` for explicit API-triggered opens is now done).
-4. `toRecord()` always returns `pages: []` — misleading contract; page list is fetched separately by handlers.
-5. Dynamic page tracking — `context.on("page")` not wired in `FeatherSession.setContext()`.
-6. `PageInfo` lacks `loadState`.
-7. ProfileLock does not check locking pid liveness — stale locks block workspaces permanently.
-8. Open measurement question — actual RAM/CPU delta between browser modes is unrecorded.
+**Gap 6 — PageInfo loadState** (2026-06-02)
+- `loadState: string` added to `PageInfo` interface in `src/sessions/types.ts`.
+- Populated via `page.evaluate(() => document.readyState)` in `getPageInfoList()` and `SessionManager.openTab()`.
+- Note: Playwright has no `page.loadState()` getter — `document.readyState` is the correct API; returns `'loading' | 'interactive' | 'complete'`.
 
-### Pending design decision before Step 3
+**Gap 7 — ProfileLock stale pid** (2026-06-02)
+- In `src/profiles/lock.ts`, before throwing `PROFILE_LOCKED`, reads existing lock pid and calls `process.kill(pid, 0)`.
+- `ESRCH` (no such process) → stale lock, unlink and proceed with new lock.
+- `EPERM` (process exists, no permission) → process is alive, throw `PROFILE_LOCKED` as normal.
 
-Step 3 (dynamic page tracking + tab lifecycle events) requires a decision on where the internal event bus lives:
-- Option A: lightweight `EventEmitter` on `FeatherSession` — consumers hold a session reference.
-- Option B: lightweight `EventEmitter` on `SessionManager` — one bus for all sessions, events tagged with `sessionId`.
-- Option C: logger only for now — emit tab events to JSONL, wire the event bus in a later step when SSE is designed.
+**Gap 8 — Browser mode measurement** (2026-06-02)
+- Ran full scenario against both modes; recorded in `docs/phase-2-completion.md`.
+- `chromium-headless-shell`: 764 ms total, 1.7 MB profile, 194 MB peak Node RSS.
+- `chromium-new-headless`: 986 ms total, 4.1 MB profile, 196 MB peak Node RSS.
+- Launch is the only meaningfully different step (+211 ms). All other timings are equivalent.
 
-This decision shapes the SSE endpoint in the step after it. Not implementing Step 3 until it is settled.
+### All Phase 3 gaps closed
 
 ## Architecture Decisions
 
@@ -93,4 +100,4 @@ Concrete gaps identified in the Phase 2 codebase that Phase 3 must close:
 
 ## Next
 
-Begin Phase 3. Recommended first task: wire `context.on("page")` in `FeatherSession.setContext()` and emit tab lifecycle events, as this is the root cause of the most downstream reliability issues.
+All 8 Phase 3 gaps are closed. Remaining Phase 3 milestone: thin SSE event stream — `GET /v1/events`, read-only, browser lifecycle events only, no WebSocket, no agent protocol. Start with Step 0: research and spec before touching code.

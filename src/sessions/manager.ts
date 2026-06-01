@@ -170,7 +170,8 @@ export class SessionManager implements ISessionManager {
       sessionId,
       data: { pageId },
     });
-    return { pageId, url: page.url(), title: await page.title() };
+    const loadState = await page.evaluate(() => document.readyState);
+    return { pageId, url: page.url(), title: await page.title(), loadState };
   }
 
   async close(

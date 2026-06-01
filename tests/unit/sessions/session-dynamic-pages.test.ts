@@ -17,7 +17,7 @@ function makeSession(): FeatherSession {
 }
 
 function makePage(url: string, title: string): Page {
-  return { url: () => url, title: async () => title, on: () => {} } as any;
+  return { url: () => url, title: async () => title, on: () => {}, evaluate: async () => "complete" } as any;
 }
 
 describe("FeatherSession.addPage", () => {

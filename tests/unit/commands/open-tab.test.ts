@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import { OpenTabHandler } from "../../../src/commands/open-tab";
 
-const mockPageInfo = { pageId: "page_abc123", url: "about:blank", title: "" };
+const mockPageInfo = { pageId: "page_abc123", url: "about:blank", title: "", loadState: "complete" };
 const mockManager = { openTab: vi.fn().mockResolvedValue(mockPageInfo) };
 const ctx = { requestId: "req_test_001" };
 

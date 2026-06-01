@@ -90,9 +90,33 @@ Four command handlers (`NavigateHandler`, `SnapshotHandler`, `ExtractHandler`, `
 These items are documented as open questions or deferred boundaries in the Phase 2 spec:
 
 - **`yt-dlp` adapter** — subprocess execution with strict argument construction, per-job output directories, timeout/cancel support, progress parsing, and explicit cookie handoff from a persistent profile export.
-- **`chromium-new-headless` measurement comparison** — the verification checklist notes a manual step to run both browser modes and compare `launchMsDiff` in `summary.json`; this could be automated as a scheduled measurement job.
+- **`chromium-new-headless` measurement comparison** — resolved in Phase 3 (2026-06-02). See results below.
 - **Branded Chrome/Edge channel compatibility** — Phase 2 limited scope to `chromium-new-headless` and `chromium-headless-shell`; Chrome/Edge channels are the next compatibility check.
 - **Additional transport layers** — the spec explicitly kept command handlers transport-agnostic so that stdio JSON-RPC or Unix socket transport can be added without rewriting handlers.
 - **Stale lock handling** — Phase 2 reports stale locks but does not silently delete them; Phase 3 could add a recovery command or a `--force-unlock` flag with appropriate safety checks.
 - **Multi-session management** — Phase 2 supports multiple concurrent sessions against different workspaces; any session pooling or work-queue policy is deferred.
 - **GUI shell** — explicitly out of scope for Phase 2; a minimal control UI is a natural Phase 3 or Phase 4 candidate once the headless core is stable.
+
+---
+
+## Browser Mode Measurement Results
+
+Measured 2026-06-02 on the Phase 3 dev branch. Full scenario: launch → navigate (example.com) → snapshot → screenshot → extract → close. Node.js process RSS sampled at 200ms intervals via `pidusage`.
+
+| Metric | chromium-headless-shell | chromium-new-headless | Delta |
+|---|---|---|---|
+| Launch | 128 ms | 339 ms | +211 ms |
+| Navigate | 520 ms | 519 ms | ~0 ms |
+| Snapshot | 13 ms | 12 ms | ~0 ms |
+| Screenshot | 41 ms | 41 ms | ~0 ms |
+| Extract | 25 ms | 22 ms | ~0 ms |
+| Close | 29 ms | 47 ms | +18 ms |
+| **Total** | **764 ms** | **986 ms** | **+222 ms** |
+| Profile dir (persistent, after close) | 1.7 MB | 4.1 MB | +2.4 MB |
+| Debug bundle | 18 KB | 18 KB | — |
+| Peak Node RSS | 194 MB | 196 MB | +2 MB |
+
+**Takeaways:**
+- `chromium-new-headless` costs ~210 ms extra at launch and ~2.4 MB more profile storage; all other per-operation timings are equivalent.
+- Node process RAM is nearly identical between modes — the difference is in the Chromium subprocess (not captured here; process tree sampling was scoped to Node pid only).
+- `chromium-headless-shell` is the better default for low-resource or high-frequency session workloads. `chromium-new-headless` is preferred where realistic browser behaviour is required (e.g. JavaScript-heavy sites, full renderer fidelity).
