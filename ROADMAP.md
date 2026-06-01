@@ -2,7 +2,9 @@
 
 ## Destination
 
-Build a hyper-lightweight Chromium-compatible browser/control system for seamless agentic automation first, then wrap the proven core in a calm, bold, minimalist visual browser for personal daily use.
+Build a Hybrid Browser: a hyper-lightweight Chromium-compatible daily driver with a Zen-inspired visual shell, and a "Cookie Mine" where human browsing builds a shared persistent trust context (cookies, session state) that local AI agents can piggyback on for background automation — routed through a local Fastify MCP hub — without triggering bot detection.
+
+The human browser (Phase 4) and the agent runtime (Phase 5+) are not sequential add-ons. They are architecturally coupled: the human session is the trust foundation that agents depend on. Phase 4 is a prerequisite for Phase 5+.
 
 Feather should not depend on Chrome extensions as its product strategy. Critical capabilities should be native or integrated project features, using mature open-source tools where they reduce risk and cost.
 
@@ -102,7 +104,7 @@ Deferred from earlier Phase 3 plan:
 
 ## Phase 4: Visual Desktop Shell Prototype
 
-Goal: Wrap the stable Phase 3 core in a minimalist, Zen-inspired graphical browser shell. Consume the Phase 3 event stream. Keep agent UI panels absent.
+Goal: Wrap the stable Phase 3 core in a minimalist, Zen-inspired graphical browser shell. Consume the Phase 3 event stream. Establish the long-running primary persistent context that Phase 5+ agents depend on (Cookie Mine foundation). Keep agent UI panels absent.
 
 Milestones:
 - Step 0: research and plan Phase 4 (desktop shell technology choice: Electron first, Tauri as candidate).
@@ -113,14 +115,17 @@ Milestones:
 - Theme and layout configuration.
 - RTL handling and toggles.
 - Import/export settings.
+- Keep the primary persistent context alive as a background owner; Phase 5+ agents attach pages to this session.
 - No agent panels, chat sidebar, or LLM controls in this phase.
 
 ## Phase 5+: Agent Runtime Layer & Daily Hardening
 
-Goal: Add agent-oriented systems on top of a stable browser shell. Harden the result for daily use.
+Goal: Add agent-oriented systems on top of the stable human browser shell. Implement the Cookie Mine model: agents open new pages (tabs) within the human's running session via the Fastify MCP hub, piggybacking on accumulated trust signals. Harden the result for daily use.
 
 Milestones:
 - Step 0: research and plan Phase 5+.
+- Cookie Mine: tab-open pathway in SessionManager — agents open new pages within the existing human session rather than launching isolated contexts (see ADR-0003).
+- Local MCP hub routing: Fastify endpoint (`POST /v1/sessions/:id/tabs`) for agent tab requests against the live human session.
 - Hermes orchestration integration.
 - Credentials vault and LLM API credential handling.
 - Human approval checkpoint system.
