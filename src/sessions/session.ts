@@ -129,6 +129,16 @@ export class FeatherSession implements ISession {
     return { pageId, page };
   }
 
+  addPage(page: Page): string {
+    const pageId = newId("page");
+    this._pages.set(pageId, page);
+    return pageId;
+  }
+
+  removePage(pageId: string): void {
+    this._pages.delete(pageId);
+  }
+
   setState(state: SessionState): void {
     this._state = state;
   }

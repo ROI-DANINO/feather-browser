@@ -75,4 +75,6 @@ export interface ISession {
   getPageInfoList(): Promise<PageInfo[]>;
   openTab(): Promise<{ pageId: string; page: Page }>;
   toRecord(): Omit<SessionRecord, "pages">;
+  addPage(page: Page): string;
+  removePage(pageId: string): void;
 }
