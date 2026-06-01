@@ -73,5 +73,6 @@ export interface ISession {
   readonly debugDir: string;
   getPage(pageId?: string): { pageId: string; page: Page };
   getPageInfoList(): Promise<PageInfo[]>;
+  openTab(): Promise<{ pageId: string; page: Page }>;
   toRecord(): Omit<SessionRecord, "pages">;
 }

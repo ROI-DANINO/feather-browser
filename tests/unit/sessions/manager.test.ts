@@ -9,6 +9,10 @@ vi.mock("playwright", () => ({
       pages: () => [
         { url: () => "about:blank", title: async () => "New Tab" },
       ],
+      newPage: vi.fn().mockResolvedValue({
+        url: () => "about:blank",
+        title: async () => "",
+      }),
       close: vi.fn().mockResolvedValue(undefined),
       on: vi.fn(),
       tracing: { start: vi.fn(), stop: vi.fn() },
@@ -161,5 +165,34 @@ describe("SessionManager.close", () => {
     await expect(manager.close("ses_unknown_002")).rejects.toMatchObject({
       code: "SESSION_NOT_FOUND",
     });
+  });
+});
+
+describe("SessionManager.openTab", () => {
+  it("returns a PageInfo with pageId, url, and title for the new tab", async () => {
+    const session = await manager.launch({ workspaceId: "ws_tab_001", profile: { kind: "persistent" } });
+    const pageInfo = await manager.openTab(session.sessionId);
+    expect(pageInfo.pageId).toMatch(/^page_/);
+    expect(pageInfo.url).toBe("about:blank");
+    expect(pageInfo.title).toBe("");
+  });
+
+  it("throws SessionNotFoundError for an unknown sessionId", async () => {
+    await expect(manager.openTab("ses_does_not_exist")).rejects.toMatchObject({ code: "SESSION_NOT_FOUND" });
+  });
+
+  it("throws SessionNotRunningError when session state is not running", async () => {
+    const session = await manager.launch({ workspaceId: "ws_tab_002", profile: { kind: "disposable" } });
+    session.setState("closing");
+    await expect(manager.openTab(session.sessionId)).rejects.toMatchObject({ code: "SESSION_NOT_RUNNING" });
+  });
+
+  it("logs a TAB_OPENED event after successful tab open", async () => {
+    const logSpy = vi.spyOn(manager["logger"], "log");
+    const session = await manager.launch({ workspaceId: "ws_tab_003", profile: { kind: "persistent" } });
+    await manager.openTab(session.sessionId);
+    const tabLog = logSpy.mock.calls.find(([entry]) => entry.event === "tab.opened");
+    expect(tabLog).toBeDefined();
+    expect(tabLog![0].data).toMatchObject({ pageId: expect.stringMatching(/^page_/) });
   });
 });

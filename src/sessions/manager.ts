@@ -11,6 +11,7 @@ import type { ProfileLock } from "../profiles/lock";
 import type { WorkspaceMetadata } from "../profiles/workspace";
 import type {
   BrowserMode,
+  PageInfo,
   ProfileKind,
   ProxyConfig,
   ProxySummary,
@@ -48,6 +49,7 @@ export interface ISessionManager {
   get(sessionId: string): ISession;
   list(): ISession[];
   close(sessionId: string, opts?: { force?: boolean; quarantineDisposableProfile?: boolean }): Promise<void>;
+  openTab(sessionId: string): Promise<PageInfo>;
 }
 
 export class SessionManager implements ISessionManager {
@@ -134,6 +136,19 @@ export class SessionManager implements ISessionManager {
 
   list(): FeatherSession[] {
     return Array.from(this.registry.values());
+  }
+
+  async openTab(sessionId: string): Promise<PageInfo> {
+    const session = this.get(sessionId);
+    const { pageId, page } = await session.openTab();
+    await this.logger.log({
+      ts: new Date().toISOString(),
+      level: "info",
+      event: EVENTS.TAB_OPENED,
+      sessionId,
+      data: { pageId },
+    });
+    return { pageId, url: page.url(), title: await page.title() };
   }
 
   async close(
