@@ -6,7 +6,7 @@ Phase 3 in progress. Started 2026-05-31.
 
 ## Current State
 
-Phase 3 Browser Core Stabilization & UI Readiness is active. Two of the eight identified gaps are closed. 98 unit tests passing.
+Phase 3 Browser Core Stabilization & UI Readiness is active. Two of the eight Phase 3 gaps are closed. 112 unit tests passing. The Hybrid Browser vision and Cookie Mine tab-open pathway have been documented (ADR-0003) and implemented (see below).
 
 ## Phase 3 Progress
 
@@ -26,9 +26,22 @@ Phase 3 Browser Core Stabilization & UI Readiness is active. Two of the eight id
 - `SESSION_CLOSE_COMPLETED` emitted after the context closes and state transitions to `"closed"`.
 - `SESSION_CLOSE_FAILED` emitted in the error path with the error message.
 
+**Hybrid Browser vision + Cookie Mine pathway** (commits e0ef2e6–93b8a5c, 2026-06-01)
+- ADR-0003 written: documents architectural shift from strict session isolation to shared persistent context (Cookie Mine model). See `docs/specs/adr-0003-hybrid-browser-shared-context.md`.
+- ROADMAP.md updated: Destination rewritten as Hybrid Browser; Phase 4 now explicit prerequisite for Phase 5+ agents; Cookie Mine and MCP-compatible hub milestones added.
+- AGENTS.md updated: long-term vision and Technical Vision bullet reflect Hybrid Browser and Cookie Mine.
+- `TAB_OPENED: "tab.opened"` added to `EVENTS` catalog.
+- `SessionNotRunningError` (code `SESSION_NOT_RUNNING`, HTTP 409) added to `session.ts`.
+- `FeatherSession.openTab()`: creates a new page via `context.newPage()`, registers it in the page map, returns `{ pageId, page }`.
+- `ISession` and `ISessionManager` interfaces updated with `openTab` signatures.
+- `SessionManager.openTab(sessionId)`: validates state, delegates to session, logs `TAB_OPENED`, returns `PageInfo`.
+- `OpenTabHandler` added in `src/commands/open-tab.ts` following the thin-delegation command pattern.
+- `POST /v1/sessions/:sessionId/tabs` route registered with token auth.
+- 11 new unit tests covering all new behaviour. Full suite: 112 passing.
+
 ### Remaining gaps from Phase 3 scope decision
 
-3. Tab lifecycle events missing — `EVENTS` catalog needs `TAB_CREATED`, `TAB_CLOSED`, `TAB_UPDATED`.
+3. Tab lifecycle events missing — `EVENTS` catalog needs `TAB_CREATED`, `TAB_CLOSED`, `TAB_UPDATED` (for pages opened dynamically via `context.on("page")`; `TAB_OPENED` for explicit API-triggered opens is now done).
 4. `toRecord()` always returns `pages: []` — misleading contract; page list is fetched separately by handlers.
 5. Dynamic page tracking — `context.on("page")` not wired in `FeatherSession.setContext()`.
 6. `PageInfo` lacks `loadState`.

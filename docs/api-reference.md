@@ -253,9 +253,55 @@ curl -s -X DELETE http://localhost:4000/v1/sessions/ses_abc123 \
 
 ---
 
+### Tab Management
+
+#### `POST /v1/sessions/:sessionId/tabs` — Open a new tab
+
+Opens a new page (tab) within an existing running session's `BrowserContext`. The new tab shares the session's cookies, storage, and trust context — this is the Cookie Mine entry point for agents piggybacking on a human browser session. The session must be in the `running` state.
+
+**Path parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sessionId` | string | Session identifier of the running session to open a tab in |
+
+**Request body:** none (empty body accepted)
+
+**Response `data`:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `pageId` | string | Unique page identifier for the new tab (use this in subsequent navigate/snapshot/etc. calls) |
+| `url` | string | Current URL of the new tab (`about:blank` on creation) |
+| `title` | string | Page title of the new tab (empty string on creation) |
+
+**Error responses:**
+
+| Status | Code | When |
+|--------|------|------|
+| 404 | `SESSION_NOT_FOUND` | No session exists with the given `sessionId` |
+| 409 | `SESSION_NOT_RUNNING` | The session exists but is not in the `running` state (e.g. closing or failed) |
+| 500 | `INTERNAL_ERROR` | Unexpected server-side error |
+
+**Example:**
+
+```bash
+# Open a new tab in an existing session
+curl -s -X POST http://localhost:4000/v1/sessions/ses_abc123/tabs \
+  -H "X-Feather-Token: $(cat /path/to/token)"
+
+# Then navigate that tab to a URL
+curl -s -X POST http://localhost:4000/v1/sessions/ses_abc123/navigate \
+  -H "X-Feather-Token: $(cat /path/to/token)" \
+  -H "Content-Type: application/json" \
+  -d '{"pageId": "page_xyz789", "url": "https://example.com"}'
+```
+
+---
+
 ### Page Actions
 
-All page action endpoints accept an optional `pageId` field. If omitted, the session's first (default) page is used.
+All page action endpoints accept an optional `pageId` field. If omitted, the session's first (default) page is used. When a session has multiple tabs (opened via `POST /v1/sessions/:sessionId/tabs`), always specify `pageId` explicitly to target the correct tab.
 
 ---
 
@@ -521,5 +567,6 @@ curl -s -X POST http://localhost:4000/v1/sessions/ses_abc123/debug-bundle \
 | `VALIDATION_ERROR` | 400 | Request body failed Zod schema validation; `error.details` contains the array of Zod issues |
 | `SESSION_NOT_FOUND` | 404 | No session exists with the requested `sessionId` |
 | `PROFILE_LOCKED` | 409 | A persistent profile directory is already locked by another active session |
+| `SESSION_NOT_RUNNING` | 409 | The session exists but is not in `running` state; cannot open a tab |
 | `PAGE_NOT_FOUND` | 404 | The requested `pageId` does not exist within the session |
 | `INTERNAL_ERROR` | 500 | An unexpected server-side error occurred; check server logs with the `requestId` |
