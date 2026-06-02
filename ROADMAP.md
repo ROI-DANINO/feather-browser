@@ -63,7 +63,9 @@ Research candidates:
 
 Goal: Build the smallest functional headless core that proves the chosen foundation.
 
-Status: Complete. Completed 2026-05-31. All 9 exit criteria met. 129 tests passing.
+Status: Complete. Completed 2026-06-02, merged to `master` 2026-06-03. All milestones met; 129 unit + 32 integration tests passing.
+
+Bridged to Phase 4 by the Stabilization & Linux-Readiness program — see `docs/specs/2026-06-03-stabilization-linux-readiness-design.md`.
 
 Milestones:
 - Step 0: research and plan Phase 2.
@@ -107,7 +109,7 @@ Deferred from earlier Phase 3 plan:
 Goal: Wrap the stable Phase 3 core in a minimalist, Zen-inspired graphical browser shell. Consume the Phase 3 event stream. Establish the long-running primary persistent context that Phase 5+ agents depend on (Cookie Mine foundation). Keep agent UI panels absent.
 
 Milestones:
-- Step 0: research and plan Phase 4 (desktop shell technology choice: Electron first, Tauri as candidate).
+- Step 0: research and plan Phase 4. Feather is **Linux-only (Fedora)**; **Electron is eliminated** (it bundles a second Chromium — anti-Feather). Candidate shells: Tauri/WebKitGTK or GTK4-native, both with Playwright-managed Chromium. Browser-surface architecture on Wayland is unresolved and must be prototyped. Runtime is host-primary with Flatpak as the eventual distribution sandbox (ADR-0004).
 - Zen-inspired layout: vertical tab sidebar, collapsible panel, browser surface.
 - Consume the Phase 3 SSE event stream to drive tab list and session state in the UI.
 - Workspace/profile controls visible in the shell.
@@ -125,6 +127,7 @@ Goal: Add agent-oriented systems on top of the stable human browser shell. Imple
 Planning notes (check before starting Phase 5+):
 - Microsoft ships an official Playwright MCP server. Evaluate it before designing Feather's MCP hub — Feather may build on top of it rather than reimplement from scratch.
 - The MCP spec is evolving rapidly (stateless HTTP core, Tasks extension RC expected mid-2026). Check current spec state before committing to the hub design to avoid rework.
+- MCP spec is final 2026-07-28. Do not design the hub before then.
 
 Milestones:
 - Step 0: research and plan Phase 5+.
