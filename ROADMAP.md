@@ -63,9 +63,7 @@ Research candidates:
 
 Goal: Build the smallest functional headless core that proves the chosen foundation.
 
-Status: Complete. Completed 2026-06-02, merged to `master` 2026-06-03. All milestones met; 129 unit + 32 integration tests passing.
-
-Bridged to Phase 4 by the Stabilization & Linux-Readiness program — see `docs/specs/2026-06-03-stabilization-linux-readiness-design.md`.
+Status: Complete. Completed 2026-05-31. All 9 exit criteria met. 129 tests passing.
 
 Milestones:
 - Step 0: research and plan Phase 2.
@@ -79,6 +77,10 @@ Milestones:
 ## Phase 3: Browser Core Stabilization & UI Readiness
 
 Goal: Make the session and page lifecycle reliably observable. Produce a clean, stable API contract. Prepare a minimal event stream for a future UI. Keep agent concepts entirely out of the core.
+
+Status: Complete. Completed 2026-06-02, merged to `master` 2026-06-03. All milestones met; 129 unit + 32 integration tests passing.
+
+Bridged to Phase 4 by the Stabilization & Linux-Readiness program — see `docs/specs/2026-06-03-stabilization-linux-readiness-design.md`.
 
 Milestones:
 - Step 0: research and plan Phase 3. ✓
