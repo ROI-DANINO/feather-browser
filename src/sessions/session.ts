@@ -29,6 +29,14 @@ export class PageNotFoundError extends Error {
   }
 }
 
+export class SessionNotRunningError extends Error {
+  readonly code = "SESSION_NOT_RUNNING";
+  constructor(sessionId: string, state: string) {
+    super(`Session '${sessionId}' cannot open a tab: state is "${state}".`);
+    this.name = "SessionNotRunningError";
+  }
+}
+
 export class FeatherSession implements ISession {
   readonly sessionId: string;
   readonly workspaceId: string;
@@ -102,13 +110,35 @@ export class FeatherSession implements ISession {
   async getPageInfoList(): Promise<PageInfo[]> {
     const results: PageInfo[] = [];
     for (const [pageId, page] of this._pages.entries()) {
+      const loadState = await page.evaluate(() => document.readyState);
       results.push({
         pageId,
         url: page.url(),
         title: await page.title(),
+        loadState,
       });
     }
     return results;
+  }
+
+  async openTab(): Promise<{ pageId: string; page: Page }> {
+    if (this._state !== "running") {
+      throw new SessionNotRunningError(this.sessionId, this._state);
+    }
+    const page = await this._context!.newPage();
+    const pageId = newId("page");
+    this._pages.set(pageId, page);
+    return { pageId, page };
+  }
+
+  addPage(page: Page): string {
+    const pageId = newId("page");
+    this._pages.set(pageId, page);
+    return pageId;
+  }
+
+  removePage(pageId: string): void {
+    this._pages.delete(pageId);
   }
 
   setState(state: SessionState): void {
@@ -119,7 +149,7 @@ export class FeatherSession implements ISession {
     return this._state;
   }
 
-  toRecord(): SessionRecord {
+  toRecord(): Omit<SessionRecord, "pages"> {
     return {
       sessionId: this.sessionId,
       workspaceId: this.workspaceId,
@@ -130,7 +160,6 @@ export class FeatherSession implements ISession {
       debugDir: this.debugDir,
       proxy: this.proxy,
       startedAt: this.startedAt,
-      pages: [],
       profileLocked: this.profileKind === "persistent",
     };
   }

@@ -11,6 +11,8 @@ import { ExtractHandler } from "../commands/extract";
 import { ScreenshotHandler } from "../commands/screenshot";
 import { DebugBundleHandler } from "../commands/debug-bundle";
 import { CloseSessionHandler } from "../commands/close";
+import { OpenTabHandler } from "../commands/open-tab";
+import { registerSseRoute } from "./sse";
 
 const LaunchSchema = z.object({
   workspaceId: z.string().optional(),
@@ -52,6 +54,7 @@ const CloseSchema = z.object({ force: z.boolean().optional(), quarantineDisposab
 const ERROR_STATUS: Record<string, number> = {
   SESSION_NOT_FOUND: 404,
   PROFILE_LOCKED: 409,
+  SESSION_NOT_RUNNING: 409,
   PAGE_NOT_FOUND: 404,
   VALIDATION_ERROR: 400,
 };
@@ -87,6 +90,7 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
   const screenshotHandler = new ScreenshotHandler(manager);  // NOTE: no paths arg
   const debugBundleHandler = new DebugBundleHandler(manager, paths);
   const closeHandler = new CloseSessionHandler(manager);
+  const openTabHandler = new OpenTabHandler(manager);
 
   app.get("/health", async (_req: FastifyRequest, reply: FastifyReply) => {
     await reply.status(200).send({ ok: true, data: { status: "ok" } });
@@ -124,6 +128,15 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
       const { sessionId } = request.params as { sessionId: string };
       const input = NavigateSchema.parse(request.body);
       const result = await navigateHandler.execute({ sessionId, ...input }, { requestId });
+      await reply.status(200).send(ok(requestId, result));
+    } catch (err) { await handleRouteError(err, request, reply); }
+  });
+
+  app.post("/v1/sessions/:sessionId/tabs", { preHandler: [tokenAuth] }, async (request: FastifyRequest, reply: FastifyReply) => {
+    const requestId = getRequestId(request);
+    try {
+      const { sessionId } = request.params as { sessionId: string };
+      const result = await openTabHandler.execute({ sessionId }, { requestId });
       await reply.status(200).send(ok(requestId, result));
     } catch (err) { await handleRouteError(err, request, reply); }
   });
@@ -176,4 +189,6 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
       await reply.status(200).send(ok(requestId, closeResult));
     } catch (err) { await handleRouteError(err, request, reply); }
   });
+
+  registerSseRoute(app, tokenAuth);
 }

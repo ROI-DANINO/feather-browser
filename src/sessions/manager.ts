@@ -11,6 +11,7 @@ import type { ProfileLock } from "../profiles/lock";
 import type { WorkspaceMetadata } from "../profiles/workspace";
 import type {
   BrowserMode,
+  PageInfo,
   ProfileKind,
   ProxyConfig,
   ProxySummary,
@@ -48,6 +49,7 @@ export interface ISessionManager {
   get(sessionId: string): ISession;
   list(): ISession[];
   close(sessionId: string, opts?: { force?: boolean; quarantineDisposableProfile?: boolean }): Promise<void>;
+  openTab(sessionId: string): Promise<PageInfo>;
 }
 
 export class SessionManager implements ISessionManager {
@@ -108,6 +110,28 @@ export class SessionManager implements ISessionManager {
     const context = await chromium.launchPersistentContext(profilePath, launchOpts);
 
     session.setContext(context);
+
+    context.on("page", (page) => {
+      const pageId = session.addPage(page);
+      void this.logger.log({
+        ts: new Date().toISOString(),
+        level: "info",
+        event: EVENTS.TAB_CREATED,
+        sessionId: session.sessionId,
+        data: { pageId },
+      });
+      page.on("close", () => {
+        session.removePage(pageId);
+        void this.logger.log({
+          ts: new Date().toISOString(),
+          level: "info",
+          event: EVENTS.TAB_CLOSED,
+          sessionId: session.sessionId,
+          data: { pageId },
+        });
+      });
+    });
+
     this.registry.set(session.sessionId, session);
 
     await this.logger.log({
@@ -134,6 +158,20 @@ export class SessionManager implements ISessionManager {
 
   list(): FeatherSession[] {
     return Array.from(this.registry.values());
+  }
+
+  async openTab(sessionId: string): Promise<PageInfo> {
+    const session = this.get(sessionId);
+    const { pageId, page } = await session.openTab();
+    await this.logger.log({
+      ts: new Date().toISOString(),
+      level: "info",
+      event: EVENTS.TAB_OPENED,
+      sessionId,
+      data: { pageId },
+    });
+    const loadState = await page.evaluate(() => document.readyState);
+    return { pageId, url: page.url(), title: await page.title(), loadState };
   }
 
   async close(

@@ -45,9 +45,24 @@ export class ProfileLock {
       if (err.code === "EEXIST") {
         const existing = await fs.promises.readFile(lockPath, "utf8");
         const existingData: LockData = JSON.parse(existing);
-        throw new ProfileLockedError(workspaceId, existingData);
+
+        let pidAlive = true;
+        try {
+          process.kill(existingData.pid, 0);
+        } catch (killErr: any) {
+          if (killErr.code === "ESRCH") pidAlive = false;
+          else throw killErr;
+        }
+
+        if (!pidAlive) {
+          await fs.promises.unlink(lockPath);
+          fd = await fs.promises.open(lockPath, "wx");
+        } else {
+          throw new ProfileLockedError(workspaceId, existingData);
+        }
+      } else {
+        throw err;
       }
-      throw err;
     }
 
     try {

@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import type { FeatherPaths } from "../fs-layout";
 import type { EventName } from "./events";
+import { emitBusEvent } from "./bus";
 
 export interface LogEvent {
   ts: string;
@@ -16,6 +17,10 @@ export class FeatherLogger {
   constructor(private readonly paths: FeatherPaths) {}
 
   async log(event: LogEvent): Promise<void> {
+    // always fire on bus
+    emitBusEvent({ event: event.event, sessionId: event.sessionId, data: event.data, ts: event.ts });
+
+    // JSONL write only when sessionId present
     if (!event.sessionId) return;
 
     const logPath = this.paths.sessionLog(event.sessionId);

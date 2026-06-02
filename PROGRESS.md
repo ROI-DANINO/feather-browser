@@ -6,7 +6,7 @@ Phase 3 in progress. Started 2026-05-31.
 
 ## Current State
 
-Phase 3 Browser Core Stabilization & UI Readiness is active. Two of the eight identified gaps are closed. 98 unit tests passing.
+Phase 3 Browser Core Stabilization & UI Readiness is active. Seven of the eight Phase 3 gaps are closed. 124 unit tests passing. One gap remains: Gap 8 (measurement — run benchmark, record real RAM/CPU numbers in docs). After Gap 8, the SSE event stream endpoint is next.
 
 ## Phase 3 Progress
 
@@ -26,23 +26,52 @@ Phase 3 Browser Core Stabilization & UI Readiness is active. Two of the eight id
 - `SESSION_CLOSE_COMPLETED` emitted after the context closes and state transitions to `"closed"`.
 - `SESSION_CLOSE_FAILED` emitted in the error path with the error message.
 
-### Remaining gaps from Phase 3 scope decision
+**Hybrid Browser vision + Cookie Mine pathway** (commits e0ef2e6–93b8a5c, 2026-06-01)
+- ADR-0003 written: documents architectural shift from strict session isolation to shared persistent context (Cookie Mine model). See `docs/specs/adr-0003-hybrid-browser-shared-context.md`.
+- ROADMAP.md updated: Destination rewritten as Hybrid Browser; Phase 4 now explicit prerequisite for Phase 5+ agents; Cookie Mine and MCP-compatible hub milestones added.
+- AGENTS.md updated: long-term vision and Technical Vision bullet reflect Hybrid Browser and Cookie Mine.
+- `TAB_OPENED: "tab.opened"` added to `EVENTS` catalog.
+- `SessionNotRunningError` (code `SESSION_NOT_RUNNING`, HTTP 409) added to `session.ts`.
+- `FeatherSession.openTab()`: creates a new page via `context.newPage()`, registers it in the page map, returns `{ pageId, page }`.
+- `ISession` and `ISessionManager` interfaces updated with `openTab` signatures.
+- `SessionManager.openTab(sessionId)`: validates state, delegates to session, logs `TAB_OPENED`, returns `PageInfo`.
+- `OpenTabHandler` added in `src/commands/open-tab.ts` following the thin-delegation command pattern.
+- `POST /v1/sessions/:sessionId/tabs` route registered with token auth.
+- 11 new unit tests covering all new behaviour. Full suite: 112 passing.
 
-3. Tab lifecycle events missing — `EVENTS` catalog needs `TAB_CREATED`, `TAB_CLOSED`, `TAB_UPDATED`.
-4. `toRecord()` always returns `pages: []` — misleading contract; page list is fetched separately by handlers.
-5. Dynamic page tracking — `context.on("page")` not wired in `FeatherSession.setContext()`.
-6. `PageInfo` lacks `loadState`.
-7. ProfileLock does not check locking pid liveness — stale locks block workspaces permanently.
-8. Open measurement question — actual RAM/CPU delta between browser modes is unrecorded.
+**Gaps 3, 4, 5 — Dynamic page tracking + tab lifecycle events** (2026-06-02)
+- `toRecord()` return type fixed to `Omit<SessionRecord, "pages">` — matches `ISession` contract.
+- `FeatherSession.addPage()` / `removePage()` added; manager wires `context.on("page")` listener in `launch()`.
+- `TAB_CREATED` and `TAB_CLOSED` events emitted via JSONL logger (Option C: logger-only, no event bus yet).
+- `TAB_UPDATED` deferred to SSE design step.
+- 124 unit tests passing.
 
-### Pending design decision before Step 3
+**Gap 6 — PageInfo loadState** (2026-06-02)
+- `loadState: string` added to `PageInfo` interface in `src/sessions/types.ts`.
+- Populated via `page.evaluate(() => document.readyState)` in `getPageInfoList()` and `SessionManager.openTab()`.
+- Note: Playwright has no `page.loadState()` getter — `document.readyState` is the correct API; returns `'loading' | 'interactive' | 'complete'`.
 
-Step 3 (dynamic page tracking + tab lifecycle events) requires a decision on where the internal event bus lives:
-- Option A: lightweight `EventEmitter` on `FeatherSession` — consumers hold a session reference.
-- Option B: lightweight `EventEmitter` on `SessionManager` — one bus for all sessions, events tagged with `sessionId`.
-- Option C: logger only for now — emit tab events to JSONL, wire the event bus in a later step when SSE is designed.
+**Gap 7 — ProfileLock stale pid** (2026-06-02)
+- In `src/profiles/lock.ts`, before throwing `PROFILE_LOCKED`, reads existing lock pid and calls `process.kill(pid, 0)`.
+- `ESRCH` (no such process) → stale lock, unlink and proceed with new lock.
+- `EPERM` (process exists, no permission) → process is alive, throw `PROFILE_LOCKED` as normal.
 
-This decision shapes the SSE endpoint in the step after it. Not implementing Step 3 until it is settled.
+**Gap 8 — Browser mode measurement** (2026-06-02)
+- Ran full scenario against both modes; recorded in `docs/phase-2-completion.md`.
+- `chromium-headless-shell`: 764 ms total, 1.7 MB profile, 194 MB peak Node RSS.
+- `chromium-new-headless`: 986 ms total, 4.1 MB profile, 196 MB peak Node RSS.
+- Launch is the only meaningfully different step (+211 ms). All other timings are equivalent.
+
+**SSE event stream — `GET /v1/events`** (2026-06-02)
+- `src/logs/bus.ts`: module-level EventEmitter, `emitBusEvent()` / `onBusEvent()` (returns unsubscribe fn), `setMaxListeners(100)`.
+- `src/logs/logger.ts`: fires `emitBusEvent` for all log events (before sessionId guard), so SERVICE_STARTED and sessionless events reach the bus too.
+- `src/transport/sse.ts`: `registerSsePlugin()` registers `fastify-sse-v2`; `registerSseRoute()` registers `GET /v1/events` behind token auth; async-generator queue pattern; AbortController cleanup on socket close; 9 lifecycle events forwarded (session.launch.*, session.close.*, tab.*); per-command events filtered out.
+- `src/transport/http.ts`: `registerSsePlugin(app)` called before `registerRoutes`.
+- `src/transport/routes.ts`: `registerSseRoute(app, tokenAuth)` wired at bottom of `registerRoutes`.
+- `npm install fastify-sse-v2` added to dependencies.
+- 5 unit tests (bus.test.ts) + 5 integration tests (sse.integration.test.ts): 129 unit + 32 integration passing.
+
+### All Phase 3 milestones complete
 
 ## Architecture Decisions
 
@@ -80,4 +109,4 @@ Concrete gaps identified in the Phase 2 codebase that Phase 3 must close:
 
 ## Next
 
-Begin Phase 3. Recommended first task: wire `context.on("page")` in `FeatherSession.setContext()` and emit tab lifecycle events, as this is the root cause of the most downstream reliability issues.
+All Phase 3 milestones are complete. Phase 3 exit criteria met. Next: decide whether to merge dev → master and start Phase 4 planning (Visual Desktop Shell Prototype).

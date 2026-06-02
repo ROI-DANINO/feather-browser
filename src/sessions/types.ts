@@ -21,6 +21,7 @@ export interface PageInfo {
   pageId: string;
   url: string;
   title: string;
+  loadState: string;
 }
 
 export interface SessionRecord {
@@ -73,5 +74,8 @@ export interface ISession {
   readonly debugDir: string;
   getPage(pageId?: string): { pageId: string; page: Page };
   getPageInfoList(): Promise<PageInfo[]>;
+  openTab(): Promise<{ pageId: string; page: Page }>;
   toRecord(): Omit<SessionRecord, "pages">;
+  addPage(page: Page): string;
+  removePage(pageId: string): void;
 }
