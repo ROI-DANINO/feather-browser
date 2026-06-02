@@ -1,44 +1,51 @@
 ## In Progress
 
-Session 1B — Lock decisions (ADRs): write ADR-0004 + ADR-0005.
+Task 6b — Write S1 blog entry (blog/0002-*) + /blog-entry skill.
 
-## Active — S1 (Foundation) execution
+## Active — Post-S1 work
 
-Plan: `docs/plans/2026-06-03-s1-foundation.md` · Spec: `docs/specs/2026-06-03-stabilization-linux-readiness-design.md`
-No production code. Execute inline, session by session. **Do not run `/init`** (continuing the plan).
+**Task 6b — Blog entry + skill (DO FIRST next session):**
+- [ ] Write `blog/0002-*` — S1 Foundation: stabilization program, ADRs, spike findings
+- [ ] Write `/blog-entry` skill — when/how to write entries, context-gathering, voice/structure rules
 
-**Session 1A — Reconcile reality (docs): ✅ COMPLETE (2026-06-03)**
-- [x] Task 1 — Fix README status (Phase 3 complete, program active)
-- [x] Task 2 — Fix PROGRESS.md (Current Phase / State / Next)
-- [x] Task 3 — Update ops/phase.md
-- [x] Task 4 — Update context/active.md
-- [x] Task 5 — Reconcile ROADMAP.md (fix "Electron first", mark Phase 3 complete, Linux-only/MCP date)
-- [x] Task 6 — Polish AGENTS.md (current phase, tech-stack note, research/→raw/_inbox fix, command-usage section, decision pointers)
-- [x] Task 7 — Create docs/docs-map.md + link from /init and /start command docs
+**S2 — Linux weight & observability (brainstorm after Task 6b):**
+- [ ] Brainstorm + plan S2 tasks
+  - FEATHER_CHROMIUM_PATH (prerequisite: install system Chromium via RPM Fusion)
+  - TAB_UPDATED event
+  - Verify tracing exposure
 
-**Session 1B — Lock decisions (ADRs):**
-- [ ] Task 8 — ADR-0004 runtime target (host-primary, Flatpak, Podman optional)
-- [ ] Task 9 — ADR-0005 agentic North Star (token/context efficiency; tool choice deferred to Phase 5 Step 0)
+**S3 — Currency & security (brainstorm after S1, gated by spike):**
+- [ ] Brainstorm + plan S3 tasks
+  - Fastify v4→v5 (MUST test fastify-sse-v2 compat first — peer range covers v5 but untested)
+  - Playwright 1.50 → latest 1.5x bump
+  - Security checkpoint
 
-**Session 1C — Answer unknowns (spikes):**
-- [ ] Task 10 — Spike: fastify-sse-v2 v5 compatibility (gates S3) → raw/_inbox/
-- [ ] Task 11 — Spike: system Chromium as executablePath (informs S2) → raw/_inbox/
-
-**Queued (after first /stop-triggered blog entry exists):**
-- [ ] Task 6b — Write a **`/blog-entry` skill**: framework for when + how to write entries, how to gather context from sessions it wasn't in (read `.remember/remember.md` → `ops/sessions/` → `log.md` → git log), voice/structure rules.
-
-**S1 exit:** all docs true; ADR-0004 + ADR-0005 written; both spikes recorded; no src/ changes; then brainstorm S2.
-
-## Queued — after S1 (brainstorm each when reached)
-
-- [ ] S2 — Linux weight & observability: FEATHER_CHROMIUM_PATH, TAB_UPDATED, verify tracing exposure
-- [ ] S3 — Currency & security: Fastify v4→v5, Playwright 1.50→1.5x bump, security checkpoint
-- [ ] → Hand off to ROADMAP Phase 4 Step 0
+**Exit:**
+- [ ] Hand off to ROADMAP Phase 4 Step 0
 
 ## Done
 
-- [x] Merge dev → master (Phase 3 baseline, commit b278409)
-- [x] Brainstorm + write program spec (cafbca2)
-- [x] Write S1 (Foundation) implementation plan (f509e01)
-- [x] Codebase audit + correction of stale 7-target list (spec §2)
-- [x] Session 1A — 7 docs reconciliation tasks, 8 commits (20260603)
+### S1 — Foundation ✅ COMPLETE (2026-06-03)
+
+**Session 1A — Reconcile reality (docs): ✅**
+- [x] Task 1 — Fix README status
+- [x] Task 2 — Fix PROGRESS.md
+- [x] Task 3 — Update ops/phase.md
+- [x] Task 4 — Update context/active.md
+- [x] Task 5 — Reconcile ROADMAP.md
+- [x] Task 6 — Polish AGENTS.md
+- [x] Task 7 — Create docs/docs-map.md + link from command docs
+
+**Session 1B — Lock decisions (ADRs): ✅**
+- [x] Task 8 — ADR-0004 runtime target (host-primary, Flatpak, Podman optional)
+- [x] Task 9 — ADR-0005 agentic North Star (token/context efficiency; tool choice deferred to Phase 5 Step 0)
+
+**Session 1C — Answer unknowns (spikes): ✅**
+- [x] Task 10 — Spike: fastify-sse-v2 v5 compat → PARTIAL/UNTESTED (peerDep >=4 but only tested v4)
+- [x] Task 11 — Spike: system Chromium executablePath → NOT TESTED (not installed; install via RPM Fusion in S2)
+
+### Pre-S1
+- [x] Merge dev → master (Phase 3 baseline)
+- [x] Brainstorm + write program spec
+- [x] Write S1 plan (11 tasks, 3 sessions)
+- [x] Codebase audit + correction of stale target list
