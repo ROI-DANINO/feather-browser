@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Phase 3 in progress. Started 2026-05-31.
+Phase 3 complete (merged to `master` 2026-06-03). **Stabilization & Linux-Readiness program — S1 (Foundation)** in progress.
 
 ## Current State
 
-Phase 3 Browser Core Stabilization & UI Readiness is active. Seven of the eight Phase 3 gaps are closed. 124 unit tests passing. One gap remains: Gap 8 (measurement — run benchmark, record real RAM/CPU numbers in docs). After Gap 8, the SSE event stream endpoint is next.
+All Phase 3 milestones are closed (129 unit + 32 integration tests passing, typecheck clean). The Stabilization & Linux-Readiness program now bridges Phase 3 → Phase 4 in three themed sub-phases (S1/S2/S3); see `docs/specs/2026-06-03-stabilization-linux-readiness-design.md`. S1 (Foundation) reconciles the docs, writes ADR-0004 (runtime target) and ADR-0005 (agentic North Star), and runs two research spikes.
 
 ## Phase 3 Progress
 
@@ -109,4 +109,4 @@ Concrete gaps identified in the Phase 2 codebase that Phase 3 must close:
 
 ## Next
 
-All Phase 3 milestones are complete. Phase 3 exit criteria met. Next: decide whether to merge dev → master and start Phase 4 planning (Visual Desktop Shell Prototype).
+S1 (Foundation) is the active work. After S1: brainstorm and plan S2 (Linux weight & observability), then S3 (currency & security: Fastify v5, Playwright bump), then hand off to ROADMAP Phase 4 Step 0.
