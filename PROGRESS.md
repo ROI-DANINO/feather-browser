@@ -62,7 +62,16 @@ Phase 3 Browser Core Stabilization & UI Readiness is active. Seven of the eight 
 - `chromium-new-headless`: 986 ms total, 4.1 MB profile, 196 MB peak Node RSS.
 - Launch is the only meaningfully different step (+211 ms). All other timings are equivalent.
 
-### All Phase 3 gaps closed
+**SSE event stream — `GET /v1/events`** (2026-06-02)
+- `src/logs/bus.ts`: module-level EventEmitter, `emitBusEvent()` / `onBusEvent()` (returns unsubscribe fn), `setMaxListeners(100)`.
+- `src/logs/logger.ts`: fires `emitBusEvent` for all log events (before sessionId guard), so SERVICE_STARTED and sessionless events reach the bus too.
+- `src/transport/sse.ts`: `registerSsePlugin()` registers `fastify-sse-v2`; `registerSseRoute()` registers `GET /v1/events` behind token auth; async-generator queue pattern; AbortController cleanup on socket close; 9 lifecycle events forwarded (session.launch.*, session.close.*, tab.*); per-command events filtered out.
+- `src/transport/http.ts`: `registerSsePlugin(app)` called before `registerRoutes`.
+- `src/transport/routes.ts`: `registerSseRoute(app, tokenAuth)` wired at bottom of `registerRoutes`.
+- `npm install fastify-sse-v2` added to dependencies.
+- 5 unit tests (bus.test.ts) + 5 integration tests (sse.integration.test.ts): 129 unit + 32 integration passing.
+
+### All Phase 3 milestones complete
 
 ## Architecture Decisions
 
@@ -100,4 +109,4 @@ Concrete gaps identified in the Phase 2 codebase that Phase 3 must close:
 
 ## Next
 
-All 8 Phase 3 gaps are closed. Remaining Phase 3 milestone: thin SSE event stream — `GET /v1/events`, read-only, browser lifecycle events only, no WebSocket, no agent protocol. Start with Step 0: research and spec before touching code.
+All Phase 3 milestones are complete. Phase 3 exit criteria met. Next: decide whether to merge dev → master and start Phase 4 planning (Visual Desktop Shell Prototype).

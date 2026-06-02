@@ -12,6 +12,7 @@ import { ScreenshotHandler } from "../commands/screenshot";
 import { DebugBundleHandler } from "../commands/debug-bundle";
 import { CloseSessionHandler } from "../commands/close";
 import { OpenTabHandler } from "../commands/open-tab";
+import { registerSseRoute } from "./sse";
 
 const LaunchSchema = z.object({
   workspaceId: z.string().optional(),
@@ -188,4 +189,6 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
       await reply.status(200).send(ok(requestId, closeResult));
     } catch (err) { await handleRouteError(err, request, reply); }
   });
+
+  registerSseRoute(app, tokenAuth);
 }
