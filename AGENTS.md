@@ -22,18 +22,21 @@ Act as a Senior Software Architect and elite pair programmer. Focus on productio
 - Prioritize low RAM/CPU use, modularity, scraping reliability, profile/session isolation, and agent-friendly control.
 - The Phase 4 human browser session is the trust foundation for Phase 5+ agent automation (Cookie Mine model). Phase 4 is a prerequisite for Phase 5+, not a sequentially deferred layer.
 - Keep all code, documentation, and technical discussion in English.
+- Runtime target is **host-primary**; Flatpak is the eventual distribution sandbox; Podman is optional for headless/CI only (ADR-0004, `docs/specs/adr-0004-runtime-target.md`).
+- Agents must use the browser's API auth token and their LLM context efficiently — a standing design constraint; tool selection deferred to Phase 5 Step 0 (ADR-0005, `docs/specs/adr-0005-agentic-north-star.md`).
 
 ## Current Phase
 
-**Phase 3 — Browser Core Stabilization & UI Readiness** (active as of 2026-05-31)
+**Stabilization & Linux-Readiness program — S1 (Foundation)** (active as of 2026-06-03).
 
-Scope: session and page lifecycle, lifecycle event logging, API contract cleanup, and a minimal SSE event stream for a future UI. No agent runtime. No desktop shell yet.
+Phase 3 (Browser Core Stabilization & UI Readiness) is complete and merged to `master`. A short bridge program now hardens the core before Phase 4 (the visual shell). Feather targets **Linux (Fedora)**; runtime is **host-primary** (ADR-0004).
 
-- Scope definition: `docs/specs/phase-3-browser-stability-first-brief.md`
+- Program spec: `docs/specs/2026-06-03-stabilization-linux-readiness-design.md`
+- Current S1 plan: `docs/plans/2026-06-03-s1-foundation.md`
 - Current progress: `PROGRESS.md`
 - Full roadmap: `ROADMAP.md`
 
-Phase 2 (Headless Core Prototype) is complete. Do not reopen it unless there is a critical correctness issue.
+Do not reopen Phase 2 or Phase 3 unless there is a critical correctness issue.
 
 ## Branch Rules
 
@@ -58,9 +61,17 @@ When a fresh session receives a project goal:
 
 Do not start web research, architecture comparison, or implementation before the orientation step.
 
+## When To Use Each Command
+
+- **`/start`** — at the beginning of *every* session. Always. Loads context and reports state (read-only).
+- **`/stop`** — at the end of *every* session. Always. Writes the handoff and commits tracking files.
+- **`/init`** — only when you arrive with a *new goal* you want gate-checked against the current phase before any work. It overlaps with `/start` for normal continuation, so it is optional day-to-day.
+
 ## Tech Stack
 
 TypeScript 5.4 / Node.js 20 / Fastify 4.x / Playwright 1.50 / Zod 3.x / Vitest
+
+> **Upgrade pending (program phase S3):** Fastify 4 → 5 (v4 LTS ended June 2025 — security) and Playwright 1.50 → latest 1.5x. Do not assume these are done until S3 closes.
 
 Before implementing anything non-trivial: **research the official docs first**. APIs change between major versions. See `docs/tech-stack-guidelines.md` for the full guide and decision checklist.
 
@@ -80,7 +91,7 @@ When in doubt: write a doc, ask for approval. Do not add code, dependencies, or 
 - Use current web research where facts may have changed.
 - Prefer primary sources and official docs.
 - For browser technology, prioritize official docs and active repositories.
-- Record findings in `research/` and decisions/specs in `docs/specs/`.
+- Record research findings in `raw/_inbox/` (the project's research inbox) and decisions/specs in `docs/specs/`.
 
 ## Prior Security Audit
 
