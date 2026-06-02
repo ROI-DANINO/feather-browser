@@ -6,7 +6,7 @@ A headless-first Chromium browser core for agentic automation, built around Play
 
 ## Status
 
-Phase 2 Complete | 129 tests passing (98 unit, 27 integration, 4 measurement)
+Phase 3 Complete | Stabilization & Linux-Readiness program (S1) in progress | 129 unit + 32 integration tests passing
 
 ## What It Does
 
@@ -65,6 +65,8 @@ See `docs/architecture.md` for a full walkthrough of the source layout and compo
 
 ## Development Status
 
-Phase 2 (Headless Core Prototype) is complete. All exit criteria have been verified.
+Phase 3 (Browser Core Stabilization & UI Readiness) is complete and merged to `master`.
 
-Phase 3 (Native Feature and Integration Layer) is next. See `ROADMAP.md` for the roadmap and `PROGRESS.md` for current state.
+A short **Stabilization & Linux-Readiness program** now bridges Phase 3 → Phase 4: it patches dependencies, reduces weight (Linux-native Chromium), completes the tab-event model, and records the runtime and agentic decisions. See `docs/specs/2026-06-03-stabilization-linux-readiness-design.md`. Phase 4 (Visual Desktop Shell) begins after it. See `ROADMAP.md` and `PROGRESS.md`.
+
+Feather Browser targets **Linux (Fedora)** as its primary platform.
