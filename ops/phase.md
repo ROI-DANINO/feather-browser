@@ -1,12 +1,12 @@
 ---
 phase: stabilization-linux-readiness
-sub_phase: S1-foundation-complete
+sub_phase: S1-complete-task-6b-complete
 plan: docs/plans/2026-06-03-s1-foundation.md
 spec: docs/specs/2026-06-03-stabilization-linux-readiness-design.md
-step: "s1-complete-s2-brainstorm-next"
+step: "s2-brainstorm-next"
 prior_phase: phase-3-complete
-sessions: ["1A-reconcile✅", "1B-decisions✅", "1C-spikes✅"]
+sessions: ["1A-reconcile✅", "1B-decisions✅", "1C-spikes✅", "task-6b-blog+skill✅"]
 blocking: null
-next: "Task 6b (S1 blog entry + /blog-entry skill), then brainstorm S2 (linux weight & observability)"
-note: "S1 done. ADR-0004 host-primary. ADR-0005 agentic north star. fastify-sse-v2 untested against v5. system chromium not installed."
+next: "DECISION: health-check first (npm test) or straight to S2 brainstorm? Then: S2 Linux weight & observability"
+note: "S1 + task 6b done. blog/0002 written. /blog-entry skill written. No code changed since Phase 3 merge."
 ---

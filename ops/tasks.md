@@ -1,20 +1,20 @@
-## In Progress
+## Decision Needed
 
-Task 6b — Write S1 blog entry (blog/0002-*) + /blog-entry skill.
+**Health check before S2?**
+- [ ] Decide: run `npm test && npm run test:integration` before S2 brainstorm?
+  - No code changed since Phase 3 merge (all S1 + task 6b was docs/content)
+  - Last known state: 129 unit + 32 integration passing
+  - Low-cost to verify; Roi's call
 
-## Active — Post-S1 work
+## Active — S2 brainstorm (after health-check decision)
 
-**Task 6b — Blog entry + skill (DO FIRST next session):**
-- [ ] Write `blog/0002-*` — S1 Foundation: stabilization program, ADRs, spike findings
-- [ ] Write `/blog-entry` skill — when/how to write entries, context-gathering, voice/structure rules
-
-**S2 — Linux weight & observability (brainstorm after Task 6b):**
+**S2 — Linux weight & observability:**
 - [ ] Brainstorm + plan S2 tasks
-  - FEATHER_CHROMIUM_PATH (prerequisite: install system Chromium via RPM Fusion)
-  - TAB_UPDATED event
-  - Verify tracing exposure
+  - FEATHER_CHROMIUM_PATH (prerequisite: `sudo dnf install chromium` via RPM Fusion, then run spike probe from S1 plan Task 11 Step 2)
+  - TAB_UPDATED event (deferred from Phase 3)
+  - Verify tracing exposure (`capture.ts`)
 
-**S3 — Currency & security (brainstorm after S1, gated by spike):**
+**S3 — Currency & security (brainstorm after S2, gated by spike):**
 - [ ] Brainstorm + plan S3 tasks
   - Fastify v4→v5 (MUST test fastify-sse-v2 compat first — peer range covers v5 but untested)
   - Playwright 1.50 → latest 1.5x bump
@@ -24,6 +24,10 @@ Task 6b — Write S1 blog entry (blog/0002-*) + /blog-entry skill.
 - [ ] Hand off to ROADMAP Phase 4 Step 0
 
 ## Done
+
+### Task 6b ✅ (2026-06-03)
+- [x] Write `blog/0002-write-it-down-or-it-didnt-happen.md` — S1 Foundation milestone entry
+- [x] Write `skills/blog-entry/SKILL.md` — context-gathering recipe, voice guardrails, completeness checklist
 
 ### S1 — Foundation ✅ COMPLETE (2026-06-03)
 
