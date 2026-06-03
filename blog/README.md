@@ -10,6 +10,7 @@ This is a build-in-public journal and a decision history. It's the *why* behind 
 |---|-------|------|-----------|
 | 0001 | [The Story So Far](0001-the-story-so-far.md) | 2026-06-03 | Phase 3 complete; stabilization program planned |
 | 0002 | [Write It Down, Or It Didn't Happen](0002-write-it-down-or-it-didnt-happen.md) | 2026-06-03 | S1 Foundation complete — ADR-0004/0005, spikes |
+| 0003 | [The Scaffolding Was Hiding the House](0003-the-scaffolding-was-hiding-the-house.md) | 2026-06-03 | Repo professionalized — Apache-2.0 license, journal/ consolidation, real public OSS |
 
 ## How entries are written (style guardrails)
 

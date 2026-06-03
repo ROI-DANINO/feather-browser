@@ -1,45 +1,54 @@
-# Handoff — 2026-06-03
+# Handoff — 2026-06-03 (repo-cleanup-journal)
 
 ## Where We Are
 
-**S2 brainstorm in progress.** Branch: `dev`.
+**S2 brainstorm still mid-flow.** Branch: `dev` (pushed to origin/dev).
 
-S1 + Task 6b complete. S2 brainstorm started this session but stopped mid-flow.
+This session was a **detour from S2** — a full repo professionalization. S2 itself did not advance.
 
 ## What's Next
 
-Fresh session → **`/start`** → **invoke `superpowers:brainstorming` skill** → resume S2 brainstorm.
+Fresh session → **`/start`** → invoke **`superpowers:brainstorming`** → resume S2 brainstorm.
 
 ### Resume point: TAB_UPDATED scope question
 
-> Navigation only (URL + title on `framenavigated`) vs navigation + load state transitions (`domcontentloaded`, `load`) too?
+> Navigation only (URL + title on `framenavigated`) vs navigation + load-state transitions (`domcontentloaded`, `load`) too?
 
-After that: approaches → design → design doc → `writing-plans` skill → S2 implementation plan.
+Then: approaches → design → design doc → `writing-plans` → S2 implementation plan.
 
-## S2 Scope (4 items — finalized this session)
+## ⚠️ Structural change this session — operating files moved to `journal/`
 
-1. **Fix duplicate tab registration bug** — `openTab()` + `context.on("page")` both register same page under different IDs. Must fix before TAB_UPDATED. Single source: make listener the only registration path.
-2. **FEATHER_CHROMIUM_PATH** — spike first (`sudo dnf install chromium` — Fedora `updates` repo, NOT RPM Fusion), then add to `config.ts` + wire `executablePath` in `modes.ts`.
-3. **TAB_UPDATED** — navigation event on top-level frame. Scope TBD (see resume point above).
-4. **Observability hardening** — capture.ts trace e2e + `getPageInfoList()` best-effort per-page (try/catch, `loadState: "unknown"`).
+Paths changed. Everything `/start` and `/stop` read now lives under `journal/`:
+- `context/active.md` → `journal/context/active.md`
+- `ops/` → `journal/ops/` (phase.md, tasks.md, sessions/, archive/)
+- `work/<desk>/context.md` → `journal/work/<desk>/context.md`
+- `raw/_inbox/` → `journal/raw/_inbox/`
+- `log.md` → `journal/log.md`
+- `schema.md` → `journal/README.md` (rewritten as journal front door)
+- `docs/docs-map.md` → `journal/docs-map.md`
 
-## Key Findings This Session
+The command/skill files were already rewritten to these paths and verified (this `/stop` ran clean on them).
 
-- **Chromium**: standard Fedora `updates` repo (not RPM Fusion — spike doc was wrong). Version 148 same as bundled. Low skew risk. 116 MB download / 318 MB installed.
-- **Playwright cache**: already has `chromium-1223/` (377 MB) + `chromium_headless_shell-1223/` (260 MB).
-- **ROADMAP.md fixed**: "without triggering bot detection" → "operating inside explicit user-authorized session state with human approval checkpoints" (commit 53ac42d).
-- **GPT repo audit** (8 commits pulled from remote): 7 findings triaged. Only real new bug = dup-tab-reg.
+## Done This Session
 
-## Strategic Notes (research intake this session)
+- **`/stop`**: added conditional desk-context reconciliation (3 surfaces) + synced blog-check.
+- **`/blog-entry`**: now reads every session since last blog entry, not just the latest.
+- **Repo restructure**: `journal/` consolidation, Apache-2.0 LICENSE, removed ui-playground/ (19MB profile) + dead index.md, ignored `.browser-profile/`, tracked command/skill/doc defs + desk contexts, fixed 2 non-anchored gitignore traps. Spec `docs/specs/2026-06-03-repo-structure-cleanup-design.md` (implemented), plan `docs/plans/2026-06-03-repo-structure-cleanup.md`.
+- **blog/0003** "The Scaffolding Was Hiding the House" (process/meta — repo became real public OSS).
+- Verified 129/129 tests; 4 commits + handoff; pushed origin/dev.
 
-- Hermes = orchestration layer above Feather. OpenClaw = research reference only.
-- Positioning: "local, inspectable browser runtime for human-approved agentic automation."
-- 7 research files in `raw/_inbox/2026-06-03-*.md` — not yet triaged to canonical `research/`.
-- MCP: protocol-aware but don't commit to hub design before 2026-07-28 spec final.
+## Decisions
 
-## Blog Status
+- **License = Apache-2.0** (revisit AGPL+commercial only at traction).
+- **`journal/` = visible workflow home** (build-in-public: organize, don't hide).
+- **Branch policy**: merge dev→master only at a stable/mergeable milestone; else push remote dev only.
 
-- `blog/0002` ✅. Next entry: at S2 exit via `/blog-entry`.
+## S2 Scope (4 items)
+
+1. Fix duplicate tab registration (prereq for TAB_UPDATED) — make `context.on("page")` the single source.
+2. FEATHER_CHROMIUM_PATH — spike `sudo dnf install chromium` (Fedora `updates` repo) → probe → wire `config.ts`/`modes.ts`.
+3. TAB_UPDATED — scope TBD (resume point above).
+4. Observability hardening — capture.ts trace e2e + `getPageInfoList()` best-effort.
 
 ## Program Structure
 
@@ -51,6 +60,6 @@ After that: approaches → design → design doc → `writing-plans` skill → S
 
 ## How Roi Works
 
-- Vibecoder, no technical background. Make technical calls, explain plainly.
-- Feedback this session: load desk context (`work/<desk>/context.md`) without asking.
+- Vibecoder, no technical background. Make the technical calls, explain plainly.
+- Defers to recommendations — lead with one clear call, not equal-weight menus.
 - Research-driven; phases → tasks; security matters; one session per chunk.

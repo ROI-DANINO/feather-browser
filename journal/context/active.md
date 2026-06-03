@@ -1,6 +1,6 @@
 ---
 updated: 2026-06-03
-session: s2-brainstorm-start
+session: repo-cleanup-journal
 ---
 
 ## Active Plan
@@ -8,7 +8,16 @@ session: s2-brainstorm-start
 Program: Stabilization & Linux-Readiness (bridges Phase 3 → Phase 4)
 Spec: docs/specs/2026-06-03-stabilization-linux-readiness-design.md
 Sub-phase: **S2 — Linux weight & observability** (brainstorm in progress)
-Branch: dev
+Branch: dev (pushed to origin/dev)
+
+## Last Session (detour — repo professionalization)
+
+Not S2 work. Consolidated all workflow scaffolding into `journal/`, added Apache-2.0
+LICENSE, made the repo a real public OSS project. Also: added conditional desk-context
+reconciliation to `/stop`; fixed `/blog-entry` to read all sessions since last entry;
+wrote `blog/0003`. Spec: `docs/specs/2026-06-03-repo-structure-cleanup-design.md`.
+**Note:** operating files now live under `journal/` (was `context/`, `ops/`, `work/`,
+`raw/`, `log.md`, `schema.md`→`journal/README.md`, `docs/docs-map.md`→`journal/docs-map.md`).
 
 ## Immediate Next Action
 
@@ -52,6 +61,9 @@ Then: approaches → design → design doc → implementation plan.
 - **Positioning**: "local, inspectable browser runtime for human-approved agentic automation" — not "AI browser."
 - "Leave the docs true" = permanent per-phase exit check.
 - Blog cadence: write/refresh at every phase exit via `/blog-entry`.
+- **License = Apache-2.0** (copyright Roi Danino). Revisit AGPL+commercial only at traction.
+- **`journal/` = visible workflow home** (build-in-public: organize the process, don't hide it).
+- **Branch policy**: merge dev→master only at a stable/mergeable milestone; otherwise push remote `dev` only.
 
 ## How Roi Works
 
