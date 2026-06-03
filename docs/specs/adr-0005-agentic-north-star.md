@@ -43,3 +43,4 @@ Research informing this:
 - No agent tooling is built during the stabilization program.
 - S2 design reviews check event/context payloads for compactness.
 - Phase 5 Step 0 inherits a clear, pre-recorded requirement and the research above.
+- Related: ADR-0006 records agent-facing *interface* neutrality (orchestrator/client/model), deferred to the same Phase 5 Step 0 gate.

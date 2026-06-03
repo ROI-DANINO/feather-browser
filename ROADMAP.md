@@ -135,7 +135,7 @@ Milestones:
 - Step 0: research and plan Phase 5+.
 - Cookie Mine: tab open pathway in SessionManager — agents open new pages within the existing human session rather than launching isolated contexts (see ADR-0003).
 - Local MCP-compatible hub routing: Fastify endpoint (`POST /v1/sessions/:id/tabs`) for agent tab requests against the live human session.
-- Hermes orchestration integration.
+- Agent orchestration integration — leading candidate **Hermes**, with **OpenClaw** as a challenger if better suited; selection deferred to Phase 5 Step 0 (see ADR-0006). The agent-facing surface must also be drivable by external agent clients (**Claude Code, Codex**) via the MCP-compatible hub.
 - Credentials vault and LLM API credential handling.
 - Human approval checkpoint system.
 - Agent chat sidebar.
