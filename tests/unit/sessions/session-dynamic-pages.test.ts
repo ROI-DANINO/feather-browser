@@ -50,6 +50,34 @@ describe("FeatherSession.addPage", () => {
   });
 });
 
+describe("FeatherSession.addPage — idempotency (dup-registration fix)", () => {
+  it("returns the same pageId when the same Page object is registered twice", () => {
+    const session = makeSession();
+    const page = makePage("http://example.com", "Example");
+    const first = session.addPage(page);
+    const second = session.addPage(page);
+    expect(second).toBe(first);
+  });
+
+  it("keeps getPageInfoList at one entry when the same Page is registered twice", async () => {
+    const session = makeSession();
+    const page = makePage("http://example.com", "Example");
+    session.addPage(page);
+    session.addPage(page);
+    const list = await session.getPageInfoList();
+    expect(list).toHaveLength(1);
+  });
+
+  it("removePage clears the reverse map so re-adding yields a fresh id", () => {
+    const session = makeSession();
+    const page = makePage("http://example.com", "Example");
+    const firstId = session.addPage(page);
+    session.removePage(firstId);
+    const secondId = session.addPage(page);
+    expect(secondId).not.toBe(firstId);
+  });
+});
+
 describe("FeatherSession.removePage", () => {
   it("removes the page from getPageInfoList()", async () => {
     const session = makeSession();

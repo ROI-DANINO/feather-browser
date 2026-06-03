@@ -50,6 +50,7 @@ export class FeatherSession implements ISession {
   private _state: SessionState;
   private _context: BrowserContext | null;
   private _pages: Map<string, Page>;
+  private _pageIds: Map<Page, string>;
 
   constructor(opts: {
     workspaceId: string;
@@ -70,13 +71,13 @@ export class FeatherSession implements ISession {
     this._state = "launching";
     this._context = null;
     this._pages = new Map();
+    this._pageIds = new Map();
   }
 
   setContext(context: BrowserContext): void {
     this._context = context;
     for (const page of context.pages()) {
-      const pageId = newId("page");
-      this._pages.set(pageId, page);
+      this.addPage(page);
     }
     this._state = "running";
   }
@@ -126,18 +127,22 @@ export class FeatherSession implements ISession {
       throw new SessionNotRunningError(this.sessionId, this._state);
     }
     const page = await this._context!.newPage();
-    const pageId = newId("page");
-    this._pages.set(pageId, page);
+    const pageId = this.addPage(page);
     return { pageId, page };
   }
 
   addPage(page: Page): string {
+    const existing = this._pageIds.get(page);
+    if (existing) return existing;
     const pageId = newId("page");
     this._pages.set(pageId, page);
+    this._pageIds.set(page, pageId);
     return pageId;
   }
 
   removePage(pageId: string): void {
+    const page = this._pages.get(pageId);
+    if (page) this._pageIds.delete(page);
     this._pages.delete(pageId);
   }
 
