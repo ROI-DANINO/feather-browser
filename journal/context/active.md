@@ -3,6 +3,9 @@
 **S3 — Currency & Security shipped on `dev`** (pushed `origin/dev` @ `ea0b34a`; `master` untouched).
 137 unit + 33 integration passing, typecheck clean, under **Fastify 5.8.5 + Playwright 1.60.0**.
 
+> **Sync (2026-06-03 23:36):** consolidation commit `a73ce95` (canonical-state reconcile) pushed to
+> `origin/dev`. Local `dev` is **0 ahead / 0 behind**. Clean baseline to start Phase 4 Step 0.
+
 The **Stabilization & Linux-Readiness program is functionally closed** — S1 ✅ S2 ✅ S3 ✅. Two
 sprints remain *explicitly deferred* (not blockers): `FEATHER_CHROMIUM_PATH` (weight) and
 `DebugCapture`/trace (observability).
