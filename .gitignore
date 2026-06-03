@@ -4,11 +4,12 @@ ops/
 log.md
 context/
 work/
-research/
+/research/
 docs/superpowers/
-docs/commands/
-.claude/
-skills/
+# Claude Code: track command/skill definitions, ignore machine-local state
+.claude/*
+!.claude/commands/
+.claude/settings.local.json
 schema.md
 raw/
 node_modules/
