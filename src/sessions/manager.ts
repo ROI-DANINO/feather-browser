@@ -130,6 +130,35 @@ export class SessionManager implements ISessionManager {
           data: { pageId },
         });
       });
+      page.on("framenavigated", async (frame) => {
+        if (frame !== page.mainFrame()) return;          // main frame only
+        const target = page.url();                       // capture target URL
+        try {
+          await page.waitForLoadState("domcontentloaded");
+        } catch {
+          /* best-effort: resolves instantly when already settled (SPA case) */
+        }
+        if (page.url() !== target) return;               // superseded by a newer navigation
+        let title = "";
+        let loadState = "unknown";
+        try {
+          title = await page.title();
+        } catch {
+          /* best-effort */
+        }
+        try {
+          loadState = await page.evaluate(() => document.readyState);
+        } catch {
+          /* best-effort */
+        }
+        void this.logger.log({
+          ts: new Date().toISOString(),
+          level: "info",
+          event: EVENTS.TAB_UPDATED,
+          sessionId: session.sessionId,
+          data: { pageId, url: page.url(), title, loadState },
+        });
+      });
     });
 
     this.registry.set(session.sessionId, session);

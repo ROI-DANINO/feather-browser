@@ -274,6 +274,106 @@ describe("SessionManager.launch — dynamic page tracking", () => {
     expect(tabCreatedLog![0].data).toMatchObject({ pageId: expect.stringMatching(/^page_/) });
   });
 
+  it("logs TAB_UPDATED on main-frame navigation with a settled title", async () => {
+    const { chromium } = await import("playwright");
+    const mockContextOn = vi.fn();
+    const mockPageOn = vi.fn();
+    const frame = {};
+    const mockPage = {
+      url: () => "http://settled.com",
+      title: async () => "Settled Title",
+      evaluate: async () => "complete",
+      mainFrame: () => frame,
+      waitForLoadState: async () => {},
+      on: mockPageOn,
+    };
+    (chromium.launchPersistentContext as vi.Mock).mockResolvedValueOnce({
+      pages: () => [],
+      newPage: vi.fn(),
+      close: vi.fn().mockResolvedValue(undefined),
+      on: mockContextOn,
+      tracing: { start: vi.fn(), stop: vi.fn() },
+    });
+    const logSpy = vi.spyOn(manager["logger"], "log");
+    const session = await manager.launch({ profile: { kind: "disposable" } });
+    const [, pageCallback] = mockContextOn.mock.calls.find(([evt]: [string]) => evt === "page")!;
+    pageCallback(mockPage);
+    const [, navCallback] = mockPageOn.mock.calls.find(([evt]: [string]) => evt === "framenavigated")!;
+    await navCallback(frame);
+    const log = logSpy.mock.calls.find(([e]) => e.event === "tab.updated");
+    expect(log).toBeDefined();
+    expect(log![0].sessionId).toBe(session.sessionId);
+    expect(log![0].data).toMatchObject({
+      pageId: expect.stringMatching(/^page_/),
+      url: "http://settled.com",
+      title: "Settled Title",
+      loadState: "complete",
+    });
+  });
+
+  it("does NOT log TAB_UPDATED for a non-main-frame navigation", async () => {
+    const { chromium } = await import("playwright");
+    const mockContextOn = vi.fn();
+    const mockPageOn = vi.fn();
+    const frame = {};
+    const otherFrame = {};
+    const mockPage = {
+      url: () => "http://settled.com",
+      title: async () => "Settled Title",
+      evaluate: async () => "complete",
+      mainFrame: () => frame,
+      waitForLoadState: async () => {},
+      on: mockPageOn,
+    };
+    (chromium.launchPersistentContext as vi.Mock).mockResolvedValueOnce({
+      pages: () => [],
+      newPage: vi.fn(),
+      close: vi.fn().mockResolvedValue(undefined),
+      on: mockContextOn,
+      tracing: { start: vi.fn(), stop: vi.fn() },
+    });
+    const logSpy = vi.spyOn(manager["logger"], "log");
+    await manager.launch({ profile: { kind: "disposable" } });
+    const [, pageCallback] = mockContextOn.mock.calls.find(([evt]: [string]) => evt === "page")!;
+    pageCallback(mockPage);
+    const [, navCallback] = mockPageOn.mock.calls.find(([evt]: [string]) => evt === "framenavigated")!;
+    await navCallback(otherFrame);
+    const log = logSpy.mock.calls.find(([e]) => e.event === "tab.updated");
+    expect(log).toBeUndefined();
+  });
+
+  it("does NOT log TAB_UPDATED when the navigation is superseded mid-settle", async () => {
+    const { chromium } = await import("playwright");
+    const mockContextOn = vi.fn();
+    const mockPageOn = vi.fn();
+    const frame = {};
+    let urlCalls = 0;
+    const mockPage = {
+      // first call (capture target) → first.com; second call (guard) → second.com
+      url: () => (urlCalls++ === 0 ? "http://first.com" : "http://second.com"),
+      title: async () => "Title",
+      evaluate: async () => "complete",
+      mainFrame: () => frame,
+      waitForLoadState: async () => {},
+      on: mockPageOn,
+    };
+    (chromium.launchPersistentContext as vi.Mock).mockResolvedValueOnce({
+      pages: () => [],
+      newPage: vi.fn(),
+      close: vi.fn().mockResolvedValue(undefined),
+      on: mockContextOn,
+      tracing: { start: vi.fn(), stop: vi.fn() },
+    });
+    const logSpy = vi.spyOn(manager["logger"], "log");
+    await manager.launch({ profile: { kind: "disposable" } });
+    const [, pageCallback] = mockContextOn.mock.calls.find(([evt]: [string]) => evt === "page")!;
+    pageCallback(mockPage);
+    const [, navCallback] = mockPageOn.mock.calls.find(([evt]: [string]) => evt === "framenavigated")!;
+    await navCallback(frame);
+    const log = logSpy.mock.calls.find(([e]) => e.event === "tab.updated");
+    expect(log).toBeUndefined();
+  });
+
   it("logs TAB_CLOSED when a dynamic page closes", async () => {
     const { chromium } = await import("playwright");
     const mockContextOn = vi.fn();
