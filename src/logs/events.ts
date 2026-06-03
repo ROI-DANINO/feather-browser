@@ -17,6 +17,7 @@ export const EVENTS = {
   SESSION_CLOSE_FAILED: "session.close.failed",
   TAB_OPENED: "tab.opened",
   TAB_CREATED: "tab.created",
+  TAB_UPDATED: "tab.updated",
   TAB_CLOSED: "tab.closed",
 } as const;
 

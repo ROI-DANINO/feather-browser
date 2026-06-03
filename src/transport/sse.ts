@@ -13,6 +13,7 @@ const LIFECYCLE_EVENTS = new Set<EventName>([
   "session.close.failed",
   "tab.opened",
   "tab.created",
+  "tab.updated",
   "tab.closed",
 ]);
 
