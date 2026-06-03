@@ -111,13 +111,19 @@ export class FeatherSession implements ISession {
   async getPageInfoList(): Promise<PageInfo[]> {
     const results: PageInfo[] = [];
     for (const [pageId, page] of this._pages.entries()) {
-      const loadState = await page.evaluate(() => document.readyState);
-      results.push({
-        pageId,
-        url: page.url(),
-        title: await page.title(),
-        loadState,
-      });
+      let title = "";
+      let loadState = "unknown";
+      try {
+        loadState = await page.evaluate(() => document.readyState);
+      } catch {
+        /* best-effort: page may be closed/crashed */
+      }
+      try {
+        title = await page.title();
+      } catch {
+        /* best-effort */
+      }
+      results.push({ pageId, url: page.url(), title, loadState });
     }
     return results;
   }

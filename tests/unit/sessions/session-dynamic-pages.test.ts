@@ -92,3 +92,36 @@ describe("FeatherSession.removePage", () => {
     expect(() => session.removePage("page_nonexistent")).not.toThrow();
   });
 });
+
+describe("FeatherSession.getPageInfoList — resilience (Item 3a)", () => {
+  function makeBadPage(url: string): Page {
+    return {
+      url: () => url,
+      title: async () => { throw new Error("page crashed"); },
+      evaluate: async () => { throw new Error("page crashed"); },
+      on: () => {},
+    } as any;
+  }
+
+  it("returns a best-effort entry instead of throwing when a page read fails", async () => {
+    const session = makeSession();
+    session.addPage(makeBadPage("http://crashed.com"));
+    const list = await session.getPageInfoList();
+    expect(list).toHaveLength(1);
+    expect(list[0].url).toBe("http://crashed.com");
+    expect(list[0].title).toBe("");
+    expect(list[0].loadState).toBe("unknown");
+  });
+
+  it("returns good entries alongside a failing page", async () => {
+    const session = makeSession();
+    session.addPage(makePage("http://good.com", "Good"));
+    session.addPage(makeBadPage("http://crashed.com"));
+    const list = await session.getPageInfoList();
+    expect(list).toHaveLength(2);
+    const good = list.find((p) => p.url === "http://good.com");
+    expect(good?.title).toBe("Good");
+    const bad = list.find((p) => p.url === "http://crashed.com");
+    expect(bad?.loadState).toBe("unknown");
+  });
+});
