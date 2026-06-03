@@ -6,7 +6,7 @@ A headless-first Chromium browser core for agentic automation, built around Play
 
 ## Status
 
-Phase 3 Complete | Stabilization & Linux-Readiness program (S1) in progress | 129 unit + 32 integration tests passing
+Phase 3 Complete | Stabilization & Linux-Readiness program closed (S1 + S2 + S3) | 137 unit + 33 integration tests passing | Fastify 5.8.5 + Playwright 1.60
 
 ## What It Does
 
@@ -54,8 +54,8 @@ See `docs/api-reference.md` for the full API reference (launch, navigate, snapsh
 ## Testing
 
 ```
-npm test                   # unit tests (98)
-npm run test:integration   # integration tests with real Chromium headless shell (27)
+npm test                   # unit tests (137)
+npm run test:integration   # integration tests with real Chromium headless shell (33)
 npm run test:measurement   # resource measurement scenarios (4)
 ```
 
@@ -67,6 +67,6 @@ See `docs/architecture.md` for a full walkthrough of the source layout and compo
 
 Phase 3 (Browser Core Stabilization & UI Readiness) is complete and merged to `master`.
 
-A short **Stabilization & Linux-Readiness program** now bridges Phase 3 → Phase 4: it patches dependencies, reduces weight (Linux-native Chromium), completes the tab-event model, and records the runtime and agentic decisions. See `docs/specs/2026-06-03-stabilization-linux-readiness-design.md`. Phase 4 (Visual Desktop Shell) begins after it. See `ROADMAP.md` and `PROGRESS.md`.
+The **Stabilization & Linux-Readiness program** that bridged Phase 3 → Phase 4 is now closed (S1 Foundation, S2 tab-layer & observability, S3 currency & security — all shipped on `dev`). It reconciled the docs and runtime decisions, completed the tab-event model and SSE stream, and migrated Fastify v4 → v5 and Playwright 1.50 → 1.60. See `docs/specs/2026-06-03-stabilization-linux-readiness-design.md`. **Phase 4 (Visual Desktop Shell) is next, beginning with Step 0 (research + plan).** See `ROADMAP.md` and `PROGRESS.md`.
 
 Feather Browser targets **Linux (Fedora)** as its primary platform.

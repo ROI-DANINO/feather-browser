@@ -2,11 +2,14 @@
 
 ## Current Phase
 
-Phase 3 complete (merged to `master` 2026-06-03). **Stabilization & Linux-Readiness program — S1 (Foundation)** in progress.
+Phase 3 complete (merged to `master` 2026-06-03). **Stabilization & Linux-Readiness program closed** (S1 + S2 + S3 all shipped on `dev`). Next: **ROADMAP Phase 4 Step 0** (Visual Desktop Shell — research + plan).
 
 ## Current State
 
-All Phase 3 milestones are closed (129 unit + 32 integration tests passing, typecheck clean). The Stabilization & Linux-Readiness program now bridges Phase 3 → Phase 4 in three themed sub-phases (S1/S2/S3); see `docs/specs/2026-06-03-stabilization-linux-readiness-design.md`. S1 (Foundation) reconciles the docs, writes ADR-0004 (runtime target) and ADR-0005 (agentic North Star), and runs two research spikes.
+All Phase 3 milestones are closed, and the Stabilization & Linux-Readiness program that bridged Phase 3 → Phase 4 is now functionally closed (137 unit + 33 integration tests passing, typecheck clean, under Fastify 5.8.5 + Playwright 1.60). See `docs/specs/2026-06-03-stabilization-linux-readiness-design.md`. The three themed sub-phases:
+- **S1 (Foundation)** ✅ — reconciled the docs, wrote ADR-0004 (runtime target) and ADR-0005 (agentic North Star), ran two research spikes.
+- **S2 (Tab-layer & Observability)** ✅ — idempotent page registration, `TAB_UPDATED` on settled navigation, observability hardening.
+- **S3 (Currency & Security)** ✅ — Fastify v4→v5 (zero source changes), Playwright 1.50→1.60, security checkpoint (dev-only Vitest audit risk accepted). See `docs/specs/2026-06-03-s3-security-checkpoint-findings.md`.
 
 ## Phase 3 Progress
 
@@ -109,4 +112,4 @@ Concrete gaps identified in the Phase 2 codebase that Phase 3 must close:
 
 ## Next
 
-S1 (Foundation) is the active work. After S1: brainstorm and plan S2 (Linux weight & observability), then S3 (currency & security: Fastify v5, Playwright bump), then hand off to ROADMAP Phase 4 Step 0.
+The stabilization program is closed. The next active milestone is **ROADMAP Phase 4 Step 0 — research + plan the Visual Desktop Shell** (Tauri/WebKitGTK vs GTK4-native; Wayland browser-surface embedding unresolved, must prototype; host-primary runtime per ADR-0004; Electron eliminated). Explicitly deferred (not blockers): the `FEATHER_CHROMIUM_PATH` weight sprint (sudo-gated) and the `DebugCapture`/trace observability sprint.

@@ -27,12 +27,12 @@ Act as a Senior Software Architect and elite pair programmer. Focus on productio
 
 ## Current Phase
 
-**Stabilization & Linux-Readiness program — S1 (Foundation)** (active as of 2026-06-03).
+**ROADMAP Phase 4 Step 0 — Visual Desktop Shell (research + plan)** is the next active milestone (as of 2026-06-03).
 
-Phase 3 (Browser Core Stabilization & UI Readiness) is complete and merged to `master`. A short bridge program now hardens the core before Phase 4 (the visual shell). Feather targets **Linux (Fedora)**; runtime is **host-primary** (ADR-0004).
+Phase 3 (Browser Core Stabilization & UI Readiness) is complete and merged to `master`. The short bridge program that hardened the core before Phase 4 — the **Stabilization & Linux-Readiness program (S1 + S2 + S3)** — is now closed; all three sub-phases shipped on `dev`. Feather targets **Linux (Fedora)**; runtime is **host-primary** (ADR-0004).
 
 - Program spec: `docs/specs/2026-06-03-stabilization-linux-readiness-design.md`
-- Current S1 plan: `docs/plans/2026-06-03-s1-foundation.md`
+- Current phase state: `journal/ops/phase.md`
 - Current progress: `PROGRESS.md`
 - Full roadmap: `ROADMAP.md`
 
@@ -69,9 +69,9 @@ Do not start web research, architecture comparison, or implementation before the
 
 ## Tech Stack
 
-TypeScript 5.4 / Node.js 20 / Fastify 4.x / Playwright 1.50 / Zod 3.x / Vitest
+TypeScript 5.4 / Node.js 20 / Fastify 5.8 / Playwright 1.60 / Zod 3.x / Vitest
 
-> **Upgrade pending (program phase S3):** Fastify 4 → 5 (v4 LTS ended June 2025 — security) and Playwright 1.50 → latest 1.5x. Do not assume these are done until S3 closes.
+> Fastify 4 → 5 and Playwright 1.50 → 1.60 were completed in program phase S3 (2026-06-03). The Fastify v5 migration required zero source changes.
 
 Before implementing anything non-trivial: **research the official docs first**. APIs change between major versions. See `docs/tech-stack-guidelines.md` for the full guide and decision checklist.
 
