@@ -1,54 +1,43 @@
-## Active — Stabilization program closed; next is ROADMAP Phase 4 Step 0
+## Active — Phase 4 Step 0 DONE; next is security research
 
-S1 ✅ S2 ✅ S3 ✅. The Stabilization & Linux-Readiness program is functionally closed on `dev`
-(`origin/dev` @ `ea0b34a`, `master` untouched). 137 unit + 33 integration green under Fastify
-5.8.5 + Playwright 1.60.0. Resume: brainstorm + plan **ROADMAP Phase 4 Step 0**.
+Phase 4 Step 0 complete (proven by spikes — Cookie Mine works end-to-end on a real site;
+agent acted as Roi in his live ChatGPT). See `docs/specs/adr-0007-phase-4-shell-sequencing.md`
+and `journal/ops/sessions/phase4-step0-cookie-mine-20260604-0139.md`.
 
-## Quick housekeeping — ✅ DONE
+## Next track (recommend the first)
 
-- [x] **Reconcile stale user-facing docs** (README/PROGRESS → program closed, 137+33, Fastify
-  5.8.5 + Playwright 1.60) — landed in `a73ce95`.
-- [x] **Push the consolidation commit** — `a73ce95` pushed to `origin/dev` (s3-push-verify session);
-  local `dev` 0 ahead / 0 behind.
-
-## Parked
-
-- [ ] **Graduate `rnd` → `dev`** — ADR-0006 (agent interface neutrality) + ROADMAP Phase-5 reframe
-  live on `origin/rnd`; fold into `dev` before/with Phase 4 Step 0.
-
-## Next track (pick one — recommend Phase 4 Step 0)
-
-- [ ] **ROADMAP Phase 4 Step 0 — Visual Desktop Shell (brainstorm + plan).** Candidates:
-  Tauri/WebKitGTK vs GTK4-native, both with Playwright-managed Chromium. Wayland browser-surface
-  embedding is unresolved and must be prototyped. Host-primary runtime (ADR-0004); Electron
-  eliminated. Begins with the brainstorming skill.
-- [ ] **Deferred — `FEATHER_CHROMIUM_PATH` (weight).** Spike-gated: `sudo dnf install chromium`
-  (Fedora `updates` repo, NOT RPM Fusion) + launch probe → then env var in `config.ts` +
-  `executablePath` in `modes.ts`. **Roi runs the sudo step** (stop-for-sudo).
-- [ ] **Deferred — observability sprint.** `DebugCapture` (`src/debug/capture.ts`) is dead code:
-  never instantiated, `debug.trace` never read. Wire `start()` after `setContext`, `finalize()`
-  before `context.close()`, read the flag in `launch()`; then the trace e2e test.
+- [ ] **SECURITY RESEARCH — HIGHEST PRIORITY.** A **highly-secure open-source password
+  manager** + a **secure database/storage format** for the future credentials vault (Phase 5).
+  Evaluate: threat model, encryption-at-rest, key management, recovery, auditability, license,
+  Linux fit. (Roi's explicit next ask; "security is a very high priority.")
+- [ ] **Productionize attach-don't-launch** into `src/` — anti-detection lives only in spikes;
+  `src/browser/modes.ts` has none. Spawn Chromium normally + `connectOverCDP`
+  (`navigator.webdriver=false`). Pairs with `FEATHER_CHROMIUM_PATH`.
+- [ ] **`FEATHER_CHROMIUM_PATH`** (sudo, Roi runs `dnf install chromium`) — real Chromium
+  binary also drops the cosmetic "Chrome for Testing" banner. Then env var in `config.ts` +
+  `executablePath` in `modes.ts`.
 - [ ] **Graduate `rnd`** (ADR-0006 + ROADMAP Phase-5 edit) → `dev`. Still parked.
+- [ ] **Deferred — observability sprint:** wire `DebugCapture` (dead code) — `start()` after
+  `setContext`, `finalize()` before `context.close()`, read `debug.trace` in `launch()`; trace
+  e2e.
 
-## Exit
+## Parked (Phase 5; frame as user-authorized continuity, NOT "stealth/bypass")
 
-- [x] S2 program closed → ~~hand off to Phase 4 Step 0~~ (S3 also done; whole stabilization
-  program closed). **Phase 4 Step 0 is now the live milestone.**
-
-## Parked (Phase 5+)
-
-- Agent perception layer (Actionable Tree / a11y-tree / ID mapping) →
-  `research/2026-06-03-phase-5-agent-perception-layer-notes.md`. Revisit at Phase 5 Step 0.
+- **Learned behavioral fidelity** — agent acts with Roi's mouse/typing signature, learned by
+  observing real usage.
+- **Observe-to-learn** — agent sees Roi's screen on request → understand context; later learn
+  workflows from demonstration.
+- **Detection self-emulation** — model sites' bot-ID techniques to find weak spots (defensive).
+- **Agent perception layer** — `research/2026-06-03-phase-5-agent-perception-layer-notes.md`.
+- Details: `journal/raw/_inbox/2026-06-04-session-insights-behavioral-fidelity-security.md`.
 
 ## Done
 
-### S3 — Currency & Security ✅ (2026-06-03, s3-currency-security)
-- [x] Brainstormed + design spec (`fcfd2f6`); implementation plan (`15dedd0`)
-- [x] Step 0 probe PASS (Fastify v5 + fastify-sse-v2, throwaway branch) → clean-bump path
-- [x] Fastify v4→v5 — zero source changes (`2fb271e`)
-- [x] Playwright ^1.50→^1.60, Chromium 148 unchanged (`f6daea2`)
-- [x] Security checkpoint — audit triage (dev-only, no forced vitest@4) + API review (`ea0b34a`)
-- [x] Reviewed diff, pushed `origin/dev`; blog/0005; stop-for-sudo memory
+### Phase 4 Step 0 ✅ (2026-06-04, phase4-step0-cookie-mine)
+- [x] ADR-0007 (defer seamless shell; headed-Chromium stopgap; prove loop first; stack = open R&D)
+- [x] 6 no-install spikes: headed Chromium on Wayland; embed-blocker dissolved; Cookie Mine loop;
+  bot-detection found; attach-don't-launch beat it; agent sent "hello world" in real ChatGPT
+- [x] Insights captured (inbox + 3 memories); real login wiped; blog/0006 published
 
-### Earlier (see archive/tasks-20260603-2025.md and prior)
-- [x] S2 core (s2-implementation) · S2 design · repo cleanup · Task 6b · S1 Foundation · Pre-S1
+### Earlier (see ops/sessions/ and archive/)
+- [x] S3 Currency & Security · S2 core · S2 design · repo cleanup · Task 6b · S1 Foundation

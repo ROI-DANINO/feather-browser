@@ -4,9 +4,11 @@ Use this desk for browser engine research, shell architecture, extension compati
 
 ## Current Focus
 
-Stabilization & Linux-Readiness program **functionally closed (S1✅ S2✅ S3✅)** on `dev`. Next
-milestone: **ROADMAP Phase 4 Step 0** (research + plan the Visual Desktop Shell). Deferred (not
-blockers): `FEATHER_CHROMIUM_PATH` (weight, sudo-gated) and `DebugCapture`/trace (observability).
+**Phase 4 Step 0 DONE (2026-06-04)** — answered by spikes, not specs. Cookie Mine proven
+end-to-end on a real site (agent acted in Roi's live ChatGPT). Next: **security research**
+(OSS password manager + secure DB format for the credentials vault). Deferred (not blockers):
+`FEATHER_CHROMIUM_PATH` (weight, sudo-gated; also removes the "Chrome for Testing" banner) and
+`DebugCapture`/trace (observability). Productionizing attach-don't-launch into `src/` is open.
 
 ## Dependency baseline (post-S3, 2026-06-03)
 
@@ -21,8 +23,25 @@ blockers): `FEATHER_CHROMIUM_PATH` (weight, sudo-gated) and `DebugCapture`/trace
 - **Foundation:** Playwright-managed Chromium (ADR-0002)
 - **Runtime:** Host-primary; Flatpak distribution Phase 4+; Podman optional for headless/CI (ADR-0004)
 - **Platform:** Linux-only (Fedora target). Electron eliminated — bundles a second Chromium (anti-Feather).
-- **Phase 4 shell candidates:** Tauri/WebKitGTK or GTK4-native. Wayland browser-surface embedding unresolved — must be prototyped.
-- **Cookie Mine model:** Phase 4 establishes the long-running human session that Phase 5+ agents piggyback on (ADR-0003).
+- **Phase 4 shell (ADR-0007):** target end-state = "painted-in" one-window shell (headless
+  Chromium + screencast + forwarded input). Display *model* is the direction; the
+  *implementation stack* is **open R&D, not locked** (not Tauri/GTK/Rust/Zig by decree). The
+  seamless shell is **deferred** to a later dedicated R&D phase; **headed Chromium is the
+  stopgap** human surface now. WebKit-as-browser-surface is dead (need Chromium for trust).
+- **Wayland surface (spiked 2026-06-04):** Chromium runs **headed natively on Wayland**
+  (`--ozone-platform=wayland`, no XWayland needed). On `niri` (tiling), windows are tiles —
+  the app cannot self-size/place. The "Wayland can't embed" blocker is **dissolved** by the
+  separate-window / headless-painted-in model (no foreign window to embed). niri-vs-GNOME
+  floating behavior parked for the shell phase.
+- **Anti-detection — attach, don't launch (spiked 2026-06-04):** a Playwright-*launched*
+  browser is flagged as a bot (Google/Cloudflare walls; `navigator.webdriver=true`). Spawning
+  Chromium *normally* (no automation flags) + `connectOverCDP` yields
+  `navigator.webdriver=false` and gets past real CAPTCHAs (logged into ChatGPT clean).
+  **Bot-detection is the #1 risk** to Cookie Mine. Current `src/browser/modes.ts` has NO
+  anti-detection (old stealth patches dropped) — productionizing this is open work.
+- **Cookie Mine model:** Phase 4 establishes the long-running human session that Phase 5+
+  agents piggyback on (ADR-0003). **Proven on a real site 2026-06-04**: an agent tab
+  (`context.newPage` == `openTab`) inherits the human's live login.
 - **Agentic North Star:** token/context efficiency is a standing constraint; MCP tool selection deferred to Phase 5 Step 0 after 2026-07-28 spec final (ADR-0005).
 
 ## S2 Items — implementation status (plan: 2026-06-03-s2-tab-layer-observability.md)

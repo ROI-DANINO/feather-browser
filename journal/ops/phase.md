@@ -1,13 +1,11 @@
 ---
-phase: stabilization-linux-readiness
-sub_phase: S3-shipped-program-closed
-plan: docs/plans/2026-06-03-s3-currency-security.md
-spec: docs/specs/2026-06-03-s3-currency-security-design.md
-findings: docs/specs/2026-06-03-s3-security-checkpoint-findings.md
-step: "program functionally closed -> next is ROADMAP Phase 4 Step 0"
-prior_phase: phase-3-complete
-sessions: ["1A-reconcile✅", "1B-decisions✅", "1C-spikes✅", "task-6b-blog+skill✅", "s2-brainstorm-start-partial", "repo-cleanup-journal✅(detour)", "s2-tab-design✅", "s2-implementation✅", "s3-currency-security✅", "s3-push-verify✅(ops)"]
+phase: phase-4-visual-desktop-shell
+sub_phase: step-0-done-cookie-mine-proven
+adr: docs/specs/adr-0007-phase-4-shell-sequencing.md
+step: "Phase 4 Step 0 complete (proven by spikes); next is security research (credentials vault)"
+prior_phase: stabilization-linux-readiness-closed
+sessions: ["...s3-currency-security✅", "s3-push-verify✅(ops)", "phase4-step0-cookie-mine✅"]
 blocking: null
-next: "ROADMAP Phase 4 Step 0 — research + plan the Visual Desktop Shell (brainstorm first). Alternatives: deferred FEATHER_CHROMIUM_PATH (weight, sudo-gated) or DebugCapture/trace (observability) sprints, or graduate rnd (ADR-0006 + ROADMAP Phase-5 edit) to dev."
-note: "Consolidation commit a73ce95 (canonical-state reconcile) pushed to origin/dev; local dev 0 ahead/0 behind. S3 SHIPPED on dev @ ea0b34a (master untouched @ b278409). Stabilization & Linux-Readiness program FUNCTIONALLY CLOSED (S1✅ S2✅ S3✅). Fastify v4->v5 with ZERO source changes (Zod validation, object-form listen, no connection/hostname/getDefaultRoute; probe-proven fastify-sse-v2 compat). Playwright ^1.50->^1.60, bundled Chromium 148 unchanged. Security: npm audit = 5 dev-only Vitest vulns accepted-risk (no forced vitest@4), API surface review intact. 137 unit + 33 integration green under Fastify 5.8.5 + Playwright 1.60.0, typecheck clean. blog/0005 published. DEFERRED (not blockers): FEATHER_CHROMIUM_PATH (sudo-gated), DebugCapture/trace observability. PARKED: rnd graduation."
+next: "SECURITY RESEARCH (highest priority): a highly-secure open-source password manager + a secure database/storage format for the future credentials vault (Phase 5). Then: productionize attach-don't-launch into src/; graduate rnd; FEATHER_CHROMIUM_PATH (sudo)."
+note: "Phase 4 Step 0 done by SPIKING not speccing. ADR-0007: defer seamless low-latency shell to a later dedicated R&D phase; headed-Chromium STOPGAP now; prove Cookie Mine loop first (DONE). Target end-state = painted-in one-window shell (headless Chromium + screencast + forwarded input) but the IMPLEMENTATION STACK IS OPEN R&D, NOT LOCKED (no commitment to Rust/GTK/Tauri/Zig). 6 no-install spikes on Fedora/Wayland/niri (Playwright 1.60/Chromium 148): (1) Chromium headed native on Wayland, niri tiles it; (2) Wayland-embed blocker dissolved via separate-window/painted-in; (3) Cookie Mine loop on practice site OK; (4) real site → BOT DETECTION (Google/Cloudflare) — src/browser/modes.ts has NO anti-detection; (5) ATTACH-DON'T-LAUNCH (spawn normally + connectOverCDP → navigator.webdriver=false) logged into real ChatGPT no CAPTCHA; (6) agent sent 'hello world' as Roi in his live ChatGPT (authorized), login then wiped. Bot-detection = #1 risk. 'Chrome for Testing' banner is cosmetic (real Chromium binary removes it). rnd graduation deferred (Phase-5 framing). Phase-5 ideas captured: behavioral fidelity, observe-to-learn, detection self-emulation — framed as user-authorized continuity, never stealth/bypass."
 ---

@@ -1,67 +1,48 @@
-## Active — S3 shipped; Stabilization program closed; next is ROADMAP Phase 4 Step 0
+## Active — Phase 4 Step 0 DONE (Cookie Mine proven on a real site); next is security research
 
-**S3 — Currency & Security shipped on `dev`** (pushed `origin/dev` @ `ea0b34a`; `master` untouched).
-137 unit + 33 integration passing, typecheck clean, under **Fastify 5.8.5 + Playwright 1.60.0**.
+**Phase 4 Step 0 is complete** — done by *spiking*, not speccing. On `dev` (tracking commit at
+stop). The big unknowns are answered by observation, and the product thesis breathed for the
+first time: the agent logged into Roi's **real ChatGPT** and **sent a message as him**.
 
-> **Sync (2026-06-03 23:36):** consolidation commit `a73ce95` (canonical-state reconcile) pushed to
-> `origin/dev`. Local `dev` is **0 ahead / 0 behind**. Clean baseline to start Phase 4 Step 0.
+### What we proved (6 no-install spikes; Fedora/Wayland/niri, Playwright 1.60 / Chromium 148)
+- Headed Chromium runs **natively on Wayland**; niri tiles it (app can't self-place).
+- The Wayland-embedding blocker is **dissolved** (tiling + headless painted-in model).
+- Cookie Mine loop works: an agent tab (`context.newPage` == `openTab`) inherits the human
+  session — confirmed on a practice site AND on real ChatGPT.
+- **Bot-detection is the #1 risk.** A naked Playwright-launched browser got walled by Google +
+  Cloudflare. Fix: **attach, don't launch** (spawn Chromium normally, `connectOverCDP` →
+  `navigator.webdriver=false`) → logged into ChatGPT with no CAPTCHA.
+- Agent sent "hello world" in Roi's live ChatGPT (authorized). Login then wiped from disk.
 
-The **Stabilization & Linux-Readiness program is functionally closed** — S1 ✅ S2 ✅ S3 ✅. Two
-sprints remain *explicitly deferred* (not blockers): `FEATHER_CHROMIUM_PATH` (weight) and
-`DebugCapture`/trace (observability).
-
-What landed this session (3 commits + spec + plan, all on `dev`):
-- ✅ **Fastify v4→v5** (`2fb271e`) — **zero source changes**. Every v5 breaking change was N/A
-  (Zod validation not Fastify schemas; object-form `listen()`; no `connection`/`hostname`/
-  `getDefaultRoute`; DELETE callers send non-empty bodies). Probe-proven `fastify-sse-v2` compat.
-- ✅ **Playwright `^1.50→^1.60`** (`f6daea2`) — latest stable; bundled Chromium **148 unchanged**,
-  so measurement docs + system-Chromium spike stay valid (no re-run).
-- ✅ **Security checkpoint** (`ea0b34a`) — audit triage (5 dev-only Vitest vulns, accepted risk,
-  no forced `vitest@4`) + API surface review (all intact). Findings:
-  `docs/specs/2026-06-03-s3-security-checkpoint-findings.md`.
-
-Spec: `docs/specs/2026-06-03-s3-currency-security-design.md`. Plan:
-`docs/plans/2026-06-03-s3-currency-security.md`. Blog: `blog/0005`.
+### Decisions (ADR-0007)
+- Defer the seamless low-latency shell to a later **dedicated R&D phase**; **headed-Chromium
+  stopgap** now; **prove the loop first** (done).
+- Target end-state = "painted-in" one-window shell — but the **implementation stack is open
+  R&D, not locked** (no commitment to Rust/GTK/Tauri/Zig).
+- `rnd` graduation deferred (Phase-5 framing, doesn't touch the shell).
 
 ## Next track (recommend the first)
 
-- [ ] **ROADMAP Phase 4 Step 0** — research + plan the Visual Desktop Shell (Tauri/WebKitGTK vs
-  GTK4-native; Wayland browser-surface embedding unresolved — must prototype). This is the next
-  milestone now that stabilization is closed. Begins with brainstorm.
-- [ ] **Deferred — `FEATHER_CHROMIUM_PATH`** (weight): spike-gated on `sudo dnf install chromium`
-  (Fedora `updates` repo) + launch probe, then env var in `config.ts` + `executablePath` in
-  `modes.ts`. **Roi runs the sudo step.**
-- [ ] **Deferred — observability sprint**: wire `DebugCapture` (`src/debug/capture.ts` is dead
-  code — never instantiated, `debug.trace` never read). `start()` after `setContext`, `finalize()`
-  before `context.close()`, read the flag in `launch()`; then the trace e2e test.
+- [ ] **SECURITY RESEARCH (highest priority):** a **highly-secure open-source password manager**
+  + a **secure database/storage format** for the future credentials vault (Phase 5). Threat
+  model, encryption-at-rest, key management, auditability, license. (Roi's explicit next ask.)
+- [ ] **Productionize attach-don't-launch** into `src/` (anti-detection lives only in spikes
+  now; `src/browser/modes.ts` has none). Pairs with `FEATHER_CHROMIUM_PATH` (real Chromium
+  binary → also drops the "Chrome for Testing" banner; sudo, Roi runs).
 - [ ] **Graduate `rnd`** (ADR-0006 + ROADMAP Phase-5 edit) → `dev`. Still parked.
+
+## Ideas parked (Phase 5; frame as user-authorized continuity, never "stealth/bypass")
+
+- Learned **behavioral fidelity** (agent acts with Roi's mouse/typing signature).
+- **Observe-to-learn** (agent sees Roi's screen on request → understand context, later learn
+  workflows from demonstration).
+- **Detection self-emulation** (model sites' bot-ID to find weak spots; defensive self-test).
+- Agent perception layer (Actionable Tree / a11y-tree) — `research/2026-06-03-phase-5-agent-perception-layer-notes.md`.
+
+Details: `journal/raw/_inbox/2026-06-04-session-insights-behavioral-fidelity-security.md`.
 
 ## Flags
 
-- **STALE user-facing docs (do early next session):** `README.md` and `PROGRESS.md` still say
-  "Phase 3 Complete / S1 in progress / 129 unit + 32 integration." Reality: S1+S2+S3 done,
-  stabilization program closed, **137 unit + 33 integration**, Fastify 5.8.5 + Playwright 1.60.
-  They sit outside the `/stop` journal scope, so they weren't updated. Quick docs-reconciliation.
-- **Possibly-unpushed tracking commit:** the `/stop` handoff commit may be local-only — check
-  `git status -sb`; if `dev` is ahead of `origin/dev`, push it (policy: `dev` only).
-- `FEATHER_HOST` can override bind to `0.0.0.0` — safe default `127.0.0.1`; add a guardrail/warning
-  if Feather is ever packaged. (Findings doc.)
-- Vitest-toolchain vulns will reappear in any `npm audit`; deferral of `vitest@4` is recorded —
-  don't re-triage from scratch.
-
-## Parked (Phase 5+)
-
-- **Agent perception layer** — Actionable Tree / a11y-tree / numeric ID mapping.
-  `research/2026-06-03-phase-5-agent-perception-layer-notes.md`. Revisit at Phase 5 Step 0;
-  validate against Playwright MCP's a11y-snapshot model first. ADR-0005 governs.
-
-## Done
-
-### S3 — Currency & Security ✅ (2026-06-03, s3-currency-security)
-- [x] Brainstormed + spec (`fcfd2f6`); plan (`15dedd0`)
-- [x] Step 0 probe PASS (throwaway branch) → clean-bump path
-- [x] Fastify v5 (zero code), Playwright 1.60, security checkpoint → 137+33 green, pushed `dev`
-- [x] blog/0005; stop-for-sudo memory saved
-
-### Earlier (see ops/sessions/ and archive/)
-- [x] S2 core (s2-implementation) · S2 design · repo cleanup · Task 6b · S1 Foundation · Pre-S1
+- Shell stack is **active R&D** — don't let any doc imply it's locked.
+- Anti-detection is spike-only; not in `src/` yet.
+- "Chrome for Testing" banner is cosmetic (real Chromium binary removes it).
