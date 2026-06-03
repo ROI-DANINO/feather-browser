@@ -4,9 +4,17 @@ Use this desk for browser engine research, shell architecture, extension compati
 
 ## Current Focus
 
-Stabilization & Linux-Readiness program — **S2 core implemented (3 of 4 items, on `dev`).**
-Plan: `docs/plans/2026-06-03-s2-tab-layer-observability.md`. Next: pick S3 (currency/security)
-or the deferred observability work; then ROADMAP Phase 4 Step 0.
+Stabilization & Linux-Readiness program **functionally closed (S1✅ S2✅ S3✅)** on `dev`. Next
+milestone: **ROADMAP Phase 4 Step 0** (research + plan the Visual Desktop Shell). Deferred (not
+blockers): `FEATHER_CHROMIUM_PATH` (weight, sudo-gated) and `DebugCapture`/trace (observability).
+
+## Dependency baseline (post-S3, 2026-06-03)
+
+- **Fastify 5.8.5** (was v4; v4 LTS ended 2025-06-30). Migration needed **zero source changes** —
+  Feather validates with Zod (no Fastify `schema:` blocks, so v5's full-schema requirement is
+  N/A), `listen()` already object-form, no `request.connection`/`hostname`/`getDefaultRoute` usage.
+- **Playwright 1.60.0** (floor `^1.60.0`). Bundled Chromium **148** (148.0.7778.96).
+- `fastify-sse-v2@4.2.2`, zod ^3, vitest ^2 unchanged.
 
 ## Architecture Decisions
 
@@ -42,5 +50,8 @@ or the deferred observability work; then ROADMAP Phase 4 Step 0.
 
 ## Key Spike Results
 
-- **fastify-sse-v2 v5 compat** (`raw/_inbox/spike-fastify-sse-v2-v5-compat.md`): peerDep `>=4` covers v5 by range but only tested v4 — NOT proven. S3 must test explicitly.
+- **fastify-sse-v2 v5 compat** — **RESOLVED (S3, 2026-06-03):** proven compatible with Fastify
+  **5.8.5**. A throwaway-branch probe ran the full suite + a live SSE stream against v5 — all
+  green (`sse.integration.test.ts` + `tab-updated.integration.test.ts` included). The peerDep
+  `>=4` claim held. Hand-rolled-SSE contingency was defined but unused. (Was: untested.)
 - **System Chromium executablePath** (`raw/_inbox/spike-system-chromium-executablepath.md`): not installed; needs `sudo dnf install chromium` from the standard Fedora `updates` repo (NOT RPM Fusion) before the probe can run. Version 148.0.7778.215 — same major as bundled (148.0.7778.96), so version-skew risk is low.

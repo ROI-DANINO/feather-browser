@@ -1,12 +1,13 @@
 ---
 phase: stabilization-linux-readiness
-sub_phase: S2-core-implemented
-plan: docs/plans/2026-06-03-s2-tab-layer-observability.md
-spec: docs/specs/2026-06-03-s2-tab-layer-observability-design.md
-step: "pick-next-track: S3 brainstorm | deferred-observability | graduate-rnd"
+sub_phase: S3-shipped-program-closed
+plan: docs/plans/2026-06-03-s3-currency-security.md
+spec: docs/specs/2026-06-03-s3-currency-security-design.md
+findings: docs/specs/2026-06-03-s3-security-checkpoint-findings.md
+step: "program functionally closed -> next is ROADMAP Phase 4 Step 0"
 prior_phase: phase-3-complete
-sessions: ["1A-reconcile✅", "1B-decisions✅", "1C-spikes✅", "task-6b-blog+skill✅", "s2-brainstorm-start-partial", "repo-cleanup-journal✅(detour)", "s2-tab-design✅", "s2-implementation✅"]
+sessions: ["1A-reconcile✅", "1B-decisions✅", "1C-spikes✅", "task-6b-blog+skill✅", "s2-brainstorm-start-partial", "repo-cleanup-journal✅(detour)", "s2-tab-design✅", "s2-implementation✅", "s3-currency-security✅"]
 blocking: null
-next: "Pick next track — recommend S3 (currency/security) brainstorm. Alternatives: deferred observability/DebugCapture wiring, FEATHER_CHROMIUM_PATH spike, or graduate rnd/ADR-0006 to dev. After S2 program closes → ROADMAP Phase 4 Step 0."
-note: "S2 CORE COMPLETE (3 of 4 items) on dev @ ea4e30d. Shipped: idempotent page registration (dup-reg bug killed), TAB_UPDATED settled-only (catalog+SSE+emission+e2e test), getPageInfoList resilience. 137 unit + 33 integration green, typecheck clean, pushed origin/dev. CUT from S2: trace e2e + DebugCapture wiring — found DebugCapture is dead code (never instantiated, debug.trace never read); deferred to observability sprint (stabilization discipline). FEATHER_CHROMIUM_PATH still spike-gated. blog/0004 published. master untouched."
+next: "ROADMAP Phase 4 Step 0 — research + plan the Visual Desktop Shell (brainstorm first). Alternatives: deferred FEATHER_CHROMIUM_PATH (weight, sudo-gated) or DebugCapture/trace (observability) sprints, or graduate rnd (ADR-0006 + ROADMAP Phase-5 edit) to dev."
+note: "S3 SHIPPED on dev @ ea0b34a (master untouched @ b278409). Stabilization & Linux-Readiness program FUNCTIONALLY CLOSED (S1✅ S2✅ S3✅). Fastify v4->v5 with ZERO source changes (Zod validation, object-form listen, no connection/hostname/getDefaultRoute; probe-proven fastify-sse-v2 compat). Playwright ^1.50->^1.60, bundled Chromium 148 unchanged. Security: npm audit = 5 dev-only Vitest vulns accepted-risk (no forced vitest@4), API surface review intact. 137 unit + 33 integration green under Fastify 5.8.5 + Playwright 1.60.0, typecheck clean. blog/0005 published. DEFERRED (not blockers): FEATHER_CHROMIUM_PATH (sudo-gated), DebugCapture/trace observability. PARKED: rnd graduation."
 ---

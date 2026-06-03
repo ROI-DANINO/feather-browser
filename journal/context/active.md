@@ -1,54 +1,64 @@
-## Active — S2 core implementation COMPLETE (3 of 4 items); pick next track
+## Active — S3 shipped; Stabilization program closed; next is ROADMAP Phase 4 Step 0
 
-**S2 core shipped on `dev` (pushed `origin/dev` @ `ea4e30d`).** All three scoped items
-implemented via TDD, 137 unit + 33 integration passing, typecheck clean:
+**S3 — Currency & Security shipped on `dev`** (pushed `origin/dev` @ `ea0b34a`; `master` untouched).
+137 unit + 33 integration passing, typecheck clean, under **Fastify 5.8.5 + Playwright 1.60.0**.
 
-- ✅ **Item 1 — Dup-registration fix.** Idempotent `addPage` keyed on the `Page` object
-  (reverse map `Page → pageId`); `setContext`/`openTab` route through it; `removePage` clears
-  both maps. Two-ids-per-tab bug killed. (`4fdf9cc`)
-- ✅ **Item 2 — TAB_UPDATED (settled-only).** `EVENTS` + SSE `LIFECYCLE_EVENTS` entry;
-  `framenavigated` main-frame handler with `waitForLoadState("domcontentloaded")` + supersede
-  guard; payload `{ pageId, url, title, loadState }`; real-Chromium e2e test. (`ef87440`,
-  `6f35876`, `ea4e30d`)
-- ✅ **Item 3a — getPageInfoList resilience.** Per-page try/catch → best-effort
-  `loadState:"unknown"`. (`42c73c3`)
+The **Stabilization & Linux-Readiness program is functionally closed** — S1 ✅ S2 ✅ S3 ✅. Two
+sprints remain *explicitly deferred* (not blockers): `FEATHER_CHROMIUM_PATH` (weight) and
+`DebugCapture`/trace (observability).
 
-Plan: `docs/plans/2026-06-03-s2-tab-layer-observability.md`.
+What landed this session (3 commits + spec + plan, all on `dev`):
+- ✅ **Fastify v4→v5** (`2fb271e`) — **zero source changes**. Every v5 breaking change was N/A
+  (Zod validation not Fastify schemas; object-form `listen()`; no `connection`/`hostname`/
+  `getDefaultRoute`; DELETE callers send non-empty bodies). Probe-proven `fastify-sse-v2` compat.
+- ✅ **Playwright `^1.50→^1.60`** (`f6daea2`) — latest stable; bundled Chromium **148 unchanged**,
+  so measurement docs + system-Chromium spike stay valid (no re-run).
+- ✅ **Security checkpoint** (`ea0b34a`) — audit triage (5 dev-only Vitest vulns, accepted risk,
+  no forced `vitest@4`) + API surface review (all intact). Findings:
+  `docs/specs/2026-06-03-s3-security-checkpoint-findings.md`.
 
-**Resume here:** pick the next track. Recommended = brainstorm **S3** (program order). Options below.
+Spec: `docs/specs/2026-06-03-s3-currency-security-design.md`. Plan:
+`docs/plans/2026-06-03-s3-currency-security.md`. Blog: `blog/0005`.
 
-## Next options
+## Next track (recommend the first)
 
-- [ ] **S3 — Currency & security (brainstorm).** Fastify v4→v5 (MUST test `fastify-sse-v2` compat
-  first — `TAB_UPDATED` now rides SSE); Playwright bump; security checkpoint.
-- [ ] **Deferred observability sprint — trace + `DebugCapture` wiring.** `DebugCapture`
-  (`src/debug/capture.ts`) is dead code: never instantiated, `debug.trace` never read, `trace.zip`
-  never produced. Wire `start()` after `setContext`, `finalize()` before `context.close()`, read
-  the flag in `launch()`. Cut from S2 deliberately (stabilization discipline).
-- [ ] **`FEATHER_CHROMIUM_PATH`** — spike-gated (`sudo dnf install chromium` + launch probe), then
-  `config.ts` env var + `executablePath` in `modes.ts`. Different theme (weight).
-- [ ] **Graduate `rnd` planning changes (ADR-0006 + ROADMAP Phase-5 edit) → `dev`.** Still parked.
+- [ ] **ROADMAP Phase 4 Step 0** — research + plan the Visual Desktop Shell (Tauri/WebKitGTK vs
+  GTK4-native; Wayland browser-surface embedding unresolved — must prototype). This is the next
+  milestone now that stabilization is closed. Begins with brainstorm.
+- [ ] **Deferred — `FEATHER_CHROMIUM_PATH`** (weight): spike-gated on `sudo dnf install chromium`
+  (Fedora `updates` repo) + launch probe, then env var in `config.ts` + `executablePath` in
+  `modes.ts`. **Roi runs the sudo step.**
+- [ ] **Deferred — observability sprint**: wire `DebugCapture` (`src/debug/capture.ts` is dead
+  code — never instantiated, `debug.trace` never read). `start()` after `setContext`, `finalize()`
+  before `context.close()`, read the flag in `launch()`; then the trace e2e test.
+- [ ] **Graduate `rnd`** (ADR-0006 + ROADMAP Phase-5 edit) → `dev`. Still parked.
 
-**Exit:** after S2's program fully closes → hand off to ROADMAP Phase 4 Step 0.
+## Flags
+
+- **STALE user-facing docs (do early next session):** `README.md` and `PROGRESS.md` still say
+  "Phase 3 Complete / S1 in progress / 129 unit + 32 integration." Reality: S1+S2+S3 done,
+  stabilization program closed, **137 unit + 33 integration**, Fastify 5.8.5 + Playwright 1.60.
+  They sit outside the `/stop` journal scope, so they weren't updated. Quick docs-reconciliation.
+- **Possibly-unpushed tracking commit:** the `/stop` handoff commit may be local-only — check
+  `git status -sb`; if `dev` is ahead of `origin/dev`, push it (policy: `dev` only).
+- `FEATHER_HOST` can override bind to `0.0.0.0` — safe default `127.0.0.1`; add a guardrail/warning
+  if Feather is ever packaged. (Findings doc.)
+- Vitest-toolchain vulns will reappear in any `npm audit`; deferral of `vitest@4` is recorded —
+  don't re-triage from scratch.
 
 ## Parked (Phase 5+)
 
-- **Agent perception layer** — Actionable Tree / accessibility-tree extraction / numeric ID
-  mapping. Concept in `research/2026-06-03-phase-5-agent-perception-layer-notes.md`. Revisit at
-  Phase 5 Step 0; validate against Playwright MCP's a11y-snapshot model first. ADR-0005 governs.
+- **Agent perception layer** — Actionable Tree / a11y-tree / numeric ID mapping.
+  `research/2026-06-03-phase-5-agent-perception-layer-notes.md`. Revisit at Phase 5 Step 0;
+  validate against Playwright MCP's a11y-snapshot model first. ADR-0005 governs.
 
 ## Done
 
-### S2 core implementation ✅ (2026-06-03, s2-implementation)
-- [x] Reviewed + approved S2 design spec
-- [x] Wrote S2 implementation plan (writing-plans)
-- [x] Discovered `DebugCapture` is dead code; decided to cut trace from S2 + defer wiring
-- [x] Implemented Items 1, 2, 3a via TDD (6 commits); 137 unit + 33 integration green; pushed
-- [x] blog/0004 "The Feature That Was Never There"
+### S3 — Currency & Security ✅ (2026-06-03, s3-currency-security)
+- [x] Brainstormed + spec (`fcfd2f6`); plan (`15dedd0`)
+- [x] Step 0 probe PASS (throwaway branch) → clean-bump path
+- [x] Fastify v5 (zero code), Playwright 1.60, security checkpoint → 137+33 green, pushed `dev`
+- [x] blog/0005; stop-for-sudo memory saved
 
-### S2 brainstorm + design ✅ (2026-06-03, s2-tab-design)
-- [x] Parked Phase-5 agent-perception concept to `research/`
-- [x] Resolved TAB_UPDATED scope: settled-only; scope call: defer FEATHER_CHROMIUM_PATH
-- [x] Wrote + approved S2 design spec
-
-### Repo cleanup detour ✅ (2026-06-03) · S2 brainstorm start ✅ · Task 6b ✅ · S1 Foundation ✅ · Pre-S1 ✅
+### Earlier (see ops/sessions/ and archive/)
+- [x] S2 core (s2-implementation) · S2 design · repo cleanup · Task 6b · S1 Foundation · Pre-S1

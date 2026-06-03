@@ -12,6 +12,7 @@ This is a build-in-public journal and a decision history. It's the *why* behind 
 | 0002 | [Write It Down, Or It Didn't Happen](0002-write-it-down-or-it-didnt-happen.md) | 2026-06-03 | S1 Foundation complete — ADR-0004/0005, spikes |
 | 0003 | [The Scaffolding Was Hiding the House](0003-the-scaffolding-was-hiding-the-house.md) | 2026-06-03 | Repo professionalized — Apache-2.0 license, journal/ consolidation, real public OSS |
 | 0004 | [The Feature That Was Never There](0004-the-feature-that-was-never-there.md) | 2026-06-03 | S2 core shipped — dup-tab fix, TAB_UPDATED, resilient reads; dead trace feature found + deferred |
+| 0005 | [The Migration That Needed No Code](0005-the-migration-that-needed-no-code.md) | 2026-06-03 | S3 shipped — Fastify v4→v5 (zero source changes), Playwright current, security checkpoint; stabilization program closed |
 
 ## How entries are written (style guardrails)
 
