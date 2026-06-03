@@ -78,6 +78,31 @@ Feather already has building blocks in this area.
 
 ---
 
+## Hermes vs OpenClaw integration note
+
+Current recommendation: keep Hermes as the primary planned orchestration layer for Feather.
+
+OpenClaw should remain a research reference, not a dependency or integration target at this stage.
+
+Rationale:
+
+- Feather should stay focused on the browser runtime / control plane.
+- Hermes can sit above Feather as the agent/orchestration layer.
+- OpenClaw appears broader and may pull Feather toward becoming a full agent platform too early.
+- OpenClaw is still useful for research around local agents, skills, memory, UX, and security risks.
+
+Working model:
+
+```text
+Feather = browser runtime
+Hermes = orchestration / agent layer
+OpenClaw = external reference + security lessons
+```
+
+Claude should verify whether this matches local Hermes planning before promoting it into any canonical roadmap or ADR.
+
+---
+
 ## Risks
 
 ### Scope expansion
@@ -158,3 +183,4 @@ These are not branding recommendations yet—only positioning hypotheses for fut
 - Does local research support or contradict this positioning?
 - Should any part of this become an ADR input?
 - Is there evidence that users actually want a browser runtime rather than a browser product?
+- Does the Hermes vs OpenClaw note match local Hermes planning?
