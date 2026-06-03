@@ -1,6 +1,5 @@
 .superpowers/
 .remember/
-/research/
 docs/superpowers/
 # Claude Code: track command/skill definitions, ignore machine-local state
 .claude/*
