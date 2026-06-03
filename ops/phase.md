@@ -1,12 +1,12 @@
 ---
 phase: stabilization-linux-readiness
-sub_phase: S1-complete-task-6b-complete
+sub_phase: S2-brainstorm-in-progress
 plan: docs/plans/2026-06-03-s1-foundation.md
 spec: docs/specs/2026-06-03-stabilization-linux-readiness-design.md
-step: "s2-brainstorm-next"
+step: "s2-brainstorm-resume"
 prior_phase: phase-3-complete
-sessions: ["1A-reconcile✅", "1B-decisions✅", "1C-spikes✅", "task-6b-blog+skill✅"]
+sessions: ["1A-reconcile✅", "1B-decisions✅", "1C-spikes✅", "task-6b-blog+skill✅", "s2-brainstorm-start-partial"]
 blocking: null
-next: "DECISION: health-check first (npm test) or straight to S2 brainstorm? Then: S2 Linux weight & observability"
-note: "S1 + task 6b done. blog/0002 written. /blog-entry skill written. No code changed since Phase 3 merge."
+next: "Resume S2 brainstorm — TAB_UPDATED scope question → approaches → design doc → implementation plan"
+note: "S2 scope: 4 items (dup-tab-reg fix, FEATHER_CHROMIUM_PATH, TAB_UPDATED, observability hardening). Bot-detection wording fixed. Brainstorm mid-flow."
 ---
