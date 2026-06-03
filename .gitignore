@@ -9,10 +9,10 @@ docs/superpowers/
 docs/commands/
 .claude/
 skills/
-index.md
 schema.md
 raw/
 node_modules/
+.browser-profile/
 dist/
 build/
 .next/
