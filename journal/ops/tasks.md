@@ -1,63 +1,54 @@
-## Active — S2 brainstorm (in progress)
+## Active — S2 design complete; spec review gate open
 
-**Brainstorm is mid-flow** — resume with `superpowers:brainstorming` skill.
-Last stopped at: TAB_UPDATED scope question (nav only vs nav + load state transitions).
+Spec: `docs/specs/2026-06-03-s2-tab-layer-observability-design.md` (approved in-session).
+Resume: Roi reviews spec → on approval, `superpowers:writing-plans` → S2 implementation plan → TDD.
 
-**S2 — Linux weight & observability (4 items):**
-- [ ] Fix duplicate tab registration bug (prerequisite for TAB_UPDATED)
-  - Make `context.on("page")` the single registration source
-  - `openTab()` calls `newPage()`, returns ID assigned by listener
-- [ ] FEATHER_CHROMIUM_PATH
-  - Spike first: `sudo dnf install chromium` (Fedora `updates` repo) → run probe (S1 plan Task 11 Step 2)
-  - Then: add to `config.ts`, wire `executablePath` in `modes.ts`
-- [ ] TAB_UPDATED event
-  - Scope pending: nav only (URL + title on `framenavigated`) vs + load state transitions?
-  - Add `TAB_UPDATED` to EVENTS catalog + SSE LIFECYCLE_EVENTS set
-- [ ] Observability hardening
-  - capture.ts trace e2e: verify `debug.trace: true` produces `trace.zip` via debug-bundle
-  - `getPageInfoList()` best-effort: per-page try/catch, `loadState: "unknown"` on failure
+**S2 implementation plan scope = 3 unblocked items:**
 
-**After S2 design + plan written:**
-- [ ] Execute S2 implementation plan
+- [ ] **Item 1 — Dup-registration fix (prerequisite)**
+  - Idempotent `addPage` keyed on `Page` object (reverse map `Page → pageId`)
+  - `openTab()` stops assigning its own id; `setContext`/`removePage` route through it
+  - Keep `TAB_OPENED` (intent) + `TAB_CREATED` (lifecycle) distinct
+- [ ] **Item 2 — TAB_UPDATED (settled-only)**
+  - Add `TAB_UPDATED: "tab.updated"` to EVENTS + `"tab.updated"` to SSE `LIFECYCLE_EVENTS`
+  - Main-frame `framenavigated` + `waitForLoadState("domcontentloaded")` + supersede guard
+  - Covers SPA `pushState`; payload `{ pageId, url, title, loadState }`
+- [ ] **Item 3 — Observability hardening**
+  - `getPageInfoList()` per-page try/catch → best-effort `loadState: "unknown"`
+  - Trace e2e integration test: `debug.trace:true` → `trace.zip` exists + non-empty
 
-**S3 — Currency & security (brainstorm after S2, gated by spike):**
-- [ ] Brainstorm + plan S3 tasks
-  - Fastify v4→v5 (MUST test fastify-sse-v2 compat first)
-  - Playwright 1.50 → latest 1.5x bump
-  - Security checkpoint
+**After plan written:**
+- [ ] Execute S2 implementation plan (TDD)
 
-**Exit:**
+## Deferred (follow-on — NOT in S2 plan)
+
+- [ ] **`FEATHER_CHROMIUM_PATH`** — gated on `sudo dnf install chromium` (Fedora `updates` repo) +
+  probe; then env var in `config.ts` + `executablePath` in `modes.ts`. Different theme (weight).
+
+## S3 — Currency & security (brainstorm after S2)
+
+- [ ] Fastify v4→v5 (MUST test fastify-sse-v2 compat first); Playwright bump; security checkpoint
+
+## Exit
+
 - [ ] Hand off to ROADMAP Phase 4 Step 0
+
+## Parked (Phase 5+)
+
+- Agent perception layer (Actionable Tree / a11y-tree / ID mapping) →
+  `research/2026-06-03-phase-5-agent-perception-layer-notes.md`. Revisit at Phase 5 Step 0.
 
 ## Done
 
-### Repo cleanup detour ✅ (2026-06-03, repo-cleanup-journal)
-- [x] `/stop` conditional desk-context reconciliation (3 surfaces) + blog-check sync
-- [x] `/blog-entry` reads all sessions since last entry
-- [x] `journal/` consolidation (context/ops/work/raw/log.md/schema.md/docs-map.md moved)
-- [x] Apache-2.0 LICENSE; removed ui-playground/ + index.md; ignored .browser-profile/
-- [x] Tracked command/skill/doc defs + desk contexts; fixed 2 non-anchored gitignore traps
-- [x] Verified 129/129 tests, pushed to origin/dev; blog/0003 written
+### S2 brainstorm + design ✅ (2026-06-03, s2-tab-design)
+- [x] Parked Phase-5 agent-perception concept to `research/`
+- [x] Resolved TAB_UPDATED scope: settled-only
+- [x] Scope call: defer FEATHER_CHROMIUM_PATH; ship 3 items
+- [x] Wrote + self-reviewed S2 design spec (approved); review gate open
 
-### S2 brainstorm start ✅ (2026-06-03)
-- [x] Health check: 129 unit + 32 integration passing
-- [x] Updated journal/work/browser/context.md
-- [x] Pulled dev branch (8 research commits)
-- [x] Triaged GPT repo audit (7 findings)
-- [x] Fixed ROADMAP.md bot-detection wording (commit 53ac42d)
-- [x] S2 scope expanded: 3 → 4 items (added dup-tab-reg fix + getPageInfoList resilience)
-
-### Task 6b ✅ (2026-06-03)
-- [x] Write `blog/0002-write-it-down-or-it-didnt-happen.md`
-- [x] Write `skills/blog-entry/SKILL.md`
-
-### S1 — Foundation ✅ COMPLETE (2026-06-03)
-- [x] Task 1–7: docs reconciliation (1A)
-- [x] Task 8–9: ADR-0004 + ADR-0005 (1B)
-- [x] Task 10–11: spikes fastify-sse-v2 + system Chromium (1C)
-
-### Pre-S1
-- [x] Merge dev → master (Phase 3 baseline)
-- [x] Brainstorm + write program spec
-- [x] Write S1 plan
-- [x] Codebase audit
+### Earlier (see archive/tasks-20260603-0833.md)
+- [x] Repo cleanup detour (journal/, Apache-2.0, blog/0003)
+- [x] S2 brainstorm start (found dup-tab-reg bug, scope 3→4)
+- [x] Task 6b (blog/0002 + /blog-entry skill)
+- [x] S1 Foundation (docs reconciliation, ADR-0004/0005, spikes)
+- [x] Pre-S1 (merge dev→master, program spec, S1 plan, audit)

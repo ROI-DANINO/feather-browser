@@ -4,7 +4,8 @@ Use this desk for browser engine research, shell architecture, extension compati
 
 ## Current Focus
 
-Stabilization & Linux-Readiness program — S2 (Linux weight & observability) brainstorm next.
+Stabilization & Linux-Readiness program — S2. Brainstorm complete; design spec written
+(`docs/specs/2026-06-03-s2-tab-layer-observability-design.md`). Next: `writing-plans` → implement.
 
 ## Architecture Decisions
 
@@ -15,12 +16,25 @@ Stabilization & Linux-Readiness program — S2 (Linux weight & observability) br
 - **Cookie Mine model:** Phase 4 establishes the long-running human session that Phase 5+ agents piggyback on (ADR-0003).
 - **Agentic North Star:** token/context efficiency is a standing constraint; MCP tool selection deferred to Phase 5 Step 0 after 2026-07-28 spec final (ADR-0005).
 
-## S2 Items (4 — scope finalized)
+## S2 Items — design decided (spec: 2026-06-03-s2-tab-layer-observability-design.md)
 
-1. **Fix duplicate tab registration** — `openTab()` + `context.on("page")` both register the same page (two IDs). Make the listener the single source. Prerequisite for `TAB_UPDATED`.
-2. `FEATHER_CHROMIUM_PATH` — use system Chromium instead of bundled. Add env var to `config.ts`, wire `executablePath` in `modes.ts`. Prereq: `sudo dnf install chromium` from the standard Fedora `updates` repo (NOT RPM Fusion — earlier spike doc was wrong), then run spike probe (S1 plan Task 11 Step 2).
-3. `TAB_UPDATED` event — top-level navigation event, deferred from Phase 3. Scope pending.
-4. **Observability hardening** — confirm `capture.ts` trace e2e + `getPageInfoList()` best-effort per-page.
+**Implementation plan scope = items 1, 3, 4 (the 3 unblocked items). Item 2 deferred.**
+
+1. **Fix duplicate tab registration** (prerequisite) — `openTab()` + `context.on("page")` both
+   register the same page (two IDs). **Fix:** idempotent `addPage` keyed on the `Page` object
+   (reverse map `Page → pageId`); `openTab()` stops assigning its own id. Eliminates the bug + the
+   listener-vs-`openTab` race. Keep `TAB_OPENED` (intent/audit) and `TAB_CREATED` (lifecycle)
+   distinct — not collapsing.
+2. `FEATHER_CHROMIUM_PATH` — **DEFERRED** out of the S2 implementation plan (different theme:
+   weight). Gated on `sudo dnf install chromium` (Fedora `updates` repo, NOT RPM Fusion) + probe,
+   then env var in `config.ts` + `executablePath` in `modes.ts`. Follow-on after the 3 items.
+3. **`TAB_UPDATED` event — scope decided: SETTLED-ONLY.** One event per navigation, fired after
+   `domcontentloaded` (title is unreliable at `framenavigated` time). Mechanism: main-frame
+   `framenavigated` + `waitForLoadState("domcontentloaded")` + supersede guard; covers SPA
+   `pushState`. Add to EVENTS catalog + SSE `LIFECYCLE_EVENTS`. Payload `{ pageId, url, title,
+   loadState }`. No loading-spinner pulse (Phase-4 shell concern if ever wanted).
+4. **Observability hardening** — `getPageInfoList()` per-page try/catch (best-effort
+   `loadState: "unknown"`); trace e2e integration test (`debug.trace:true` → `trace.zip` non-empty).
 
 ## Key Spike Results
 

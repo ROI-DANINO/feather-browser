@@ -1,65 +1,63 @@
-# Handoff — 2026-06-03 (repo-cleanup-journal)
+# Handoff — 2026-06-03 (s2-tab-design)
 
 ## Where We Are
 
-**S2 brainstorm still mid-flow.** Branch: `dev` (pushed to origin/dev).
+**S2 brainstorm COMPLETE.** Design spec written + approved in-session. Branch: `dev`.
 
-This session was a **detour from S2** — a full repo professionalization. S2 itself did not advance.
+Spec: `docs/specs/2026-06-03-s2-tab-layer-observability-design.md`
 
 ## What's Next
 
-Fresh session → **`/start`** → invoke **`superpowers:brainstorming`** → resume S2 brainstorm.
+Fresh session → **`/start`** → **Roi reviews the S2 spec** (review gate is still open — `/stop` was
+called before he gave change/approve feedback on the written file) → on approval, invoke
+**`superpowers:writing-plans`** → produce S2 implementation plan → execute (TDD).
 
-### Resume point: TAB_UPDATED scope question
+## S2 Implementation Plan Scope (3 unblocked items)
 
-> Navigation only (URL + title on `framenavigated`) vs navigation + load-state transitions (`domcontentloaded`, `load`) too?
+1. **Dup-registration fix (prerequisite)** — idempotent `addPage` keyed on the `Page` object
+   (reverse map `Page → pageId`); `openTab()` stops assigning its own id. Kills the two-IDs bug +
+   the listener-vs-`openTab` race. Keep `TAB_OPENED` (intent) / `TAB_CREATED` (lifecycle) distinct.
+2. **TAB_UPDATED — settled-only.** Add `TAB_UPDATED: "tab.updated"` to EVENTS + SSE
+   `LIFECYCLE_EVENTS`. Main-frame `framenavigated` + `waitForLoadState("domcontentloaded")` +
+   supersede guard; covers SPA `pushState`. Payload `{ pageId, url, title, loadState }`.
+   Key reason for settle-wait: `page.title()` is unreliable at `framenavigated` time.
+3. **Observability hardening** — `getPageInfoList()` per-page try/catch (best-effort
+   `loadState: "unknown"`); trace e2e test (`debug.trace:true` → `trace.zip` non-empty).
 
-Then: approaches → design → design doc → `writing-plans` → S2 implementation plan.
+## Deferred (follow-on, NOT in this plan)
 
-## ⚠️ Structural change this session — operating files moved to `journal/`
+- **`FEATHER_CHROMIUM_PATH`** — gated on `sudo dnf install chromium` (Fedora `updates` repo) +
+  probe; then env var in `config.ts` + `executablePath` in `modes.ts`. Different theme (weight).
 
-Paths changed. Everything `/start` and `/stop` read now lives under `journal/`:
-- `context/active.md` → `journal/context/active.md`
-- `ops/` → `journal/ops/` (phase.md, tasks.md, sessions/, archive/)
-- `work/<desk>/context.md` → `journal/work/<desk>/context.md`
-- `raw/_inbox/` → `journal/raw/_inbox/`
-- `log.md` → `journal/log.md`
-- `schema.md` → `journal/README.md` (rewritten as journal front door)
-- `docs/docs-map.md` → `journal/docs-map.md`
+## Decisions This Session
 
-The command/skill files were already rewritten to these paths and verified (this `/stop` ran clean on them).
+- TAB_UPDATED = **settled-only** (no loading-spinner pulse; Phase-4 concern if ever wanted).
+- Dup-reg fix = **idempotent addPage keyed on Page object**.
+- **Keep TAB_OPENED/TAB_CREATED distinct** (intent/audit vs lifecycle) — not collapsing.
+- **Defer FEATHER_CHROMIUM_PATH**; S2 plan = 3 items.
+- **Stay strictly in roadmap order** (Roi: "I prefer to do things in order... Let's not skip ahead").
 
-## Done This Session
+## Parked (Phase 5+)
 
-- **`/stop`**: added conditional desk-context reconciliation (3 surfaces) + synced blog-check.
-- **`/blog-entry`**: now reads every session since last blog entry, not just the latest.
-- **Repo restructure**: `journal/` consolidation, Apache-2.0 LICENSE, removed ui-playground/ (19MB profile) + dead index.md, ignored `.browser-profile/`, tracked command/skill/doc defs + desk contexts, fixed 2 non-anchored gitignore traps. Spec `docs/specs/2026-06-03-repo-structure-cleanup-design.md` (implemented), plan `docs/plans/2026-06-03-repo-structure-cleanup.md`.
-- **blog/0003** "The Scaffolding Was Hiding the House" (process/meta — repo became real public OSS).
-- Verified 129/129 tests; 4 commits + handoff; pushed origin/dev.
-
-## Decisions
-
-- **License = Apache-2.0** (revisit AGPL+commercial only at traction).
-- **`journal/` = visible workflow home** (build-in-public: organize, don't hide).
-- **Branch policy**: merge dev→master only at a stable/mergeable milestone; else push remote dev only.
-
-## S2 Scope (4 items)
-
-1. Fix duplicate tab registration (prereq for TAB_UPDATED) — make `context.on("page")` the single source.
-2. FEATHER_CHROMIUM_PATH — spike `sudo dnf install chromium` (Fedora `updates` repo) → probe → wire `config.ts`/`modes.ts`.
-3. TAB_UPDATED — scope TBD (resume point above).
-4. Observability hardening — capture.ts trace e2e + `getPageInfoList()` best-effort.
+- **Agent perception layer** — Actionable Tree / accessibility-tree extraction / numeric ID mapping
+  (`click(ID)`/`type(ID)`). Captured to `research/2026-06-03-phase-5-agent-perception-layer-notes.md`
+  with 5 claims flagged for a real research pass. Revisit at Phase 5 Step 0; validate against
+  Playwright MCP's a11y-snapshot model first. ADR-0005 governs (tool choice after 2026-07-28).
 
 ## Program Structure
 
 - **S1 — Foundation** ✅
 - **Task 6b** ✅
-- **S2 — Linux weight & observability** ← ACTIVE (brainstorm mid-flow)
+- **S2 — Linux weight & observability** ← ACTIVE (brainstorm done; spec written; plan next)
 - **S3 — Currency & security** (after S2)
-- → Phase 4 Step 0
+- → ROADMAP Phase 4 Step 0
+
+## Flags
+
+- 7 untriaged research files still in `journal/raw/_inbox/` (2026-06-03-*) — deliberately left.
 
 ## How Roi Works
 
 - Vibecoder, no technical background. Make the technical calls, explain plainly.
 - Defers to recommendations — lead with one clear call, not equal-weight menus.
-- Research-driven; phases → tasks; security matters; one session per chunk.
+- Strict roadmap order; research-driven; security matters; one session per chunk.

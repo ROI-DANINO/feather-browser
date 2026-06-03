@@ -1,85 +1,55 @@
----
-updated: 2026-06-03
-session: repo-cleanup-journal
----
+## Active — S2 brainstorm complete; spec written, review gate open
 
-## Active Plan
+**Brainstorm done.** S2 design spec written + approved in-session:
+`docs/specs/2026-06-03-s2-tab-layer-observability-design.md`.
 
-Program: Stabilization & Linux-Readiness (bridges Phase 3 → Phase 4)
-Spec: docs/specs/2026-06-03-stabilization-linux-readiness-design.md
-Sub-phase: **S2 — Linux weight & observability** (brainstorm in progress)
-Branch: dev (pushed to origin/dev)
+**Resume here:** Roi reviews the S2 spec → on approval, invoke `superpowers:writing-plans` →
+produce S2 implementation plan → execute (TDD). The spec review gate is still open (Roi hadn't given
+change/approve feedback on the written file when `/stop` was called).
 
-## Last Session (detour — repo professionalization)
+**S2 implementation plan scope = 3 unblocked items:**
+- [ ] **Item 1 — Dup-registration fix (prerequisite).** Idempotent `addPage` keyed on the `Page`
+  object (reverse map `Page → pageId`); `openTab()` stops assigning its own id; `setContext`/
+  `removePage` route through it. Kills the two-IDs bug + the listener-vs-`openTab` race.
+  Keep `TAB_OPENED` (intent) and `TAB_CREATED` (lifecycle) distinct.
+- [ ] **Item 2 — TAB_UPDATED (settled-only).** Add `TAB_UPDATED: "tab.updated"` to EVENTS +
+  `"tab.updated"` to SSE `LIFECYCLE_EVENTS`. Main-frame `framenavigated` +
+  `waitForLoadState("domcontentloaded")` + supersede guard. Covers SPA `pushState`.
+  Payload `{ pageId, url, title, loadState }`.
+- [ ] **Item 3 — Observability hardening.** `getPageInfoList()` per-page try/catch (best-effort
+  `loadState: "unknown"`); trace e2e integration test (`debug.trace:true` → `trace.zip` non-empty).
 
-Not S2 work. Consolidated all workflow scaffolding into `journal/`, added Apache-2.0
-LICENSE, made the repo a real public OSS project. Also: added conditional desk-context
-reconciliation to `/stop`; fixed `/blog-entry` to read all sessions since last entry;
-wrote `blog/0003`. Spec: `docs/specs/2026-06-03-repo-structure-cleanup-design.md`.
-**Note:** operating files now live under `journal/` (was `context/`, `ops/`, `work/`,
-`raw/`, `log.md`, `schema.md`→`journal/README.md`, `docs/docs-map.md`→`journal/docs-map.md`).
+**Deferred (follow-on, NOT in this plan):**
+- [ ] **`FEATHER_CHROMIUM_PATH`** — gated on `sudo dnf install chromium` (Fedora `updates` repo) +
+  probe. Then `config.ts` env var + `executablePath` in `modes.ts`. Different theme (weight).
 
-## Immediate Next Action
+**S3 — Currency & security (brainstorm after S2):**
+- [ ] Fastify v4→v5 (MUST test fastify-sse-v2 compat first); Playwright bump; security checkpoint.
 
-Fresh session → `/start` → invoke `superpowers:brainstorming` skill → resume S2 brainstorm.
+**Exit:** hand off to ROADMAP Phase 4 Step 0.
 
-**Brainstorm is mid-flow.** Resume at TAB_UPDATED scope question:
-> Navigation only (URL + title on `framenavigated`) vs navigation + load state transitions (`domcontentloaded`, `load`) too?
+## Parked (Phase 5+)
 
-Then: approaches → design → design doc → implementation plan.
+- **Agent perception layer** — Actionable Tree / accessibility-tree extraction / numeric ID mapping
+  (`click(ID)`/`type(ID)`). Concept captured in
+  `research/2026-06-03-phase-5-agent-perception-layer-notes.md`. Revisit at Phase 5 Step 0; validate
+  against Playwright MCP's a11y-snapshot model first. ADR-0005 governs (tool choice after
+  2026-07-28).
 
-## S2 Scope (4 items — finalized)
+## Done
 
-1. **Fix duplicate tab registration** — `openTab()` + `context.on("page")` both register the same page. Make listener the single source. Prerequisite for TAB_UPDATED.
-2. **FEATHER_CHROMIUM_PATH** — add env var to `config.ts`, wire `executablePath` in `modes.ts`. Spike first: `sudo dnf install chromium` (Fedora `updates` repo, not RPM Fusion), then probe from S1 plan Task 11 Step 2.
-3. **TAB_UPDATED** — top-level navigation event. Scope pending.
-4. **Observability hardening** — capture.ts trace e2e + `getPageInfoList()` best-effort per-page.
+### S2 brainstorm + design ✅ (2026-06-03, s2-tab-design)
+- [x] Parked Phase-5 agent-perception concept to `research/`
+- [x] Resolved TAB_UPDATED scope: settled-only
+- [x] Scope call: defer FEATHER_CHROMIUM_PATH; ship 3 items
+- [x] Wrote + self-reviewed S2 design spec (approved); spec review gate open
 
-## Key Findings This Session
+### Repo cleanup detour ✅ (2026-06-03, repo-cleanup-journal)
+- [x] `journal/` consolidation; Apache-2.0 LICENSE; tracked cmd/skill/doc defs; blog/0003
 
-- **Duplicate tab registration bug**: `FeatherSession.openTab()` calls `context.newPage()` → fires `context.on("page")` → `addPage()`. Then `openTab()` also sets `_pages` directly. Two IDs for one page. Not tested.
-- **System Chromium**: available from standard Fedora `updates` repo (NOT RPM Fusion — spike doc was wrong). Version 148.0.7778.215 — same major as bundled 148.0.7778.96. Low version-skew risk.
-- **ROADMAP.md wording fixed**: "without triggering bot detection" → "operating inside explicit user-authorized session state with human approval checkpoints" (commit 53ac42d).
+### S2 brainstorm start ✅ (2026-06-03)
+- [x] Health check 129+32; triaged GPT audit; found dup-tab-reg bug; scope 3→4
 
-## Program Structure
-
-- **S1 — Foundation** ✅ COMPLETE
-- **Task 6b** ✅ COMPLETE
-- **S2 — Linux weight & observability** ← ACTIVE (brainstorm in progress)
-- **S3 — Currency & security** (after S2; gated by fastify-sse-v2 spike)
-- → Exit: hand off to ROADMAP Phase 4 Step 0
-
-## Key Decisions (cumulative)
-
-- Phase 0/1/2/3 complete. Phase 3 merged to master 2026-06-03. Do not reopen.
-- **Feather = Linux-only (Fedora target).**
-- **Runtime: host-primary**; Flatpak distribution later; Podman optional (ADR-0004).
-- **Agentic North Star**: token/context efficiency standing constraint; tool choice deferred to Phase 5 Step 0 after 2026-07-28 MCP spec final (ADR-0005).
-- **Electron eliminated.** Phase 4 shell candidates: Tauri/WebKitGTK or GTK4-native.
-- **fastify-sse-v2**: peerDep `>=4` covers v5 by range but only tested against v4 — NOT proven. S3 must test.
-- **Hermes** = planned orchestration layer above Feather. **OpenClaw** = research reference only.
-- **Positioning**: "local, inspectable browser runtime for human-approved agentic automation" — not "AI browser."
-- "Leave the docs true" = permanent per-phase exit check.
-- Blog cadence: write/refresh at every phase exit via `/blog-entry`.
-- **License = Apache-2.0** (copyright Roi Danino). Revisit AGPL+commercial only at traction.
-- **`journal/` = visible workflow home** (build-in-public: organize the process, don't hide it).
-- **Branch policy**: merge dev→master only at a stable/mergeable milestone; otherwise push remote `dev` only.
-
-## How Roi Works
-
-- Vibecoder, no technical background — make the technical calls, explain plainly, only ask decisions that are genuinely his.
-- Research-driven; phases → tasks; agility; security matters; one session per chunk with documented handoffs.
-- Push back and propose smarter structure when warranted.
-
-## Reference Files
-
-- AGENTS.md — constraints, branch rules, command usage
-- journal/docs-map.md — source-of-truth table for all doc surfaces
-- Program spec: docs/specs/2026-06-03-stabilization-linux-readiness-design.md
-- S1 plan: docs/plans/2026-06-03-s1-foundation.md
-- ADR-0003: docs/specs/adr-0003-hybrid-browser-shared-context.md
-- ADR-0004: docs/specs/adr-0004-runtime-target.md
-- ADR-0005: docs/specs/adr-0005-agentic-north-star.md
-- Spike results: journal/raw/_inbox/spike-fastify-sse-v2-v5-compat.md, journal/raw/_inbox/spike-system-chromium-executablepath.md
-- Research intake: journal/raw/_inbox/2026-06-03-*.md (7 files — not yet triaged to canonical research/)
-- Session handoff: journal/ops/sessions/s2-brainstorm-start-20260603-0436.md
+### Task 6b ✅ — blog/0002 + `/blog-entry` skill
+### S1 — Foundation ✅ COMPLETE — docs reconciliation, ADR-0004/0005, spikes
+### Pre-S1 ✅ — merge dev→master, program spec, S1 plan, codebase audit
