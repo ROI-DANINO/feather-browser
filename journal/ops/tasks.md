@@ -1,37 +1,23 @@
-## Active — S2 design complete; spec review gate open
+## Active — S2 core implemented (3 of 4 items); pick next track
 
-Spec: `docs/specs/2026-06-03-s2-tab-layer-observability-design.md` (approved in-session).
-Resume: Roi reviews spec → on approval, `superpowers:writing-plans` → S2 implementation plan → TDD.
+Plan: `docs/plans/2026-06-03-s2-tab-layer-observability.md`. Shipped on `dev` @ `ea4e30d`,
+137 unit + 33 integration passing. Resume: choose the next track (recommend S3 brainstorm).
 
-**S2 implementation plan scope = 3 unblocked items:**
+## Next track (pick one)
 
-- [ ] **Item 1 — Dup-registration fix (prerequisite)**
-  - Idempotent `addPage` keyed on `Page` object (reverse map `Page → pageId`)
-  - `openTab()` stops assigning its own id; `setContext`/`removePage` route through it
-  - Keep `TAB_OPENED` (intent) + `TAB_CREATED` (lifecycle) distinct
-- [ ] **Item 2 — TAB_UPDATED (settled-only)**
-  - Add `TAB_UPDATED: "tab.updated"` to EVENTS + `"tab.updated"` to SSE `LIFECYCLE_EVENTS`
-  - Main-frame `framenavigated` + `waitForLoadState("domcontentloaded")` + supersede guard
-  - Covers SPA `pushState`; payload `{ pageId, url, title, loadState }`
-- [ ] **Item 3 — Observability hardening**
-  - `getPageInfoList()` per-page try/catch → best-effort `loadState: "unknown"`
-  - Trace e2e integration test: `debug.trace:true` → `trace.zip` exists + non-empty
-
-**After plan written:**
-- [ ] Execute S2 implementation plan (TDD)
-
-## Deferred (follow-on — NOT in S2 plan)
-
+- [ ] **S3 — Currency & security (brainstorm + plan).** Fastify v4→v5 (MUST test `fastify-sse-v2`
+  compat first — `TAB_UPDATED` rides SSE now); Playwright bump; security checkpoint.
+- [ ] **Deferred observability sprint — trace + `DebugCapture` wiring.** Dead code today
+  (`src/debug/capture.ts` never instantiated; `debug.trace` never read). Wire `start()` after
+  `setContext`, `finalize()` before `context.close()`, read the flag in `launch()`; then the
+  trace e2e test the S2 spec originally wanted.
 - [ ] **`FEATHER_CHROMIUM_PATH`** — gated on `sudo dnf install chromium` (Fedora `updates` repo) +
-  probe; then env var in `config.ts` + `executablePath` in `modes.ts`. Different theme (weight).
-
-## S3 — Currency & security (brainstorm after S2)
-
-- [ ] Fastify v4→v5 (MUST test fastify-sse-v2 compat first); Playwright bump; security checkpoint
+  probe; then env var in `config.ts` + `executablePath` in `modes.ts`. Theme: weight.
+- [ ] **Graduate `rnd` planning changes (ADR-0006 + ROADMAP Phase-5 edit) → `dev`.** Parked.
 
 ## Exit
 
-- [ ] Hand off to ROADMAP Phase 4 Step 0
+- [ ] After S2 program fully closes → hand off to ROADMAP Phase 4 Step 0.
 
 ## Parked (Phase 5+)
 
@@ -40,15 +26,14 @@ Resume: Roi reviews spec → on approval, `superpowers:writing-plans` → S2 imp
 
 ## Done
 
-### S2 brainstorm + design ✅ (2026-06-03, s2-tab-design)
-- [x] Parked Phase-5 agent-perception concept to `research/`
-- [x] Resolved TAB_UPDATED scope: settled-only
-- [x] Scope call: defer FEATHER_CHROMIUM_PATH; ship 3 items
-- [x] Wrote + self-reviewed S2 design spec (approved); review gate open
+### S2 core implementation ✅ (2026-06-03, s2-implementation)
+- [x] Reviewed + approved S2 design spec; wrote implementation plan (writing-plans)
+- [x] Found `DebugCapture` dead code → cut trace from S2, deferred wiring (stabilization discipline)
+- [x] Item 1 — idempotent `addPage` keyed on `Page` (dup-reg bug killed) (`4fdf9cc`)
+- [x] Item 3a — `getPageInfoList` per-page resilience (`42c73c3`)
+- [x] Item 2 — `TAB_UPDATED` settled-only: catalog+SSE (`ef87440`), emission (`6f35876`), e2e (`ea4e30d`)
+- [x] 137 unit + 33 integration green; pushed `origin/dev`; blog/0004
 
-### Earlier (see archive/tasks-20260603-0833.md)
-- [x] Repo cleanup detour (journal/, Apache-2.0, blog/0003)
-- [x] S2 brainstorm start (found dup-tab-reg bug, scope 3→4)
-- [x] Task 6b (blog/0002 + /blog-entry skill)
-- [x] S1 Foundation (docs reconciliation, ADR-0004/0005, spikes)
-- [x] Pre-S1 (merge dev→master, program spec, S1 plan, audit)
+### Earlier (see archive/tasks-20260603-2025.md and prior)
+- [x] S2 brainstorm + design (s2-tab-design) · Repo cleanup detour · S2 brainstorm start
+- [x] Task 6b (blog/0002 + /blog-entry skill) · S1 Foundation · Pre-S1

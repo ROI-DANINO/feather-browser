@@ -4,8 +4,9 @@ Use this desk for browser engine research, shell architecture, extension compati
 
 ## Current Focus
 
-Stabilization & Linux-Readiness program — S2. Brainstorm complete; design spec written
-(`docs/specs/2026-06-03-s2-tab-layer-observability-design.md`). Next: `writing-plans` → implement.
+Stabilization & Linux-Readiness program — **S2 core implemented (3 of 4 items, on `dev`).**
+Plan: `docs/plans/2026-06-03-s2-tab-layer-observability.md`. Next: pick S3 (currency/security)
+or the deferred observability work; then ROADMAP Phase 4 Step 0.
 
 ## Architecture Decisions
 
@@ -16,25 +17,28 @@ Stabilization & Linux-Readiness program — S2. Brainstorm complete; design spec
 - **Cookie Mine model:** Phase 4 establishes the long-running human session that Phase 5+ agents piggyback on (ADR-0003).
 - **Agentic North Star:** token/context efficiency is a standing constraint; MCP tool selection deferred to Phase 5 Step 0 after 2026-07-28 spec final (ADR-0005).
 
-## S2 Items — design decided (spec: 2026-06-03-s2-tab-layer-observability-design.md)
+## S2 Items — implementation status (plan: 2026-06-03-s2-tab-layer-observability.md)
 
-**Implementation plan scope = items 1, 3, 4 (the 3 unblocked items). Item 2 deferred.**
+1. ✅ **Duplicate tab registration FIXED** — `addPage` is now idempotent, keyed on the `Page`
+   object (reverse map `Page → pageId`); `setContext`/`openTab` route through it; `removePage`
+   clears both maps. The two-ids-per-tab bug + the listener-vs-`openTab` race are gone.
+   `TAB_OPENED` (intent/audit) and `TAB_CREATED` (lifecycle) kept distinct. (`4fdf9cc`)
+2. ✅ **`TAB_UPDATED` SHIPPED — settled-only.** One event per navigation, after
+   `domcontentloaded`. Mechanism: main-frame `framenavigated` + `waitForLoadState
+   ("domcontentloaded")` + supersede guard; covers SPA `pushState`. In `EVENTS` + SSE
+   `LIFECYCLE_EVENTS`; payload `{ pageId, url, title, loadState }`. All reads best-effort.
+   (`ef87440`, `6f35876`; real-Chromium e2e test `ea4e30d`)
+3. ✅ **`getPageInfoList()` resilience SHIPPED** — per-page try/catch → best-effort
+   `loadState:"unknown"`; one crashed page no longer rejects the whole list. (`42c73c3`)
 
-1. **Fix duplicate tab registration** (prerequisite) — `openTab()` + `context.on("page")` both
-   register the same page (two IDs). **Fix:** idempotent `addPage` keyed on the `Page` object
-   (reverse map `Page → pageId`); `openTab()` stops assigning its own id. Eliminates the bug + the
-   listener-vs-`openTab` race. Keep `TAB_OPENED` (intent/audit) and `TAB_CREATED` (lifecycle)
-   distinct — not collapsing.
-2. `FEATHER_CHROMIUM_PATH` — **DEFERRED** out of the S2 implementation plan (different theme:
-   weight). Gated on `sudo dnf install chromium` (Fedora `updates` repo, NOT RPM Fusion) + probe,
-   then env var in `config.ts` + `executablePath` in `modes.ts`. Follow-on after the 3 items.
-3. **`TAB_UPDATED` event — scope decided: SETTLED-ONLY.** One event per navigation, fired after
-   `domcontentloaded` (title is unreliable at `framenavigated` time). Mechanism: main-frame
-   `framenavigated` + `waitForLoadState("domcontentloaded")` + supersede guard; covers SPA
-   `pushState`. Add to EVENTS catalog + SSE `LIFECYCLE_EVENTS`. Payload `{ pageId, url, title,
-   loadState }`. No loading-spinner pulse (Phase-4 shell concern if ever wanted).
-4. **Observability hardening** — `getPageInfoList()` per-page try/catch (best-effort
-   `loadState: "unknown"`); trace e2e integration test (`debug.trace:true` → `trace.zip` non-empty).
+**Deferred (NOT shipped):**
+- **Trace e2e + `DebugCapture` wiring** — CUT from S2 (stabilization discipline). `DebugCapture`
+  (`src/debug/capture.ts`) is **dead code**: never instantiated, `debug.trace` never read by
+  `launch()`, so `trace.zip` is never produced. A future observability sprint must wire `start()`
+  after `setContext` + `finalize()` before `context.close()` + read the flag in `launch()`.
+- **`FEATHER_CHROMIUM_PATH`** — spike-gated (`sudo dnf install chromium`, Fedora `updates` repo
+  NOT RPM Fusion, + launch probe), then env var in `config.ts` + `executablePath` in `modes.ts`.
+  Different theme (weight).
 
 ## Key Spike Results
 
