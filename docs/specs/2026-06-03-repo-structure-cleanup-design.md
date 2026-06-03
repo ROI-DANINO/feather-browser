@@ -1,10 +1,10 @@
 ---
 title: Repo Structure Cleanup — journal/ Consolidation
 date: 2026-06-03
-status: draft
+status: implemented
 type: design
 supersedes: none
-maps_to: docs/docs-map.md, schema.md, AGENTS.md
+maps_to: journal/docs-map.md, journal/README.md, AGENTS.md
 ---
 
 # Repo Structure Cleanup — `journal/` Consolidation
