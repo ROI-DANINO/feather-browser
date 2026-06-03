@@ -62,12 +62,12 @@ Then: approaches → design → design doc → implementation plan.
 ## Reference Files
 
 - AGENTS.md — constraints, branch rules, command usage
-- docs/docs-map.md — source-of-truth table for all doc surfaces
+- journal/docs-map.md — source-of-truth table for all doc surfaces
 - Program spec: docs/specs/2026-06-03-stabilization-linux-readiness-design.md
 - S1 plan: docs/plans/2026-06-03-s1-foundation.md
 - ADR-0003: docs/specs/adr-0003-hybrid-browser-shared-context.md
 - ADR-0004: docs/specs/adr-0004-runtime-target.md
 - ADR-0005: docs/specs/adr-0005-agentic-north-star.md
-- Spike results: raw/_inbox/spike-fastify-sse-v2-v5-compat.md, raw/_inbox/spike-system-chromium-executablepath.md
-- Research intake: raw/_inbox/2026-06-03-*.md (7 files — not yet triaged to canonical research/)
-- Session handoff: ops/sessions/s2-brainstorm-start-20260603-0436.md
+- Spike results: journal/raw/_inbox/spike-fastify-sse-v2-v5-compat.md, journal/raw/_inbox/spike-system-chromium-executablepath.md
+- Research intake: journal/raw/_inbox/2026-06-03-*.md (7 files — not yet triaged to canonical research/)
+- Session handoff: journal/ops/sessions/s2-brainstorm-start-20260603-0436.md

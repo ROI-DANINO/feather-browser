@@ -8,11 +8,11 @@ Run after reading the project files and before research, planning, or implementa
    - `README.md`
    - `ROADMAP.md`
    - `PROGRESS.md`
-   - `schema.md`
-   - `ops/tasks.md`
-   - `ops/phase.md`
-   - `context/active.md`
-   - `log.md`
+   - `journal/README.md`
+   - `journal/ops/tasks.md`
+   - `journal/ops/phase.md`
+   - `journal/context/active.md`
+   - `journal/log.md`
 3. Report:
    - Current phase
    - Current milestone target

@@ -13,11 +13,11 @@ Run after the agent has read the core files and before it starts research, plann
    - `README.md`
    - `ROADMAP.md`
    - `PROGRESS.md`
-   - `schema.md`
-   - `ops/tasks.md`
-   - `ops/phase.md`
-   - `context/active.md`
-   - `log.md`
+   - `journal/README.md`
+   - `journal/ops/tasks.md`
+   - `journal/ops/phase.md`
+   - `journal/context/active.md`
+   - `journal/log.md`
 3. Report:
    - Current phase
    - Current milestone target
@@ -28,7 +28,7 @@ Run after the agent has read the core files and before it starts research, plann
 5. If the goal is valid, state the next action and proceed.
 6. If the goal would skip a phase, stop and ask for confirmation.
 
-> Source-of-truth for each doc surface: see `docs/docs-map.md`.
+> Source-of-truth for each doc surface: see `journal/docs-map.md`.
 
 ## Writes
 

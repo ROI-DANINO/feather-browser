@@ -13,9 +13,9 @@ Read these sources in order to reconstruct the story without having been in thos
 
 1. `.remember/remember.md` — session handoff, what completed, what's next
 2. Find the last blog commit to set the lower bound: `git log --oneline --all -- blog/` (top line) — note its date.
-3. **Every `ops/sessions/` file written since that last blog entry** — the detailed stop record for *each* session in the arc this entry covers, not just the last one. The filename timestamp tells you which are newer than the last blog entry; read them oldest → newest. (If none are newer — no sessions since the last entry — read just the most recent file.) This is what keeps a multi-session phase from collapsing into only its final session.
+3. **Every `journal/ops/sessions/` file written since that last blog entry** — the detailed stop record for *each* session in the arc this entry covers, not just the last one. The filename timestamp tells you which are newer than the last blog entry; read them oldest → newest. (If none are newer — no sessions since the last entry — read just the most recent file.) This is what keeps a multi-session phase from collapsing into only its final session.
 4. `git log --oneline -20` — commit trail since the last blog entry
-5. Last 15 lines of `log.md` — JSONL-style work log with timestamps
+5. Last 15 lines of `journal/log.md` — JSONL-style work log with timestamps
 6. `blog/README.md` — last entry's milestone, so the new entry advances the story
 
 ## 2. Voice guardrails

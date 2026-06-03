@@ -13,7 +13,7 @@ Feather should not depend on Chrome extensions as its product strategy. Critical
 - Milestones are solid destination points.
 - Phases are flexible placeholders until active.
 - Every phase starts with Step 0: research and plan that phase.
-- Only the current phase gets detailed tasks in `ops/tasks.md`.
+- Only the current phase gets detailed tasks in `journal/ops/tasks.md`.
 - Future phases stay high-level here until the prior phase is finished.
 
 ## Phase 0: Workspace Setup

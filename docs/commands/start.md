@@ -6,13 +6,13 @@ Orient the agent at the beginning of a Feather Browser session. `/start` is read
 
 ## Steps
 
-1. Read `README.md`, `ROADMAP.md`, `PROGRESS.md`, `schema.md`, `ops/tasks.md`, `ops/phase.md`, `context/active.md`, and the last 20 lines of `log.md`.
-2. Check `raw/_inbox/` for unprocessed files. If files exist, report the count and ask whether to process them or continue.
+1. Read `README.md`, `ROADMAP.md`, `PROGRESS.md`, `journal/README.md`, `journal/ops/tasks.md`, `journal/ops/phase.md`, `journal/context/active.md`, and the last 20 lines of `journal/log.md`.
+2. Check `journal/raw/_inbox/` for unprocessed files. If files exist, report the count and ask whether to process them or continue.
 3. Report the last known phase, active task, next action, and relevant desk.
-4. If a desk is relevant, ask before loading `work/<desk>/context.md`.
+4. If a desk is relevant, ask before loading `journal/work/<desk>/context.md`.
 5. Ask: "Ready to continue, or do you want to start somewhere else?"
 
-> Source-of-truth for each doc surface: see `docs/docs-map.md`.
+> Source-of-truth for each doc surface: see `journal/docs-map.md`.
 
 ## Writes
 

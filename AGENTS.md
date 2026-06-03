@@ -91,7 +91,7 @@ When in doubt: write a doc, ask for approval. Do not add code, dependencies, or 
 - Use current web research where facts may have changed.
 - Prefer primary sources and official docs.
 - For browser technology, prioritize official docs and active repositories.
-- Record research findings in `raw/_inbox/` (the project's research inbox) and decisions/specs in `docs/specs/`.
+- Record research findings in `journal/raw/_inbox/` (the project's research inbox) and decisions/specs in `docs/specs/`.
 
 ## Prior Security Audit
 

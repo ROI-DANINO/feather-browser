@@ -1,17 +1,11 @@
 .superpowers/
 .remember/
-ops/
-log.md
-context/
-work/
 /research/
 docs/superpowers/
 # Claude Code: track command/skill definitions, ignore machine-local state
 .claude/*
 !.claude/commands/
 .claude/settings.local.json
-schema.md
-raw/
 node_modules/
 .browser-profile/
 dist/
