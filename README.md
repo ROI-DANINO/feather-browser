@@ -6,7 +6,7 @@ A headless-first Chromium browser core for agentic automation, built around Play
 
 ## Status
 
-Phase 3 Complete | Stabilization & Linux-Readiness program closed (S1 + S2 + S3) | Phase 4 Step 0 done (Cookie Mine proven) | 137 unit + 33 integration tests passing | Fastify 5.8.5 + Playwright 1.60
+Phase 3 Complete | Stabilization & Linux-Readiness program closed (S1 + S2 + S3) | Phase 4 Step 0 done (Cookie Mine proven) | 175 unit + 37 integration + 4 measurement tests passing | CI on GitHub Actions | Fastify 5.8.5 + Playwright 1.60
 
 ## What It Does
 
@@ -54,8 +54,8 @@ See `docs/api-reference.md` for the full API reference (launch, navigate, snapsh
 ## Testing
 
 ```
-npm test                   # unit tests (137)
-npm run test:integration   # integration tests with real Chromium headless shell (33)
+npm test                   # unit tests (175)
+npm run test:integration   # integration tests with real Chromium headless shell (37)
 npm run test:measurement   # resource measurement scenarios (4)
 ```
 

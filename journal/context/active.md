@@ -17,12 +17,16 @@ foundation is **real now**, not just spiked. Pushed `dev` (`cbdeef9..b9528c4`).
 `FEATHER_CHROMIUM_PATH` ✅, #4 warmed Google session ✅, #5 observability ✅. Only **#6** (prove the
 end-to-end Cookie Mine loop on the headed stopgap) remains before GUI.
 
-**▶ NEXT SESSION FOCUS (Roi's explicit ask): master merge-readiness.** *"i want to make sure feather
-is stabel enugh to push to master."* `dev` is **110 commits ahead of `master`**; PR #1 (dev→master,
-"attach-don't-launch + pre-shell infrastructure") is **OPEN**. Next concrete action: full
-verification pass (unit + integration + measurement + tsc), review the 110-commit delta, confirm
-clean state, then decide whether to merge PR #1 — graduate `dev` → `master` as a stable milestone
-(per the dev/master policy: merge only at a stable milestone).
+**▶ master merge-readiness — VERIFICATION PASS DONE GREEN (2026-06-04 23:24).** Roi's ask (*"make
+sure feather is stabel enugh to push to master"*) is answered: **`dev` is a genuine stable
+milestone.** Evidence (all fresh): unit **175/175**, integration (real Chromium) **37/37**,
+measurement **4/4**, `tsc --noEmit` exit 0, `tsc` build exit 0, tree clean, `dev`==`origin/dev`.
+Prod-dep audit **0 vulns** (the 5 audit findings are dev-only test tooling, never shipped). The
+**111-commit** `master..dev` delta is linear, coherent, no half-finished work (+1637/−75; all maps to
+S1–S3 + pre-shell #1–5). PR #1 OPEN · **MERGEABLE** · not draft; title already full-scope. **The
+actual merge is HELD as Roi's milestone call** — not auto-merged. ▶ NEXT = Roi decides on PR #1; if
+go, merge `dev`→`master`. Caveats (non-blocking): no CI (local-only checks); dev-tooling vuln cleanup
+needs a breaking `vitest@4` bump; README status line stale (137→175). Snapshot: `context/next.md`.
 
 **Then (substantive, not next): cookie-isolation spike** — the Phase-4→5-seam experiment. Needs its
 own **safe** design: two simultaneous live sessions from cloned cookies can look like session theft

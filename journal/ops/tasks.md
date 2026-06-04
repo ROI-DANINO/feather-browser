@@ -8,14 +8,16 @@ PR #1 (dev→master) OPEN. Decide if this is a stable milestone to graduate. Pre
 only #6 (prove end-to-end Cookie Mine loop) remains before the GUI.
 
 ## Next — master merge-readiness (immediate)
-- [ ] **Full verification pass** — `npm test` (unit) + `npm run test:integration` + `npm run
-  test:measurement` + `npm run typecheck`; confirm all green on `dev`.
-- [ ] **Review the 110-commit `dev`→`master` delta** (`git log --oneline master..dev`) — confirm
-  it's a coherent, stable set (S1/S2/S3 + storage isolation + attach-don't-launch + chromium-path +
-  observability + warm-session). No half-finished work; tree clean.
-- [ ] **Decide + (if stable) merge PR #1** — graduate `dev` → `master` per the dev/master policy
-  (merge only at a stable milestone). Update PR title/body to reflect the full scope (it currently
-  reads "attach-don't-launch + pre-shell infrastructure" but now carries everything ahead of master).
+- [x] **Full verification pass — DONE GREEN (2026-06-04 23:24).** Unit **175/175**, integration (real
+  Chromium) **37/37**, measurement **4/4**, `tsc --noEmit` exit 0, `tsc` build exit 0, tree clean. Prod
+  dep audit (`--omit=dev`) **0 vulns** (5 audit vulns are dev-only test tooling, never shipped).
+- [x] **Reviewed the 111-commit `master..dev` delta — coherent.** Linear (no merges), no
+  wip/revert/fixup markers; +1637/−75 across 31 src/test files; all maps to S1–S3 + storage isolation
+  + attach-cdp + chromium-path + observability + warm-session. No TODO/FIXME/HACK in src; the one
+  `it.skip` is a conditional system-Chromium guard that actually ran. **Verdict: stable milestone.**
+- [ ] **Decide + (if go) merge PR #1** — graduate `dev` → `master`. Evidence supports it; **held as
+  Roi's milestone call** (not auto-merged). PR #1 OPEN · MERGEABLE · not draft; title already updated
+  to full scope. (Optional non-blocking polish: README status line 137→175.)
 
 ## Open — pre-shell infrastructure sequence (locked 2026-06-04; must precede the GUI)
 1. [x] **Storage-isolation fix — DONE** (XDG split shipped + `.feather/` gitignored; pushed `dev` `cbe939e..13101ff`). profiles/vault→DATA, logs/debug/measurements→STATE, disposable→CACHE, token→RUNTIME. Enforces the Agent-Blind Vault boundary.
@@ -40,6 +42,17 @@ only #6 (prove end-to-end Cookie Mine loop) remains before the GUI.
   rather than firing blindly. NEW signal: the login is **device-bound (passkey/Face-ID)** → DBSC is
   live, so copy-to-isolated is the real open question. Procedure:
   `research/2026-06-04-cookie-jar-isolation-and-phase5-sequencing.md` → "Queued action".
+
+## Open — tooling / tech-debt (post-merge; non-blocking)
+- [ ] **Bump `vitest` `^2` → `^4` (breaking) + clear the dev-tooling audit.** We declared `vitest:
+  ^2.0.0` at Phase-2 scaffold (`4fcfa5d`); the caret holds the major at 2, so we never crossed into
+  v3/v4 (latest `4.1.8`). The 5 `npm audit` findings (4 moderate, 1 **critical**) live entirely in
+  the `esbuild ← vite ← vitest` **dev** chain — the only fix is the `vitest 2→4` jump (two majors).
+  **Accepted for now, NOT a merge blocker:** prod-tree audit (`npm audit --omit=dev`) = **0**; the
+  critical esbuild advisory is a *dev-server* issue Feather never uses; the chain never ships. Deferred
+  per Roi's call ("merge first, deal with breaking stuff after"). When doing the bump: expect vitest
+  3+4 config/API breaking changes across the three `vitest.*.config.ts`; verify all suites green; CI
+  (now in place) will validate it. Was surfaced 2026-06-04 during master merge-readiness.
 
 ## Open — vault track (frozen; architecture stands)
 - [ ] **Spike A — SQLCipher feasibility** (Fedora + Node/TS; raw-key DB; verify DB/WAL/journals/temp don't leak; packaging). Sudo-gated install → Roi. **Frozen.**

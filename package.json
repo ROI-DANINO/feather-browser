@@ -2,6 +2,9 @@
   "name": "feather-browser",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "ts-node src/index.ts",
