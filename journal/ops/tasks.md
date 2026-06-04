@@ -5,10 +5,6 @@ Checklist only. Current state, recommendation, evidence, parked items → `journ
 
 Active track: **ADR-0008 Credentials Vault validation** (Spike C done; A/B gate acceptance).
 
-## Process / tooling (do next, fresh chat)
-- [ ] **Reshape `/init` into a phase-boundary ritual** (A. Orient / B. Phase wrap / C. Open next phase) + fix its stale file list (drop `PROGRESS.md` + `journal/README.md`; `active.md` as owner; log tail-15). Design in `ops/sessions/token-diet-prune-20260604-0929.md`.
-- [ ] **Reconcile AGENTS.md** — commit the uncommitted consistency fixes; name `/init` as the phase-wrap in "When To Use Each Command"; make **Change Classification** phase-agnostic; fix stale Project-Identity goal line (l.7) + branch-diagram "Phase 3" comment (l.45).
-
 ## Open
 - [ ] **Spike A — SQLCipher feasibility** (Fedora + Node/TS; raw-key DB; verify DB/WAL/journals/temp don't leak; packaging). Sudo-gated install → Roi.
 - [ ] **Spike B — KeePassXC integration** (CLI / Secret Service / KDBX; request-without-storing; approval boundary). Sudo-gated install → Roi.
@@ -17,6 +13,8 @@ Active track: **ADR-0008 Credentials Vault validation** (Spike C done; A/B gate 
 - [ ] **Deferred — observability sprint:** wire `DebugCapture` (dead code) — `start()` after `setContext`, `finalize()` before `context.close()`, read `debug.trace` in `launch()`.
 
 ## Done (current phase — full detail in journal/log.md + ops/sessions/)
+- [x] Reshaped `/init` into the phase-boundary ritual (A. Orient / B. Phase wrap / C. Open next) + fixed its stale file list (dropped `PROGRESS.md`; `active.md` as owner; log tail-15).
+- [x] Reconciled AGENTS.md (`e6132bd`) — `/init` named as phase-wrap; Change Classification phase-agnostic; stale l.7 goal + l.45 branch comment fixed.
 - [x] Spike C — secret-leakage harness shipped (`assertNoSecretLeak` + real-Chromium gate; `redactUrl` strips query+fragment at `TAB_UPDATED` + `network-summary`).
 - [x] ADR-0008 CredentialsVault candidate landed (🚧 non-accepted).
 - [x] Phase 4 Step 0 — Cookie Mine proven; attach-don't-launch beat bot detection (ADR-0007).
