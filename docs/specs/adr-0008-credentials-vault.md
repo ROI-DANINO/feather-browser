@@ -122,3 +122,22 @@ change must pass.
 - Once this candidate lands, the source intake
   (`journal/raw/_inbox/2026-06-04-security-research-credentials-vault.md`) becomes
   archive-eligible (`git mv` → `journal/raw/archive/`).
+
+## Real-world corollary (2026-06-04): keep raw creds out of the Cookie-Mine profile
+
+Surfaced while warming the `primary` Google session (pre-shell #4). Chromium's **built-in
+password manager** offered to save passwords into the warm profile, and several were saved
+before the boundary was caught (since cleared via `chrome://password-manager`). This is the
+first live instance of the "credentials in the shared jar" question.
+
+Decision/principle: the **warm / Cookie-Mine browser profile must never use Chromium's built-in
+password manager.** Raw credentials belong in a manager *separate from the shared jar* — Proton
+Pass today, Feather's vault (this ADR) later — never in the profile that Phase-5 agents will
+piggyback on. Storing them in-profile would put plaintext-recoverable secrets directly inside the
+jar, defeating the agent-blind model.
+
+The risk is **dormant in Phase 4** (no agents touch the profile yet); the hard deadline is the
+**first agent action** (the same Phase 4→5 gate as cookie-isolation). Hardening task (see
+`journal/ops/tasks.md`): `warm-session` should launch the profile with Chromium's password
+manager **disabled by policy** (e.g. `credentials_enable_service=false` / `PasswordManagerEnabled`
+policy) so creds cannot accumulate in the jar by accident — must land before any agent work.

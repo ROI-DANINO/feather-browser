@@ -13,6 +13,22 @@ Active track: **ADR-0008 Credentials Vault validation** (Spike C done; A/B gate 
 5. [x] **Observability sprint — DONE** (out of order; didn't depend on #4) — `DebugCapture` wired: instantiate+`start()` in `launch()` when `input.debug` set (was accepted-but-ignored), `finalize()` before `context.close()` in `close()` (best-effort; `debug.capture.finalize.failed` event). Real-Chromium e2e proves a valid `trace.zip` (PK bytes) + `network-summary.jsonl` land in the debug dir. Closes the S2-deferred "Trace e2e + DebugCapture wiring" gap. Pushed `dev` `46c946e`.
 6. [ ] **Prove end-to-end Cookie Mine loop on the headed-Chromium stopgap** (ADR-0007 gate) — *then* design the Visual Desktop Shell GUI.
 
+## Open — Cookie-Mine hardening (before any agent action; Phase 4→5 gate)
+- [ ] **`warm-session` must disable Chromium's built-in password manager by policy** — keep raw
+  creds out of the shared jar (`credentials_enable_service=false` / `PasswordManagerEnabled` policy
+  on the `primary` profile). Surfaced 2026-06-04: Chrome offered to save passwords into the warm
+  profile (several saved then cleared via `chrome://password-manager`; the disable toggle wasn't
+  found in-UI, hence enforce by policy). Creds belong in Proton Pass now / Feather vault later,
+  separate from the profile agents piggyback on. Dormant in Phase 4; **must land before the first
+  agent action.** Detail: ADR-0008 → "Real-world corollary".
+- [ ] **Cookie-isolation spike** (next; design safely) — copy the warm Google cookies into a fresh
+  isolated context; verify auth survives **and** stays un-flagged. ⚠️ Risk: two simultaneous live
+  sessions from cloned cookies can look like session theft → could flag/invalidate the freshly
+  warmed `primary` session. Design the spike to protect it (read-only first / snapshot / throwaway)
+  rather than firing blindly. NEW signal: the login is **device-bound (passkey/Face-ID)** → DBSC is
+  live, so copy-to-isolated is the real open question. Procedure:
+  `research/2026-06-04-cookie-jar-isolation-and-phase5-sequencing.md` → "Queued action".
+
 ## Open — vault track (frozen; architecture stands)
 - [ ] **Spike A — SQLCipher feasibility** (Fedora + Node/TS; raw-key DB; verify DB/WAL/journals/temp don't leak; packaging). Sudo-gated install → Roi. **Frozen.**
 - [ ] **Spike B — KeePassXC integration** (CLI / Secret Service / KDBX; request-without-storing; approval boundary). Sudo-gated install → Roi. **Frozen.**

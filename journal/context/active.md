@@ -96,7 +96,15 @@ visually but are text-invisible → policy, not OCR. Design:
 
 - ADR-0008 is the first **non-accepted** ADR in `docs/specs/` — index marks it 🚧 CANDIDATE. Don't
   let any doc imply KeePassXC/SQLCipher are selected or the vault backend is locked.
-- Anti-detection is **spike-only**; `src/browser/modes.ts` has none yet.
+- Anti-detection in `src/browser/modes.ts` is minimal/spike-grade: the one real measure is
+  `--disable-blink-features=AutomationControlled` in `spawnAndConnect` — **load-bearing** (removing
+  it flips `navigator.webdriver` to `true`). It paints a cosmetic "unsupported flag" infobar
+  (invisible to sites). `--test-type` hides it without breaking webdriver===false (deferred polish).
+- **Credentials-in-the-jar boundary (NEW 2026-06-04):** the warm `primary` profile must **never use
+  Chromium's built-in password manager** — raw creds belong in Proton Pass now / Feather vault later,
+  separate from the shared jar. Chrome saved a few during the #4 login (cleared via
+  `chrome://password-manager`; UI disable toggle not found → enforce by policy). Dormant in Phase 4;
+  hard deadline = first agent action. Hardening task in `tasks.md`; detail in ADR-0008 corollary.
 - Shell stack is **active R&D** — don't let any doc imply it's locked (ADR-0007).
 - Inbox lifecycle is live: promoted/superseded notes → `journal/raw/archive/` (NOT `_processed/`,
   rnd's dropped convention). Inbox holds 2 genuinely-open files (branching-strategy gate +
