@@ -1,6 +1,38 @@
 # Next — Context Bridge
 
 ---
+## 2026-06-04 23:55 — CI added; first run caught a real Wayland-portability bug
+
+### Done
+- **Added CI** (`.github/workflows/ci.yml`, commit `3863da9`): full suite on ubuntu/Node-22 (push to
+  dev/master + PRs). Node pinned (`engines>=20` + `.nvmrc 22`). README test counts fixed 137→175/33→37.
+- **CI's first run went RED on integration — and that was the point.** Surfaced a latent bug local
+  runs hid: `spawnAndConnect` (`src/browser/modes.ts:44`) **hardcodes `--ozone-platform=wayland`** +
+  spawns headed → the CDP-attach path only runs on a Wayland desktop; on a display-less runner
+  Chromium exits before exposing CDP.
+- **Fix (`f0bdd6d`, fast + honest per Roi's "merge first, break later"):** env-gated the 2 headed
+  integration tests (`attach-cdp`, `system-chromium`) on `WAYLAND_DISPLAY`, mirroring the existing
+  conditional-skip. **CI now GREEN: 175 unit + 35 integration passed + 2 skipped** (verified in the
+  run logs, not just the checkmark). Local (Wayland) stays 37 passed.
+- **Corrected docs to actual state** (the earlier README/active.md edits overstated "green
+  everywhere"): README CI/test lines state the gating; active.md records the CI finding honestly.
+- **PR #1: OPEN · MERGEABLE · `verify` check = SUCCESS.**
+
+### Decisions
+- Defer the real portability fix (make ozone-platform configurable so the 2 tests run on CI/X11/
+  headless, then un-gate) to **post-merge** — tracked in `tasks.md` alongside the vitest 2→4 bump.
+
+### Next action
+**Roi decides on PR #1.** CI is green and gates the PR; evidence supports graduating `dev`→`master`.
+After merge, post-merge tech-debt queue: (1) make `--ozone-platform` configurable + un-gate the 2
+tests; (2) bump `vitest` ^2→^4 to clear the dev-only audit. Then pre-shell **#6** (prove e2e Cookie
+Mine loop) → Visual Desktop Shell GUI.
+
+### Cosmetic / noted
+- CI logs a non-fatal warning: `actions/checkout@v4` + `setup-node@v4` run on Node 20, which GitHub
+  deprecates 2026-06-16. Already on the latest action majors; harmless for now.
+
+---
 ## 2026-06-04 23:24 — Master merge-readiness: full verification pass (all green)
 
 ### Done
