@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Phase 3 complete (merged to `master` 2026-06-03). **Stabilization & Linux-Readiness program closed** (S1 + S2 + S3 all shipped on `dev`). Next: **ROADMAP Phase 4 Step 0** (Visual Desktop Shell — research + plan).
+Phase 3 complete (merged to `master` 2026-06-03). **Stabilization & Linux-Readiness program closed** (S1 + S2 + S3 all shipped on `dev`). **Phase 4 Step 0 is complete** — proven by spikes (the Cookie Mine loop ran end-to-end on a real site; "attach-don't-launch" beat bot detection), captured in ADR-0007. Next: **security research → a non-accepted `CredentialsVault` ADR candidate** (the Phase 5 credentials-vault foundation).
 
 ## Current State
 
@@ -112,4 +112,4 @@ Concrete gaps identified in the Phase 2 codebase that Phase 3 must close:
 
 ## Next
 
-The stabilization program is closed. The next active milestone is **ROADMAP Phase 4 Step 0 — research + plan the Visual Desktop Shell** (Tauri/WebKitGTK vs GTK4-native; Wayland browser-surface embedding unresolved, must prototype; host-primary runtime per ADR-0004; Electron eliminated). Explicitly deferred (not blockers): the `FEATHER_CHROMIUM_PATH` weight sprint (sudo-gated) and the `DebugCapture`/trace observability sprint.
+The stabilization program is closed and **Phase 4 Step 0 is done** (proven by spikes, not a written spec — see ADR-0007: seamless low-latency shell deferred to a later dedicated R&D phase; headed-Chromium stopgap first; implementation stack left as open R&D). The next active milestone is **security research → a non-accepted `CredentialsVault` ADR candidate** (Phase 5 foundation): a narrow vault interface, with KeePassXC (external manager) and SQLCipher (encrypted storage) as first candidates, plus three follow-up spikes (leakage harness, KeePassXC integration, SQLCipher feasibility). See `journal/raw/_inbox/2026-06-04-security-research-credentials-vault.md`. Explicitly deferred (not blockers): productionizing "attach-don't-launch" into `src/`, the `FEATHER_CHROMIUM_PATH` weight sprint (sudo-gated), and the `DebugCapture`/trace observability sprint.
