@@ -6,7 +6,7 @@ A headless-first Chromium browser core for agentic automation, built around Play
 
 ## Status
 
-Phase 3 Complete | Stabilization & Linux-Readiness program closed (S1 + S2 + S3) | Phase 4 Step 0 done (Cookie Mine proven) | 175 unit + 37 integration + 4 measurement tests passing | CI on GitHub Actions | Fastify 5.8.5 + Playwright 1.60
+Phase 3 Complete | Stabilization & Linux-Readiness program closed (S1 + S2 + S3) | Phase 4 Step 0 done (Cookie Mine proven) | 175 unit + 37 integration + 4 measurement tests passing | CI: GitHub Actions on ubuntu (2 Wayland-headed integration tests gated) | Fastify 5.8.5 + Playwright 1.60
 
 ## What It Does
 
@@ -58,6 +58,12 @@ npm test                   # unit tests (175)
 npm run test:integration   # integration tests with real Chromium headless shell (37)
 npm run test:measurement   # resource measurement scenarios (4)
 ```
+
+Two integration tests (`attach-cdp`, `system-chromium`) drive a *headed* Chromium via
+`spawnAndConnect`, which currently hardcodes `--ozone-platform=wayland`. They require a Wayland
+desktop session and self-skip elsewhere (X11 / headless / CI) — so on CI the integration suite
+reports **35 passed + 2 skipped**. Making the ozone platform configurable so they run anywhere is
+tracked tech-debt.
 
 ## Project Structure
 

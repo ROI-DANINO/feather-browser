@@ -5,6 +5,12 @@ import * as path from "path";
 import { chromium } from "playwright";
 import { spawnAndConnect } from "../../src/browser/modes";
 
+// spawnAndConnect currently hardcodes `--ozone-platform=wayland` + spawns headed, so this
+// CDP-attach gate only runs on a real Wayland desktop session. Skip elsewhere (CI / X11 /
+// headless) — mirrors the system-chromium probe's conditional-skip. Making the ozone platform
+// configurable so this runs anywhere is tracked post-merge (journal/ops/tasks.md).
+const waylandIt = process.env.WAYLAND_DISPLAY ? it : it.skip;
+
 let tmpDir: string;
 let cleanup: (() => Promise<void>) | null = null;
 
@@ -20,7 +26,7 @@ afterAll(async () => {
 });
 
 describe("spawnAndConnect — anti-detection gate", () => {
-  it(
+  waylandIt(
     "navigator.webdriver is not true when connected via CDP attach",
     async () => {
       const profilePath = path.join(tmpDir, "profile");

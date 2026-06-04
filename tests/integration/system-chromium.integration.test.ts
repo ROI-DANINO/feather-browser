@@ -37,7 +37,10 @@ function chromiumBuild(bin: string): string | null {
 
 const systemBin = findSystemChromium();
 const systemBuild = systemBin ? chromiumBuild(systemBin) : null;
-const probe = systemBin && systemBuild ? it : it.skip;
+// Needs a system Chromium AND a Wayland session: spawnAndConnect currently hardcodes
+// `--ozone-platform=wayland`, so this crashes on X11/headless/CI even when a binary exists.
+// Skip unless both are present (making ozone configurable is tracked post-merge).
+const probe = systemBin && systemBuild && process.env.WAYLAND_DISPLAY ? it : it.skip;
 
 let tmpDir: string;
 let cleanup: (() => Promise<void>) | null = null;

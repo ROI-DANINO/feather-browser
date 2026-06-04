@@ -15,9 +15,13 @@ only #6 (prove end-to-end Cookie Mine loop) remains before the GUI.
   wip/revert/fixup markers; +1637/−75 across 31 src/test files; all maps to S1–S3 + storage isolation
   + attach-cdp + chromium-path + observability + warm-session. No TODO/FIXME/HACK in src; the one
   `it.skip` is a conditional system-Chromium guard that actually ran. **Verdict: stable milestone.**
-- [ ] **Decide + (if go) merge PR #1** — graduate `dev` → `master`. Evidence supports it; **held as
-  Roi's milestone call** (not auto-merged). PR #1 OPEN · MERGEABLE · not draft; title already updated
-  to full scope. (Optional non-blocking polish: README status line 137→175.)
+- [x] **CI added (`3863da9`) + gating fix** — `.github/workflows/ci.yml` (full suite, ubuntu/Node 22).
+  First run RED → surfaced the hardcoded-Wayland `spawnAndConnect` bug; fixed by env-gating the 2
+  headed tests (`attach-cdp`, `system-chromium`) on `WAYLAND_DISPLAY` → CI 35 passed + 2 skipped.
+  Docs corrected to match. Node pinned (`engines>=20` + `.nvmrc`). README counts 137→175/33→37.
+- [ ] **Decide + (if go) merge PR #1** — graduate `dev` → `master`. **CI now gates the PR — confirm
+  green (35 passed + 2 Wayland-gated skips) before merging.** Evidence supports it; **held as Roi's
+  milestone call** (not auto-merged). PR #1 OPEN · MERGEABLE · not draft; title full-scope.
 
 ## Open — pre-shell infrastructure sequence (locked 2026-06-04; must precede the GUI)
 1. [x] **Storage-isolation fix — DONE** (XDG split shipped + `.feather/` gitignored; pushed `dev` `cbe939e..13101ff`). profiles/vault→DATA, logs/debug/measurements→STATE, disposable→CACHE, token→RUNTIME. Enforces the Agent-Blind Vault boundary.
@@ -44,6 +48,15 @@ only #6 (prove end-to-end Cookie Mine loop) remains before the GUI.
   `research/2026-06-04-cookie-jar-isolation-and-phase5-sequencing.md` → "Queued action".
 
 ## Open — tooling / tech-debt (post-merge; non-blocking)
+- [ ] **Make `--ozone-platform` configurable in `spawnAndConnect` (CI/X11 portability).**
+  `src/browser/modes.ts:44` hardcodes `--ozone-platform=wayland` + spawns headed, so the CDP-attach
+  path only runs on a Wayland desktop session — it crashes on X11/headless/CI ("Chromium exited
+  unexpectedly with code null" / "did not expose CDP within 10000ms"). **Surfaced by the new CI on
+  its first run (2026-06-04)** — local runs hid it because the dev box is Wayland. Interim: the 2
+  headed integration tests (`attach-cdp`, `system-chromium`) are **env-gated on `WAYLAND_DISPLAY`**
+  (skip on CI) so CI is green (35 passed + 2 skipped). Real fix: drive ozone-platform from
+  env/auto-detect (e.g. unset → Chromium default, or `FEATHER_OZONE_PLATFORM`), optionally support a
+  headless spawn for CI, then **un-gate the 2 tests** so the anti-detection path is CI-verified too.
 - [ ] **Bump `vitest` `^2` → `^4` (breaking) + clear the dev-tooling audit.** We declared `vitest:
   ^2.0.0` at Phase-2 scaffold (`4fcfa5d`); the caret holds the major at 2, so we never crossed into
   v3/v4 (latest `4.1.8`). The 5 `npm audit` findings (4 moderate, 1 **critical**) live entirely in
