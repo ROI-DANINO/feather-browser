@@ -32,6 +32,29 @@ export function buildLaunchOptions(
 
 const CDP_TIMEOUT_MS = 10_000;
 
+/**
+ * Resolve env-driven spawn args for the headed CDP path.
+ * - Ozone: explicit FEATHER_OZONE_PLATFORM wins ("default"/"none"/"" => omit the flag and let
+ *   Chromium auto-pick, which is correct on X11/Xvfb). Unset => wayland only if WAYLAND_DISPLAY is
+ *   present, else omit. This replaces the previous hardcoded `--ozone-platform=wayland`, which
+ *   crashed on X11/headless/CI.
+ * - Headless: FEATHER_SPAWN_HEADLESS truthy => `--headless=new` (lets a display-less runner attach
+ *   over CDP). Prefer Xvfb in CI to keep the headed fingerprint faithful; this is the fallback.
+ */
+export function resolveSpawnExtraArgs(): string[] {
+  const out: string[] = [];
+  const explicit = process.env.FEATHER_OZONE_PLATFORM;
+  if (explicit !== undefined) {
+    const v = explicit.trim().toLowerCase();
+    if (v && v !== "default" && v !== "none") out.push(`--ozone-platform=${explicit.trim()}`);
+  } else if (process.env.WAYLAND_DISPLAY) {
+    out.push("--ozone-platform=wayland");
+  }
+  const hl = (process.env.FEATHER_SPAWN_HEADLESS ?? "").toLowerCase();
+  if (hl === "1" || hl === "true" || hl === "yes") out.push("--headless=new");
+  return out;
+}
+
 export async function spawnAndConnect(opts: {
   profilePath: string;
   executablePath: string;
