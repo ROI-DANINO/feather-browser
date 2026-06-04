@@ -14,6 +14,7 @@ This is a build-in-public journal and a decision history. It's the *why* behind 
 | 0004 | [The Feature That Was Never There](0004-the-feature-that-was-never-there.md) | 2026-06-03 | S2 core shipped — dup-tab fix, TAB_UPDATED, resilient reads; dead trace feature found + deferred |
 | 0005 | [The Migration That Needed No Code](0005-the-migration-that-needed-no-code.md) | 2026-06-03 | S3 shipped — Fastify v4→v5 (zero source changes), Playwright current, security checkpoint; stabilization program closed |
 | 0006 | [The Hello World That Logged In As Me](0006-the-hello-world-that-logged-in-as-me.md) | 2026-06-04 | Phase 4 Step 0 — Cookie Mine proven end-to-end on a real site; "attach, don't launch" beat bot-detection; agent sent a message as me (ADR-0007) |
+| 0007 | [The Keys Were Under the Doormat](0007-the-keys-were-under-the-doormat.md) | 2026-06-04 | Pre-shell security groundwork — found secrets stored inside the (non-gitignored) project folder; decided the Linux-native XDG fix; spec + plan landed, build next |
 
 ## How entries are written (style guardrails)
 

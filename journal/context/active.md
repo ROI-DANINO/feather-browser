@@ -12,15 +12,26 @@ redaction fix (`TAB_UPDATED` + `network-summary`). ADR-0008 stays **non-accepted
 clear.
 
 **Token Diet complete** (2026-06-04): Step 1 (`.remember` plugin lobotomy) + Step 2 (ROADMAP
-collapse). Projected hot auto-load **~5,037 → ~3,635 tok** — confirm at next `/start` that the
-`=== MEMORY ===` block is gone.
+collapse). Projected hot auto-load **~5,037 → ~3,635 tok**. **Verified 2026-06-04**: the
+`=== HANDOFF/REMEMBER/MEMORY ===` SessionStart block is gone. Config was correct all along;
+plugin hooks load at CC launch, so the disable only took effect after a **full Claude Code restart**
+(not `/clear`).
+
+**Storage-isolation fix (Task #1) is spec'd + planned, NOT yet built.** Spec:
+`docs/specs/2026-06-04-storage-isolation-xdg-design.md` (`5f8f4e7`). Plan:
+`docs/plans/2026-06-04-storage-isolation-xdg.md` (`0fa0b8a`) — 5 TDD tasks. Decision: **full XDG
+split** (profiles/vault→DATA, logs/debug/measurements→STATE, disposable→CACHE, token/endpoint→RUNTIME,
+runtime falls back to STATE not workspace); `FeatherPaths`/`ensureDirs` accept `FeatherDirs | string`
+so the 14 single-root test files stay untouched. **NEXT SESSION: execute this plan** (pick
+subagent-driven vs inline — that choice was open at `/stop`).
 
 ## Recommend next
 
 **Pre-shell infrastructure sequence (locked 2026-06-04) — MUST precede any Visual Desktop Shell GUI:**
-1. **Storage-isolation fix (CRITICAL — currently violated):** `src/config.ts` defaults `featherDir`
-   to repo-relative `.feather`, not gitignored. Relocate profile/cookies/vault to `~/.config` /
-   `~/.local/share`, gitignore, never inside the workspace. (Enforces the Agent-Blind Vault boundary.)
+1. **Storage-isolation fix (CRITICAL — currently violated): ▶ READY TO EXECUTE** — spec'd + planned
+   (`docs/plans/2026-06-04-storage-isolation-xdg.md`). `src/config.ts` still defaults `featherDir` to
+   repo-relative `.feather` (not gitignored). Plan relocates to the XDG split + gitignores `.feather/`.
+   (Enforces the Agent-Blind Vault boundary.) **This is the immediate next action.**
 2. **Productionize attach-don't-launch** into `src/browser/modes.ts` (no anti-detection yet) +
    `FEATHER_CHROMIUM_PATH` (sudo `dnf install chromium`).
 3. **Warmed persistent Google session on disk** — long-running primary authenticated context

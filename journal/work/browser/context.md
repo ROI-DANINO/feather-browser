@@ -48,6 +48,14 @@ architecture stands).
   agents piggyback on (ADR-0003). **Proven on a real site 2026-06-04**: an agent tab
   (`context.newPage` == `openTab`) inherits the human's live login.
 - **Agentic North Star:** token/context efficiency is a standing constraint; MCP tool selection deferred to Phase 5 Step 0 after 2026-07-28 spec final (ADR-0005).
+- **Storage layout (decided 2026-06-04, spec+plan; not yet built):** all runtime state moves out of
+  the repo-relative `.feather` into the **XDG base dirs** — profiles/cookies/vault → DATA
+  (`~/.local/share/feather`), logs/debug/measurements → STATE (`~/.local/state/feather`), disposable
+  sessions → CACHE (`~/.cache/feather`), token/endpoint → RUNTIME (`$XDG_RUNTIME_DIR/feather`, falls
+  back to STATE, never the workspace). Honors XDG env vars + a `FEATHER_DIR` single-root override.
+  `FeatherPaths`/`ensureDirs` accept `FeatherDirs | string` (string = single-root). Enforces the
+  Agent-Blind Vault boundary; the vault (ADR-0008) will live under the DATA root.
+  Spec/plan: `docs/specs/2026-06-04-storage-isolation-xdg-design.md`, `docs/plans/2026-06-04-storage-isolation-xdg.md`.
 - **Credentials vault (ADR-0008, 🚧 non-accepted):** interface-first, local-first `CredentialsVault`; Feather is NOT a password manager; KeePassXC + SQLCipher are **candidates, not selections**; acceptance gated on 3 spikes (C leakage harness, A SQLCipher, B KeePassXC). Spikes A/B need sudo installs (hand to Roi).
 
 ## Secret-leakage findings (Spike C probe, 2026-06-04 — evidence, not assumption)

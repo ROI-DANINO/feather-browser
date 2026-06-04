@@ -1,6 +1,6 @@
 ---
 phase: phase-4-visual-desktop-shell
-sub_phase: step-0-done-cookie-mine-proven
+sub_phase: pre-shell-task1-storage-isolation-planned
 adr: docs/specs/adr-0007-phase-4-shell-sequencing.md
 prior_phase: stabilization-linux-readiness-closed
 blocking: null

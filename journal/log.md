@@ -16,3 +16,5 @@ Pre–Phase 4 history (Phases 0–3): `journal/ops/archive/log-archive.md`.
 2026-06-04 | SHIP | secret-leakage-harness -> src+tests | Spike C shipped: assertNoSecretLeak + Chromium gate; redactUrl strips query/frag
 2026-06-04 | STOP | -> ops/sessions/token-diet-prune-20260604-0929.md | Token-diet §8 done: ~15.6k->~7.6k hot tok; next=/init reshape
 2026-06-04 | STOP | -> ops/sessions/token-diet-finish-20260604-1034.md | Token diet done: .remember lobotomy + ROADMAP collapse; pre-shell seq locked; ~5037->~3635 tok
+
+2026-06-04 | STOP | -> ops/sessions/storage-isolation-plan-20260604-1101.md | Storage-isolation spec+plan landed (XDG split); .remember lobotomy verified (needs full restart); blog 0007
