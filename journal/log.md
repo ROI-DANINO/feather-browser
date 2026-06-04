@@ -32,3 +32,5 @@ Pre–Phase 4 history (Phases 0–3): `journal/ops/archive/log-archive.md`.
 2026-06-04 | NEXT | -> journal/context/next.md | Full verification pass GREEN (175u+37i+4m, tsc 0, prod-audit 0); dev=stable milestone; 111-commit delta coherent; merge of PR #1 is Roi's call (held)
 
 2026-06-04 | NEXT | -> journal/context/next.md | CI added (GitHub Actions); first run RED surfaced hardcoded-Wayland spawnAndConnect bug; env-gated 2 headed tests -> CI GREEN (175u + 35i +2 skip); docs corrected; ozone-platform fix tracked post-merge; PR #1 MERGEABLE + verify SUCCESS
+
+2026-06-04 | MILESTONE | PR #1 MERGED dev->master (e39d167) | Stable graduation: Phase 3 + S1-S3 + pre-shell #1-5 + CI green; merge commit; next = post-merge tech-debt (ozone-platform, vitest 2->4) then pre-shell #6

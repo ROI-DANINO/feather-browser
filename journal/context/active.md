@@ -5,6 +5,15 @@ destination → `ROADMAP.md`; history → `journal/log.md` + `ops/sessions/`.
 
 ## Now
 
+**🎯 MILESTONE: `dev` → `master` GRADUATED (2026-06-04 21:01 UTC).** PR #1 **MERGED** (merge commit
+`e39d167`, by ROI-DANINO). `master` now carries the full stable set: Phase 3 + S1–S3 stabilization +
+pre-shell infrastructure #1–5 + CI (GitHub Actions, green). Merge gated on green CI (175 unit + 35
+integration + 2 Wayland-gated skips); prod-dep audit 0; tree clean. Merged as a **merge commit**
+(history preserved, not squashed). `dev` stays the working branch (master is now 1 merge-commit ahead;
+dev fully contained). **Next focus = the post-merge tech-debt queue (ozone-platform configurable →
+un-gate the 2 tests; vitest 2→4), then pre-shell #6 (prove e2e Cookie Mine loop) → Visual Desktop
+Shell GUI.** Details below + `context/next.md`.
+
 **Pre-shell #4 (warmed Google session) is DONE and verified end-to-end (2026-06-04 23:07).**
 `npm run warm-session` (`src/tools/warm-session.ts`) launches the `primary` persistent workspace in
 stealth `chromium-headed-cdp` against system Chromium 148 (`/usr/bin/chromium-browser`). Roi logged
