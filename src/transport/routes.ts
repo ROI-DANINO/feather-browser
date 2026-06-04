@@ -17,7 +17,7 @@ import { registerSseRoute } from "./sse";
 const LaunchSchema = z.object({
   workspaceId: z.string().optional(),
   profile: z.object({ kind: z.enum(["persistent", "disposable"]) }),
-  browserMode: z.enum(["chromium-new-headless", "chromium-headless-shell"]).optional(),
+  browserMode: z.enum(["chromium-new-headless", "chromium-headless-shell", "chromium-headed-cdp"]).optional(),
   viewport: z.object({ width: z.number(), height: z.number() }).optional(),
   proxy: z.object({
     server: z.string(),
