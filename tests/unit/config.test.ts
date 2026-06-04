@@ -10,6 +10,8 @@ const XDG_VARS = [
   "XDG_STATE_HOME",
   "XDG_CACHE_HOME",
   "XDG_RUNTIME_DIR",
+  "FEATHER_PORT",
+  "FEATHER_HOST",
 ];
 
 describe("config", () => {
@@ -21,7 +23,6 @@ describe("config", () => {
       saved[k] = process.env[k];
       delete process.env[k];
     }
-    delete process.env.FEATHER_PORT;
   });
 
   afterEach(() => {
@@ -79,7 +80,8 @@ describe("config", () => {
   });
 
   it("loadConfig wires dirs from resolveDirs", () => {
+    process.env.FEATHER_DIR = "/tmp/feather-test";
     const cfg = loadConfig();
-    expect(cfg.dirs).toEqual(resolveDirs());
+    expect(cfg.dirs).toEqual(singleRootDirs("/tmp/feather-test"));
   });
 });
