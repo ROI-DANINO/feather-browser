@@ -1,48 +1,55 @@
-## Active — Phase 4 Step 0 DONE (Cookie Mine proven on a real site); next is security research
+## Active — Repo organized; next is the credentials-vault ADR candidate
 
-**Phase 4 Step 0 is complete** — done by *spiking*, not speccing. On `dev` (tracking commit at
-stop). The big unknowns are answered by observation, and the product thesis breathed for the
-first time: the agent logged into Roi's **real ChatGPT** and **sent a message as him**.
-
-### What we proved (6 no-install spikes; Fedora/Wayland/niri, Playwright 1.60 / Chromium 148)
-- Headed Chromium runs **natively on Wayland**; niri tiles it (app can't self-place).
-- The Wayland-embedding blocker is **dissolved** (tiling + headless painted-in model).
-- Cookie Mine loop works: an agent tab (`context.newPage` == `openTab`) inherits the human
-  session — confirmed on a practice site AND on real ChatGPT.
-- **Bot-detection is the #1 risk.** A naked Playwright-launched browser got walled by Google +
-  Cloudflare. Fix: **attach, don't launch** (spawn Chromium normally, `connectOverCDP` →
-  `navigator.webdriver=false`) → logged into ChatGPT with no CAPTCHA.
-- Agent sent "hello world" in Roi's live ChatGPT (authorized). Login then wiped from disk.
-
-### Decisions (ADR-0007)
-- Defer the seamless low-latency shell to a later **dedicated R&D phase**; **headed-Chromium
-  stopgap** now; **prove the loop first** (done).
-- Target end-state = "painted-in" one-window shell — but the **implementation stack is open
-  R&D, not locked** (no commitment to Rust/GTK/Tauri/Zig).
-- `rnd` graduation deferred (Phase-5 framing, doesn't touch the shell).
+Phase 4 Step 0 is done (Cookie Mine proven on a real site; ADR-0007). The last session was
+a **get-organized pass** (no feature code): synced `dev`, built the inbox→archive lifecycle,
+graduated `rnd` (ADR-0006), cleaned stale branches, and reconciled the canonical docs. All on
+`dev`, pushed to `origin/dev`.
 
 ## Next track (recommend the first)
 
-- [ ] **SECURITY RESEARCH (highest priority):** a **highly-secure open-source password manager**
-  + a **secure database/storage format** for the future credentials vault (Phase 5). Threat
-  model, encryption-at-rest, key management, auditability, license. (Roi's explicit next ask.)
-- [ ] **Productionize attach-don't-launch** into `src/` (anti-detection lives only in spikes
-  now; `src/browser/modes.ts` has none). Pairs with `FEATHER_CHROMIUM_PATH` (real Chromium
-  binary → also drops the "Chrome for Testing" banner; sudo, Roi runs).
-- [ ] **Graduate `rnd`** (ADR-0006 + ROADMAP Phase-5 edit) → `dev`. Still parked.
+- [ ] **CREDENTIALS-VAULT ADR CANDIDATE — recommended.** Promote the open inbox intake
+  (`journal/raw/_inbox/2026-06-04-security-research-credentials-vault.md`) into a
+  **non-accepted** `CredentialsVault` ADR candidate in `docs/specs/`. Narrow vault interface;
+  KeePassXC (external manager) + SQLCipher (encrypted storage) as first candidates; selection
+  NOT final. Scope 3 spikes: leakage harness, KeePassXC integration, SQLCipher feasibility.
+  Keep explicitly non-accepted until spikes done. (Prior session attempted this, was blocked.)
+- [ ] **Productionize attach-don't-launch** into `src/` — anti-detection lives only in spikes;
+  `src/browser/modes.ts` has none. Spawn Chromium normally + `connectOverCDP`
+  (`navigator.webdriver=false`). Pairs with `FEATHER_CHROMIUM_PATH`. `ui-playground` branch
+  has reference stealth experiments.
+- [ ] **`FEATHER_CHROMIUM_PATH`** (sudo, Roi runs `dnf install chromium`) — real Chromium
+  binary also drops the cosmetic "Chrome for Testing" banner. Env var in `config.ts` +
+  `executablePath` in `modes.ts`.
+- [ ] **Deferred — observability sprint:** wire `DebugCapture` (dead code) — `start()` after
+  `setContext`, `finalize()` before `context.close()`, read `debug.trace` in `launch()`.
 
-## Ideas parked (Phase 5; frame as user-authorized continuity, never "stealth/bypass")
+## Parked (Phase 5; frame as user-authorized continuity, NOT "stealth/bypass")
 
-- Learned **behavioral fidelity** (agent acts with Roi's mouse/typing signature).
-- **Observe-to-learn** (agent sees Roi's screen on request → understand context, later learn
-  workflows from demonstration).
-- **Detection self-emulation** (model sites' bot-ID to find weak spots; defensive self-test).
-- Agent perception layer (Actionable Tree / a11y-tree) — `research/2026-06-03-phase-5-agent-perception-layer-notes.md`.
-
-Details: `journal/raw/_inbox/2026-06-04-session-insights-behavioral-fidelity-security.md`.
+- **Learned behavioral fidelity** — agent acts with Roi's mouse/typing signature.
+- **Observe-to-learn** — agent sees Roi's screen on request → understand context; later learn
+  workflows from demonstration.
+- **Detection self-emulation** — model sites' bot-ID techniques to find weak spots (defensive).
+- **Agent perception layer** — `research/2026-06-03-phase-5-agent-perception-layer-notes.md`.
+- Details: `journal/raw/_inbox/2026-06-04-session-insights-behavioral-fidelity-security.md`.
 
 ## Flags
 
+- Inbox lifecycle is live: promoted/superseded notes → `journal/raw/archive/` (NOT `_processed/`,
+  which was `rnd`'s competing convention, now dropped). Inbox holds 7 genuinely-open files.
+- `rnd` branch deleted (deliverable graduated as ADR-0006). `ui-playground` KEPT as reference.
+- ADR-0006 (interface neutrality) is now a standing design lens on `dev`.
 - Shell stack is **active R&D** — don't let any doc imply it's locked.
 - Anti-detection is spike-only; not in `src/` yet.
-- "Chrome for Testing" banner is cosmetic (real Chromium binary removes it).
+
+## Done
+
+### Organize & housekeeping ✅ (2026-06-04, organize-housekeeping)
+- [x] Synced `dev` (was 2 behind origin); inbox→archive lifecycle + swept 12 files
+- [x] Graduated `rnd` by cherry-pick (ADR-0006 + ROADMAP reframe); deleted 3 stale branches
+- [x] Reconciled canonical docs (specs index, README, PROGRESS). 6 commits pushed.
+
+### Phase 4 Step 0 ✅ (2026-06-04, phase4-step0-cookie-mine)
+- [x] ADR-0007; 6 no-install spikes; Cookie Mine proven on real ChatGPT; blog/0006
+
+### Earlier (see ops/sessions/ and archive/)
+- [x] S3 Currency & Security · S2 core · S2 design · repo cleanup · Task 6b · S1 Foundation

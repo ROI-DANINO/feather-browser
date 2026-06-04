@@ -1,30 +1,29 @@
-## Active — Phase 4 Step 0 DONE; next is security research
+## Active — Repo organized; next is the credentials-vault ADR candidate
 
-Phase 4 Step 0 complete (proven by spikes — Cookie Mine works end-to-end on a real site;
-agent acted as Roi in his live ChatGPT). See `docs/specs/adr-0007-phase-4-shell-sequencing.md`
-and `journal/ops/sessions/phase4-step0-cookie-mine-20260604-0139.md`.
+Phase 4 Step 0 is done (Cookie Mine proven; ADR-0007). The last session was a get-organized
+pass — no feature code. See `journal/ops/sessions/organize-housekeeping-20260604-0535.md`.
 
 ## Next track (recommend the first)
 
-- [ ] **SECURITY RESEARCH — HIGHEST PRIORITY.** A **highly-secure open-source password
-  manager** + a **secure database/storage format** for the future credentials vault (Phase 5).
-  Evaluate: threat model, encryption-at-rest, key management, recovery, auditability, license,
-  Linux fit. (Roi's explicit next ask; "security is a very high priority.")
+- [ ] **CREDENTIALS-VAULT ADR CANDIDATE — recommended.** Promote the open inbox intake
+  (`journal/raw/_inbox/2026-06-04-security-research-credentials-vault.md`) into a
+  **non-accepted** `CredentialsVault` ADR candidate in `docs/specs/`. Narrow vault interface;
+  KeePassXC (external manager) + SQLCipher (encrypted storage) as first candidates — NOT final.
+  Scope 3 spikes: leakage harness, KeePassXC integration, SQLCipher feasibility. Keep
+  explicitly non-accepted until spikes done. (Prior session attempted, was blocked.)
 - [ ] **Productionize attach-don't-launch** into `src/` — anti-detection lives only in spikes;
   `src/browser/modes.ts` has none. Spawn Chromium normally + `connectOverCDP`
-  (`navigator.webdriver=false`). Pairs with `FEATHER_CHROMIUM_PATH`.
-- [ ] **`FEATHER_CHROMIUM_PATH`** (sudo, Roi runs `dnf install chromium`) — real Chromium
-  binary also drops the cosmetic "Chrome for Testing" banner. Then env var in `config.ts` +
-  `executablePath` in `modes.ts`.
-- [ ] **Graduate `rnd`** (ADR-0006 + ROADMAP Phase-5 edit) → `dev`. Still parked.
+  (`navigator.webdriver=false`). Pairs with `FEATHER_CHROMIUM_PATH`. `ui-playground` branch has
+  reference stealth experiments.
+- [ ] **`FEATHER_CHROMIUM_PATH`** (sudo, Roi runs `dnf install chromium`) — real Chromium binary
+  also drops the cosmetic "Chrome for Testing" banner. Env var in `config.ts` + `executablePath`
+  in `modes.ts`.
 - [ ] **Deferred — observability sprint:** wire `DebugCapture` (dead code) — `start()` after
-  `setContext`, `finalize()` before `context.close()`, read `debug.trace` in `launch()`; trace
-  e2e.
+  `setContext`, `finalize()` before `context.close()`, read `debug.trace` in `launch()`.
 
 ## Parked (Phase 5; frame as user-authorized continuity, NOT "stealth/bypass")
 
-- **Learned behavioral fidelity** — agent acts with Roi's mouse/typing signature, learned by
-  observing real usage.
+- **Learned behavioral fidelity** — agent acts with Roi's mouse/typing signature.
 - **Observe-to-learn** — agent sees Roi's screen on request → understand context; later learn
   workflows from demonstration.
 - **Detection self-emulation** — model sites' bot-ID techniques to find weak spots (defensive).
@@ -33,10 +32,16 @@ and `journal/ops/sessions/phase4-step0-cookie-mine-20260604-0139.md`.
 
 ## Done
 
+### Organize & housekeeping ✅ (2026-06-04, organize-housekeeping)
+- [x] Synced `dev` (was 2 behind origin)
+- [x] Inbox→archive lifecycle (`journal/raw/archive/`) + swept 12 processed files
+- [x] Graduated `rnd` by cherry-pick → ADR-0006 + ROADMAP Phase-5 reframe on `dev`
+- [x] Deleted stale branches rnd/tmp-check/copilot-dev (ui-playground kept as reference)
+- [x] Reconciled canonical docs: specs README index, README, PROGRESS. 6 commits pushed.
+
 ### Phase 4 Step 0 ✅ (2026-06-04, phase4-step0-cookie-mine)
 - [x] ADR-0007 (defer seamless shell; headed-Chromium stopgap; prove loop first; stack = open R&D)
-- [x] 6 no-install spikes: headed Chromium on Wayland; embed-blocker dissolved; Cookie Mine loop;
-  bot-detection found; attach-don't-launch beat it; agent sent "hello world" in real ChatGPT
+- [x] 6 no-install spikes; Cookie Mine proven on real ChatGPT; attach-don't-launch beat bot-detect
 - [x] Insights captured (inbox + 3 memories); real login wiped; blog/0006 published
 
 ### Earlier (see ops/sessions/ and archive/)

@@ -1,55 +1,34 @@
-# Handoff — 2026-06-03 (s3-currency-security)
+# Next Session — Feather Browser
 
-## Where We Are
+Branch: `dev` (= `origin/dev`; 6 commits pushed this session). Tests last green: 137 unit + 33
+integration. Phase 4 Step 0 done (ADR-0007). Last session was ops-only (organize-housekeeping).
 
-**On `dev`** (pushed `origin/dev` @ `ea0b34a`; `master` untouched @ `b278409`). **S3 — Currency &
-Security is shipped.** The **Stabilization & Linux-Readiness program is functionally closed**
-(S1✅ S2✅ S3✅). 137 unit + 33 integration green, typecheck clean, under **Fastify 5.8.5 +
-Playwright 1.60.0**.
+## Start here (recommended)
 
-This session: resumed (S2 was done), picked S3, brainstormed → spec → plan → executed
-research-first → reviewed → pushed.
+**Credentials-vault ADR candidate.** Promote the open inbox intake
+`journal/raw/_inbox/2026-06-04-security-research-credentials-vault.md` into a **non-accepted**
+`CredentialsVault` ADR candidate in `docs/specs/`:
+- Narrow vault interface (Feather is NOT a password manager).
+- First candidates: **KeePassXC** (external manager) + **SQLCipher** (encrypted storage) — NOT
+  final selections.
+- Scope 3 spikes: leakage harness, KeePassXC integration, SQLCipher feasibility.
+- Keep explicitly **non-accepted** until spikes done. Prior session attempted this and was
+  blocked — try again.
+- After it lands, the inbox file becomes archive-eligible → `git mv` to `journal/raw/archive/`.
 
-## What Shipped (5 commits on dev)
+## What changed last session (context, not tasks)
 
-- `fcfd2f6` S3 design spec · `15dedd0` implementation plan
-- `2fb271e` **Fastify v4→v5 — ZERO source changes.** Every v5 breaking change was N/A: Zod
-  validation (no Fastify `schema:` blocks), `listen()` already object-form, no
-  `request.connection`/`hostname`/`getDefaultRoute`, DELETE callers send non-empty bodies.
-- `f6daea2` **Playwright `^1.50→^1.60`** (latest stable). Bundled Chromium **148 unchanged** →
-  measurement docs + system-Chromium spike stay valid, no re-run.
-- `ea0b34a` **Security checkpoint.** Findings: `docs/specs/2026-06-03-s3-security-checkpoint-findings.md`.
+- **Inbox lifecycle is live:** promoted/superseded notes move to `journal/raw/archive/` (this is
+  the convention — NOT `_processed/`, which was `rnd`'s competing idea, now dropped). `/start`'s
+  inbox count is meaningful again (7 open files).
+- **`rnd` graduated + deleted.** ADR-0006 (agent-interface-neutrality) is now on `dev`. Stale
+  branches tmp-check/copilot-dev also deleted. `ui-playground` KEPT (stealth/headed-launcher
+  reference for the future attach-don't-launch productionization — do NOT delete).
+- Canonical docs reconciled (specs index, README, PROGRESS all now say Step 0 done).
 
-## Key Decisions
+## Don't
 
-- **S3 = one research-gated spec**, not split.
-- **Probe-first:** validated `fastify-sse-v2` v5 compat in a throwaway branch (PASS: full suite +
-  live SSE) BEFORE touching real code. Hand-rolled-SSE contingency defined but unused.
-- **Playwright→latest = stealth** (current Chromium = camouflage), NOT weight. Weight =
-  `FEATHER_CHROMIUM_PATH` (separate, deferred).
-- **npm audit:** 5 vulns all **dev-only Vitest toolchain** (esbuild dev-server SSRF), pre-existing,
-  zero runtime exposure → **accepted risk, NO forced `vitest@4`** (Roi-approved). Documented.
-- **Stop for sudo** — new standing preference (saved to auto-memory).
-
-## Next Concrete Action
-
-**ROADMAP Phase 4 Step 0** — research + plan the **Visual Desktop Shell** (brainstorm first).
-Candidates: Tauri/WebKitGTK vs GTK4-native; Wayland browser-surface embedding unresolved (must
-prototype). Host-primary runtime (ADR-0004); Electron eliminated.
-
-Alternatives (deferred, not blockers): `FEATHER_CHROMIUM_PATH` weight sprint (sudo-gated — Roi
-runs `sudo dnf install chromium`), `DebugCapture`/trace observability sprint, or graduate `rnd`
-(ADR-0006 + ROADMAP Phase-5 edit) to `dev`.
-
-## Flags
-
-- **STALE user-facing docs (fix early):** `README.md` + `PROGRESS.md` still say "Phase 3 / S1 in
-  progress / 129+32." Reality: S1+S2+S3 done, program closed, 137+33, Fastify 5.8.5 + Playwright
-  1.60. Outside `/stop` scope → not updated. Quick docs-reconciliation pass.
-- **Check push state:** the `/stop` handoff commit may be local-only — `git status -sb`; if `dev`
-  is ahead of `origin/dev`, push (policy: `dev` only).
-- `FEATHER_HOST` can override bind to `0.0.0.0` — safe default `127.0.0.1`; add a guardrail/warning
-  if Feather is ever packaged. (Findings doc.)
-- Vitest-toolchain vulns reappear in any `npm audit`; the `vitest@4` deferral is recorded — don't
-  re-triage from scratch.
-- `DebugCapture` (`src/debug/capture.ts`) is still dead code (observability sprint's job).
+- Don't run sudo (FEATHER_CHROMIUM_PATH needs `dnf install chromium` — hand that to Roi).
+- Don't imply KeePassXC/SQLCipher are selected, or that the shell stack is locked.
+- Don't implement credentials handling before leakage checks exist.
+- Frame agent continuity as user-authorized, never stealth/bypass.
