@@ -65,8 +65,9 @@ Do not start web research, architecture comparison, or implementation before the
 
 ## When To Use Each Command
 
-- **`/start`** — at the beginning of *every* session. Always. Loads context and reports state (read-only).
-- **`/stop`** — at the end of *every* session. Always. Writes the handoff and commits tracking files.
+- **`/start`** — at the beginning of *every* session. Always. Loads context and reports state (read-only). Also reads `journal/context/next.md` if present.
+- **`/next`** — when you need a fresh context window mid-work but are *not* at a real stopping point. Snapshots the conversation to `journal/context/next.md` (appends). No commit, no session file. Use this instead of `/stop` when you intend to keep going in a new chat.
+- **`/stop`** — at the end of a *real* stopping point (end of work block, phase milestone, significant decision). Folds any accumulated `/next` snapshots into the full handoff, then commits tracking files.
 - **`/init`** — only when you arrive with a *new goal* you want gate-checked against the current phase before any work. It overlaps with `/start` for normal continuation, so it is optional day-to-day.
 
 ## Tech Stack
@@ -103,4 +104,5 @@ A codebase audit was performed on 2026-05-31. Findings and architecture verdict 
 
 - `/init`: confirm project orientation after reading context and before research.
 - `/start`: resume a session and ask before doing work.
-- `/stop`: pause a session and write a handoff.
+- `/next`: snapshot context before a fresh chat — lighter than `/stop`, no commit.
+- `/stop`: pause a session and write a full handoff.

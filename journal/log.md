@@ -18,3 +18,4 @@ Pre–Phase 4 history (Phases 0–3): `journal/ops/archive/log-archive.md`.
 2026-06-04 | STOP | -> ops/sessions/token-diet-finish-20260604-1034.md | Token diet done: .remember lobotomy + ROADMAP collapse; pre-shell seq locked; ~5037->~3635 tok
 
 2026-06-04 | STOP | -> ops/sessions/storage-isolation-plan-20260604-1101.md | Storage-isolation spec+plan landed (XDG split); .remember lobotomy verified (needs full restart); blog 0007
+2026-06-04 | NEXT | -> journal/context/next.md | /next command designed + implemented; all 8 files updated

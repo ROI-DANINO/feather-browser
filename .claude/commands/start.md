@@ -8,6 +8,7 @@ Run each step before doing anything else.
    - `README.md`
    - `ROADMAP.md`
    - `journal/context/active.md` — **the state owner** (where we are, what's next)
+   - `journal/context/next.md` — **if it exists**, more recent than `active.md`; holds snapshots from prior chats
    - `journal/ops/tasks.md`
    - `journal/ops/phase.md`
    - last 15 lines of `journal/log.md`
