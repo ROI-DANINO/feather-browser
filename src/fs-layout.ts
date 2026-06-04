@@ -1,23 +1,32 @@
 import * as path from "path";
 import * as fs from "fs";
+import { FeatherDirs, singleRootDirs } from "./config";
+
+function toDirs(dirs: FeatherDirs | string): FeatherDirs {
+  return typeof dirs === "string" ? singleRootDirs(dirs) : dirs;
+}
 
 export class FeatherPaths {
-  constructor(private readonly base: string) {}
+  private readonly dirs: FeatherDirs;
+
+  constructor(dirs: FeatherDirs | string) {
+    this.dirs = toDirs(dirs);
+  }
 
   profileDir(workspaceId: string): string {
-    return path.join(this.base, "profiles", workspaceId, "profile");
+    return path.join(this.dirs.data, "profiles", workspaceId, "profile");
   }
 
   workspaceJson(workspaceId: string): string {
-    return path.join(this.base, "profiles", workspaceId, "workspace.json");
+    return path.join(this.dirs.data, "profiles", workspaceId, "workspace.json");
   }
 
   lockFile(workspaceId: string): string {
-    return path.join(this.base, "profiles", workspaceId, "lock");
+    return path.join(this.dirs.data, "profiles", workspaceId, "lock");
   }
 
   disposableSessionDir(sessionId: string): string {
-    return path.join(this.base, "tmp", "sessions", sessionId);
+    return path.join(this.dirs.cache, "tmp", "sessions", sessionId);
   }
 
   disposableProfileDir(sessionId: string): string {
@@ -25,40 +34,41 @@ export class FeatherPaths {
   }
 
   debugDir(sessionId: string): string {
-    return path.join(this.base, "debug", sessionId);
+    return path.join(this.dirs.state, "debug", sessionId);
   }
 
   sessionLog(sessionId: string): string {
-    return path.join(this.base, "logs", "sessions", `${sessionId}.jsonl`);
+    return path.join(this.dirs.state, "logs", "sessions", `${sessionId}.jsonl`);
   }
 
   endpointFile(): string {
-    return path.join(this.base, "run", "endpoint.json");
+    return path.join(this.dirs.runtime, "run", "endpoint.json");
   }
 
   tokenFile(): string {
-    return path.join(this.base, "run", "control-token");
+    return path.join(this.dirs.runtime, "run", "control-token");
   }
 
   measurementDir(runId: string): string {
-    return path.join(this.base, "measurements", runId);
+    return path.join(this.dirs.state, "measurements", runId);
   }
 
   quarantinedProfileDir(sessionId: string): string {
-    return path.join(this.base, "debug", sessionId, "quarantined-profile");
+    return path.join(this.dirs.state, "debug", sessionId, "quarantined-profile");
   }
 }
 
-export async function ensureDirs(featherDir: string): Promise<void> {
-  const dirs = [
-    path.join(featherDir, "profiles"),
-    path.join(featherDir, "tmp", "sessions"),
-    path.join(featherDir, "debug"),
-    path.join(featherDir, "logs", "sessions"),
-    path.join(featherDir, "run"),
-    path.join(featherDir, "measurements"),
+export async function ensureDirs(dirs: FeatherDirs | string): Promise<void> {
+  const d = toDirs(dirs);
+  const toCreate = [
+    path.join(d.data, "profiles"),
+    path.join(d.cache, "tmp", "sessions"),
+    path.join(d.state, "debug"),
+    path.join(d.state, "logs", "sessions"),
+    path.join(d.runtime, "run"),
+    path.join(d.state, "measurements"),
   ];
-  for (const d of dirs) {
-    await fs.promises.mkdir(d, { recursive: true });
+  for (const dir of toCreate) {
+    await fs.promises.mkdir(dir, { recursive: true });
   }
 }

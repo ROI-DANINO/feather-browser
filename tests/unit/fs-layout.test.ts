@@ -2,7 +2,7 @@
 import { describe, it, expect } from "vitest";
 import { FeatherPaths } from "../../src/fs-layout";
 
-describe("FeatherPaths", () => {
+describe("FeatherPaths (single-root string — backward compat)", () => {
   const paths = new FeatherPaths(".feather");
 
   it("builds profile path for workspace", () => {
@@ -36,5 +36,37 @@ describe("FeatherPaths", () => {
 
   it("builds measurement dir for run", () => {
     expect(paths.measurementDir("run1")).toBe(".feather/measurements/run1");
+  });
+});
+
+describe("FeatherPaths (split roots)", () => {
+  const paths = new FeatherPaths({
+    data: "/D",
+    state: "/S",
+    cache: "/C",
+    runtime: "/R",
+  });
+
+  it("routes profiles + workspace + lock to the data root", () => {
+    expect(paths.profileDir("ws1")).toBe("/D/profiles/ws1/profile");
+    expect(paths.workspaceJson("ws1")).toBe("/D/profiles/ws1/workspace.json");
+    expect(paths.lockFile("ws1")).toBe("/D/profiles/ws1/lock");
+  });
+
+  it("routes disposable sessions to the cache root", () => {
+    expect(paths.disposableSessionDir("s")).toBe("/C/tmp/sessions/s");
+    expect(paths.disposableProfileDir("s")).toBe("/C/tmp/sessions/s/profile");
+  });
+
+  it("routes debug + logs + measurements to the state root", () => {
+    expect(paths.debugDir("s")).toBe("/S/debug/s");
+    expect(paths.quarantinedProfileDir("s")).toBe("/S/debug/s/quarantined-profile");
+    expect(paths.sessionLog("s")).toBe("/S/logs/sessions/s.jsonl");
+    expect(paths.measurementDir("r")).toBe("/S/measurements/r");
+  });
+
+  it("routes run files (token + endpoint) to the runtime root", () => {
+    expect(paths.tokenFile()).toBe("/R/run/control-token");
+    expect(paths.endpointFile()).toBe("/R/run/endpoint.json");
   });
 });
