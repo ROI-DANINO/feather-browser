@@ -1,6 +1,41 @@
 # Next — Context Bridge
 
 ---
+## 2026-06-05 — Autonomous research run: spec + plan READY (awaiting `scratch` warm-up + go)
+
+### Done
+- Brainstormed + wrote an **unattended autonomous-run** spec + plan (Roi calling shots up front; he
+  won't read the docs — delegating on the brainstorm). Both committed to local `dev`:
+  - Spec: `docs/specs/2026-06-05-autonomous-research-run-design.md` (`60d361a`)
+  - Plan: `docs/plans/2026-06-05-autonomous-research-run.md` (`4a7ea10`)
+- **Shape:** Ratchet order, research-driven. ① ozone-platform configurable + un-gate the 2 Wayland
+  tests (run under Xvfb in CI) → ② live spike block on a **burnable `scratch` account** (cookie-isolation,
+  pre-shell #6 Cookie Mine loop / ADR-0007 gate, anti-detection self-test incl. headless/headed/Xvfb
+  comparison) → ③ warm-session password-manager hardening + vitest 2→4 (auto-revert) → ④ research tail
+  (shell-stack ADR-0009 draft + process-boundary/language sub-analyses, Phase-4 GUI sketch,
+  behavioral-fidelity design + capture harness).
+- **Iron rule:** all live browser work hits `scratch` ONLY; real `primary` never touched (one read-only
+  login check at closeout). Lightweight lens applied (most artifacts are *knowledge, not shipped weight*).
+
+### Decisions (Roi, this session)
+- Burnable **throwaway Google account** removes the warm-session risk → spike runs LIVE (not just
+  designed). Warm `scratch` with **passkey/Face-ID** so DBSC binding mirrors `primary` and findings
+  transfer. `warm-session` already supports `FEATHER_WARM_WORKSPACE` (no code change to set the ground).
+- Run **later, in a fresh session** (not now) — Roi wanted the review gate before unattended execution.
+- vitest bump = **auto-revert** if not cleanly green (never wake to a half-broken test config).
+- Headless question recorded: behavioral fidelity works mechanically in headless, but headless has its
+  own fingerprints → anti-detection wants **headed (Xvfb for display-less)**; self-test quantifies it.
+
+### Next action (to kick off the run)
+1. Roi: `FEATHER_WARM_WORKSPACE=scratch npm run warm-session` → log into a throwaway Google account with
+   passkey/Face-ID → Ctrl-C. (Delete the passkey afterward.)
+2. In a fresh session, say "execute the autonomous research run plan" → executor follows
+   `docs/plans/2026-06-05-autonomous-research-run.md` via `superpowers:executing-plans`, heads-down until
+   a you-only wall (sudo / master-merge / `scratch` re-login / behavioral recording) or done.
+3. Joint-call decisions are HELD for Roi: shell-stack pick · cookie-isolation-for-`primary` · vault
+   backend. The run recommends with evidence; we decide together.
+
+---
 ## 2026-06-04 23:55 — CI added; first run caught a real Wayland-portability bug
 
 ### Done

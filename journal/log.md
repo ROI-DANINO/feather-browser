@@ -34,3 +34,5 @@ Pre–Phase 4 history (Phases 0–3): `journal/ops/archive/log-archive.md`.
 2026-06-04 | NEXT | -> journal/context/next.md | CI added (GitHub Actions); first run RED surfaced hardcoded-Wayland spawnAndConnect bug; env-gated 2 headed tests -> CI GREEN (175u + 35i +2 skip); docs corrected; ozone-platform fix tracked post-merge; PR #1 MERGEABLE + verify SUCCESS
 
 2026-06-04 | MILESTONE | PR #1 MERGED dev->master (e39d167) | Stable graduation: Phase 3 + S1-S3 + pre-shell #1-5 + CI green; merge commit; next = post-merge tech-debt (ozone-platform, vitest 2->4) then pre-shell #6
+
+2026-06-05 | PLAN | docs/specs/2026-06-05-autonomous-research-run-design.md + docs/plans/2026-06-05-autonomous-research-run.md (60d361a, 4a7ea10) | Brainstormed + wrote unattended autonomous-run spec+plan (Ratchet; scratch-only; research-driven). READY; awaiting Roi: warm scratch w/ passkey then say go in a fresh session.
