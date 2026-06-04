@@ -42,6 +42,7 @@ export async function spawnAndConnect(opts: {
     "--no-first-run",
     "--no-default-browser-check",
     "--ozone-platform=wayland",
+    "--disable-blink-features=AutomationControlled",
   ];
 
   const child = spawn(opts.executablePath, args, { stdio: ["ignore", "ignore", "pipe"] });
