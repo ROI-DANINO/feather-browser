@@ -60,13 +60,25 @@ the risk is **dormant** — the gate is the **first agent action in the real war
 1. ✅ **Storage-isolation fix — DONE** (XDG split shipped, pushed `dev`).
 2. ✅ **Attach-don't-launch — DONE** (`chromium-headed-cdp`; `navigator.webdriver===false`; PR #1).
 3. ✅ **`FEATHER_CHROMIUM_PATH` — DONE** (`6e4f099`; system-Chromium probe; testing banner gone).
-4. ▶ **Warmed persistent Google session on disk — IMMEDIATE NEXT.** Cookie Mine foundation;
-   single-click Google Auth, agent blind, Feather injects under the hood. **Run the cookie-isolation
-   spike first** (see Now). **Needs Roi's one-click Google login.**
+4. ✅ **Warmed persistent Google session on disk — DONE (verified e2e 2026-06-04).**
+   `npm run warm-session` → `primary` persistent workspace, stealth `chromium-headed-cdp`, system
+   Chromium 148. Roi logged into real Google (passkey/Face-ID **new-device** flow, **no bot-block**),
+   relaunch landed already logged in. Agent-blind preserved. Tool: `src/tools/warm-session.ts`.
+   **Decided: warm first, spike as non-blocking follow-on.** ▶ **NEXT = cookie-isolation spike** —
+   now with live DBSC (the login is device-bound via passkey), so copy-to-isolated-context is the
+   real open question (`research/2026-06-04-cookie-jar-isolation-and-phase5-sequencing.md`).
 5. ✅ **Observability sprint — DONE** (`46c946e`; `DebugCapture` wired; trace.zip e2e). Did out of
    order — it didn't depend on #4.
 6. **Prove end-to-end Cookie Mine loop on the headed-Chromium stopgap (ADR-0007 gate)** — *then*
    design the GUI. The painted-in shell is the deferred end-state, not the next step.
+
+**Banner note (cosmetic, not a blocker):** `--disable-blink-features=AutomationControlled` is
+**load-bearing** — empirically, removing it flips `navigator.webdriver` back to `true` even on
+system Chromium (CDP-driven pages report webdriver=true by default; the flag forces it false). It
+triggers a visible "unsupported command-line flag" infobar, but that's **browser chrome — invisible
+to websites**, so it does not threaten detection (Roi's Google login succeeded with it showing).
+`--test-type` removes the banner and keeps `webdriver===false` (both probed) — deferred as optional
+polish, not bolted on. Anti-detection in `modes.ts` stays minimal/spike-grade.
 
 **Project milestone (vault):** **Spike A — SQLCipher** (then Spike B — KeePassXC). Both **sudo-gated
 → Roi**, and now explicitly **frozen** (architecture stands; not deleted). ADR-0008 stays 🚧
