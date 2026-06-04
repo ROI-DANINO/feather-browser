@@ -14,3 +14,4 @@ Pre–Phase 4 history (Phases 0–3): `journal/ops/archive/log-archive.md`.
 2026-06-04 | DOC | raw/_inbox -> docs/specs/adr-0008-credentials-vault.md | CredentialsVault candidate (non-accepted); 3-spike gate C→A/B
 2026-06-04 | STOP | -> ops/sessions/credentials-vault-leakage-spike-20260604-0626.md | ADR-0008 landed; Spike C probed+spec'd+planned
 2026-06-04 | SHIP | secret-leakage-harness -> src+tests | Spike C shipped: assertNoSecretLeak + Chromium gate; redactUrl strips query/frag
+2026-06-04 | STOP | -> ops/sessions/token-diet-prune-20260604-0929.md | Token-diet §8 done: ~15.6k->~7.6k hot tok; next=/init reshape

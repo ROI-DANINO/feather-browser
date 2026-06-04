@@ -13,8 +13,12 @@ clear.
 
 ## Recommend next
 
-**Spike A — SQLCipher feasibility** (then Spike B — KeePassXC). Both are **sudo-gated installs →
-hand to Roi.** Full task list in `journal/ops/tasks.md`.
+**Immediate (process, fresh chat):** reshape `/init` into a phase-boundary ritual + fix its stale
+file list + reconcile AGENTS.md (uncommitted consistency fixes are staged in the working tree). See
+`journal/ops/tasks.md` → Process and `ops/sessions/token-diet-prune-20260604-0929.md` for the design.
+
+**Project milestone:** **Spike A — SQLCipher feasibility** (then Spike B — KeePassXC). Both are
+**sudo-gated installs → hand to Roi.** Full task list in `journal/ops/tasks.md`.
 
 Evidence to keep honoring (research-driven, not arrogance-driven):
 `research/2026-06-04-credentials-vault-spike-c-leakage-probe-findings.md` — traces leak off-screen

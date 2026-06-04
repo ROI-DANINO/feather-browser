@@ -27,16 +27,18 @@ Act as a Senior Software Architect and elite pair programmer. Focus on productio
 
 ## Current Phase
 
-**ROADMAP Phase 4 Step 0 — Visual Desktop Shell (research + plan)** is the next active milestone (as of 2026-06-03).
+**Phase 4 — Visual Desktop Shell.** Phases 0–3 are complete (Phase 3 merged to `master`); the
+Stabilization & Linux-Readiness bridge (S1 + S2 + S3) is closed. Feather targets **Linux (Fedora)**;
+runtime is **host-primary** (ADR-0004).
 
-Phase 3 (Browser Core Stabilization & UI Readiness) is complete and merged to `master`. The short bridge program that hardened the core before Phase 4 — the **Stabilization & Linux-Readiness program (S1 + S2 + S3)** — is now closed; all three sub-phases shipped on `dev`. Feather targets **Linux (Fedora)**; runtime is **host-primary** (ADR-0004).
+This file does not narrate live state (that drifts). Read the owners instead:
 
-- Program spec: `docs/specs/2026-06-03-stabilization-linux-readiness-design.md`
-- Current phase state: `journal/ops/phase.md`
-- Current progress: `PROGRESS.md`
-- Full roadmap: `ROADMAP.md`
+- **Current state + next action:** `journal/context/active.md` *(the single owner)*
+- Machine phase pointer: `journal/ops/phase.md`
+- Full roadmap + exit criteria: `ROADMAP.md`
+- Stabilization program spec: `docs/specs/2026-06-03-stabilization-linux-readiness-design.md`
 
-Do not reopen Phase 2 or Phase 3 unless there is a critical correctness issue.
+Do not reopen earlier phases unless there is a critical correctness issue.
 
 ## Branch Rules
 
@@ -55,7 +57,7 @@ master  ← stable source of truth, never broken
 When a fresh session receives a project goal:
 
 1. Read this file.
-2. Read `PROGRESS.md` and `ROADMAP.md` to understand current state.
+2. Read `journal/context/active.md` (the state owner) and `ROADMAP.md` to understand current state.
 3. Run `/init` or `/start` if available.
 4. Only after orientation, begin research or planning work.
 
