@@ -21,8 +21,7 @@ Pause the session, write a durable handoff, update project state, and commit the
 10. Update `journal/ops/tasks.md` with in-progress, active, and done items.
 11. Append one line to `journal/log.md`.
 12. If `journal/context/next.md` existed (step 1), delete it.
-13. Write `.remember/remember.md`.
-14. Commit the changed tracking files.
+13. Commit the changed tracking files.
 
 ## Writes
 
@@ -33,5 +32,4 @@ Pause the session, write a durable handoff, update project state, and commit the
 - `journal/ops/tasks.md`
 - `journal/ops/archive/`
 - `journal/log.md`
-- `.remember/remember.md`
 - Deletes `journal/context/next.md` if present

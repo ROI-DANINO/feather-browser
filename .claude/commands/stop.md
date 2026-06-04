@@ -25,5 +25,4 @@ Pause and write a handoff.
 10. Update `journal/ops/tasks.md`.
 11. Append a `STOP` line to `journal/log.md`.
 12. If `journal/context/next.md` existed (step 1), delete it.
-13. Write `.remember/remember.md`.
-14. Commit the changed tracking files.
+13. Commit the changed tracking files.

@@ -5,6 +5,10 @@ destination → `ROADMAP.md`; history → `journal/log.md` + `ops/sessions/`.
 
 ## Now
 
+**Uncommitted tree (2026-06-04 21:56):** ritual/cleanup detour this session left changes staged-ish
+but **not committed** — `.remember` plugin clean (dir + tracked file deleted; `/stop` step removed)
++ `/start` desk-context timing fix. Commit on `dev`, then resume review-first. Detail: `next.md`.
+
 Phase 4 Step 0 is done (Cookie Mine proven; ADR-0007). The **`CredentialsVault` ADR candidate
 landed** as `docs/specs/adr-0008-credentials-vault.md` (🚧 non-accepted). **Spike C (secret-leakage
 harness) is shipped** on `dev`: `assertNoSecretLeak`, a real-Chromium gate, and the clean-tier URL
@@ -86,11 +90,12 @@ visually but are text-invisible → policy, not OCR. Design:
   rnd's dropped convention). Inbox holds 6 genuinely-open files.
 - `rnd` branch deleted (ADR-0006 graduated; now a standing design lens on `dev`). `ui-playground`
   KEPT as stealth/attach-don't-launch reference.
-- **`.remember` plugin DISABLED for this project** (`.claude/settings.local.json`, 2026-06-04) →
-  journal is the **sole** history engine. No SessionStart `.remember` injection, no PostToolUse
-  auto-extraction/consolidation; `/stop` (this file + `log.md`) is the sole handoff writer. Built-in
-  `MEMORY.md` auto-memory is separate and unaffected. Reversible (flip to `true`). NOTE: `/stop`
-  step 11 (write `.remember/remember.md`) is now **vestigial** — drop it next ritual edit.
+- **`.remember` plugin DISABLED + CLEANED for this project** (2026-06-04) → journal is the **sole**
+  history engine. Disabled via `.claude/settings.local.json` flag (kept; not uninstalled globally).
+  The `.remember/` data dir + tracked `remember.md` are **deleted**, and the vestigial "write
+  `.remember/remember.md`" step is **removed from both `/stop` ritual files**. Built-in `MEMORY.md`
+  auto-memory is separate and unaffected. Reversible (flip flag to `true`). Historical `.remember`
+  mentions across journal/docs left intact (audit trail).
 
 ## Parked (Phase 5; frame as user-authorized continuity, NOT "stealth/bypass")
 

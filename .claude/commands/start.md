@@ -20,8 +20,12 @@ Run each step before doing anything else.
    - Last known phase
    - Current in-progress or active task
    - Next concrete action
-   - Relevant desk: `product`, `browser`, `automation`, or `general`
-4. Ask before loading desk context from `journal/work/<desk>/context.md`.
-5. Ask: "Ready to continue, or do you want to start somewhere else?"
+   - Relevant desk you'd suggest: `product`, `browser`, `automation`, or `general` (suggest only —
+     do NOT read its context yet)
+4. Ask: "Ready to continue, or do you want to start somewhere else?" Let the user settle the desk /
+   task for this session.
+5. Only AFTER the desk/task is chosen, load `journal/work/<desk>/context.md` — automatically, no
+   permission ask. Reading the chosen desk's context is always wanted; the rule is just timing —
+   never read it before the choice is made.
 
 Do not begin work until the user confirms.
