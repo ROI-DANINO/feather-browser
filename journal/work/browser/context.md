@@ -43,6 +43,26 @@ end-to-end on a real site (agent acted in Roi's live ChatGPT). Next: **security 
   agents piggyback on (ADR-0003). **Proven on a real site 2026-06-04**: an agent tab
   (`context.newPage` == `openTab`) inherits the human's live login.
 - **Agentic North Star:** token/context efficiency is a standing constraint; MCP tool selection deferred to Phase 5 Step 0 after 2026-07-28 spec final (ADR-0005).
+- **Credentials vault (ADR-0008, 🚧 non-accepted):** interface-first, local-first `CredentialsVault`; Feather is NOT a password manager; KeePassXC + SQLCipher are **candidates, not selections**; acceptance gated on 3 spikes (C leakage harness, A SQLCipher, B KeePassXC). Spikes A/B need sudo installs (hand to Roi).
+
+## Secret-leakage findings (Spike C probe, 2026-06-04 — evidence, not assumption)
+
+A throwaway probe drove a real `chromium-headless-shell` session with 3 canaries (password POST /
+URL query / visible text) and scanned every output surface. Durable facts:
+
+- **`trace.zip` leaks secrets that were never on screen** — the `fill()` action argument verbatim
+  + the POST body as a resource (`.dat`). NOT redactable → traces must be **off by default for
+  credential sessions** (Phase-5 policy). The leakage gate treats a trace's *presence* as a finding
+  (no unzip, no zip dependency).
+- **Feather leaks raw URLs into clean-tier surfaces** — `TAB_UPDATED.data.url` (`manager.ts:159`)
+  and `network-summary` (`capture.ts:44,55`). `network-summary` records the URL only — **never POST
+  bodies/headers** (confirmed by code).
+- **`redactUrl` (`src/logs/redact.ts`) was dead code** (only its own test imported it) and stripped
+  only `user:pass@`. The plan hardens it to also drop **query string + fragment** and applies it at
+  those two emission points. `DebugCapture` remains dead-code-until-wired.
+- **A `type=password` field protects nothing at the data layer** (masking is pixels only).
+  **Screenshots leak visually but are text-invisible** → mitigate by policy (don't screenshot
+  sensitive sessions), not OCR.
 
 ## S2 Items — implementation status (plan: 2026-06-03-s2-tab-layer-observability.md)
 
