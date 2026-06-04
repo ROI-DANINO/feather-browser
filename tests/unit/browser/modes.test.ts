@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { EventEmitter } from "events";
 
 vi.mock("child_process", () => ({ spawn: vi.fn() }));
@@ -56,8 +56,15 @@ describe("spawnAndConnect", () => {
   let mockProcess: any;
   let mockContext: any;
   let mockBrowser: any;
+  const savedEnv = { ...process.env };
 
   beforeEach(() => {
+    // Normalize the ozone/headless env so the spawn-arg assertions are deterministic on any
+    // runner (CI has no WAYLAND_DISPLAY; the resolver would otherwise omit the ozone flag).
+    // The env-driven branches themselves are covered by modes-ozone.test.ts.
+    delete process.env.FEATHER_OZONE_PLATFORM;
+    delete process.env.FEATHER_SPAWN_HEADLESS;
+    process.env.WAYLAND_DISPLAY = "wayland-0";
     vi.clearAllMocks();
     mockStderr = new EventEmitter();
     mockProcess = Object.assign(new EventEmitter(), {
@@ -68,6 +75,10 @@ describe("spawnAndConnect", () => {
     mockBrowser = { contexts: vi.fn().mockReturnValue([mockContext]) };
     vi.mocked(spawn).mockReturnValue(mockProcess as any);
     vi.mocked(chromium.connectOverCDP).mockResolvedValue(mockBrowser as any);
+  });
+
+  afterEach(() => {
+    process.env = { ...savedEnv };
   });
 
   it("spawns with no automation flags and correct user-data-dir", async () => {
