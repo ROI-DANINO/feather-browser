@@ -40,7 +40,16 @@ const CDP_TIMEOUT_MS = 10_000;
  *   crashed on X11/headless/CI.
  * - Headless: FEATHER_SPAWN_HEADLESS truthy => `--headless=new` (lets a display-less runner attach
  *   over CDP). Prefer Xvfb in CI to keep the headed fingerprint faithful; this is the fallback.
+ * - Sandbox: FEATHER_SPAWN_NO_SANDBOX truthy => `--no-sandbox` (CI/containers can't initialize
+ *   Chromium's user-namespace sandbox — without it Chromium aborts before exposing CDP). OFF by
+ *   default so production never carries it; it is not JS-observable, so it doesn't affect the
+ *   webdriver/anti-detection surface a website sees.
  */
+function envTruthy(name: string): boolean {
+  const v = (process.env[name] ?? "").toLowerCase();
+  return v === "1" || v === "true" || v === "yes";
+}
+
 export function resolveSpawnExtraArgs(): string[] {
   const out: string[] = [];
   const explicit = process.env.FEATHER_OZONE_PLATFORM;
@@ -50,8 +59,8 @@ export function resolveSpawnExtraArgs(): string[] {
   } else if (process.env.WAYLAND_DISPLAY) {
     out.push("--ozone-platform=wayland");
   }
-  const hl = (process.env.FEATHER_SPAWN_HEADLESS ?? "").toLowerCase();
-  if (hl === "1" || hl === "true" || hl === "yes") out.push("--headless=new");
+  if (envTruthy("FEATHER_SPAWN_HEADLESS")) out.push("--headless=new");
+  if (envTruthy("FEATHER_SPAWN_NO_SANDBOX")) out.push("--no-sandbox");
   return out;
 }
 

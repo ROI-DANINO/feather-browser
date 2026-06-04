@@ -31,4 +31,14 @@ describe("resolveSpawnExtraArgs", () => {
     process.env.FEATHER_SPAWN_HEADLESS = "1";
     expect(resolveSpawnExtraArgs()).toContain("--headless=new");
   });
+
+  it("adds --no-sandbox when FEATHER_SPAWN_NO_SANDBOX is truthy (CI/containers)", () => {
+    process.env.FEATHER_SPAWN_NO_SANDBOX = "true";
+    expect(resolveSpawnExtraArgs()).toContain("--no-sandbox");
+  });
+
+  it("omits --no-sandbox by default (production never carries it)", () => {
+    delete process.env.FEATHER_SPAWN_NO_SANDBOX;
+    expect(resolveSpawnExtraArgs()).not.toContain("--no-sandbox");
+  });
 });
