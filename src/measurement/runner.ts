@@ -1,6 +1,8 @@
 // src/measurement/runner.ts
 import * as fs from "fs";
 import * as path from "path";
+import { FeatherPaths } from "../fs-layout";
+import type { FeatherDirs } from "../config";
 import type { BrowserMode } from "../sessions/types";
 
 export interface ScenarioTimings {
@@ -24,11 +26,17 @@ export interface ScenarioResult {
 }
 
 export class MeasurementRunner {
+  private readonly paths: FeatherPaths;
+  private readonly dataRoot: string;
+
   constructor(
     private readonly baseUrl: string,
     private readonly token: string,
-    private readonly featherDir: string
-  ) {}
+    dirs: FeatherDirs | string
+  ) {
+    this.paths = new FeatherPaths(dirs);
+    this.dataRoot = typeof dirs === "string" ? dirs : dirs.data;
+  }
 
   async run(browserMode: BrowserMode): Promise<ScenarioResult> {
     const workspaceId = `measure-${browserMode}-${Date.now()}`;
@@ -98,8 +106,7 @@ export class MeasurementRunner {
     );
 
     // Step 9: Measure debug bundle size
-    const debugBundlePath = path.join(this.featherDir, "debug", sessionId);
-    const debugBundleSize = await this.measureDirSize(debugBundlePath);
+    const debugBundleSize = await this.measureDirSize(this.paths.debugDir(sessionId));
 
     return {
       browserMode,
@@ -121,10 +128,9 @@ export class MeasurementRunner {
   }
 
   private resolveFeatherPath(p: string): string {
-    if (path.isAbsolute(p)) return p;
-    // Strip leading ".feather/" prefix if present, then join with featherDir
-    const stripped = p.replace(/^\.feather[/\\]/, "");
-    return path.join(this.featherDir, stripped);
+    // Profile paths from the API are absolute under the XDG data root; a
+    // relative path is resolved against that root for backward compatibility.
+    return path.isAbsolute(p) ? p : path.join(this.dataRoot, p);
   }
 
   private async req(method: string, endpoint: string, body?: object): Promise<any> {
