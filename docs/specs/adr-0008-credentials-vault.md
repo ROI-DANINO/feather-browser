@@ -98,9 +98,13 @@ backend would be a guess.
 - **Spike B — KeePassXC integration.** Evaluate CLI, Secret Service, and direct KDBX library
   paths; test whether Feather can *request* credentials without storing them itself; define the
   approval boundary.
-- **Spike C — secret-leakage harness.** Seed a synthetic secret into the vault; run a browser
-  action, debug bundle, logs, screenshots, and traces; grep all outputs for the secret;
-  **fail hard on any leak.** This harness is reusable as the standing pre-merge gate of rule 4.
+- **Spike C — secret-leakage harness. ✅ DONE (2026-06-04).** Shipped `assertNoSecretLeak`
+  (`tests/helpers/leak-scan.ts`) + the end-to-end gate
+  (`tests/integration/secret-leakage.integration.test.ts`). Surfaced and fixed a real
+  clean-tier leak (raw URL in `TAB_UPDATED` + `network-summary`; `redactUrl` now strips
+  query+fragment). Findings:
+  `research/2026-06-04-credentials-vault-spike-c-leakage-probe-findings.md`. ADR stays
+  **non-accepted** pending Spikes A and B.
 
 Recommended order: **C → A/B.** The leakage harness is the safety net that makes the storage
 spikes safe to run with real (synthetic) secrets, and it is the gate every later credential

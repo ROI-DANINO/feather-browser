@@ -1,20 +1,16 @@
-## Active — ADR-0008 landed + Spike C planned; next is EXECUTING the leakage-harness plan
+## Active — ADR-0008 Spike C complete; next is Spikes A/B
 
 Phase 4 Step 0 is done (Cookie Mine proven; ADR-0007). The **`CredentialsVault` ADR candidate
 landed** as `docs/specs/adr-0008-credentials-vault.md` (🚧 non-accepted). **Spike C (secret-leakage
-harness) is fully brainstormed, evidence-probed, spec'd, and planned — but NOT yet built.** A
-throwaway probe established what actually leaks (see desk context + `research/2026-06-04-
-credentials-vault-spike-c-leakage-probe-findings.md`). Design: `docs/specs/2026-06-04-secret-
-leakage-harness-design.md`. Plan: `docs/plans/2026-06-04-secret-leakage-harness.md`. 3 commits on
-`origin/dev` (`b0f869e`/`b14ee8f`/`4ec2e24`) — all docs, **no code yet**.
+harness) is now shipped**: `assertNoSecretLeak`, a real-Chromium integration gate, and the
+clean-tier URL redaction fix (`TAB_UPDATED` + `network-summary`) are on `dev`. A throwaway probe
+established what actually leaks (see desk context + `research/2026-06-04-credentials-vault-spike-c-
+leakage-probe-findings.md`). Design: `docs/specs/2026-06-04-secret-leakage-harness-design.md`.
+Plan: `docs/plans/2026-06-04-secret-leakage-harness.md`. ADR-0008 remains **non-accepted** until
+Spikes A/B clear.
 
 ## Next track (recommend the first)
 
-- [ ] **EXECUTE THE LEAKAGE-HARNESS PLAN — recommended.** Implement
-  `docs/plans/2026-06-04-secret-leakage-harness.md`, Tasks 1→4 (TDD, full code in the plan).
-  Roi was about to pick execution mode at pause — **subagent-driven recommended** (fresh agent
-  per task, review between). Task 2 fixes a real shipping leak (`redactUrl` query+fragment strip
-  applied at `manager.ts:159` + `capture.ts:44,55`). Keeps ADR-0008 non-accepted (Spikes A/B left).
 - [ ] **Spikes A + B (after C)** — **Spike A** SQLCipher feasibility on Fedora + Node/TS (raw-key
   encrypted DB; verify DB/WAL/journals/temp don't leak; packaging). **Spike B** KeePassXC
   integration (CLI / Secret Service / KDBX; request-without-storing; approval boundary). **Both
@@ -57,7 +53,8 @@ leakage-harness-design.md`. Plan: `docs/plans/2026-06-04-secret-leakage-harness.
   "not a password manager"; KeePassXC + SQLCipher candidates (not selections); 3-spike gate (C→A/B)
 - [x] Indexed in specs README with CANDIDATE marker; archived source intake to `journal/raw/archive/`
 - [x] Spike C: ran a throwaway evidence probe → findings in `research/2026-06-04-credentials-vault-
-  spike-c-leakage-probe-findings.md`; wrote design spec + TDD plan. **Code NOT yet written.**
+  spike-c-leakage-probe-findings.md`; wrote design spec + TDD plan; shipped `assertNoSecretLeak`
+  + real-Chromium gate; fixed raw URL leakage in `TAB_UPDATED` and `network-summary`.
 
 ### Organize & housekeeping ✅ (2026-06-04, organize-housekeeping)
 - [x] Synced `dev` (was 2 behind origin); inbox→archive lifecycle + swept 12 files
