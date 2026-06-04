@@ -6,7 +6,7 @@ A headless-first Chromium browser core for agentic automation, built around Play
 
 ## Status
 
-Phase 3 Complete | Stabilization & Linux-Readiness program closed (S1 + S2 + S3) | 137 unit + 33 integration tests passing | Fastify 5.8.5 + Playwright 1.60
+Phase 3 Complete | Stabilization & Linux-Readiness program closed (S1 + S2 + S3) | Phase 4 Step 0 done (Cookie Mine proven) | 137 unit + 33 integration tests passing | Fastify 5.8.5 + Playwright 1.60
 
 ## What It Does
 
@@ -67,6 +67,6 @@ See `docs/architecture.md` for a full walkthrough of the source layout and compo
 
 Phase 3 (Browser Core Stabilization & UI Readiness) is complete and merged to `master`.
 
-The **Stabilization & Linux-Readiness program** that bridged Phase 3 → Phase 4 is now closed (S1 Foundation, S2 tab-layer & observability, S3 currency & security — all shipped on `dev`). It reconciled the docs and runtime decisions, completed the tab-event model and SSE stream, and migrated Fastify v4 → v5 and Playwright 1.50 → 1.60. See `docs/specs/2026-06-03-stabilization-linux-readiness-design.md`. **Phase 4 (Visual Desktop Shell) is next, beginning with Step 0 (research + plan).** See `ROADMAP.md` and `PROGRESS.md`.
+The **Stabilization & Linux-Readiness program** that bridged Phase 3 → Phase 4 is now closed (S1 Foundation, S2 tab-layer & observability, S3 currency & security — all shipped on `dev`). It reconciled the docs and runtime decisions, completed the tab-event model and SSE stream, and migrated Fastify v4 → v5 and Playwright 1.50 → 1.60. See `docs/specs/2026-06-03-stabilization-linux-readiness-design.md`. **Phase 4 (Visual Desktop Shell) is underway: Step 0 is complete** — proven by spikes rather than a written spec (the Cookie Mine loop ran end-to-end on a real site, and "attach-don't-launch" beat bot detection). The seamless low-latency shell is deferred to a later dedicated R&D phase; a headed-Chromium stopgap comes first. See `docs/specs/adr-0007-phase-4-shell-sequencing.md`, `ROADMAP.md`, and `PROGRESS.md`.
 
 Feather Browser targets **Linux (Fedora)** as its primary platform.
