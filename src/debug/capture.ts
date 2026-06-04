@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import type { BrowserContext, Page } from "playwright";
+import { redactUrl } from "../logs/redact";
 
 interface NetworkEntry {
   url: string;
@@ -41,7 +42,7 @@ export class DebugCapture {
     this.context.on("requestfinished", (request) => {
       void Promise.resolve(request.response()).then((response) => {
         this.networkEvents.push({
-          url: request.url(),
+          url: redactUrl(request.url()),
           method: request.method(),
           status: response ? response.status() : null,
           failure: null,
@@ -52,7 +53,7 @@ export class DebugCapture {
 
     this.context.on("requestfailed", (request) => {
       this.networkEvents.push({
-        url: request.url(),
+        url: redactUrl(request.url()),
         method: request.method(),
         status: null,
         failure: request.failure()?.errorText ?? "unknown",

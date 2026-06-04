@@ -78,6 +78,9 @@ describe("Resource measurement scenario (chromium-headless-shell)", () => {
     expect(result.timings.extractMs).toBeGreaterThan(0);
     expect(result.timings.closeMs).toBeGreaterThan(0);
     expect(result.timings.totalMs).toBeGreaterThan(0);
+
+    // Pins the debug-dir path resolution: a wrong path reads as 0 bytes.
+    expect(result.debugBundleSize).toBeGreaterThan(0);
   });
 
   it("summary.json exists and has required fields (runId, timestamp, results array)", async () => {

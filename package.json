@@ -2,18 +2,23 @@
   "name": "feather-browser",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "ts-node src/index.ts",
+    "warm-session": "ts-node src/tools/warm-session.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --config vitest.config.ts",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:measurement": "vitest run --config vitest.measurement.config.ts"
   },
   "dependencies": {
-    "fastify": "^4.28.0",
+    "fastify": "^5.8.5",
+    "fastify-sse-v2": "^4.2.2",
     "pidusage": "^3.0.2",
-    "playwright": "^1.50.0",
+    "playwright": "^1.60.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

@@ -120,12 +120,10 @@ describe("Full API flow: launch → navigate → snapshot → extract → screen
     expect(body.data.artifactId.length).toBeGreaterThan(0);
     expect(typeof body.data.path).toBe("string");
 
-    // The path is relative to featherDir; check from tmpDir
-    const absPath = path.isAbsolute(body.data.path)
-      ? body.data.path
-      : path.join(tmpDir, body.data.path.replace(/^\.feather\//, ""));
+    // The API returns an absolute path under the XDG data/state root.
+    expect(path.isAbsolute(body.data.path)).toBe(true);
     const exists = await fs.promises
-      .access(absPath)
+      .access(body.data.path)
       .then(() => true)
       .catch(() => false);
     expect(exists).toBe(true);
@@ -138,11 +136,10 @@ describe("Full API flow: launch → navigate → snapshot → extract → screen
     expect(body.ok).toBe(true);
     expect(typeof body.data.manifest).toBe("string");
 
-    const absManifest = path.isAbsolute(body.data.manifest)
-      ? body.data.manifest
-      : path.join(tmpDir, body.data.manifest.replace(/^\.feather\//, ""));
+    // The API returns an absolute manifest path under the XDG state root.
+    expect(path.isAbsolute(body.data.manifest)).toBe(true);
     const exists = await fs.promises
-      .access(absManifest)
+      .access(body.data.manifest)
       .then(() => true)
       .catch(() => false);
     expect(exists).toBe(true);

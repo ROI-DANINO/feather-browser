@@ -10,7 +10,7 @@ const mockRecord = {
 
 const mockSession = {
   sessionId: "ses_test_001",
-  getPageInfoList: vi.fn().mockResolvedValue([{ pageId: "page_001", url: "https://example.com", title: "Example" }]),
+  getPageInfoList: vi.fn().mockResolvedValue([{ pageId: "page_001", url: "https://example.com", title: "Example", loadState: "complete" }]),
   toRecord: vi.fn().mockReturnValue(mockRecord),
 };
 
@@ -25,7 +25,7 @@ describe("GetSessionHandler", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockManager.get.mockReturnValue(mockSession);
-    mockSession.getPageInfoList.mockResolvedValue([{ pageId: "page_001", url: "https://example.com", title: "Example" }]);
+    mockSession.getPageInfoList.mockResolvedValue([{ pageId: "page_001", url: "https://example.com", title: "Example", loadState: "complete" }]);
     mockSession.toRecord.mockReturnValue(mockRecord);
   });
 
@@ -37,7 +37,7 @@ describe("GetSessionHandler", () => {
   it("returns a full SessionRecord with pages populated", async () => {
     const result = await new GetSessionHandler(mockManager as any).execute({ sessionId: "ses_test_001" }, ctx);
     expect(result.sessionId).toBe("ses_test_001");
-    expect(result.pages).toEqual([{ pageId: "page_001", url: "https://example.com", title: "Example" }]);
+    expect(result.pages).toEqual([{ pageId: "page_001", url: "https://example.com", title: "Example", loadState: "complete" }]);
   });
 });
 
@@ -45,7 +45,7 @@ describe("ListSessionsHandler", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockManager.list.mockReturnValue([mockSession]);
-    mockSession.getPageInfoList.mockResolvedValue([{ pageId: "page_001", url: "https://example.com", title: "Example" }]);
+    mockSession.getPageInfoList.mockResolvedValue([{ pageId: "page_001", url: "https://example.com", title: "Example", loadState: "complete" }]);
     mockSession.toRecord.mockReturnValue(mockRecord);
   });
 

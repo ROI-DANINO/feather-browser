@@ -46,4 +46,19 @@ describe("redactUrl", () => {
   it("returns original string if not a valid URL", () => {
     expect(redactUrl("not-a-url")).toBe("not-a-url");
   });
+
+  it("strips the query string", () => {
+    expect(redactUrl("http://site.example.com/login?token=SECRET"))
+      .toBe("http://site.example.com/login");
+  });
+
+  it("strips the fragment", () => {
+    expect(redactUrl("http://site.example.com/cb#access_token=SECRET"))
+      .toBe("http://site.example.com/cb");
+  });
+
+  it("strips credentials and query together", () => {
+    expect(redactUrl("http://user:pw@site.example.com/p?k=SECRET"))
+      .toBe("http://site.example.com/p");
+  });
 });

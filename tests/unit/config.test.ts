@@ -1,10 +1,44 @@
 // tests/unit/config.test.ts
-import { describe, it, expect } from "vitest";
-import { loadConfig } from "../../src/config";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import * as os from "os";
+import * as path from "path";
+import {
+  loadConfig,
+  resolveDirs,
+  singleRootDirs,
+  resolveChromiumExecutable,
+} from "../../src/config";
 
-describe("loadConfig", () => {
+const XDG_VARS = [
+  "FEATHER_DIR",
+  "XDG_DATA_HOME",
+  "XDG_STATE_HOME",
+  "XDG_CACHE_HOME",
+  "XDG_RUNTIME_DIR",
+  "FEATHER_PORT",
+  "FEATHER_HOST",
+  "FEATHER_CHROMIUM_PATH",
+];
+
+describe("config", () => {
+  let saved: Record<string, string | undefined>;
+
+  beforeEach(() => {
+    saved = {};
+    for (const k of XDG_VARS) {
+      saved[k] = process.env[k];
+      delete process.env[k];
+    }
+  });
+
+  afterEach(() => {
+    for (const k of XDG_VARS) {
+      if (saved[k] === undefined) delete process.env[k];
+      else process.env[k] = saved[k];
+    }
+  });
+
   it("returns default port 0 when FEATHER_PORT is unset", () => {
-    delete process.env.FEATHER_PORT;
     const cfg = loadConfig();
     expect(cfg.port).toBe(0);
   });
@@ -13,12 +47,61 @@ describe("loadConfig", () => {
     process.env.FEATHER_PORT = "17321";
     const cfg = loadConfig();
     expect(cfg.port).toBe(17321);
-    delete process.env.FEATHER_PORT;
   });
 
-  it("defaults featherDir to .feather in cwd", () => {
-    delete process.env.FEATHER_DIR;
+  it("singleRootDirs collapses all four roots to one path", () => {
+    expect(singleRootDirs("/x")).toEqual({
+      data: "/x",
+      state: "/x",
+      cache: "/x",
+      runtime: "/x",
+    });
+  });
+
+  it("resolveDirs uses XDG home fallbacks when no env vars set", () => {
+    const dirs = resolveDirs();
+    const home = os.homedir();
+    expect(dirs.data).toBe(path.join(home, ".local/share", "feather"));
+    expect(dirs.state).toBe(path.join(home, ".local/state", "feather"));
+    expect(dirs.cache).toBe(path.join(home, ".cache", "feather"));
+    // runtime has no home fallback → falls back to the state root
+    expect(dirs.runtime).toBe(dirs.state);
+  });
+
+  it("resolveDirs honors XDG_*_HOME env vars", () => {
+    process.env.XDG_DATA_HOME = "/custom/data";
+    process.env.XDG_STATE_HOME = "/custom/state";
+    process.env.XDG_CACHE_HOME = "/custom/cache";
+    process.env.XDG_RUNTIME_DIR = "/run/user/1000";
+    const dirs = resolveDirs();
+    expect(dirs.data).toBe(path.join("/custom/data", "feather"));
+    expect(dirs.state).toBe(path.join("/custom/state", "feather"));
+    expect(dirs.cache).toBe(path.join("/custom/cache", "feather"));
+    expect(dirs.runtime).toBe(path.join("/run/user/1000", "feather"));
+  });
+
+  it("resolveDirs collapses all roots when FEATHER_DIR is set", () => {
+    process.env.FEATHER_DIR = "/tmp/feather-test";
+    expect(resolveDirs()).toEqual(singleRootDirs("/tmp/feather-test"));
+  });
+
+  it("loadConfig wires dirs from resolveDirs", () => {
+    process.env.FEATHER_DIR = "/tmp/feather-test";
     const cfg = loadConfig();
-    expect(cfg.featherDir).toBe(".feather");
+    expect(cfg.dirs).toEqual(singleRootDirs("/tmp/feather-test"));
+  });
+
+  it("resolveChromiumExecutable returns the fallback when FEATHER_CHROMIUM_PATH is unset", () => {
+    expect(resolveChromiumExecutable("/bundled/chrome")).toBe("/bundled/chrome");
+  });
+
+  it("resolveChromiumExecutable returns FEATHER_CHROMIUM_PATH when set", () => {
+    process.env.FEATHER_CHROMIUM_PATH = "/usr/bin/chromium-browser";
+    expect(resolveChromiumExecutable("/bundled/chrome")).toBe("/usr/bin/chromium-browser");
+  });
+
+  it("resolveChromiumExecutable ignores a blank FEATHER_CHROMIUM_PATH", () => {
+    process.env.FEATHER_CHROMIUM_PATH = "   ";
+    expect(resolveChromiumExecutable("/bundled/chrome")).toBe("/bundled/chrome");
   });
 });

@@ -6,7 +6,7 @@ This file is a constraint and guide for all contributors and AI sessions working
 
 Feather Browser is a minimalist, stability-first browser project. The current goal is a reliable headless browser core with a clean HTTP API. It is not an agent platform, a desktop application, or a production service yet.
 
-Long-term vision: a hyper-lightweight Chromium-compatible browser core for agentic automation first, and later a calm, Zen-inspired visual browser for personal daily use.
+Long-term vision: a Hybrid Browser — a hyper-lightweight Chromium-compatible daily driver with a Zen-inspired shell, and a "Cookie Mine" where human browsing builds a shared persistent trust context that local AI agents piggyback on via the Fastify MCP-compatible hub. The human browser (Phase 4) is the trust foundation that Phase 5+ agent automation depends on.
 
 ## Mission And Role
 
@@ -20,19 +20,25 @@ Act as a Senior Software Architect and elite pair programmer. Focus on productio
 - Do not depend on Chrome extensions as core product strategy.
 - Build critical capabilities as native Feather-owned features behind clean internal interfaces.
 - Prioritize low RAM/CPU use, modularity, scraping reliability, profile/session isolation, and agent-friendly control.
+- The Phase 4 human browser session is the trust foundation for Phase 5+ agent automation (Cookie Mine model). Phase 4 is a prerequisite for Phase 5+, not a sequentially deferred layer.
 - Keep all code, documentation, and technical discussion in English.
+- Runtime target is **host-primary**; Flatpak is the eventual distribution sandbox; Podman is optional for headless/CI only (ADR-0004, `docs/specs/adr-0004-runtime-target.md`).
+- Agents must use the browser's API auth token and their LLM context efficiently — a standing design constraint; tool selection deferred to Phase 5 Step 0 (ADR-0005, `docs/specs/adr-0005-agentic-north-star.md`).
 
 ## Current Phase
 
-**Phase 3 — Browser Core Stabilization & UI Readiness** (active as of 2026-05-31)
+**Phase 4 — Visual Desktop Shell.** Phases 0–3 are complete (Phase 3 merged to `master`); the
+Stabilization & Linux-Readiness bridge (S1 + S2 + S3) is closed. Feather targets **Linux (Fedora)**;
+runtime is **host-primary** (ADR-0004).
 
-Scope: session and page lifecycle, lifecycle event logging, API contract cleanup, and a minimal SSE event stream for a future UI. No agent runtime. No desktop shell yet.
+This file does not narrate live state (that drifts). Read the owners instead:
 
-- Scope definition: `docs/specs/phase-3-browser-stability-first-brief.md`
-- Current progress: `PROGRESS.md`
-- Full roadmap: `ROADMAP.md`
+- **Current state + next action:** `journal/context/active.md` *(the single owner)*
+- Machine phase pointer: `journal/ops/phase.md`
+- Full roadmap + exit criteria: `ROADMAP.md`
+- Stabilization program spec: `docs/specs/2026-06-03-stabilization-linux-readiness-design.md`
 
-Phase 2 (Headless Core Prototype) is complete. Do not reopen it unless there is a critical correctness issue.
+Do not reopen earlier phases unless there is a critical correctness issue.
 
 ## Branch Rules
 
@@ -51,15 +57,24 @@ master  ← stable source of truth, never broken
 When a fresh session receives a project goal:
 
 1. Read this file.
-2. Read `PROGRESS.md` and `ROADMAP.md` to understand current state.
+2. Read `journal/context/active.md` (the state owner) and `ROADMAP.md` to understand current state.
 3. Run `/init` or `/start` if available.
 4. Only after orientation, begin research or planning work.
 
 Do not start web research, architecture comparison, or implementation before the orientation step.
 
+## When To Use Each Command
+
+- **`/start`** — at the beginning of *every* session. Always. Loads context and reports state (read-only). Also reads `journal/context/next.md` if present.
+- **`/next`** — when you need a fresh context window mid-work but are *not* at a real stopping point. Snapshots the conversation to `journal/context/next.md` (appends) and does a light touch to `tasks.md` / `active.md` (tick completed boxes, refresh **Now** / **Recommend next**) so the next `/start` boots on current state. No commit, no session file, no task archive. Use this instead of `/stop` when you intend to keep going in a new chat.
+- **`/stop`** — at the end of a *real* stopping point (end of work block, phase milestone, significant decision). Folds any accumulated `/next` snapshots into the full handoff, then commits tracking files.
+- **`/init`** — only when you arrive with a *new goal* you want gate-checked against the current phase before any work. It overlaps with `/start` for normal continuation, so it is optional day-to-day.
+
 ## Tech Stack
 
-TypeScript 5.4 / Node.js 20 / Fastify 4.x / Playwright 1.50 / Zod 3.x / Vitest
+TypeScript 5.4 / Node.js 20 / Fastify 5.8 / Playwright 1.60 / Zod 3.x / Vitest
+
+> Fastify 4 → 5 and Playwright 1.50 → 1.60 were completed in program phase S3 (2026-06-03). The Fastify v5 migration required zero source changes.
 
 Before implementing anything non-trivial: **research the official docs first**. APIs change between major versions. See `docs/tech-stack-guidelines.md` for the full guide and decision checklist.
 
@@ -79,7 +94,7 @@ When in doubt: write a doc, ask for approval. Do not add code, dependencies, or 
 - Use current web research where facts may have changed.
 - Prefer primary sources and official docs.
 - For browser technology, prioritize official docs and active repositories.
-- Record findings in `research/` and decisions/specs in `docs/specs/`.
+- Record research findings in `journal/raw/_inbox/` (the project's research inbox) and decisions/specs in `docs/specs/`.
 
 ## Prior Security Audit
 
@@ -89,4 +104,5 @@ A codebase audit was performed on 2026-05-31. Findings and architecture verdict 
 
 - `/init`: confirm project orientation after reading context and before research.
 - `/start`: resume a session and ask before doing work.
-- `/stop`: pause a session and write a handoff.
+- `/next`: snapshot context before a fresh chat — lighter than `/stop`: updates `next.md` + a light touch to `tasks.md`/`active.md`, no commit/session file.
+- `/stop`: pause a session and write a full handoff.

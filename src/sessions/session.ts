@@ -1,5 +1,7 @@
 import type { BrowserContext, Page } from "playwright";
 import { randomUUID } from "crypto";
+import type { ChildProcess } from "child_process";
+import type { DebugCapture } from "../debug/capture";
 import type {
   BrowserMode,
   ProfileKind,
@@ -29,6 +31,14 @@ export class PageNotFoundError extends Error {
   }
 }
 
+export class SessionNotRunningError extends Error {
+  readonly code = "SESSION_NOT_RUNNING";
+  constructor(sessionId: string, state: string) {
+    super(`Session '${sessionId}' cannot open a tab: state is "${state}".`);
+    this.name = "SessionNotRunningError";
+  }
+}
+
 export class FeatherSession implements ISession {
   readonly sessionId: string;
   readonly workspaceId: string;
@@ -42,6 +52,9 @@ export class FeatherSession implements ISession {
   private _state: SessionState;
   private _context: BrowserContext | null;
   private _pages: Map<string, Page>;
+  private _pageIds: Map<Page, string>;
+  private _childProcess: ChildProcess | null = null;
+  private _debugCapture: DebugCapture | null = null;
 
   constructor(opts: {
     workspaceId: string;
@@ -62,13 +75,13 @@ export class FeatherSession implements ISession {
     this._state = "launching";
     this._context = null;
     this._pages = new Map();
+    this._pageIds = new Map();
   }
 
   setContext(context: BrowserContext): void {
     this._context = context;
     for (const page of context.pages()) {
-      const pageId = newId("page");
-      this._pages.set(pageId, page);
+      this.addPage(page);
     }
     this._state = "running";
   }
@@ -102,13 +115,45 @@ export class FeatherSession implements ISession {
   async getPageInfoList(): Promise<PageInfo[]> {
     const results: PageInfo[] = [];
     for (const [pageId, page] of this._pages.entries()) {
-      results.push({
-        pageId,
-        url: page.url(),
-        title: await page.title(),
-      });
+      let title = "";
+      let loadState = "unknown";
+      try {
+        loadState = await page.evaluate(() => document.readyState);
+      } catch {
+        /* best-effort: page may be closed/crashed */
+      }
+      try {
+        title = await page.title();
+      } catch {
+        /* best-effort */
+      }
+      results.push({ pageId, url: page.url(), title, loadState });
     }
     return results;
+  }
+
+  async openTab(): Promise<{ pageId: string; page: Page }> {
+    if (this._state !== "running") {
+      throw new SessionNotRunningError(this.sessionId, this._state);
+    }
+    const page = await this._context!.newPage();
+    const pageId = this.addPage(page);
+    return { pageId, page };
+  }
+
+  addPage(page: Page): string {
+    const existing = this._pageIds.get(page);
+    if (existing) return existing;
+    const pageId = newId("page");
+    this._pages.set(pageId, page);
+    this._pageIds.set(page, pageId);
+    return pageId;
+  }
+
+  removePage(pageId: string): void {
+    const page = this._pages.get(pageId);
+    if (page) this._pageIds.delete(page);
+    this._pages.delete(pageId);
   }
 
   setState(state: SessionState): void {
@@ -119,7 +164,23 @@ export class FeatherSession implements ISession {
     return this._state;
   }
 
-  toRecord(): SessionRecord {
+  setChildProcess(cp: ChildProcess): void {
+    this._childProcess = cp;
+  }
+
+  getChildProcess(): ChildProcess | null {
+    return this._childProcess;
+  }
+
+  setDebugCapture(capture: DebugCapture): void {
+    this._debugCapture = capture;
+  }
+
+  getDebugCapture(): DebugCapture | null {
+    return this._debugCapture;
+  }
+
+  toRecord(): Omit<SessionRecord, "pages"> {
     return {
       sessionId: this.sessionId,
       workspaceId: this.workspaceId,
@@ -130,7 +191,6 @@ export class FeatherSession implements ISession {
       debugDir: this.debugDir,
       proxy: this.proxy,
       startedAt: this.startedAt,
-      pages: [],
       profileLocked: this.profileKind === "persistent",
     };
   }

@@ -6,6 +6,7 @@ import type { SessionManager } from "../sessions/manager";
 import type { FeatherPaths } from "../fs-layout";
 import { injectRequestId } from "./middleware";
 import { registerRoutes } from "./routes";
+import { registerSsePlugin } from "./sse";
 
 export interface StartHttpServerResult {
   server: FastifyInstance;
@@ -25,6 +26,8 @@ export async function startHttpServer(
   const app = Fastify({ logger: false });
 
   app.addHook("onRequest", async (request) => { injectRequestId(request); });
+
+  await registerSsePlugin(app);
 
   registerRoutes(app, manager, paths, token);
 

@@ -2,8 +2,10 @@ import * as fs from "fs";
 import * as path from "path";
 import { chromium, type BrowserContext } from "playwright";
 import { FeatherSession, SessionNotFoundError } from "./session";
-import { buildLaunchOptions } from "../browser/modes";
-import { redactProxy } from "../logs/redact";
+import { buildLaunchOptions, spawnAndConnect } from "../browser/modes";
+import { DebugCapture } from "../debug/capture";
+import { resolveChromiumExecutable } from "../config";
+import { redactProxy, redactUrl } from "../logs/redact";
 import { FeatherLogger } from "../logs/logger";
 import { EVENTS } from "../logs/events";
 import type { FeatherPaths } from "../fs-layout";
@@ -11,6 +13,7 @@ import type { ProfileLock } from "../profiles/lock";
 import type { WorkspaceMetadata } from "../profiles/workspace";
 import type {
   BrowserMode,
+  PageInfo,
   ProfileKind,
   ProxyConfig,
   ProxySummary,
@@ -48,6 +51,7 @@ export interface ISessionManager {
   get(sessionId: string): ISession;
   list(): ISession[];
   close(sessionId: string, opts?: { force?: boolean; quarantineDisposableProfile?: boolean }): Promise<void>;
+  openTab(sessionId: string): Promise<PageInfo>;
 }
 
 export class SessionManager implements ISessionManager {
@@ -104,10 +108,77 @@ export class SessionManager implements ISessionManager {
       data: { workspaceId, profileKind, browserMode, proxy: proxySummary },
     });
 
-    const launchOpts = buildLaunchOptions(browserMode, proxy ?? undefined, input.viewport);
-    const context = await chromium.launchPersistentContext(profilePath, launchOpts);
+    let context: BrowserContext;
+    if (browserMode === "chromium-headed-cdp") {
+      const { context: cdpContext, childProcess } = await spawnAndConnect({
+        profilePath,
+        executablePath: resolveChromiumExecutable(chromium.executablePath()),
+      });
+      context = cdpContext;
+      session.setChildProcess(childProcess);
+    } else {
+      const launchOpts = buildLaunchOptions(browserMode, proxy ?? undefined, input.viewport);
+      context = await chromium.launchPersistentContext(profilePath, launchOpts);
+    }
 
     session.setContext(context);
+
+    if (input.debug) {
+      const capture = new DebugCapture(context, debugDir, input.debug);
+      await capture.start();
+      session.setDebugCapture(capture);
+    }
+
+    context.on("page", (page) => {
+      const pageId = session.addPage(page);
+      void this.logger.log({
+        ts: new Date().toISOString(),
+        level: "info",
+        event: EVENTS.TAB_CREATED,
+        sessionId: session.sessionId,
+        data: { pageId },
+      });
+      page.on("close", () => {
+        session.removePage(pageId);
+        void this.logger.log({
+          ts: new Date().toISOString(),
+          level: "info",
+          event: EVENTS.TAB_CLOSED,
+          sessionId: session.sessionId,
+          data: { pageId },
+        });
+      });
+      page.on("framenavigated", async (frame) => {
+        if (frame !== page.mainFrame()) return;          // main frame only
+        const target = page.url();                       // capture target URL
+        try {
+          await page.waitForLoadState("domcontentloaded");
+        } catch {
+          /* best-effort: resolves instantly when already settled (SPA case) */
+        }
+        if (page.url() !== target) return;               // superseded by a newer navigation
+        let title = "";
+        let loadState = "unknown";
+        try {
+          title = await page.title();
+        } catch {
+          /* best-effort */
+        }
+        try {
+          loadState = await page.evaluate(() => document.readyState);
+        } catch {
+          /* best-effort */
+        }
+        void this.logger.log({
+          ts: new Date().toISOString(),
+          level: "info",
+          event: EVENTS.TAB_UPDATED,
+          sessionId: session.sessionId,
+          data: { pageId, url: redactUrl(page.url()), title, loadState },
+        });
+      });
+    });
+
     this.registry.set(session.sessionId, session);
 
     await this.logger.log({
@@ -136,6 +207,20 @@ export class SessionManager implements ISessionManager {
     return Array.from(this.registry.values());
   }
 
+  async openTab(sessionId: string): Promise<PageInfo> {
+    const session = this.get(sessionId);
+    const { pageId, page } = await session.openTab();
+    await this.logger.log({
+      ts: new Date().toISOString(),
+      level: "info",
+      event: EVENTS.TAB_OPENED,
+      sessionId,
+      data: { pageId },
+    });
+    const loadState = await page.evaluate(() => document.readyState);
+    return { pageId, url: page.url(), title: await page.title(), loadState };
+  }
+
   async close(
     sessionId: string,
     opts?: { force?: boolean; quarantineDisposableProfile?: boolean }
@@ -152,6 +237,20 @@ export class SessionManager implements ISessionManager {
 
     try {
       const context = session.getContext();
+      const capture = session.getDebugCapture();
+      if (capture) {
+        try {
+          await capture.finalize();
+        } catch (err) {
+          await this.logger.log({
+            ts: new Date().toISOString(),
+            level: "warn",
+            event: EVENTS.DEBUG_CAPTURE_FINALIZE_FAILED,
+            sessionId: session.sessionId,
+            data: { error: (err as any)?.message ?? "unknown" },
+          });
+        }
+      }
       if (opts?.force) {
         try { await closeContextWithTimeout(context, CLOSE_TIMEOUT_MS); } catch { /* ignore */ }
       } else {
@@ -159,6 +258,7 @@ export class SessionManager implements ISessionManager {
       }
     } catch (err) {
       session.setState("failed");
+      session.getChildProcess()?.kill();
       await this.logger.log({
         ts: new Date().toISOString(),
         level: "error",
@@ -170,6 +270,7 @@ export class SessionManager implements ISessionManager {
     }
 
     session.setState("closed");
+    session.getChildProcess()?.kill();
 
     await this.logger.log({
       ts: new Date().toISOString(),

@@ -2,7 +2,9 @@
 
 ## Destination
 
-Build a hyper-lightweight Chromium-compatible browser/control system for seamless agentic automation first, then wrap the proven core in a calm, bold, minimalist visual browser for personal daily use.
+Build a Hybrid Browser: a hyper-lightweight Chromium-compatible daily driver with a Zen-inspired visual shell, and a "Cookie Mine" where human browsing builds a shared persistent trust context (cookies, session state) that local AI agents can piggyback on for background automation — routed through a local Fastify MCP-compatible hub — operating inside explicit user-authorized session state with human approval checkpoints.
+
+The human browser (Phase 4) and the agent runtime (Phase 5+) are not sequential add-ons. They are architecturally coupled: the human session is the trust foundation that agents depend on. Phase 4 is a prerequisite for Phase 5+.
 
 Feather should not depend on Chrome extensions as its product strategy. Critical capabilities should be native or integrated project features, using mature open-source tools where they reduce risk and cost.
 
@@ -11,101 +13,24 @@ Feather should not depend on Chrome extensions as its product strategy. Critical
 - Milestones are solid destination points.
 - Phases are flexible placeholders until active.
 - Every phase starts with Step 0: research and plan that phase.
-- Only the current phase gets detailed tasks in `ops/tasks.md`.
+- Only the current phase gets detailed tasks in `journal/ops/tasks.md`.
 - Future phases stay high-level here until the prior phase is finished.
 
-## Phase 0: Workspace Setup
+## Phases 0–3 — Complete
 
-Goal: Create the project operating system before product research or implementation.
+Full milestone/exit-criteria detail archived at `journal/ops/archive/roadmap-phases-0-3.md`.
 
-Status: Complete.
-
-Milestones:
-- Directory structure exists.
-- `/start` and `/stop` session commands are documented and available as local command files.
-- Progress, phase, task, context, log, and session handoff files exist.
-- Git tracking is initialized.
-
-Exit criteria:
-- A future session can resume from `/start`.
-- A paused session can be handed off with `/stop`.
-- Phase 1 can be planned from a clean tracking baseline.
-
-## Phase 1: Headless Core Architecture Decision
-
-Goal: Decide the technical foundation for a headless-first browser core.
-
-Status: Complete.
-
-Superseded decision:
-- The previous Phase 1 decision selected a Playwright-managed persistent Chromium profile plus a custom local shell/control UI.
-- That decision was useful research, but it optimized for a visible shell and extension compatibility.
-- The project direction is now headless-first, native/integrated-feature-first, and GUI-later.
-
-Exit criteria:
-- Fresh architecture decision record is written in `docs/specs/`.
-- Fresh research findings are written in `research/`.
-- Non-goals and constraints are explicit.
-- Phase 2 can begin with Step 0: research and plan the headless core prototype.
-
-Research candidates:
-- Playwright-managed Chromium persistent profiles.
-- Tauri/WebView approaches.
-- CEF.
-- Qt WebEngine.
-- Chromium fork/distribution paths.
-- Rust/C++ control-layer options.
-- Native integration patterns for open-source tools such as `yt-dlp`.
-
-## Phase 2: Headless Core Prototype
-
-Goal: Build the smallest functional headless core that proves the chosen foundation.
-
-Status: Complete. Completed 2026-05-31. All 9 exit criteria met. 129 tests passing.
-
-Milestones:
-- Step 0: research and plan Phase 2.
-- Launch and control isolated headless browser sessions.
-- Create a minimal profile/workspace configuration model.
-- Provide a local CLI or API surface for launch, status, endpoint discovery, and control.
-- Validate internal automation API shape for navigation, DOM inspection, extraction, and session control.
-- Validate proxy/network configuration boundaries.
-- Capture basic session metadata for debugging.
-
-## Phase 3: Browser Core Stabilization & UI Readiness
-
-Goal: Make the session and page lifecycle reliably observable. Produce a clean, stable API contract. Prepare a minimal event stream for a future UI. Keep agent concepts entirely out of the core.
-
-Milestones:
-- Step 0: research and plan Phase 3. ✓
-- API contract cleanup: extract a shared `ISessionManager` interface; resolve the `manager as any` casts in the transport layer; fix `toRecord()` page ownership. ✓
-- Complete lifecycle event logging: emit all catalogued events at the correct lifecycle points (launch requested/completed/failed, close requested/completed/failed). ✓
-- Dynamic page/tab tracking: hook `context.on("page")` so pages opened after session launch are tracked in the page map. Emit tab lifecycle events (created, closed, updated).
-- Enrich `PageInfo` with load state so callers can distinguish in-progress navigation from a settled page.
-- Stale lock recovery: check whether a locking pid is still alive before blocking a workspace launch.
-- Thin SSE event stream: a read-only `GET /v1/events` endpoint that emits browser lifecycle events for a future UI to consume. No WebSocket, no agent protocol.
-- Measurement resolution: run the benchmark scenario and record actual RAM/CPU numbers for both browser modes in documentation.
-
-Exit criteria:
-- New pages opened after session launch are tracked and returned by status endpoints.
-- All JSONL log events in the `EVENTS` catalog are emitted at the correct lifecycle points.
-- A future UI can subscribe to browser lifecycle events without polling.
-- The existing HTTP API is unchanged and all current tests continue to pass.
-- TypeScript compiles clean with no `as any` casts in the transport layer.
-- No agent runtime, LLM wrapper, or new top-level agent module has been introduced.
-
-Deferred from earlier Phase 3 plan:
-- Media download / yt-dlp integration → Phase 5+ (agent layer).
-- RTL handling and toggles → Phase 4 (requires visible UI).
-- Scraping reliability and session realism controls → Phase 5+ (requires measured data and agent context).
-- Import/export settings → Phase 4 (requires visible UI).
+- **Phase 0 — Workspace Setup** ✅ — project operating system (`/start`/`/stop`, tracking files, git).
+- **Phase 1 — Headless Core Architecture Decision** ✅ — pivoted to headless-first; ADR-0002 (Playwright-managed Chromium headless core, Feather-owned control service) superseded the visible-shell ADR-0001.
+- **Phase 2 — Headless Core Prototype** ✅ (2026-05-31) — smallest functional headless core; all 9 exit criteria met; 129 tests.
+- **Phase 3 — Browser Core Stabilization & UI Readiness** ✅ (merged to `master` 2026-06-03) — clean API contract, full lifecycle events, dynamic tab tracking, stale-lock recovery, read-only SSE stream (`GET /v1/events`). Bridged to Phase 4 by the Stabilization & Linux-Readiness program (`docs/specs/2026-06-03-stabilization-linux-readiness-design.md`).
 
 ## Phase 4: Visual Desktop Shell Prototype
 
-Goal: Wrap the stable Phase 3 core in a minimalist, Zen-inspired graphical browser shell. Consume the Phase 3 event stream. Keep agent UI panels absent.
+Goal: Wrap the stable Phase 3 core in a minimalist, Zen-inspired graphical browser shell. Consume the Phase 3 event stream. Establish the long-running primary persistent context that Phase 5+ agents depend on (Cookie Mine foundation). Keep agent UI panels absent.
 
 Milestones:
-- Step 0: research and plan Phase 4 (desktop shell technology choice: Electron first, Tauri as candidate).
+- Step 0: research and plan Phase 4. Feather is **Linux-only (Fedora)**; **Electron is eliminated** (it bundles a second Chromium — anti-Feather). Candidate shells: Tauri/WebKitGTK or GTK4-native, both with Playwright-managed Chromium. Browser-surface architecture on Wayland is unresolved and must be prototyped. Runtime is host-primary with Flatpak as the eventual distribution sandbox (ADR-0004).
 - Zen-inspired layout: vertical tab sidebar, collapsible panel, browser surface.
 - Consume the Phase 3 SSE event stream to drive tab list and session state in the UI.
 - Workspace/profile controls visible in the shell.
@@ -113,23 +38,12 @@ Milestones:
 - Theme and layout configuration.
 - RTL handling and toggles.
 - Import/export settings.
+- The running shell process is itself the long-running primary context that Phase 5+ agents depend on; no discrete implementation task required in this phase (see ADR-0003).
 - No agent panels, chat sidebar, or LLM controls in this phase.
 
-## Phase 5+: Agent Runtime Layer & Daily Hardening
+## Phase 5+: Agent Runtime Layer & Daily Hardening (future — cold storage)
 
-Goal: Add agent-oriented systems on top of a stable browser shell. Harden the result for daily use.
-
-Milestones:
-- Step 0: research and plan Phase 5+.
-- Hermes orchestration integration.
-- Credentials vault and LLM API credential handling.
-- Human approval checkpoint system.
-- Agent chat sidebar.
-- Context shrinker / token optimizer.
-- Atomic agent action protocol.
-- Scripted agent recipes.
-- Headless screencast / viewport preview portal.
-- User-to-agent tab handover.
-- yt-dlp subprocess adapter for media downloads.
-- Scraping reliability and session realism controls (measured, not assumed).
-- Stability testing, performance budget, security review, and update strategy.
+High-level only while Phase 4 is active. Full milestone detail + the two North-Star behavioral
+objectives (**Active Anti-Bot Self-Detection** — real-time self-monitoring/correction, not a passive
+recorder; **True Perception & Generalized Workflows** — a perception layer for unfamiliar sites, not
+a DOM stripper) → `journal/ops/archive/roadmap-future.md`. Expand back into this file when Phase 4 finishes.
