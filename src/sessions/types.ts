@@ -1,6 +1,6 @@
 import type { Page } from "playwright";
 
-export type BrowserMode = "chromium-new-headless" | "chromium-headless-shell";
+export type BrowserMode = "chromium-new-headless" | "chromium-headless-shell" | "chromium-headed-cdp";
 export type ProfileKind = "persistent" | "disposable";
 export type SessionState = "launching" | "running" | "closing" | "closed" | "failed";
 
