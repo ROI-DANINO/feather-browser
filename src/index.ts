@@ -9,8 +9,8 @@ import { startHttpServer } from "./transport/http";
 
 async function main(): Promise<void> {
   const config = loadConfig();
-  const paths = new FeatherPaths(config.featherDir);
-  await ensureDirs(config.featherDir);
+  const paths = new FeatherPaths(config.dirs);
+  await ensureDirs(config.dirs);
 
   const lock = new ProfileLock(paths);
   const workspace = new WorkspaceMetadata(paths);
