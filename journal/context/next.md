@@ -1,6 +1,51 @@
 # Next — Context Bridge
 
 ---
+## 2026-06-05 — Kickoff prep: scratch setup + paste-prompt for the unattended run
+
+### Done
+- Confirmed the run launches **next session**: Roi warms `scratch` first, then pastes a kickoff prompt.
+- Wrote the **ready-to-paste kickoff prompt** (preserved below) — task-tracked, professional, adds
+  tasks midway as findings demand.
+
+### Next action (next session, in order)
+1. **Roi sets up `scratch`:** `FEATHER_WARM_WORKSPACE=scratch npm run warm-session` → log into a
+   throwaway Google account with **passkey/Face-ID** → Ctrl-C. (Delete the passkey after.)
+2. **Paste this prompt** to start the unattended run:
+
+```
+Execute the autonomous research run — you're running this UNATTENDED. I've already
+warmed the `scratch` profile (throwaway Google account, passkey login). I'm out of
+the loop until you hit a wall only I can clear.
+
+1. Read these in full first:
+   - docs/specs/2026-06-05-autonomous-research-run-design.md  (rationale, iron rules, hard-stops)
+   - docs/plans/2026-06-05-autonomous-research-run.md         (the step-by-step autopilot)
+
+2. Use the superpowers:executing-plans skill. Build a TodoWrite list from the plan's
+   tasks and keep it LIVE — mark each in_progress/completed as you go, and ADD new
+   todos whenever a finding reveals new work (research-driven; let the spikes steer).
+   For heavy independent tasks, dispatch a subagent to conserve context.
+
+3. Work in Ratchet order (① → ② → ③ → ④). Honor the iron rules every workstream:
+   scratch ONLY (never touch primary except the read-only closeout check); push dev
+   ONLY (never master); commit per task; auto-revert anything that can't go green;
+   lightweight lens on every artifact.
+
+4. Stop and hand off at any you-only wall (sudo, master-merge, a scratch re-login,
+   the behavioral recording). For the joint-call decisions (shell stack,
+   cookie-isolation-for-primary, vault backend): gather evidence and recommend —
+   don't decide alone.
+
+5. At the end (or if cut short) run the plan's Closeout: update the journal handoff
+   (active.md / next.md / tasks.md / log.md + a session file) and give me a concise
+   summary of what landed and what needs me.
+
+Work smart, professional, and honest — evidence before claims, record negative
+results, don't overstate green.
+```
+
+---
 ## 2026-06-05 — Autonomous research run: spec + plan READY (awaiting `scratch` warm-up + go)
 
 ### Done

@@ -14,6 +14,14 @@ dev fully contained). **Next focus = the post-merge tech-debt queue (ozone-platf
 un-gate the 2 tests; vitest 2→4), then pre-shell #6 (prove e2e Cookie Mine loop) → Visual Desktop
 Shell GUI.** Details below + `context/next.md`.
 
+**▶ NOW (2026-06-05): unattended autonomous-run spec + plan READY, awaiting kickoff.** Brainstormed +
+wrote `docs/specs/2026-06-05-autonomous-research-run-design.md` + `docs/plans/2026-06-05-autonomous-research-run.md`
+(committed `60d361a`/`4a7ea10`). The run bundles the tech-debt queue + pre-shell #6 + Phase-5 research
+into one Ratchet-ordered, **research-driven** pass that runs LIVE against a **burnable `scratch` Google
+account** (real `primary` never touched). **Next session = Roi warms `scratch` (passkey) then pastes the
+kickoff prompt** (saved in `context/next.md`) to execute the plan via `executing-plans`. Joint-call
+decisions held for Roi: shell-stack pick · cookie-iso-for-`primary` · vault backend.
+
 **Pre-shell #4 (warmed Google session) is DONE and verified end-to-end (2026-06-04 23:07).**
 `npm run warm-session` (`src/tools/warm-session.ts`) launches the `primary` persistent workspace in
 stealth `chromium-headed-cdp` against system Chromium 148 (`/usr/bin/chromium-browser`). Roi logged

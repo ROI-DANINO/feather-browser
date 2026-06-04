@@ -36,3 +36,4 @@ Pre–Phase 4 history (Phases 0–3): `journal/ops/archive/log-archive.md`.
 2026-06-04 | MILESTONE | PR #1 MERGED dev->master (e39d167) | Stable graduation: Phase 3 + S1-S3 + pre-shell #1-5 + CI green; merge commit; next = post-merge tech-debt (ozone-platform, vitest 2->4) then pre-shell #6
 
 2026-06-05 | PLAN | docs/specs/2026-06-05-autonomous-research-run-design.md + docs/plans/2026-06-05-autonomous-research-run.md (60d361a, 4a7ea10) | Brainstormed + wrote unattended autonomous-run spec+plan (Ratchet; scratch-only; research-driven). READY; awaiting Roi: warm scratch w/ passkey then say go in a fresh session.
+2026-06-05 | NEXT | -> journal/context/next.md | Kickoff prep: scratch warm-up steps + ready-to-paste prompt for the unattended run saved; next session = warm scratch then paste & execute the plan.
