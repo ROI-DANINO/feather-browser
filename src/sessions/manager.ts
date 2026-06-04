@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { chromium, type BrowserContext } from "playwright";
 import { FeatherSession, SessionNotFoundError } from "./session";
-import { buildLaunchOptions } from "../browser/modes";
+import { buildLaunchOptions, spawnAndConnect } from "../browser/modes";
 import { redactProxy, redactUrl } from "../logs/redact";
 import { FeatherLogger } from "../logs/logger";
 import { EVENTS } from "../logs/events";
@@ -106,8 +106,18 @@ export class SessionManager implements ISessionManager {
       data: { workspaceId, profileKind, browserMode, proxy: proxySummary },
     });
 
-    const launchOpts = buildLaunchOptions(browserMode, proxy ?? undefined, input.viewport);
-    const context = await chromium.launchPersistentContext(profilePath, launchOpts);
+    let context: BrowserContext;
+    if (browserMode === "chromium-headed-cdp") {
+      const { context: cdpContext, childProcess } = await spawnAndConnect({
+        profilePath,
+        executablePath: chromium.executablePath(),
+      });
+      context = cdpContext;
+      session.setChildProcess(childProcess);
+    } else {
+      const launchOpts = buildLaunchOptions(browserMode, proxy ?? undefined, input.viewport);
+      context = await chromium.launchPersistentContext(profilePath, launchOpts);
+    }
 
     session.setContext(context);
 
@@ -237,6 +247,7 @@ export class SessionManager implements ISessionManager {
     }
 
     session.setState("closed");
+    session.getChildProcess()?.kill();
 
     await this.logger.log({
       ts: new Date().toISOString(),

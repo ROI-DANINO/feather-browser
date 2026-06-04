@@ -5,6 +5,7 @@ import * as path from "path";
 
 vi.mock("playwright", () => ({
   chromium: {
+    executablePath: vi.fn().mockReturnValue("/bundled/chrome"),
     launchPersistentContext: vi.fn().mockResolvedValue({
       pages: () => [
         { url: () => "about:blank", title: async () => "New Tab", evaluate: async () => "complete" },
@@ -21,10 +22,27 @@ vi.mock("playwright", () => ({
   },
 }));
 
+vi.mock("../../../src/browser/modes", async (importOriginal) => {
+  const original = await importOriginal<typeof import("../../../src/browser/modes")>();
+  return {
+    ...original,
+    spawnAndConnect: vi.fn().mockResolvedValue({
+      context: {
+        pages: () => [],
+        on: vi.fn(),
+        close: vi.fn().mockResolvedValue(undefined),
+        tracing: { start: vi.fn(), stop: vi.fn() },
+      },
+      childProcess: { kill: vi.fn() },
+    }),
+  };
+});
+
 import { SessionManager } from "../../../src/sessions/manager";
 import { FeatherPaths } from "../../../src/fs-layout";
 import { ProfileLock } from "../../../src/profiles/lock";
 import { WorkspaceMetadata } from "../../../src/profiles/workspace";
+import { spawnAndConnect } from "../../../src/browser/modes";
 
 let tmpDir: string;
 let paths: FeatherPaths;
@@ -395,5 +413,53 @@ describe("SessionManager.launch — dynamic page tracking", () => {
     const tabClosedLog = logSpy.mock.calls.find(([entry]) => entry.event === "tab.closed");
     expect(tabClosedLog).toBeDefined();
     expect(tabClosedLog![0].data).toMatchObject({ pageId: expect.stringMatching(/^page_/) });
+  });
+});
+
+describe("SessionManager.launch — chromium-headed-cdp", () => {
+  it("creates a running session using spawnAndConnect", async () => {
+    const session = await manager.launch({
+      workspaceId: "ws_cdp_001",
+      profile: { kind: "persistent" },
+      browserMode: "chromium-headed-cdp",
+    });
+    expect(session.getState()).toBe("running");
+    expect(session.browserMode).toBe("chromium-headed-cdp");
+    expect(vi.mocked(spawnAndConnect)).toHaveBeenCalledOnce();
+  });
+
+  it("stores the child process on the session", async () => {
+    const session = await manager.launch({
+      workspaceId: "ws_cdp_002",
+      profile: { kind: "persistent" },
+      browserMode: "chromium-headed-cdp",
+    });
+    expect(session.getChildProcess()).not.toBeNull();
+  });
+
+  it("does not call launchPersistentContext for CDP mode", async () => {
+    const { chromium } = await import("playwright");
+    vi.mocked(chromium.launchPersistentContext).mockClear();
+
+    await manager.launch({
+      profile: { kind: "persistent" },
+      browserMode: "chromium-headed-cdp",
+    });
+
+    expect(chromium.launchPersistentContext).not.toHaveBeenCalled();
+  });
+});
+
+describe("SessionManager.close — CDP session kills child process", () => {
+  it("calls kill() on the child process when closing a CDP session", async () => {
+    const session = await manager.launch({
+      profile: { kind: "persistent" },
+      browserMode: "chromium-headed-cdp",
+    });
+    const childProcess = session.getChildProcess()!;
+
+    await manager.close(session.sessionId);
+
+    expect(childProcess.kill).toHaveBeenCalled();
   });
 });
