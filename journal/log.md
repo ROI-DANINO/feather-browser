@@ -27,3 +27,4 @@ Pre–Phase 4 history (Phases 0–3): `journal/ops/archive/log-archive.md`.
 2026-06-04 | STOP | -> ops/sessions/overnight-observability-chromiumpath-20260604-1408.md | Pre-shell #3+#5 + cleanups shipped (dev e85ace2..8884e7a); NEXT SESSION = Roi reviews this work first, then #4
 
 2026-06-04 | NEXT | -> journal/context/next.md | Ritual desk-context timing fix + .remember plugin cleaned (dir+tracked file+stop steps); changes uncommitted; review-first still owed
+2026-06-04 | STOP | -> ops/sessions/warm-google-session-pre-shell-4-20260604-2307.md | Pre-shell #4 DONE+verified (warm-session tool; real Google passkey login survives restart, un-flagged); overnight commits reviewed (approve); inbox processed; credentials-in-jar boundary recorded; blog 0008. Pushed dev cbdeef9..b9528c4. NEXT = master merge-readiness (dev 110 ahead; PR #1 open)

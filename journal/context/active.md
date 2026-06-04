@@ -5,54 +5,34 @@ destination → `ROADMAP.md`; history → `journal/log.md` + `ops/sessions/`.
 
 ## Now
 
-**Uncommitted tree (2026-06-04 21:56):** ritual/cleanup detour this session left changes staged-ish
-but **not committed** — `.remember` plugin clean (dir + tracked file deleted; `/stop` step removed)
-+ `/start` desk-context timing fix. Commit on `dev`, then resume review-first. Detail: `next.md`.
+**Pre-shell #4 (warmed Google session) is DONE and verified end-to-end (2026-06-04 23:07).**
+`npm run warm-session` (`src/tools/warm-session.ts`) launches the `primary` persistent workspace in
+stealth `chromium-headed-cdp` against system Chromium 148 (`/usr/bin/chromium-browser`). Roi logged
+into real Google (**passkey/Face-ID new-device flow, NO bot-block/CAPTCHA**), Ctrl-C finalized,
+**relaunch landed already logged in** (no password prompt). Both acceptance halves met: persistence
++ un-flagged. Agent-blind preserved (Roi typed creds; Feather never saw them). The Cookie Mine
+foundation is **real now**, not just spiked. Pushed `dev` (`cbdeef9..b9528c4`).
 
-Phase 4 Step 0 is done (Cookie Mine proven; ADR-0007). The **`CredentialsVault` ADR candidate
-landed** as `docs/specs/adr-0008-credentials-vault.md` (🚧 non-accepted). **Spike C (secret-leakage
-harness) is shipped** on `dev`: `assertNoSecretLeak`, a real-Chromium gate, and the clean-tier URL
-redaction fix (`TAB_UPDATED` + `network-summary`). ADR-0008 stays **non-accepted** until Spikes A/B
-clear.
+**Pre-shell sequence status:** #1 storage-isolation ✅, #2 attach-don't-launch ✅ (PR #1), #3
+`FEATHER_CHROMIUM_PATH` ✅, #4 warmed Google session ✅, #5 observability ✅. Only **#6** (prove the
+end-to-end Cookie Mine loop on the headed stopgap) remains before GUI.
 
-**Token Diet complete** (2026-06-04): Step 1 (`.remember` plugin lobotomy) + Step 2 (ROADMAP
-collapse). Projected hot auto-load **~5,037 → ~3,635 tok**. **Verified 2026-06-04**: the
-`=== HANDOFF/REMEMBER/MEMORY ===` SessionStart block is gone. Config was correct all along;
-plugin hooks load at CC launch, so the disable only took effect after a **full Claude Code restart**
-(not `/clear`).
+**▶ NEXT SESSION FOCUS (Roi's explicit ask): master merge-readiness.** *"i want to make sure feather
+is stabel enugh to push to master."* `dev` is **110 commits ahead of `master`**; PR #1 (dev→master,
+"attach-don't-launch + pre-shell infrastructure") is **OPEN**. Next concrete action: full
+verification pass (unit + integration + measurement + tsc), review the 110-commit delta, confirm
+clean state, then decide whether to merge PR #1 — graduate `dev` → `master` as a stable milestone
+(per the dev/master policy: merge only at a stable milestone).
 
-**Pre-shell #1 (storage-isolation) and #2 (attach-don't-launch) are DONE and pushed to `dev`.**
-Storage: XDG split shipped + `.feather/` gitignored (`cbe939e..13101ff`). Attach-don't-launch: new
-`chromium-headed-cdp` mode (`spawnAndConnect()` + `connectOverCDP`; `navigator.webdriver === false`;
-child process killed on close) — 167 unit + 35 integration green; **PR #1 opened (dev→master,
-unmerged — not a stable milestone yet)**.
-
-**Overnight autonomous run (2026-06-04, while Roi slept):** chromium got installed
-(`148.0.7778.215`), unblocking the decision-free queue. Shipped + pushed `dev` (4 commits,
-`e85ace2..8884e7a`; 175u+37i+4m green, tsc clean):
-- **Pre-shell #5 observability** (`46c946e`) — `DebugCapture` wired into launch/close; `input.debug`
-  was accepted-but-ignored, now drives capture; real-Chromium e2e proves a valid `trace.zip`.
-- **Pre-shell #3 `FEATHER_CHROMIUM_PATH`** (`6e4f099`) — `resolveChromiumExecutable()`; guarded probe
-  proves the system build runs (CDP version `.215`, not bundled `.96`) with `webdriver===false`.
-- **Two storage-isolation tech-debt cleanups** (`5ba2fe8`, `8884e7a`) — `MeasurementRunner` →
-  `FeatherPaths`; api-flow dead `.feather` strip → absolute-path contract assertion.
-
-**NEXT SESSION = REVIEW FIRST (Roi's explicit ask).** Review the overnight autonomous work — 4
-commits `e85ace2..8884e7a` on `dev` (DebugCapture wiring `46c946e`, FEATHER_CHROMIUM_PATH `6e4f099`,
-2 cleanups `5ba2fe8`/`8884e7a`) — before continuing. Nothing merged to master; PR #1 still unmerged.
-
-**Then (substantive): pre-shell #4 — warmed Google session.** Needs Roi (one-click Google login) +
-**run the cookie-isolation spike first** (procedure in
-`research/2026-06-04-cookie-jar-isolation-and-phase5-sequencing.md` → "Queued action"). The spike
-design doc was intentionally NOT auto-drafted (real fork + needs Roi's framing/login) — quick
-brainstorm pending.
-
-**New design thread (2026-06-04, not a decision):** the shared cookie jar means agent activity can
-**poison the human's trust context**; whether to isolate the agent's context is a real **fork**
-decided by a spike (does copied Google auth survive DBSC device-binding?). Phase 4 is human-only so
-the risk is **dormant** — the gate is the **first agent action in the real warm jar**. Run the
-**cookie-isolation spike before pre-shell #4 (warmed Google session)**. Full reasoning:
+**Then (substantive, not next): cookie-isolation spike** — the Phase-4→5-seam experiment. Needs its
+own **safe** design: two simultaneous live sessions from cloned cookies can look like session theft
+→ could flag/invalidate the freshly warmed `primary` session. NEW signal: the login is **device-bound
+(passkey)** so DBSC is live → copy-to-isolated is the real open question. Deserves a brainstorm, not
+a blind run. Reasoning + procedure:
 `research/2026-06-04-cookie-jar-isolation-and-phase5-sequencing.md`.
+
+**Before any agent action (hardening):** `warm-session` must disable Chromium's built-in password
+manager by policy — see Flags (credentials-in-the-jar boundary) + `tasks.md`.
 
 ## Recommend next
 

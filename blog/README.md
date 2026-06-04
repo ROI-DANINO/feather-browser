@@ -15,6 +15,7 @@ This is a build-in-public journal and a decision history. It's the *why* behind 
 | 0005 | [The Migration That Needed No Code](0005-the-migration-that-needed-no-code.md) | 2026-06-03 | S3 shipped — Fastify v4→v5 (zero source changes), Playwright current, security checkpoint; stabilization program closed |
 | 0006 | [The Hello World That Logged In As Me](0006-the-hello-world-that-logged-in-as-me.md) | 2026-06-04 | Phase 4 Step 0 — Cookie Mine proven end-to-end on a real site; "attach, don't launch" beat bot-detection; agent sent a message as me (ADR-0007) |
 | 0007 | [The Keys Were Under the Doormat](0007-the-keys-were-under-the-doormat.md) | 2026-06-04 | Pre-shell security groundwork — found secrets stored inside the (non-gitignored) project folder; decided the Linux-native XDG fix; spec + plan landed, build next |
+| 0008 | [The Shared Room](0008-the-shared-room.md) | 2026-06-04 | Pre-shell #4 done — a real warm logged-in session on disk (Google via passkey, survives restart, no bot wall); a "Save password?" box surfaced the rule that matters most: the shared browser must never hold raw credentials |
 
 ## How entries are written (style guardrails)
 

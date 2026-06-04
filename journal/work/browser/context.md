@@ -7,13 +7,16 @@ Use this desk for browser engine research, shell architecture, extension compati
 **Phase 4 Step 0 DONE (2026-06-04)** — answered by spikes, not specs. Cookie Mine proven
 end-to-end on a real site (agent acted in Roi's live ChatGPT).
 
-**Pre-shell infrastructure sequence (locked 2026-06-04) — must precede the Visual Desktop Shell GUI:**
-(1) storage-isolation fix (`src/config.ts` `featherDir` → `~/.config`/`~/.local/share` + gitignore;
-currently violated) → (2) productionize attach-don't-launch into `src/` + `FEATHER_CHROMIUM_PATH`
-(sudo) → (3) warmed persistent Google session on disk (Cookie Mine foundation; agent blind) →
-(4) observability (wire `DebugCapture`) → (5) prove the end-to-end Cookie Mine loop on the
-**headed-Chromium stopgap** (ADR-0007 gate) → *then* the GUI. Vault Spikes A/B **frozen** (sudo → Roi;
-architecture stands).
+**Pre-shell infrastructure sequence (locked 2026-06-04) — must precede the Visual Desktop Shell GUI.**
+Status as of 2026-06-04: (1) storage-isolation **✅** (XDG split, `.feather` gitignored) → (2)
+attach-don't-launch **✅** (`chromium-headed-cdp`, PR #1) → (3) `FEATHER_CHROMIUM_PATH` **✅** (system
+Chromium 148) → (4) warmed persistent Google session **✅** (`npm run warm-session`; verified e2e —
+real Google login via passkey, survives restart, un-flagged) → (5) observability **✅** (`DebugCapture`
+wired) → **(6) prove the end-to-end Cookie Mine loop on the headed-Chromium stopgap (ADR-0007 gate) —
+ONLY ITEM LEFT** → *then* the GUI. Vault Spikes A/B **frozen** (sudo → Roi; architecture stands).
+
+**Master merge-readiness** is the immediate next focus (Roi, 2026-06-04): `dev` is 110 commits ahead
+of `master`; PR #1 (dev→master) is OPEN — decide if this is a stable milestone to graduate.
 
 ## Dependency baseline (post-S3, 2026-06-03)
 
@@ -38,12 +41,22 @@ architecture stands).
   the app cannot self-size/place. The "Wayland can't embed" blocker is **dissolved** by the
   separate-window / headless-painted-in model (no foreign window to embed). niri-vs-GNOME
   floating behavior parked for the shell phase.
-- **Anti-detection — attach, don't launch (spiked 2026-06-04):** a Playwright-*launched*
-  browser is flagged as a bot (Google/Cloudflare walls; `navigator.webdriver=true`). Spawning
-  Chromium *normally* (no automation flags) + `connectOverCDP` yields
-  `navigator.webdriver=false` and gets past real CAPTCHAs (logged into ChatGPT clean).
-  **Bot-detection is the #1 risk** to Cookie Mine. Current `src/browser/modes.ts` has NO
-  anti-detection (old stealth patches dropped) — productionizing this is open work.
+- **Anti-detection — attach, don't launch (productionized 2026-06-04):** a Playwright-*launched*
+  browser is flagged as a bot (`navigator.webdriver=true`). `spawnAndConnect` spawns Chromium via
+  `child_process` + `connectOverCDP`. **Correction (probed 2026-06-04):** CDP-attach alone is NOT
+  enough — a CDP-driven page reports `webdriver=true` by default. The **one real measure** in
+  `src/browser/modes.ts` is `--disable-blink-features=AutomationControlled` (commit `c7bf36d`), which
+  is **load-bearing**: removing it flips `webdriver` back to `true` even on system Chromium. With it,
+  `webdriver===false` and real Google/ChatGPT logins pass clean (incl. passkey new-device flow, #4).
+  It paints a cosmetic "unsupported command-line flag" infobar — **browser chrome, invisible to
+  websites**, so harmless to detection. `--test-type` removes the banner and keeps webdriver===false
+  (probed; deferred polish). **Bot-detection is the #1 risk** to Cookie Mine.
+- **Credentials never in the shared jar (decided 2026-06-04):** the warm/Cookie-Mine browser profile
+  must **never use Chromium's built-in password manager.** Raw creds belong in a store separate from
+  the jar — Proton Pass now, Feather vault (ADR-0008) later — never in the profile Phase-5 agents
+  piggyback on. Surfaced live during #4 (Chrome offered to save the warm login's passwords). Dormant
+  in Phase 4; hard deadline = first agent action. Hardening: `warm-session` to disable Chrome's pwd
+  manager by policy. Detail: ADR-0008 "Real-world corollary".
 - **Cookie Mine model:** Phase 4 establishes the long-running human session that Phase 5+
   agents piggyback on (ADR-0003). **Proven on a real site 2026-06-04**: an agent tab
   (`context.newPage` == `openTab`) inherits the human's live login.
