@@ -64,7 +64,7 @@ export async function spawnAndConnect(opts: {
     `--user-data-dir=${opts.profilePath}`,
     "--no-first-run",
     "--no-default-browser-check",
-    "--ozone-platform=wayland",
+    ...resolveSpawnExtraArgs(),
     "--disable-blink-features=AutomationControlled",
   ];
 
