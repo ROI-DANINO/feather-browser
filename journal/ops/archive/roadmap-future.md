@@ -60,6 +60,13 @@ patterns) against live detection criteria (e.g. Cloudflare and similar bot-ID he
 not just logging it for later. Defensive self-emulation: model how sites fingerprint bots in order to
 find and fix the agent's own weak spots. Distinct from the passive recorder; the recorder feeds it.
 
+> **Existing hook (tech-debt, deferred 2026-06-04):** `DebugCapture.recordCommand()`
+> (`src/debug/capture.ts`) is wired but has **no caller** — so `commands.jsonl` is written empty
+> every debug session. It's the natural producer for this recorder; claim it (or redesign it) when
+> building the telemetry layer rather than guessing the shape now. Same file has a minor known race:
+> `finalize()` can drop an in-flight network request from `network-summary.jsonl` — acceptable for
+> best-effort debug, no fix planned.
+
 ### 2. True Perception & Generalized Workflows (beyond a DOM stripper)
 
 The Agent-Browser Interface is **not merely a token-saving DOM stripper / context shrinker**. The
