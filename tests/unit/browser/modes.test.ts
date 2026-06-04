@@ -86,6 +86,7 @@ describe("spawnAndConnect", () => {
     expect(spawnArgs).toContain("--ozone-platform=wayland");
     expect(spawnArgs).not.toContain("--enable-automation");
     expect(spawnArgs).not.toContain("--headless");
+    expect(spawnArgs).toContain("--disable-blink-features=AutomationControlled");
   });
 
   it("passes the CDP websocket URL from stderr to connectOverCDP", async () => {

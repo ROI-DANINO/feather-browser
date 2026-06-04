@@ -37,7 +37,7 @@ describe("spawnAndConnect — anti-detection gate", () => {
       const page = await context.newPage();
       const webdriver = await page.evaluate(() => navigator.webdriver);
 
-      expect(webdriver).not.toBe(true);
+      expect(webdriver).toBe(false);
     },
     30_000
   );
