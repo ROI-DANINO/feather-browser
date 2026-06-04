@@ -2,7 +2,12 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import * as os from "os";
 import * as path from "path";
-import { loadConfig, resolveDirs, singleRootDirs } from "../../src/config";
+import {
+  loadConfig,
+  resolveDirs,
+  singleRootDirs,
+  resolveChromiumExecutable,
+} from "../../src/config";
 
 const XDG_VARS = [
   "FEATHER_DIR",
@@ -12,6 +17,7 @@ const XDG_VARS = [
   "XDG_RUNTIME_DIR",
   "FEATHER_PORT",
   "FEATHER_HOST",
+  "FEATHER_CHROMIUM_PATH",
 ];
 
 describe("config", () => {
@@ -83,5 +89,19 @@ describe("config", () => {
     process.env.FEATHER_DIR = "/tmp/feather-test";
     const cfg = loadConfig();
     expect(cfg.dirs).toEqual(singleRootDirs("/tmp/feather-test"));
+  });
+
+  it("resolveChromiumExecutable returns the fallback when FEATHER_CHROMIUM_PATH is unset", () => {
+    expect(resolveChromiumExecutable("/bundled/chrome")).toBe("/bundled/chrome");
+  });
+
+  it("resolveChromiumExecutable returns FEATHER_CHROMIUM_PATH when set", () => {
+    process.env.FEATHER_CHROMIUM_PATH = "/usr/bin/chromium-browser";
+    expect(resolveChromiumExecutable("/bundled/chrome")).toBe("/usr/bin/chromium-browser");
+  });
+
+  it("resolveChromiumExecutable ignores a blank FEATHER_CHROMIUM_PATH", () => {
+    process.env.FEATHER_CHROMIUM_PATH = "   ";
+    expect(resolveChromiumExecutable("/bundled/chrome")).toBe("/bundled/chrome");
   });
 });

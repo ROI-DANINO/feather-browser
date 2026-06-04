@@ -4,6 +4,7 @@ import { chromium, type BrowserContext } from "playwright";
 import { FeatherSession, SessionNotFoundError } from "./session";
 import { buildLaunchOptions, spawnAndConnect } from "../browser/modes";
 import { DebugCapture } from "../debug/capture";
+import { resolveChromiumExecutable } from "../config";
 import { redactProxy, redactUrl } from "../logs/redact";
 import { FeatherLogger } from "../logs/logger";
 import { EVENTS } from "../logs/events";
@@ -111,7 +112,7 @@ export class SessionManager implements ISessionManager {
     if (browserMode === "chromium-headed-cdp") {
       const { context: cdpContext, childProcess } = await spawnAndConnect({
         profilePath,
-        executablePath: chromium.executablePath(),
+        executablePath: resolveChromiumExecutable(chromium.executablePath()),
       });
       context = cdpContext;
       session.setChildProcess(childProcess);

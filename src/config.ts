@@ -45,6 +45,17 @@ export function resolveDirs(): FeatherDirs {
   };
 }
 
+/**
+ * Resolve the Chromium executable to spawn for `chromium-headed-cdp`.
+ * `FEATHER_CHROMIUM_PATH` overrides the bundled fallback so Feather can attach
+ * to a real system Chromium (no "Chrome for Testing" banner, no
+ * AutomationControlled at the binary level).
+ */
+export function resolveChromiumExecutable(fallback: string): string {
+  const override = process.env.FEATHER_CHROMIUM_PATH;
+  return override && override.trim() !== "" ? override.trim() : fallback;
+}
+
 export function loadConfig(): FeatherConfig {
   return {
     port: process.env.FEATHER_PORT ? parseInt(process.env.FEATHER_PORT, 10) : 0,

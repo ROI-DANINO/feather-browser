@@ -437,6 +437,41 @@ describe("SessionManager.launch — chromium-headed-cdp", () => {
     expect(session.getChildProcess()).not.toBeNull();
   });
 
+  it("passes FEATHER_CHROMIUM_PATH to spawnAndConnect as the executable override", async () => {
+    const saved = process.env.FEATHER_CHROMIUM_PATH;
+    process.env.FEATHER_CHROMIUM_PATH = "/usr/bin/chromium-browser";
+    try {
+      vi.mocked(spawnAndConnect).mockClear();
+      await manager.launch({
+        profile: { kind: "persistent" },
+        browserMode: "chromium-headed-cdp",
+      });
+      expect(vi.mocked(spawnAndConnect)).toHaveBeenCalledWith(
+        expect.objectContaining({ executablePath: "/usr/bin/chromium-browser" })
+      );
+    } finally {
+      if (saved === undefined) delete process.env.FEATHER_CHROMIUM_PATH;
+      else process.env.FEATHER_CHROMIUM_PATH = saved;
+    }
+  });
+
+  it("falls back to the bundled chromium when FEATHER_CHROMIUM_PATH is unset", async () => {
+    const saved = process.env.FEATHER_CHROMIUM_PATH;
+    delete process.env.FEATHER_CHROMIUM_PATH;
+    try {
+      vi.mocked(spawnAndConnect).mockClear();
+      await manager.launch({
+        profile: { kind: "persistent" },
+        browserMode: "chromium-headed-cdp",
+      });
+      expect(vi.mocked(spawnAndConnect)).toHaveBeenCalledWith(
+        expect.objectContaining({ executablePath: "/bundled/chrome" })
+      );
+    } finally {
+      if (saved !== undefined) process.env.FEATHER_CHROMIUM_PATH = saved;
+    }
+  });
+
   it("does not call launchPersistentContext for CDP mode", async () => {
     const { chromium } = await import("playwright");
     vi.mocked(chromium.launchPersistentContext).mockClear();
