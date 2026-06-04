@@ -236,6 +236,7 @@ export class SessionManager implements ISessionManager {
       }
     } catch (err) {
       session.setState("failed");
+      session.getChildProcess()?.kill();
       await this.logger.log({
         ts: new Date().toISOString(),
         level: "error",
