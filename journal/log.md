@@ -19,3 +19,9 @@ Pre–Phase 4 history (Phases 0–3): `journal/ops/archive/log-archive.md`.
 
 2026-06-04 | STOP | -> ops/sessions/storage-isolation-plan-20260604-1101.md | Storage-isolation spec+plan landed (XDG split); .remember lobotomy verified (needs full restart); blog 0007
 2026-06-04 | NEXT | -> journal/context/next.md | /next command designed + implemented; all 8 files updated
+2026-06-04 | NEXT | -> journal/context/next.md | storage-isolation XDG fix shipped (6 commits, pushed dev); pre-shell Task #2 is next
+2026-06-04 | NEXT | -> journal/context/next.md | attach-don't-launch spec+plan written; Task #2 ready to execute
+2026-06-04 | NEXT | -> journal/context/next.md | attach-don't-launch (Task #2) fully executed; 167+35 tests green; PR #1 created (dev->master)
+2026-06-04 | NEXT | -> journal/context/next.md | cookie-jar isolation fork + Phase-5 sequencing note; /next now updates trackers; Task #3 blocked on sudo chromium
+2026-06-04 | SHIP | dev e85ace2..8884e7a | Overnight autonomous: pre-shell #3 (FEATHER_CHROMIUM_PATH) + #5 (DebugCapture wiring) shipped + 2 storage-isolation cleanups; 175u+37i+4m green, tsc clean; next substantive = #4 warmed Google session (needs Roi login + cookie-isolation spike)
+2026-06-04 | STOP | -> ops/sessions/overnight-observability-chromiumpath-20260604-1408.md | Pre-shell #3+#5 + cleanups shipped (dev e85ace2..8884e7a); NEXT SESSION = Roi reviews this work first, then #4

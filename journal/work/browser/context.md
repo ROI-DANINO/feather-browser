@@ -72,7 +72,7 @@ URL query / visible text) and scanned every output surface. Durable facts:
   bodies/headers** (confirmed by code).
 - **`redactUrl` (`src/logs/redact.ts`) was dead code** (only its own test imported it) and stripped
   only `user:pass@`. The plan hardens it to also drop **query string + fragment** and applies it at
-  those two emission points. `DebugCapture` remains dead-code-until-wired.
+  those two emission points. (`DebugCapture` is now wired — `46c946e`; see "Shipped" below.)
 - **A `type=password` field protects nothing at the data layer** (masking is pixels only).
   **Screenshots leak visually but are text-invisible** → mitigate by policy (don't screenshot
   sensitive sessions), not OCR.
@@ -91,14 +91,15 @@ URL query / visible text) and scanned every output surface. Durable facts:
 3. ✅ **`getPageInfoList()` resilience SHIPPED** — per-page try/catch → best-effort
    `loadState:"unknown"`; one crashed page no longer rejects the whole list. (`42c73c3`)
 
-**Deferred (NOT shipped):**
-- **Trace e2e + `DebugCapture` wiring** — CUT from S2 (stabilization discipline). `DebugCapture`
-  (`src/debug/capture.ts`) is **dead code**: never instantiated, `debug.trace` never read by
-  `launch()`, so `trace.zip` is never produced. A future observability sprint must wire `start()`
-  after `setContext` + `finalize()` before `context.close()` + read the flag in `launch()`.
-- **`FEATHER_CHROMIUM_PATH`** — spike-gated (`sudo dnf install chromium`, Fedora `updates` repo
-  NOT RPM Fusion, + launch probe), then env var in `config.ts` + `executablePath` in `modes.ts`.
-  Different theme (weight).
+**Shipped (2026-06-04 overnight; were deferred):**
+- **Trace e2e + `DebugCapture` wiring — DONE (`46c946e`).** No longer dead code: `manager.launch`
+  instantiates + `start()`s `DebugCapture` when `input.debug` is set (was accepted-but-ignored);
+  `manager.close` `finalize()`s before `context.close()` (best-effort; `debug.capture.finalize.failed`
+  event). Real-Chromium e2e proves a valid `trace.zip` (PK bytes) + `network-summary.jsonl` land in
+  the debug dir. Capture is **opt-in via `input.debug`**; trace still off by default (Spike-C policy).
+- **`FEATHER_CHROMIUM_PATH` — DONE (`6e4f099`).** `config.resolveChromiumExecutable(fallback)` +
+  wired into `manager.launch` for `chromium-headed-cdp`. Guarded probe proves the system build runs
+  (CDP `browser.version()` == system `.215`, not bundled `.96`) with `webdriver===false`.
 
 ## Key Spike Results
 
@@ -106,4 +107,8 @@ URL query / visible text) and scanned every output surface. Durable facts:
   **5.8.5**. A throwaway-branch probe ran the full suite + a live SSE stream against v5 — all
   green (`sse.integration.test.ts` + `tab-updated.integration.test.ts` included). The peerDep
   `>=4` claim held. Hand-rolled-SSE contingency was defined but unused. (Was: untested.)
-- **System Chromium executablePath** (`raw/_inbox/spike-system-chromium-executablepath.md`): not installed; needs `sudo dnf install chromium` from the standard Fedora `updates` repo (NOT RPM Fusion) before the probe can run. Version 148.0.7778.215 — same major as bundled (148.0.7778.96), so version-skew risk is low.
+- **System Chromium executablePath — RESOLVED (2026-06-04).** Installed `chromium-148.0.7778.215`
+  (Fedora `updates` repo) at `/usr/bin/chromium-browser`. Probe passes: spawned via `spawnAndConnect`
+  with the system binary, CDP reports the system build (not bundled `.96`), `webdriver===false`.
+  `FEATHER_CHROMIUM_PATH` now selects it (`6e4f099`). Same major as bundled → version-skew risk low,
+  as predicted.

@@ -1,0 +1,1 @@
+When `src/browser/modes.ts` grows too large, or the CDP-attach path diverges enough from Playwright-native launch options to warrant separation, extract the attach logic into `src/browser/attach.ts`. That's Approach 2 from the Task #2 brainstorm (2026-06-04).

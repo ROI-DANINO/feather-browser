@@ -32,4 +32,8 @@ Snapshot this conversation before switching to a fresh chat. Lighter than /stop 
 3. Append one line to `journal/log.md`:
    `<YYYY-MM-DD> | NEXT | -> journal/context/next.md | <one-liner>`
 
-Done. Do not commit. Do not update `active.md`, `tasks.md`, desk context, or write a session file.
+4. Light tracker touch — keeps `active.md` usable as the state owner for the next `/start`:
+   - `journal/ops/tasks.md`: tick any checkboxes the session completed (`[ ]` → `[x]`) with a one-line note; move clearly-finished items into the Done section.
+   - `journal/context/active.md`: refresh the **Now** and **Recommend next** sections to the current state + next action. Concise — not the full `/stop` handoff.
+
+Done. Do not commit, write a session file, archive tasks, update desk context, or touch the blog. The step-4 tracker touch is intentionally minimal — the full handoff still belongs to `/stop`.

@@ -17,27 +17,51 @@ collapse). Projected hot auto-load **~5,037 → ~3,635 tok**. **Verified 2026-06
 plugin hooks load at CC launch, so the disable only took effect after a **full Claude Code restart**
 (not `/clear`).
 
-**Storage-isolation fix (Task #1) is spec'd + planned, NOT yet built.** Spec:
-`docs/specs/2026-06-04-storage-isolation-xdg-design.md` (`5f8f4e7`). Plan:
-`docs/plans/2026-06-04-storage-isolation-xdg.md` (`0fa0b8a`) — 5 TDD tasks. Decision: **full XDG
-split** (profiles/vault→DATA, logs/debug/measurements→STATE, disposable→CACHE, token/endpoint→RUNTIME,
-runtime falls back to STATE not workspace); `FeatherPaths`/`ensureDirs` accept `FeatherDirs | string`
-so the 14 single-root test files stay untouched. **NEXT SESSION: execute this plan** (pick
-subagent-driven vs inline — that choice was open at `/stop`).
+**Pre-shell #1 (storage-isolation) and #2 (attach-don't-launch) are DONE and pushed to `dev`.**
+Storage: XDG split shipped + `.feather/` gitignored (`cbe939e..13101ff`). Attach-don't-launch: new
+`chromium-headed-cdp` mode (`spawnAndConnect()` + `connectOverCDP`; `navigator.webdriver === false`;
+child process killed on close) — 167 unit + 35 integration green; **PR #1 opened (dev→master,
+unmerged — not a stable milestone yet)**.
+
+**Overnight autonomous run (2026-06-04, while Roi slept):** chromium got installed
+(`148.0.7778.215`), unblocking the decision-free queue. Shipped + pushed `dev` (4 commits,
+`e85ace2..8884e7a`; 175u+37i+4m green, tsc clean):
+- **Pre-shell #5 observability** (`46c946e`) — `DebugCapture` wired into launch/close; `input.debug`
+  was accepted-but-ignored, now drives capture; real-Chromium e2e proves a valid `trace.zip`.
+- **Pre-shell #3 `FEATHER_CHROMIUM_PATH`** (`6e4f099`) — `resolveChromiumExecutable()`; guarded probe
+  proves the system build runs (CDP version `.215`, not bundled `.96`) with `webdriver===false`.
+- **Two storage-isolation tech-debt cleanups** (`5ba2fe8`, `8884e7a`) — `MeasurementRunner` →
+  `FeatherPaths`; api-flow dead `.feather` strip → absolute-path contract assertion.
+
+**NEXT SESSION = REVIEW FIRST (Roi's explicit ask).** Review the overnight autonomous work — 4
+commits `e85ace2..8884e7a` on `dev` (DebugCapture wiring `46c946e`, FEATHER_CHROMIUM_PATH `6e4f099`,
+2 cleanups `5ba2fe8`/`8884e7a`) — before continuing. Nothing merged to master; PR #1 still unmerged.
+
+**Then (substantive): pre-shell #4 — warmed Google session.** Needs Roi (one-click Google login) +
+**run the cookie-isolation spike first** (procedure in
+`research/2026-06-04-cookie-jar-isolation-and-phase5-sequencing.md` → "Queued action"). The spike
+design doc was intentionally NOT auto-drafted (real fork + needs Roi's framing/login) — quick
+brainstorm pending.
+
+**New design thread (2026-06-04, not a decision):** the shared cookie jar means agent activity can
+**poison the human's trust context**; whether to isolate the agent's context is a real **fork**
+decided by a spike (does copied Google auth survive DBSC device-binding?). Phase 4 is human-only so
+the risk is **dormant** — the gate is the **first agent action in the real warm jar**. Run the
+**cookie-isolation spike before pre-shell #4 (warmed Google session)**. Full reasoning:
+`research/2026-06-04-cookie-jar-isolation-and-phase5-sequencing.md`.
 
 ## Recommend next
 
 **Pre-shell infrastructure sequence (locked 2026-06-04) — MUST precede any Visual Desktop Shell GUI:**
-1. **Storage-isolation fix (CRITICAL — currently violated): ▶ READY TO EXECUTE** — spec'd + planned
-   (`docs/plans/2026-06-04-storage-isolation-xdg.md`). `src/config.ts` still defaults `featherDir` to
-   repo-relative `.feather` (not gitignored). Plan relocates to the XDG split + gitignores `.feather/`.
-   (Enforces the Agent-Blind Vault boundary.) **This is the immediate next action.**
-2. **Productionize attach-don't-launch** into `src/browser/modes.ts` (no anti-detection yet) +
-   `FEATHER_CHROMIUM_PATH` (sudo `dnf install chromium`).
-3. **Warmed persistent Google session on disk** — long-running primary authenticated context
-   (Cookie Mine foundation); single-click Google Auth, agent blind, Feather injects under the hood.
-4. **Observability sprint** — wire `DebugCapture` (dead code).
-5. **Prove end-to-end Cookie Mine loop on the headed-Chromium stopgap (ADR-0007 gate)** — *then*
+1. ✅ **Storage-isolation fix — DONE** (XDG split shipped, pushed `dev`).
+2. ✅ **Attach-don't-launch — DONE** (`chromium-headed-cdp`; `navigator.webdriver===false`; PR #1).
+3. ✅ **`FEATHER_CHROMIUM_PATH` — DONE** (`6e4f099`; system-Chromium probe; testing banner gone).
+4. ▶ **Warmed persistent Google session on disk — IMMEDIATE NEXT.** Cookie Mine foundation;
+   single-click Google Auth, agent blind, Feather injects under the hood. **Run the cookie-isolation
+   spike first** (see Now). **Needs Roi's one-click Google login.**
+5. ✅ **Observability sprint — DONE** (`46c946e`; `DebugCapture` wired; trace.zip e2e). Did out of
+   order — it didn't depend on #4.
+6. **Prove end-to-end Cookie Mine loop on the headed-Chromium stopgap (ADR-0007 gate)** — *then*
    design the GUI. The painted-in shell is the deferred end-state, not the next step.
 
 **Project milestone (vault):** **Spike A — SQLCipher** (then Spike B — KeePassXC). Both **sudo-gated
