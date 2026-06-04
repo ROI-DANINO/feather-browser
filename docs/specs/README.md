@@ -14,6 +14,7 @@ direction pending validation, not a commitment.
 - [ADR-0006: Agent-Facing Interface Neutrality (Constraint + Deferral)](adr-0006-agent-interface-neutrality.md)
 - [ADR-0007: Phase 4 Shell — Sequencing & Display Model (Stopgap First, Seamless Shell Deferred)](adr-0007-phase-4-shell-sequencing.md)
 - [ADR-0008: Credentials Vault — Interface-First, Local-First](adr-0008-credentials-vault.md) — 🚧 **CANDIDATE, NOT ACCEPTED** (pending 3 spikes)
+- [ADR-0009: Phase 4 Shell Stack — Tauri/WebKitGTK vs GTK4-Native](adr-0009-shell-stack.md) — 🚧 **CANDIDATE, NOT ACCEPTED** (recommendation; pending Casilda+Chromium spike — joint call)
 
 ## Design Specs
 

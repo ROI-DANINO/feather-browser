@@ -44,5 +44,13 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Integration tests
-        run: npm run test:integration
+      # The headed CDP-attach test (attach-cdp) needs a display. Xvfb gives a real
+      # headed surface (more faithful for anti-detection than --headless), and
+      # spawnAndConnect now omits --ozone-platform when WAYLAND_DISPLAY is unset so
+      # Chromium auto-picks X11 under Xvfb. (FEATHER_SPAWN_HEADLESS stays unset; it's
+      # the documented fallback only if Xvfb proves flaky.)
+      - name: Install Xvfb
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
+      - name: Integration tests (under Xvfb)
+        run: xvfb-run -a npm run test:integration
