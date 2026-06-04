@@ -14,6 +14,8 @@ export function redactUrl(url: string): string {
     const hadTrailingSlash = url.endsWith("/") || parsed.pathname !== "/";
     parsed.username = "";
     parsed.password = "";
+    parsed.search = "";
+    parsed.hash = "";
     const result = parsed.toString();
     // URL.toString() always adds a trailing slash for bare host:port URLs;
     // strip it only when the original URL had no path beyond the root.

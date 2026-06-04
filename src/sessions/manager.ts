@@ -3,7 +3,7 @@ import * as path from "path";
 import { chromium, type BrowserContext } from "playwright";
 import { FeatherSession, SessionNotFoundError } from "./session";
 import { buildLaunchOptions } from "../browser/modes";
-import { redactProxy } from "../logs/redact";
+import { redactProxy, redactUrl } from "../logs/redact";
 import { FeatherLogger } from "../logs/logger";
 import { EVENTS } from "../logs/events";
 import type { FeatherPaths } from "../fs-layout";
@@ -156,7 +156,7 @@ export class SessionManager implements ISessionManager {
           level: "info",
           event: EVENTS.TAB_UPDATED,
           sessionId: session.sessionId,
-          data: { pageId, url: page.url(), title, loadState },
+          data: { pageId, url: redactUrl(page.url()), title, loadState },
         });
       });
     });
