@@ -11,15 +11,27 @@ harness) is shipped** on `dev`: `assertNoSecretLeak`, a real-Chromium gate, and 
 redaction fix (`TAB_UPDATED` + `network-summary`). ADR-0008 stays **non-accepted** until Spikes A/B
 clear.
 
+**Token Diet complete** (2026-06-04): Step 1 (`.remember` plugin lobotomy) + Step 2 (ROADMAP
+collapse). Projected hot auto-load **~5,037 → ~3,635 tok** — confirm at next `/start` that the
+`=== MEMORY ===` block is gone.
+
 ## Recommend next
 
-**Immediate (process, fresh chat):** AGENTS.md reconcile committed (`e6132bd`); `/init` still
-references the demoted `PROGRESS.md` — reshape pending. Reshape `/init` into a phase-boundary ritual
-+ fix its stale file list. See `journal/ops/tasks.md` → Process and
-`ops/sessions/token-diet-prune-20260604-0929.md` for the design.
+**Pre-shell infrastructure sequence (locked 2026-06-04) — MUST precede any Visual Desktop Shell GUI:**
+1. **Storage-isolation fix (CRITICAL — currently violated):** `src/config.ts` defaults `featherDir`
+   to repo-relative `.feather`, not gitignored. Relocate profile/cookies/vault to `~/.config` /
+   `~/.local/share`, gitignore, never inside the workspace. (Enforces the Agent-Blind Vault boundary.)
+2. **Productionize attach-don't-launch** into `src/browser/modes.ts` (no anti-detection yet) +
+   `FEATHER_CHROMIUM_PATH` (sudo `dnf install chromium`).
+3. **Warmed persistent Google session on disk** — long-running primary authenticated context
+   (Cookie Mine foundation); single-click Google Auth, agent blind, Feather injects under the hood.
+4. **Observability sprint** — wire `DebugCapture` (dead code).
+5. **Prove end-to-end Cookie Mine loop on the headed-Chromium stopgap (ADR-0007 gate)** — *then*
+   design the GUI. The painted-in shell is the deferred end-state, not the next step.
 
-**Project milestone:** **Spike A — SQLCipher feasibility** (then Spike B — KeePassXC). Both are
-**sudo-gated installs → hand to Roi.** Full task list in `journal/ops/tasks.md`.
+**Project milestone (vault):** **Spike A — SQLCipher** (then Spike B — KeePassXC). Both **sudo-gated
+→ Roi**, and now explicitly **frozen** (architecture stands; not deleted). ADR-0008 stays 🚧
+non-accepted until A/B clear. Full task list in `journal/ops/tasks.md`.
 
 Evidence to keep honoring (research-driven, not arrogance-driven):
 `research/2026-06-04-credentials-vault-spike-c-leakage-probe-findings.md` — traces leak off-screen
@@ -39,6 +51,11 @@ visually but are text-invisible → policy, not OCR. Design:
   rnd's dropped convention). Inbox holds 6 genuinely-open files.
 - `rnd` branch deleted (ADR-0006 graduated; now a standing design lens on `dev`). `ui-playground`
   KEPT as stealth/attach-don't-launch reference.
+- **`.remember` plugin DISABLED for this project** (`.claude/settings.local.json`, 2026-06-04) →
+  journal is the **sole** history engine. No SessionStart `.remember` injection, no PostToolUse
+  auto-extraction/consolidation; `/stop` (this file + `log.md`) is the sole handoff writer. Built-in
+  `MEMORY.md` auto-memory is separate and unaffected. Reversible (flip to `true`). NOTE: `/stop`
+  step 11 (write `.remember/remember.md`) is now **vestigial** — drop it next ritual edit.
 
 ## Parked (Phase 5; frame as user-authorized continuity, NOT "stealth/bypass")
 

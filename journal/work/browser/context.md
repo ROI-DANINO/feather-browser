@@ -5,10 +5,15 @@ Use this desk for browser engine research, shell architecture, extension compati
 ## Current Focus
 
 **Phase 4 Step 0 DONE (2026-06-04)** — answered by spikes, not specs. Cookie Mine proven
-end-to-end on a real site (agent acted in Roi's live ChatGPT). Next: **security research**
-(OSS password manager + secure DB format for the credentials vault). Deferred (not blockers):
-`FEATHER_CHROMIUM_PATH` (weight, sudo-gated; also removes the "Chrome for Testing" banner) and
-`DebugCapture`/trace (observability). Productionizing attach-don't-launch into `src/` is open.
+end-to-end on a real site (agent acted in Roi's live ChatGPT).
+
+**Pre-shell infrastructure sequence (locked 2026-06-04) — must precede the Visual Desktop Shell GUI:**
+(1) storage-isolation fix (`src/config.ts` `featherDir` → `~/.config`/`~/.local/share` + gitignore;
+currently violated) → (2) productionize attach-don't-launch into `src/` + `FEATHER_CHROMIUM_PATH`
+(sudo) → (3) warmed persistent Google session on disk (Cookie Mine foundation; agent blind) →
+(4) observability (wire `DebugCapture`) → (5) prove the end-to-end Cookie Mine loop on the
+**headed-Chromium stopgap** (ADR-0007 gate) → *then* the GUI. Vault Spikes A/B **frozen** (sudo → Roi;
+architecture stands).
 
 ## Dependency baseline (post-S3, 2026-06-03)
 
