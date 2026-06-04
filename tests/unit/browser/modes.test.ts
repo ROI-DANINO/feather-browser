@@ -127,4 +127,19 @@ describe("spawnAndConnect", () => {
       vi.useRealTimers();
     }
   });
+
+  it("kills the child process when connectOverCDP rejects", async () => {
+    vi.mocked(chromium.connectOverCDP).mockRejectedValueOnce(new Error("CDP connection failed"));
+    setImmediate(() => {
+      mockStderr.emit(
+        "data",
+        Buffer.from("DevTools listening on ws://127.0.0.1:9222/devtools/browser/abc\n")
+      );
+    });
+
+    await expect(
+      spawnAndConnect({ profilePath: "/tmp/profile", executablePath: "/usr/bin/chrome" })
+    ).rejects.toThrow("CDP connection failed");
+    expect(mockProcess.kill).toHaveBeenCalled();
+  });
 });

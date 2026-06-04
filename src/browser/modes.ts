@@ -71,7 +71,12 @@ export async function spawnAndConnect(opts: {
     });
   });
 
-  const browser = await chromium.connectOverCDP(wsEndpoint);
-  const context = browser.contexts()[0];
-  return { context, childProcess: child };
+  try {
+    const browser = await chromium.connectOverCDP(wsEndpoint);
+    const context = browser.contexts()[0];
+    return { context, childProcess: child };
+  } catch (err) {
+    child.kill();
+    throw err;
+  }
 }
