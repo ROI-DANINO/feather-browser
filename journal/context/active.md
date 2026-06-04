@@ -14,13 +14,17 @@ dev fully contained). **Next focus = the post-merge tech-debt queue (ozone-platf
 un-gate the 2 tests; vitest 2→4), then pre-shell #6 (prove e2e Cookie Mine loop) → Visual Desktop
 Shell GUI.** Details below + `context/next.md`.
 
-**▶ NOW (2026-06-05): unattended autonomous-run spec + plan READY, awaiting kickoff.** Brainstormed +
-wrote `docs/specs/2026-06-05-autonomous-research-run-design.md` + `docs/plans/2026-06-05-autonomous-research-run.md`
-(committed `60d361a`/`4a7ea10`). The run bundles the tech-debt queue + pre-shell #6 + Phase-5 research
-into one Ratchet-ordered, **research-driven** pass that runs LIVE against a **burnable `scratch` Google
-account** (real `primary` never touched). **Next session = Roi warms `scratch` (passkey) then pastes the
-kickoff prompt** (saved in `context/next.md`) to execute the plan via `executing-plans`. Joint-call
-decisions held for Roi: shell-stack pick · cookie-iso-for-`primary` · vault backend.
+**▶ NOW (2026-06-05 01:29): `scratch` WARMED + persistence-verified; run DEFERRED to a fresh session.**
+Spec + plan ready (`60d361a`/`4a7ea10`): one Ratchet-ordered, **research-driven** pass (tech-debt queue +
+pre-shell #6 + Phase-5 research) run LIVE against a **burnable `scratch` Google account** (real `primary`
+never touched). **`scratch` is now warmed** (`FEATHER_WARM_WORKSPACE=scratch npm run warm-session`;
+re-launch lands already signed in; throwaway confirmed, not primary) — but **password-only, NOT
+passkey/device-bound**: this Fedora box **can't create a local passkey** (Chromium has no platform
+authenticator), and the prior "passkey⇒DBSC" assumption is **unverified** (separate mechanisms). So the
+cookie-isolation spike's FIRST job = **MEASURE** whether scratch's session is DBSC-bound, not assume.
+**Next session = paste the kickoff prompt** (in `context/next.md`) to execute the plan via
+`executing-plans`. Joint-call decisions held for Roi: shell-stack pick · cookie-iso-for-`primary` · vault
+backend.
 
 **Pre-shell #4 (warmed Google session) is DONE and verified end-to-end (2026-06-04 23:07).**
 `npm run warm-session` (`src/tools/warm-session.ts`) launches the `primary` persistent workspace in

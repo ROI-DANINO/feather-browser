@@ -1,6 +1,47 @@
 # Next — Context Bridge
 
 ---
+## 2026-06-05 01:29 — scratch warmed (password-only); run deferred to next session
+
+### Done
+- **`scratch` profile warmed + persistence-verified.** `FEATHER_WARM_WORKSPACE=scratch npm run
+  warm-session` → logged into the throwaway Google account, finalized cleanly (`✓ Done.`, lock
+  released, cookie store ~49 KB persisted). Re-launch test passed: lands already signed in, no
+  re-auth. Profile on disk: `~/.local/share/feather/profiles/scratch/profile`.
+- **Safety confirmed:** scratch is a genuinely throwaway/burnable account (NOT primary). Roi verified
+  directly. It carries an old iPhone/iCloud passkey (Sept 2025) + phone history — that's fine, it's
+  still disposable.
+- **Two findings worth carrying into the run (see Decisions):** this Fedora box **cannot create a
+  local passkey** (Chromium has no platform authenticator — dialog: "device doesn't support creating
+  passkeys, use another device"); and the earlier "passkey login ⇒ device-bound session (DBSC)"
+  assumption is **unverified** — those are separate mechanisms.
+
+### Unfinished / open threads
+- **The autonomous research run has NOT started** — deferred by Roi to a fresh `/next` session
+  (the review-gate-then-clean-session shape the plan intended).
+- **scratch is password-only, not device-bound.** We deliberately skipped both the local-passkey
+  (machine can't) and the phone-number recovery (don't leak real PII into a burnable account). So
+  scratch does not yet provably mirror primary's device-binding.
+
+### Decisions
+- **Don't chase a passkey on scratch.** Machine can't make a local one; the phone-QR ceremony would
+  be *faith, not evidence*. Instead: **measure, don't assume.** The cookie-isolation spike's FIRST
+  job = inspect whether scratch's saved session is actually DBSC-bound (look for bound-session
+  registration in the profile), rather than infer from login method. If it matters and scratch lacks
+  it, *then* do the phone-passkey re-login and re-measure — with evidence it's needed and that it works.
+- **Don't add a recovery phone number to scratch** — tying Roi's real number to a burnable account is
+  identity leakage with zero upside for the run.
+- Net: my earlier passkey→DBSC claim was a prior-driven overstatement; corrected. Turn it into a real
+  finding: *can this Fedora box even hold a device-bound session?* (research-driven, not arrogance-driven.)
+
+### Next action
+**In a fresh session, paste the kickoff prompt** (saved in the section below — "Kickoff prep") to
+execute `docs/plans/2026-06-05-autonomous-research-run.md` via `superpowers:executing-plans`. Add one
+thing to the executor's early todos: **scratch is password-only → the cookie-isolation spike must
+first MEASURE whether its session is DBSC-bound before drawing any conclusion that transfers to
+primary; record the no-local-passkey constraint as a finding.**
+
+---
 ## 2026-06-05 — Kickoff prep: scratch setup + paste-prompt for the unattended run
 
 ### Done
