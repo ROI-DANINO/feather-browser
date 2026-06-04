@@ -41,28 +41,9 @@ Milestones:
 - The running shell process is itself the long-running primary context that Phase 5+ agents depend on; no discrete implementation task required in this phase (see ADR-0003).
 - No agent panels, chat sidebar, or LLM controls in this phase.
 
-## Phase 5+: Agent Runtime Layer & Daily Hardening
+## Phase 5+: Agent Runtime Layer & Daily Hardening (future — cold storage)
 
-Goal: Add agent-oriented systems on top of the stable human browser shell. Implement the Cookie Mine model: agents open new pages (tabs) within the human's running session via the Fastify MCP-compatible hub, piggybacking on accumulated trust signals. Harden the result for daily use.
-
-Planning notes (check before starting Phase 5+):
-- Microsoft ships an official Playwright MCP server. Evaluate it before designing Feather's MCP hub — Feather may build on top of it rather than reimplement from scratch.
-- The MCP spec is evolving rapidly (stateless HTTP core, Tasks extension RC expected mid-2026). Check current spec state before committing to the hub design to avoid rework.
-- MCP spec is final 2026-07-28. Do not design the hub before then.
-
-Milestones:
-- Step 0: research and plan Phase 5+.
-- Cookie Mine: tab open pathway in SessionManager — agents open new pages within the existing human session rather than launching isolated contexts (see ADR-0003).
-- Local MCP-compatible hub routing: Fastify endpoint (`POST /v1/sessions/:id/tabs`) for agent tab requests against the live human session.
-- Agent orchestration integration — leading candidate **Hermes**, with **OpenClaw** as a challenger if better suited; selection deferred to Phase 5 Step 0 (see ADR-0006). The agent-facing surface must also be drivable by external agent clients (**Claude Code, Codex**) via the MCP-compatible hub.
-- Credentials vault and LLM API credential handling.
-- Human approval checkpoint system.
-- Agent chat sidebar.
-- Context shrinker / token optimizer.
-- Atomic agent action protocol.
-- Scripted agent recipes.
-- Headless screencast / viewport preview portal.
-- User-to-agent tab handover.
-- yt-dlp subprocess adapter for media downloads.
-- Scraping reliability and session realism controls (measured, not assumed).
-- Stability testing, performance budget, security review, and update strategy.
+High-level only while Phase 4 is active. Full milestone detail + the two North-Star behavioral
+objectives (**Active Anti-Bot Self-Detection** — real-time self-monitoring/correction, not a passive
+recorder; **True Perception & Generalized Workflows** — a perception layer for unfamiliar sites, not
+a DOM stripper) → `journal/ops/archive/roadmap-future.md`. Expand back into this file when Phase 4 finishes.
