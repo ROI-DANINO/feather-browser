@@ -7,22 +7,24 @@ the way the work is run is part of the story.
 For the polished narrative of *why* things happened, see `blog/`. This is the machinery
 behind it.
 
+> **Warm doc** (not auto-loaded at `/start`; read on demand). Single-owner map below.
+
 ## What lives here
 
-- `context/active.md` — resume context for `/start` (where we are, what's next).
-- `ops/phase.md` — machine-readable current phase state.
-- `ops/tasks.md` — source of truth for the *current* phase's tasks.
+- `context/active.md` — **the single owner of current state + next action** (resume context for `/start`).
+- `ops/phase.md` — machine-readable current phase pointer (frontmatter only).
+- `ops/tasks.md` — current-phase task checklist (checkboxes only, no state narration).
 - `ops/sessions/` — `/stop` handoff files (history, one per session).
-- `ops/archive/` — superseded task lists.
+- `ops/archive/` — superseded task lists; rotated-out history (`log-archive.md`, `phase-3-progress.md`, `roadmap-phases-0-3.md`).
 - `work/<desk>/context.md` — desk-specific working context (browser / product / automation).
 - `raw/_inbox/` — rough notes, dropped links, research intake, session checkpoints.
-- `log.md` — append-only work log with timestamps.
+- `log.md` — append-only work log (≤140-char lines; holds only the current phase; older → `ops/archive/log-archive.md`).
 - `docs-map.md` — source-of-truth table: which doc surface is authoritative for what.
 
 Related surfaces outside this directory:
 
 - `ROADMAP.md` — destination, phase milestones, exit criteria.
-- `PROGRESS.md` — current state, decisions, open questions, next action.
+- `PROGRESS.md` — **thin pointer** to the single owners (no longer holds state).
 - `.remember/remember.md` — short handoff for the very next session.
 
 ## Rule

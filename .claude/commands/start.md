@@ -7,12 +7,13 @@ Run each step before doing anything else.
 1. Read in parallel:
    - `README.md`
    - `ROADMAP.md`
-   - `PROGRESS.md`
-   - `journal/README.md`
+   - `journal/context/active.md` — **the state owner** (where we are, what's next)
    - `journal/ops/tasks.md`
    - `journal/ops/phase.md`
-   - `journal/context/active.md`
-   - last 20 lines of `journal/log.md`
+   - last 15 lines of `journal/log.md`
+
+   Warm (load on demand, not at `/start`): `PROGRESS.md` (pointer), `journal/README.md`,
+   `journal/docs-map.md`, `journal/ops/archive/`.
 2. Check `journal/raw/_inbox/` for files other than `README.md`. If any exist, report the count and ask whether to process them now or continue.
 3. Report:
    - Last known phase

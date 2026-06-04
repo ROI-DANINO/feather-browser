@@ -1,6 +1,12 @@
 # Token Diet — Context Optimization Design
 
-**Status:** Design (measurement + blueprint complete; prune NOT yet executed)
+**Status:** ✅ Executed 2026-06-04 (§8 prune complete). Measured result: hot load **~15,650 → ~7,632
+tokens** (≈51% cut), zero information lost. `active.md` chosen as the §6 state owner; `PROGRESS.md`
+demoted to a pointer (history → `journal/ops/archive/phase-3-progress.md`); `log.md` capped/rotated
+(→ `ops/archive/log-archive.md`); ROADMAP completed-phase detail archived
+(→ `ops/archive/roadmap-phases-0-3.md`); `.remember` compacted + `core-memories.md` created;
+process docs (`journal/README.md`, `docs-map.md`) demoted to warm. The §9 vault/XDG finding remains
+out of scope (security track).
 **Date:** 2026-06-04
 **Scope:** Reduce the per-session orientation token load by removing duplication across
 auto-loaded surfaces. No information is deleted — every fact is relocated to a single owner

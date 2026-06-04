@@ -5,12 +5,13 @@ One line per doc surface: what it is authoritative for. If two docs disagree, th
 | File | Source of truth for |
 |------|---------------------|
 | `AGENTS.md` | Constraints, mission, branch rules, current phase pointer, command usage. Read first. |
-| `ROADMAP.md` | Destination, phase list, milestones, exit criteria. |
-| `PROGRESS.md` | What is done / in progress now; open questions. |
-| `journal/ops/phase.md` | Machine-readable current phase/sub-phase state. |
-| `journal/ops/tasks.md` | Detailed tasks for the *current* phase only. |
-| `journal/context/active.md` | Resume context for `/start`. |
+| `ROADMAP.md` | Destination, phase list, milestones, exit criteria. Completed-phase detail → `journal/ops/archive/`. |
+| `journal/context/active.md` | **Current state + next action (the single owner).** Resume context for `/start`. |
+| `journal/ops/tasks.md` | Current-phase task checklist (checkboxes only). |
+| `journal/ops/phase.md` | Machine-readable current phase/sub-phase pointer (frontmatter only). |
+| `PROGRESS.md` | Thin pointer to the owners above; no longer holds state. |
 | `journal/ops/sessions/` | `/stop` handoff files (history). |
+| `journal/ops/archive/` | Rotated-out history (log, Phase-3 progress, completed roadmap phases). |
 | `.remember/remember.md` | Short handoff to the very next session. |
 | `journal/raw/_inbox/` | Research findings, rough notes, spike results. |
 | `docs/specs/` | Specs and ADRs (decisions). |
