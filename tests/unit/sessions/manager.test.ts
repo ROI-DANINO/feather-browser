@@ -450,6 +450,69 @@ describe("SessionManager.launch — chromium-headed-cdp", () => {
   });
 });
 
+describe("SessionManager — DebugCapture wiring", () => {
+  it("starts tracing on launch and stops it on close when debug.trace is set", async () => {
+    const { chromium } = await import("playwright");
+    const traceStart = vi.fn().mockResolvedValue(undefined);
+    const traceStop = vi.fn().mockResolvedValue(undefined);
+    (chromium.launchPersistentContext as vi.Mock).mockResolvedValueOnce({
+      pages: () => [],
+      newPage: vi.fn(),
+      close: vi.fn().mockResolvedValue(undefined),
+      on: vi.fn(),
+      tracing: { start: traceStart, stop: traceStop },
+    });
+
+    const session = await manager.launch({
+      profile: { kind: "disposable" },
+      debug: { trace: true },
+    });
+    expect(traceStart).toHaveBeenCalled();
+
+    await manager.close(session.sessionId);
+    expect(traceStop).toHaveBeenCalled();
+  });
+
+  it("does not start tracing when debug is not provided", async () => {
+    const { chromium } = await import("playwright");
+    const traceStart = vi.fn().mockResolvedValue(undefined);
+    (chromium.launchPersistentContext as vi.Mock).mockResolvedValueOnce({
+      pages: () => [],
+      newPage: vi.fn(),
+      close: vi.fn().mockResolvedValue(undefined),
+      on: vi.fn(),
+      tracing: { start: traceStart, stop: vi.fn() },
+    });
+
+    await manager.launch({ profile: { kind: "disposable" } });
+    expect(traceStart).not.toHaveBeenCalled();
+  });
+
+  it("writes capture artifacts (network-summary.jsonl) to the debug dir on close", async () => {
+    const { chromium } = await import("playwright");
+    (chromium.launchPersistentContext as vi.Mock).mockResolvedValueOnce({
+      pages: () => [],
+      newPage: vi.fn(),
+      close: vi.fn().mockResolvedValue(undefined),
+      on: vi.fn(),
+      tracing: { start: vi.fn(), stop: vi.fn() },
+    });
+
+    const session = await manager.launch({
+      profile: { kind: "disposable" },
+      debug: {},
+    });
+    await manager.close(session.sessionId);
+
+    const summaryPath = path.join(session.debugDir, "network-summary.jsonl");
+    const exists = await fs.promises
+      .access(summaryPath)
+      .then(() => true)
+      .catch(() => false);
+    expect(exists).toBe(true);
+  });
+});
+
 describe("SessionManager.close — CDP session kills child process", () => {
   it("calls kill() on the child process when closing a CDP session", async () => {
     const session = await manager.launch({

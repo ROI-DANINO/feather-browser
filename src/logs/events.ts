@@ -12,6 +12,7 @@ export const EVENTS = {
   PAGE_EXTRACT_COMPLETED: "page.extract.completed",
   PAGE_SCREENSHOT_COMPLETED: "page.screenshot.completed",
   DEBUG_BUNDLE_CREATED: "debug.bundle.created",
+  DEBUG_CAPTURE_FINALIZE_FAILED: "debug.capture.finalize.failed",
   SESSION_CLOSE_REQUESTED: "session.close.requested",
   SESSION_CLOSE_COMPLETED: "session.close.completed",
   SESSION_CLOSE_FAILED: "session.close.failed",

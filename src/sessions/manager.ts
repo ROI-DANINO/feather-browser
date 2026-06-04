@@ -3,6 +3,7 @@ import * as path from "path";
 import { chromium, type BrowserContext } from "playwright";
 import { FeatherSession, SessionNotFoundError } from "./session";
 import { buildLaunchOptions, spawnAndConnect } from "../browser/modes";
+import { DebugCapture } from "../debug/capture";
 import { redactProxy, redactUrl } from "../logs/redact";
 import { FeatherLogger } from "../logs/logger";
 import { EVENTS } from "../logs/events";
@@ -121,6 +122,12 @@ export class SessionManager implements ISessionManager {
 
     session.setContext(context);
 
+    if (input.debug) {
+      const capture = new DebugCapture(context, debugDir, input.debug);
+      await capture.start();
+      session.setDebugCapture(capture);
+    }
+
     context.on("page", (page) => {
       const pageId = session.addPage(page);
       void this.logger.log({
@@ -229,6 +236,20 @@ export class SessionManager implements ISessionManager {
 
     try {
       const context = session.getContext();
+      const capture = session.getDebugCapture();
+      if (capture) {
+        try {
+          await capture.finalize();
+        } catch (err) {
+          await this.logger.log({
+            ts: new Date().toISOString(),
+            level: "warn",
+            event: EVENTS.DEBUG_CAPTURE_FINALIZE_FAILED,
+            sessionId: session.sessionId,
+            data: { error: (err as any)?.message ?? "unknown" },
+          });
+        }
+      }
       if (opts?.force) {
         try { await closeContextWithTimeout(context, CLOSE_TIMEOUT_MS); } catch { /* ignore */ }
       } else {
