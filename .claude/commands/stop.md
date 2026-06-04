@@ -1,5 +1,7 @@
 # /stop — Pause Feather Browser Work
 
+If slash commands are not natively supported by the current agent, open this file and execute the checklist manually.
+
 Pause and write a handoff.
 
 1. Analyze the conversation:
@@ -23,4 +25,3 @@ Pause and write a handoff.
 10. Append a `STOP` line to `journal/log.md`.
 11. Write `.remember/remember.md`.
 12. Commit the changed tracking files.
-

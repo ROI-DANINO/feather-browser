@@ -1,5 +1,7 @@
 # /start — Resume Feather Browser Work
 
+If slash commands are not natively supported by the current agent, open this file and execute the checklist manually.
+
 Run each step before doing anything else.
 
 1. Read in parallel:
@@ -21,4 +23,3 @@ Run each step before doing anything else.
 5. Ask: "Ready to continue, or do you want to start somewhere else?"
 
 Do not begin work until the user confirms.
-

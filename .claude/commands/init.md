@@ -1,5 +1,7 @@
 # /init — Confirm Feather Browser Orientation
 
+If slash commands are not natively supported by the current agent, open this file and execute the checklist manually.
+
 Run after reading the project files and before research, planning, or implementation.
 
 1. Confirm project path: `/home/roking/Desktop/Projects/feather-browser`.
@@ -33,4 +35,3 @@ Run after reading the project files and before research, planning, or implementa
 9. If the goal skips a phase or creates detailed future-phase tasks, stop and ask for confirmation.
 
 Do not begin research before this command has been followed.
-
