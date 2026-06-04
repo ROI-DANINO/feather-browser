@@ -1,6 +1,8 @@
 # Specs
 
-Approved specs and architecture decision records live here.
+Approved specs and architecture decision records live here. ADRs are Accepted unless their
+entry says otherwise — a 🚧 **CANDIDATE / NOT ACCEPTED** marker means the decision is recorded
+direction pending validation, not a commitment.
 
 ## Architecture Decision Records
 
@@ -11,6 +13,7 @@ Approved specs and architecture decision records live here.
 - [ADR-0005: Agentic North Star — Token & Context Efficiency (Constraint + Deferral)](adr-0005-agentic-north-star.md)
 - [ADR-0006: Agent-Facing Interface Neutrality (Constraint + Deferral)](adr-0006-agent-interface-neutrality.md)
 - [ADR-0007: Phase 4 Shell — Sequencing & Display Model (Stopgap First, Seamless Shell Deferred)](adr-0007-phase-4-shell-sequencing.md)
+- [ADR-0008: Credentials Vault — Interface-First, Local-First](adr-0008-credentials-vault.md) — 🚧 **CANDIDATE, NOT ACCEPTED** (pending 3 spikes)
 
 ## Design Specs
 

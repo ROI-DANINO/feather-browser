@@ -1,18 +1,20 @@
-## Active — Repo organized; next is the credentials-vault ADR candidate
+## Active — Credentials-vault ADR candidate landed; next is the validation-gate spikes
 
-Phase 4 Step 0 is done (Cookie Mine proven on a real site; ADR-0007). The last session was
-a **get-organized pass** (no feature code): synced `dev`, built the inbox→archive lifecycle,
-graduated `rnd` (ADR-0006), cleaned stale branches, and reconciled the canonical docs. All on
-`dev`, pushed to `origin/dev`.
+Phase 4 Step 0 is done (Cookie Mine proven on a real site; ADR-0007). The **`CredentialsVault`
+ADR candidate has landed** as `docs/specs/adr-0008-credentials-vault.md` (🚧 non-accepted;
+interface-first, local-first; KeePassXC + SQLCipher as *candidates*, not selections); the source
+intake is archived. Before that, an organize pass synced `dev`, built the inbox→archive
+lifecycle, graduated `rnd` (ADR-0006), and reconciled the canonical docs.
 
 ## Next track (recommend the first)
 
-- [ ] **CREDENTIALS-VAULT ADR CANDIDATE — recommended.** Promote the open inbox intake
-  (`journal/raw/_inbox/2026-06-04-security-research-credentials-vault.md`) into a
-  **non-accepted** `CredentialsVault` ADR candidate in `docs/specs/`. Narrow vault interface;
-  KeePassXC (external manager) + SQLCipher (encrypted storage) as first candidates; selection
-  NOT final. Scope 3 spikes: leakage harness, KeePassXC integration, SQLCipher feasibility.
-  Keep explicitly non-accepted until spikes done. (Prior session attempted this, was blocked.)
+- [ ] **ADR-0008 VALIDATION-GATE SPIKES — recommended.** Three spikes must clear before ADR-0008
+  can be Accepted. Recommended order **C → A/B**: **Spike C** secret-leakage harness (seed a
+  synthetic secret; run a browser action + debug bundle/logs/screenshots/traces; grep all
+  outputs; fail hard on any leak — also hardens existing surfaces and is the standing pre-merge
+  gate); **Spike A** SQLCipher feasibility on Fedora + Node/TS (encrypted DB in raw-key mode;
+  verify DB/WAL/journals/temp don't leak plaintext; packaging); **Spike B** KeePassXC
+  integration (CLI / Secret Service / KDBX library; request-without-storing; approval boundary).
 - [ ] **Productionize attach-don't-launch** into `src/` — anti-detection lives only in spikes;
   `src/browser/modes.ts` has none. Spawn Chromium normally + `connectOverCDP`
   (`navigator.webdriver=false`). Pairs with `FEATHER_CHROMIUM_PATH`. `ui-playground` branch
@@ -35,13 +37,22 @@ graduated `rnd` (ADR-0006), cleaned stale branches, and reconciled the canonical
 ## Flags
 
 - Inbox lifecycle is live: promoted/superseded notes → `journal/raw/archive/` (NOT `_processed/`,
-  which was `rnd`'s competing convention, now dropped). Inbox holds 7 genuinely-open files.
+  which was `rnd`'s competing convention, now dropped). Inbox holds 6 genuinely-open files
+  (credentials-vault intake archived on promotion to ADR-0008).
+- ADR-0008 is the first **non-accepted** ADR in `docs/specs/` — the index marks it 🚧 CANDIDATE.
+  Don't let any doc imply KeePassXC/SQLCipher are selected or that the vault backend is locked.
 - `rnd` branch deleted (deliverable graduated as ADR-0006). `ui-playground` KEPT as reference.
 - ADR-0006 (interface neutrality) is now a standing design lens on `dev`.
 - Shell stack is **active R&D** — don't let any doc imply it's locked.
 - Anti-detection is spike-only; not in `src/` yet.
 
 ## Done
+
+### Credentials-vault ADR candidate ✅ (2026-06-04)
+- [x] Wrote `docs/specs/adr-0008-credentials-vault.md` (🚧 non-accepted): interface-first,
+  local-first, "not a password manager"; KeePassXC + SQLCipher as candidates (not selections);
+  leakage-first hard rule; 3-spike validation gate (C→A/B)
+- [x] Indexed in specs README with CANDIDATE marker; archived source intake to `journal/raw/archive/`
 
 ### Organize & housekeeping ✅ (2026-06-04, organize-housekeeping)
 - [x] Synced `dev` (was 2 behind origin); inbox→archive lifecycle + swept 12 files
