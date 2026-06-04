@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { FeatherSession, SessionNotRunningError } from "../../../src/sessions/session";
 
 function makeRunningSession(): FeatherSession {
@@ -63,5 +63,35 @@ describe("FeatherSession.toRecord", () => {
     const session = makeRunningSession();
     const record = session.toRecord();
     expect(record).not.toHaveProperty("pages");
+  });
+});
+
+import type { ChildProcess } from "child_process";
+
+describe("FeatherSession — child process tracking", () => {
+  it("getChildProcess returns null before setChildProcess is called", () => {
+    const session = new FeatherSession({
+      workspaceId: "ws",
+      profileKind: "persistent",
+      browserMode: "chromium-headed-cdp",
+      profilePath: "/tmp/p",
+      debugDir: "/tmp/d",
+      proxy: null,
+    });
+    expect(session.getChildProcess()).toBeNull();
+  });
+
+  it("getChildProcess returns the process set via setChildProcess", () => {
+    const session = new FeatherSession({
+      workspaceId: "ws",
+      profileKind: "persistent",
+      browserMode: "chromium-headed-cdp",
+      profilePath: "/tmp/p",
+      debugDir: "/tmp/d",
+      proxy: null,
+    });
+    const fakeProcess = { kill: vi.fn() } as unknown as ChildProcess;
+    session.setChildProcess(fakeProcess);
+    expect(session.getChildProcess()).toBe(fakeProcess);
   });
 });

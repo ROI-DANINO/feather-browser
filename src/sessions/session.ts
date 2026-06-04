@@ -1,5 +1,6 @@
 import type { BrowserContext, Page } from "playwright";
 import { randomUUID } from "crypto";
+import type { ChildProcess } from "child_process";
 import type {
   BrowserMode,
   ProfileKind,
@@ -51,6 +52,7 @@ export class FeatherSession implements ISession {
   private _context: BrowserContext | null;
   private _pages: Map<string, Page>;
   private _pageIds: Map<Page, string>;
+  private _childProcess: ChildProcess | null = null;
 
   constructor(opts: {
     workspaceId: string;
@@ -158,6 +160,14 @@ export class FeatherSession implements ISession {
 
   getState(): SessionState {
     return this._state;
+  }
+
+  setChildProcess(cp: ChildProcess): void {
+    this._childProcess = cp;
+  }
+
+  getChildProcess(): ChildProcess | null {
+    return this._childProcess;
   }
 
   toRecord(): Omit<SessionRecord, "pages"> {
