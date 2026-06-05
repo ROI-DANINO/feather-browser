@@ -1,6 +1,6 @@
 ---
 phase: phase-4-visual-desktop-shell
-sub_phase: pre-shell-1-6-all-done-master-merged-GUI-unblocked-next-is-shell-stack-joint-call
+sub_phase: phase-4a-core-open-source-readiness-active-shell-resequenced-to-4b
 adr: docs/specs/adr-0007-phase-4-shell-sequencing.md
 prior_phase: stabilization-linux-readiness-closed
 blocking: null

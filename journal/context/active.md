@@ -5,6 +5,17 @@ destination → `ROADMAP.md`; history → `journal/log.md` + `ops/sessions/`.
 
 ## Now
 
+**▶ ACTIVE FOCUS (Roi, 2026-06-05 18:01): Phase 4a — Feather Core open-source readiness.** Caught that
+the prior "build the shell" focus contradicts the positioning doc; pivoted. Promoted "Core first,
+Shell later" from messaging to the actual work order, for an imminent public/LinkedIn debut. Spec +
+plan landed (NOT yet executed): `docs/specs/2026-06-05-core-first-reorientation-design.md` (`09653f6`)
++ `docs/plans/2026-06-05-core-first-reorientation.md` (`82591ed`). 5 tasks: verified
+`examples/quickstart.sh` demo → artifact-forward README → ROADMAP Core-vs-Shell split → steering files
+→ verify. Shell-stack joint call **resequenced to Phase 4b** (not cancelled). Doc bugs the demo will
+fix: server does NOT bind `:3000` (port OS-assigned via `endpoint.json`); token file is
+`<runtime>/feather/run/control-token`, not `.feather/token`. **▶ NEXT = fresh chat → `/start` →
+execute the plan task-by-task (subagent-driven), starting Task 1.** Bridge: `context/next.md`.
+
 **🧹 Housekeeping (2026-06-05 17:14 STOP, commit `43933fc`):** research inbox **fully processed →
 empty** (positioning → `docs/public-positioning.md`; composio → memory; branching → **git-worktree
 workflow now in AGENTS.md**; security-risks → absorbed). **New workflow rule:** unrelated workstreams
@@ -91,6 +102,10 @@ a blind run. Reasoning + procedure:
 manager by policy — see Flags (credentials-in-the-jar boundary) + `tasks.md`.
 
 ## Recommend next
+
+**▶ Phase 4a (Core open-source readiness) is the active line — execute the Core-first plan
+(`docs/plans/2026-06-05-core-first-reorientation.md`) before resuming the shell.** The pre-shell
+sequence below is DONE; the GUI it unblocked is now Phase 4b, behind 4a.
 
 **Pre-shell infrastructure sequence (locked 2026-06-04) — MUST precede any Visual Desktop Shell GUI:**
 1. ✅ **Storage-isolation fix — DONE** (XDG split shipped, pushed `dev`).

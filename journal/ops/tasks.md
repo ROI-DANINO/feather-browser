@@ -3,20 +3,27 @@
 Checklist only. Current state, recommendation, evidence, parked items → `journal/context/active.md`
 (owner). Phase map + exit criteria → `ROADMAP.md`.
 
-Active track: **Phase-4 GUI — shell-stack joint call** (Roi, 2026-06-05 stop). Pre-shell #1–6 all
-done; `dev`→`master` graduated (PR #1, `e39d167`); autonomous research run landed; **GUI is
-unblocked**. Inbox cleared + git-worktree workflow adopted (`AGENTS.md`). Next = decide the shell
-stack and start the GUI.
+Active track: **Phase 4a — Feather Core open-source readiness** (Roi, 2026-06-05). The
+"Core first, Shell later" positioning is now the work order: make Core legible + runnable for
+a stranger before resuming the shell. Spec `docs/specs/2026-06-05-core-first-reorientation-design.md`;
+plan `docs/plans/2026-06-05-core-first-reorientation.md`.
 
-## Next — Phase-4 GUI: shell-stack joint call (immediate)
-- [ ] **Decide the shell stack (joint call).** Review **ADR-0009** (recommends GTK4-native + Casilda
-  Wayland-compositor widget + headed-Chromium two-window stopgap; Tauri stays a genuine trade).
-  **Gate the pick on a Casilda+Chromium latency/input spike on this box.**
-- [ ] **Start the Phase-4 GUI** from `research/2026-06-05-phase4-gui-architecture-sketch.md` once the
-  stack is chosen. If splitting from other work, use a **worktree per workstream** (AGENTS.md rule).
-- [ ] (Open, not this focus) **Cookie-isolation for the real `primary`** — measure DBSC binding
-  **read-only first**, never blind-clone. JOINT CALL.
-- [ ] (Open, not this focus) **Vault/behavioral storage backend** — unfreeze ADR-0008 when ready.
+## Next — Phase 4a: Core open-source readiness (immediate)
+- [ ] **Runnable public demo** — `examples/quickstart.sh` runs the full session loop green
+  against a live server (the verification gate; audits the docs).
+- [ ] **Artifact-forward README** — lead with what Feather is / who it's for / see it work /
+  honest limits; corrected port + token-file facts; internal status demoted to a linked
+  "built in the open" section.
+- [ ] **ROADMAP Core-vs-Shell split** + Phase 4a→4b sequencing.
+
+## Next — Phase 4b: Visual Desktop Shell (after 4a)
+- [ ] **Shell-stack joint call** — review ADR-0009 (GTK4-native + Casilda + headed-Chromium
+  stopgap; Tauri a genuine trade); gate on a Casilda+Chromium latency/input spike; then start
+  the GUI from `research/2026-06-05-phase4-gui-architecture-sketch.md`. (Resequenced behind 4a;
+  unchanged in substance.)
+- [ ] (Open, not focus) **Cookie-isolation for the real `primary`** — measure DBSC binding
+  read-only first, never blind-clone. JOINT CALL.
+- [ ] (Open, not focus) **Vault/behavioral storage backend** — unfreeze ADR-0008 when ready.
 - [ ] (Minor, Roi) **sudo Xvfb install** → finish the 3-way anti-detection WebGL table.
 
 ## Done — master merge-readiness (graduated 2026-06-04)
