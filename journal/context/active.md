@@ -131,8 +131,10 @@ visually but are text-invisible → policy, not OCR. Design:
   hard deadline = first agent action. Hardening task in `tasks.md`; detail in ADR-0008 corollary.
 - Shell stack is **active R&D** — don't let any doc imply it's locked (ADR-0007).
 - Inbox lifecycle is live: promoted/superseded notes → `journal/raw/archive/` (NOT `_processed/`,
-  rnd's dropped convention). Inbox holds 2 genuinely-open files (branching-strategy gate +
-  browser-agent-security-risks); 3 promoted notes archived 2026-06-04.
+  rnd's dropped convention). **Inbox is now empty (README only)** — all 4 remaining notes processed
+  2026-06-05: positioning → `docs/public-positioning.md`; composio → memory + ADR-0006; branching
+  → worktree workflow in `AGENTS.md`; security-risks → already absorbed (ADR-0005/0008 + Parked list).
+  (3 earlier notes archived 2026-06-04.)
 - `rnd` branch deleted (ADR-0006 graduated; now a standing design lens on `dev`). `ui-playground`
   KEPT as stealth/attach-don't-launch reference.
 - **`.remember` plugin DISABLED + CLEANED for this project** (2026-06-04) → journal is the **sole**

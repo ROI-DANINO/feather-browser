@@ -44,13 +44,36 @@ Do not reopen earlier phases unless there is a critical correctness issue.
 
 ```
 master  ← stable source of truth, never broken
-  └─ dev  ← all Phase 3 work, bug fixes, new features
-       └─ ui-playground  ← headed browser sandbox, never merges to master directly
+  └─ dev  ← trunk; everything merges back here
+       ├─ <workstream branches>  ← one per unrelated piece of work, each in its own worktree
+       └─ ui-playground          ← headed browser sandbox, never merges to master directly
 ```
 
 - Target `dev` for all work. Never commit directly to `master`.
 - AI-generated branches merge into `dev` for human review before graduating to `master`.
 - `ui-playground` is a one-way sandbox. Experiments that graduate are cherry-picked to `dev` — not merged directly.
+
+### Parallel workstreams via git worktrees
+
+When two or more **unrelated** pieces of work are in flight (e.g. the Phase-4 GUI, a
+cookie-isolation spike, the vault backend), give each its own **branch in its own git
+worktree** — a separate folder checked out to that branch. This lets a **separate chat /
+Claude session drive each one** while reading only that workstream's files, which keeps each
+session's context small and cheap and stops unrelated work from colliding.
+
+Rules:
+
+- Branch off `dev`, named for the workstream (e.g. `shell-gui`, `spike-cookie-primary`,
+  `vault-backend`). Keep branches short-lived and merge back to `dev` when green.
+- One worktree = one workstream = one session. Don't mix unrelated work in a worktree.
+- Create a worktree only when you actually start that workstream (don't pre-create idle
+  desks). A fresh chat resuming a workstream should set up / re-enter its worktree first.
+- Anything touching core session/profile/security stays short-lived and heavily reviewed —
+  do not let it drift in a long-lived worktree (see the domain-risk note in
+  `journal/raw/archive/2026-06-03-branching-strategy-domain-research-intake.md`).
+- `dev` → `master` graduation is unchanged (stable-milestone only; human call).
+- Native worktree tooling and the `using-git-worktrees` skill are available; prefer them
+  over manual `git worktree` plumbing.
 
 ## Required Startup Order
 
