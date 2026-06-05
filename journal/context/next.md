@@ -1,6 +1,30 @@
 # Next — Context Bridge
 
 ---
+## 2026-06-05 15:55 — /next bridge after the autonomous run (ready for fresh session)
+
+### Done
+- Autonomous research run fully executed + closed out (detail in the section just below + the full
+  record `ops/sessions/autonomous-research-run-20260605.md`). All 4 workstreams landed; CI green.
+- Everything committed + pushed: `dev` == `origin/dev` (`eab8246`), tree clean.
+
+### Unfinished / open threads
+- **No code unfinished** — every workstream reached a green, committed end-state.
+- Three **joint-call decisions** are intentionally NOT made (need Roi): shell-stack final pick
+  (ADR-0009 recommends GTK4-native + Casilda; gate on a Casilda+Chromium spike) → then start the
+  Phase-4 GUI; cookie-isolation for the real `primary` (measure DBSC read-only FIRST, never blind-clone);
+  vault/behavioral storage backend (ADR-0008 frozen).
+- One **sudo** item for Roi: install Xvfb to finish the 3-way anti-detection WebGL comparison.
+
+### Decisions
+- Roi approved the full cookie-isolation clone test on scratch; primary deliberately never touched.
+
+### Next action
+**Fresh session → `/start`, then open the joint-call session: review ADR-0009 and decide the shell
+stack (run the Casilda+Chromium latency spike to gate it), then begin the Phase-4 GUI** from
+`research/2026-06-05-phase4-gui-architecture-sketch.md`.
+
+---
 ## 2026-06-05 — Autonomous research run COMPLETE (all 4 workstreams, CI green)
 
 ### Done (13 commits, `dev` 877d02a..2bbddca; full record: `ops/sessions/autonomous-research-run-20260605.md`)
