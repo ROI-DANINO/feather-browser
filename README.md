@@ -43,7 +43,7 @@ printed on the `Endpoint:` / `Token file:` lines — the demo reads them automat
 - Launch and control isolated Chromium sessions over a local HTTP API
 - Persistent **and** disposable profiles, with profile locks to prevent collisions
 - Page snapshots, structured (CSS-recipe) extraction, screenshots
-- On-demand debug bundles (trace, console, network, screenshots) + a read-only event stream
+- On-demand debug bundles (trace, console, network) + a read-only event stream
 - Structured JSONL logs with automatic credential redaction
 - Per-session proxy configuration; resource measurement
 - Transport-separated handlers, so the same core can later expose MCP/other protocols
