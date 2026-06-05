@@ -49,7 +49,7 @@ api() {
 field() {
   node -e '
     let s=""; process.stdin.on("data",d=>s+=d).on("end",()=>{
-      const o=JSON.parse(s);
+      let o; try{ o=JSON.parse(s); }catch(e){ console.error("  unexpected (non-JSON) response from server"); process.exit(1); }
       if(!o.ok){ console.error("  API error:", JSON.stringify(o.error)); process.exit(1); }
       let v=o.data; for(const k of process.argv[1].split(".").filter(Boolean)) v=v==null?v:v[k];
       process.stdout.write(v==null?"":String(v));
@@ -57,7 +57,12 @@ field() {
 }
 
 echo "1/8  health"
-curl -s "$BASE_URL/health" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{if(!JSON.parse(s).ok){console.error("  health not ok");process.exit(1)}console.log("     ok")})'
+curl -s "$BASE_URL/health" | node -e '
+  let s=""; process.stdin.on("data",d=>s+=d).on("end",()=>{
+    let o; try{ o=JSON.parse(s); }catch(e){ console.error("  health: unexpected response (is Feather running?)"); process.exit(1); }
+    if(!o.ok){ console.error("  health not ok"); process.exit(1); }
+    console.log("     ok");
+  });'
 
 echo "2/8  launch disposable session"
 RESP="$(api POST /v1/sessions '{"profile":{"kind":"disposable"},"viewport":{"width":1280,"height":800}}')"
