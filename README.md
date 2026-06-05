@@ -80,8 +80,9 @@ npm run test:measurement   # resource measurement scenarios
 
 ## Status — built in the open
 
-Phases 0–3 complete; the core is stable and merged to `master`. Current focus is **Feather
-Core open-source readiness** (Phase 4a) ahead of the visual desktop shell (Phase 4b) — see
-[`ROADMAP.md`](ROADMAP.md). This project is built in the open: the full design history,
-decisions, and session-by-session log live under [`journal/`](journal/) and
-[`docs/specs/`](docs/specs/) for anyone who likes to read how it's made.
+Phases 0–3 are complete. The project is currently developed openly on the default `dev`
+branch. Current focus is **Feather Core open-source readiness** (Phase 4a) ahead of the
+visual desktop shell (Phase 4b) — see [`ROADMAP.md`](ROADMAP.md). This project is built in
+the open: the full design history, decisions, and session-by-session log live under
+[`journal/`](journal/) and [`docs/specs/`](docs/specs/) for anyone who likes to read how
+it's made.
