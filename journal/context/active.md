@@ -5,16 +5,22 @@ destination → `ROADMAP.md`; history → `journal/log.md` + `ops/sessions/`.
 
 ## Now
 
-**▶ ACTIVE FOCUS (Roi, 2026-06-05 18:01): Phase 4a — Feather Core open-source readiness.** Caught that
-the prior "build the shell" focus contradicts the positioning doc; pivoted. Promoted "Core first,
-Shell later" from messaging to the actual work order, for an imminent public/LinkedIn debut. Spec +
-plan landed (NOT yet executed): `docs/specs/2026-06-05-core-first-reorientation-design.md` (`09653f6`)
-+ `docs/plans/2026-06-05-core-first-reorientation.md` (`82591ed`). 5 tasks: verified
-`examples/quickstart.sh` demo → artifact-forward README → ROADMAP Core-vs-Shell split → steering files
-→ verify. Shell-stack joint call **resequenced to Phase 4b** (not cancelled). Doc bugs the demo will
-fix: server does NOT bind `:3000` (port OS-assigned via `endpoint.json`); token file is
-`<runtime>/feather/run/control-token`, not `.feather/token`. **▶ NEXT = fresh chat → `/start` →
-execute the plan task-by-task (subagent-driven), starting Task 1.** Bridge: `context/next.md`.
+**✅ PHASE 4a SHIPPED — Feather Core is publicly runnable & LIVE on the default branch (2026-06-05 stop).**
+Executed `docs/plans/2026-06-05-core-first-reorientation.md` end-to-end via subagent-driven-development
+(7 commits `8d42aab`..`16f5ab7`; pushed `387d601..16f5ab7`). GitHub default branch = `dev`, so the new
+public README + demo are **live now** — no master merge needed for the debut. Shipped: ① verified
+`examples/quickstart.sh` demo (full session loop ran green, 8/8 `state=closed`) + `examples/README.md`;
+② artifact-forward `README.md` rewrite (fixed the `:3000` + `.feather/token` doc bugs; dropped an
+unimplemented "screenshots" claim); ③ ROADMAP Core-vs-Shell split + Phase 4a/4b; ④ steering files →
+4a; ⑤ final gate (**184 unit pass, tsc 0, demo re-verified green**). No `src/` feature changes — docs
++ one bash demo. Reviews double-gated every task (spec then quality); final holistic review = READY TO
+SHIP, all 5 acceptance criteria MET. Blog `0009-the-demo-that-fact-checked-me.md` written. Session
+record: `ops/sessions/core-first-execution-20260605-1853.md`.
+
+**▶ NEXT (Roi's call this stop): merge `dev`→`master`** — milestone graduation, gated on "dev is
+stable" (**it is: verified green this session** — 184u + tsc 0 + demo green, tree clean, `dev` pushed).
+Like PR #1, the merge is Roi's milestone call. **Then, in a SEPARATE session: LinkedIn debut polish**
+(optional demo GIF/asciinema; actually post). Phase 4b (shell-stack joint call) follows after.
 
 **🧹 Housekeeping (2026-06-05 17:14 STOP, commit `43933fc`):** research inbox **fully processed →
 empty** (positioning → `docs/public-positioning.md`; composio → memory; branching → **git-worktree
@@ -22,11 +28,11 @@ workflow now in AGENTS.md**; security-risks → absorbed). **New workflow rule:*
 each get a branch in its own worktree, one chat per worktree (token/context efficiency); create
 as-needed, not pre-created. Session file: `ops/sessions/inbox-processing-worktree-workflow-20260605-1714.md`.
 
-**▶ CHOSEN NEXT FOCUS (Roi, this stop): the shell-stack joint call** — review ADR-0009 (GTK4-native +
-Casilda rec), run a **Casilda+Chromium latency/input spike** on this box to gate the pick, then begin
-the Phase-4 GUI from `research/2026-06-05-phase4-gui-architecture-sketch.md`. The other two joint calls
-(cookie-isolation for `primary`; vault backend) stay open but are not this session's focus. Substantive
-state below is unchanged — pre-shell #1–6 all done; GUI is unblocked.
+**(History — superseded by the Core-first pivot, then by 4a shipping above.)** The shell-stack joint
+call (review ADR-0009 GTK4+Casilda; run a Casilda+Chromium latency/input spike; then begin the Phase-4
+GUI from `research/2026-06-05-phase4-gui-architecture-sketch.md`) is now **Phase 4b**, sequenced after
+the master-merge + debut. The other two joint calls (cookie-isolation for `primary`; vault backend)
+stay open/parked. Substantive state below is unchanged — pre-shell #1–6 all done; GUI is unblocked.
 
 **🎯 AUTONOMOUS RESEARCH RUN COMPLETE (2026-06-05).** All 4 Ratchet workstreams landed on `dev`,
 CI green (13 commits, `877d02a..2bbddca`; full record → `ops/sessions/autonomous-research-run-20260605.md`).
@@ -103,9 +109,10 @@ manager by policy — see Flags (credentials-in-the-jar boundary) + `tasks.md`.
 
 ## Recommend next
 
-**▶ Phase 4a (Core open-source readiness) is the active line — execute the Core-first plan
-(`docs/plans/2026-06-05-core-first-reorientation.md`) before resuming the shell.** The pre-shell
-sequence below is DONE; the GUI it unblocked is now Phase 4b, behind 4a.
+**▶ Phase 4a (Core open-source readiness) is DONE & shipped to the public default branch (2026-06-05).**
+Next = **merge `dev`→`master`** (milestone graduation, Roi's call; dev verified stable this session) →
+then **LinkedIn debut polish** in a separate session → then **Phase 4b** (shell-stack joint call + GUI).
+The pre-shell sequence below is DONE; the GUI it unblocked is Phase 4b.
 
 **Pre-shell infrastructure sequence (locked 2026-06-04) — MUST precede any Visual Desktop Shell GUI:**
 1. ✅ **Storage-isolation fix — DONE** (XDG split shipped, pushed `dev`).

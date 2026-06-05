@@ -1,6 +1,6 @@
 ---
 phase: phase-4-visual-desktop-shell
-sub_phase: phase-4a-core-open-source-readiness-active-shell-resequenced-to-4b
+sub_phase: phase-4a-core-readiness-DONE-shipped-public-dev-next-master-merge-then-debut-then-4b-shell
 adr: docs/specs/adr-0007-phase-4-shell-sequencing.md
 prior_phase: stabilization-linux-readiness-closed
 blocking: null
