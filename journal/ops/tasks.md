@@ -29,43 +29,41 @@ only #6 (prove end-to-end Cookie Mine loop) remains before the GUI.
 3. [x] **`FEATHER_CHROMIUM_PATH` — DONE** — chromium installed (`148.0.7778.215`, Fedora updates); `resolveChromiumExecutable()` in `config.ts` + wired into `spawnAndConnect()` via `manager.launch`. Guarded real-Chromium probe proves the system build runs (CDP version `.215`, not bundled `.96`) with `webdriver===false`. 175u+37i green; pushed `dev` `6e4f099`.
 4. [x] **Warmed persistent Google session on disk — DONE (verified end-to-end 2026-06-04).** `npm run warm-session` (`src/tools/warm-session.ts`) launches the `primary` persistent workspace in stealth `chromium-headed-cdp` against system Chromium 148 (`/usr/bin/chromium-browser`); Roi logged into real Google (passkey/Face-ID new-device flow — **no bot-block/CAPTCHA**), Ctrl-C finalized, **relaunch landed already logged in** (no password prompt). Both acceptance halves met: persistence + un-flagged. Agent-blind preserved (Roi typed creds; Feather never saw them). **Sequencing chosen: warm first, cookie-isolation spike as non-blocking follow-on** (safe — no agent acts in Phase 4). **NEW DATA for the spike:** the login was device-bound (passkey), so DBSC is live → copy-to-isolated-context is the real open question.
 5. [x] **Observability sprint — DONE** (out of order; didn't depend on #4) — `DebugCapture` wired: instantiate+`start()` in `launch()` when `input.debug` set (was accepted-but-ignored), `finalize()` before `context.close()` in `close()` (best-effort; `debug.capture.finalize.failed` event). Real-Chromium e2e proves a valid `trace.zip` (PK bytes) + `network-summary.jsonl` land in the debug dir. Closes the S2-deferred "Trace e2e + DebugCapture wiring" gap. Pushed `dev` `46c946e`.
-6. [ ] **Prove end-to-end Cookie Mine loop on the headed-Chromium stopgap** (ADR-0007 gate) — *then* design the Visual Desktop Shell GUI.
+6. [x] **Prove end-to-end Cookie Mine loop on the headed-Chromium stopgap (ADR-0007 gate) — DONE
+   (2026-06-05).** Agent-style Feather session on the human-warmed `scratch` context, no login,
+   read account email + loaded real Gmail inbox (132 msgs), `webdriver===false`. LOOP CLOSED →
+   **GUI design can begin.** Evidence: `research/2026-06-05-cookie-mine-loop-demo.md`.
 
 ## Open — Cookie-Mine hardening (before any agent action; Phase 4→5 gate)
-- [ ] **`warm-session` must disable Chromium's built-in password manager by policy** — keep raw
-  creds out of the shared jar (`credentials_enable_service=false` / `PasswordManagerEnabled` policy
-  on the `primary` profile). Surfaced 2026-06-04: Chrome offered to save passwords into the warm
-  profile (several saved then cleared via `chrome://password-manager`; the disable toggle wasn't
-  found in-UI, hence enforce by policy). Creds belong in Proton Pass now / Feather vault later,
-  separate from the profile agents piggyback on. Dormant in Phase 4; **must land before the first
-  agent action.** Detail: ADR-0008 → "Real-world corollary".
-- [ ] **Cookie-isolation spike** (next; design safely) — copy the warm Google cookies into a fresh
-  isolated context; verify auth survives **and** stays un-flagged. ⚠️ Risk: two simultaneous live
-  sessions from cloned cookies can look like session theft → could flag/invalidate the freshly
-  warmed `primary` session. Design the spike to protect it (read-only first / snapshot / throwaway)
-  rather than firing blindly. NEW signal: the login is **device-bound (passkey/Face-ID)** → DBSC is
-  live, so copy-to-isolated is the real open question. Procedure:
-  `research/2026-06-04-cookie-jar-isolation-and-phase5-sequencing.md` → "Queued action".
+- [x] **`warm-session` disables Chromium's built-in password manager by policy — DONE
+  (2026-06-05).** `src/browser/profile-policy.ts` `disablePasswordManager()` merges
+  `credentials_enable_service=false` + `profile.password_manager_enabled=false` into the profile's
+  `Default/Preferences` (merge-not-clobber, no sudo) before `warm-session` launch. Verified on
+  `scratch`: both keys persisted through a full Chromium launch+finalize, profile name preserved,
+  42 google cookies survived. Full "no save-password bubble" confirmation deferred to the next real
+  login. Creds belong in a vault, separate from the jar agents piggyback on.
+- [x] **Cookie-isolation spike — DONE on `scratch` (2026-06-05).** Measured scratch is **NOT DBSC
+  device-bound** (full auth+rotation cookies, no on-disk bound-session store). Cloned cookies into a
+  fresh isolated context → **auth survived**, original session **not invalidated** (no session
+  theft). So copy-to-isolated is viable+safe for non-device-bound sessions. Findings:
+  `research/2026-06-05-cookie-isolation-spike-findings.md`. ⚠️ **Does NOT transfer to `primary`**
+  (passkey-warmed, possibly DBSC) — JOINT CALL: measure `primary`'s binding read-only FIRST, never a
+  blind clone on the real jar.
 
 ## Open — tooling / tech-debt (post-merge; non-blocking)
-- [ ] **Make `--ozone-platform` configurable in `spawnAndConnect` (CI/X11 portability).**
-  `src/browser/modes.ts:44` hardcodes `--ozone-platform=wayland` + spawns headed, so the CDP-attach
-  path only runs on a Wayland desktop session — it crashes on X11/headless/CI ("Chromium exited
-  unexpectedly with code null" / "did not expose CDP within 10000ms"). **Surfaced by the new CI on
-  its first run (2026-06-04)** — local runs hid it because the dev box is Wayland. Interim: the 2
-  headed integration tests (`attach-cdp`, `system-chromium`) are **env-gated on `WAYLAND_DISPLAY`**
-  (skip on CI) so CI is green (35 passed + 2 skipped). Real fix: drive ozone-platform from
-  env/auto-detect (e.g. unset → Chromium default, or `FEATHER_OZONE_PLATFORM`), optionally support a
-  headless spawn for CI, then **un-gate the 2 tests** so the anti-detection path is CI-verified too.
-- [ ] **Bump `vitest` `^2` → `^4` (breaking) + clear the dev-tooling audit.** We declared `vitest:
-  ^2.0.0` at Phase-2 scaffold (`4fcfa5d`); the caret holds the major at 2, so we never crossed into
-  v3/v4 (latest `4.1.8`). The 5 `npm audit` findings (4 moderate, 1 **critical**) live entirely in
-  the `esbuild ← vite ← vitest` **dev** chain — the only fix is the `vitest 2→4` jump (two majors).
-  **Accepted for now, NOT a merge blocker:** prod-tree audit (`npm audit --omit=dev`) = **0**; the
-  critical esbuild advisory is a *dev-server* issue Feather never uses; the chain never ships. Deferred
-  per Roi's call ("merge first, deal with breaking stuff after"). When doing the bump: expect vitest
-  3+4 config/API breaking changes across the three `vitest.*.config.ts`; verify all suites green; CI
-  (now in place) will validate it. Was surfaced 2026-06-04 during master merge-readiness.
+- [x] **Make `--ozone-platform` configurable + un-gate the 2 headed tests — DONE (2026-06-05).**
+  `resolveSpawnExtraArgs()` in `src/browser/modes.ts` drives `--ozone-platform` / `--headless=new` /
+  `--no-sandbox` from env (`FEATHER_OZONE_PLATFORM`, `WAYLAND_DISPLAY`, `FEATHER_SPAWN_HEADLESS`,
+  `FEATHER_SPAWN_NO_SANDBOX`); the hardcoded wayland arg is gone. `attach-cdp` now runs on CI by
+  attaching over CDP to `--headless=new` + `--no-sandbox` (the anti-detection gate is CI-verified).
+  `system-chromium` is **skipped on CI** (`process.env.CI`) because ubuntu's `/usr/bin/chromium` is a
+  snap that doesn't expose CDP under headless+no-sandbox (finding) — it runs every local run on the
+  real binary. **CI green: 36 passed + 1 skipped; local Wayland 37.** TDD: `modes-ozone.test.ts` (7).
+- [x] **Bump `vitest` `^2` → `^4` + clear the dev-tooling audit — DONE (2026-06-05).** Jumped to
+  `4.1.8`. The three `vitest.*.config.ts` needed **no** changes (vanilla). One v4 breaking change: a
+  `vi.fn()` mock used with `new` must be `function`/`class` not arrow (`debug-bundle.test.ts`
+  DebugBundle mock) — fixed. All suites green (184u+37i+4m, typecheck 0); **`npm audit` now 0** (full
+  and `--omit=dev`) — the entire `esbuild←vite←vitest` dev-chain advisory set is cleared. CI green.
 
 ## Open — vault track (frozen; architecture stands)
 - [ ] **Spike A — SQLCipher feasibility** (Fedora + Node/TS; raw-key DB; verify DB/WAL/journals/temp don't leak; packaging). Sudo-gated install → Roi. **Frozen.**

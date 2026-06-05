@@ -5,26 +5,31 @@ destination → `ROADMAP.md`; history → `journal/log.md` + `ops/sessions/`.
 
 ## Now
 
-**🎯 MILESTONE: `dev` → `master` GRADUATED (2026-06-04 21:01 UTC).** PR #1 **MERGED** (merge commit
-`e39d167`, by ROI-DANINO). `master` now carries the full stable set: Phase 3 + S1–S3 stabilization +
-pre-shell infrastructure #1–5 + CI (GitHub Actions, green). Merge gated on green CI (175 unit + 35
-integration + 2 Wayland-gated skips); prod-dep audit 0; tree clean. Merged as a **merge commit**
-(history preserved, not squashed). `dev` stays the working branch (master is now 1 merge-commit ahead;
-dev fully contained). **Next focus = the post-merge tech-debt queue (ozone-platform configurable →
-un-gate the 2 tests; vitest 2→4), then pre-shell #6 (prove e2e Cookie Mine loop) → Visual Desktop
-Shell GUI.** Details below + `context/next.md`.
+**🎯 AUTONOMOUS RESEARCH RUN COMPLETE (2026-06-05).** All 4 Ratchet workstreams landed on `dev`,
+CI green (13 commits, `877d02a..2bbddca`; full record → `ops/sessions/autonomous-research-run-20260605.md`).
+**Pre-shell #6 Cookie Mine loop is CLOSED → ADR-0007 gate cleared → the Visual Desktop Shell GUI is now
+unblocked.** Net: ① ozone-platform configurable + the 2 headed tests un-gated (CI **36 passed + 1
+skipped**, local Wayland 37); ② live `scratch` spikes (cookie-isolation, #6 loop, anti-detection); ③
+warm-session password-manager hardening + vitest ^2→^4 (**audit now 0**); ④ shell-stack ADR-0009 +
+GUI sketch + behavioral-fidelity design (parallel subagents). **`primary` was NEVER touched** (the
+optional read-only closeout check was deliberately skipped given Roi's nervousness — zero primary
+contact). Verification (local): **184 unit + 37 integration + 4 measurement green, typecheck 0, audit 0**.
 
-**▶ NOW (2026-06-05 01:29): `scratch` WARMED + persistence-verified; run DEFERRED to a fresh session.**
-Spec + plan ready (`60d361a`/`4a7ea10`): one Ratchet-ordered, **research-driven** pass (tech-debt queue +
-pre-shell #6 + Phase-5 research) run LIVE against a **burnable `scratch` Google account** (real `primary`
-never touched). **`scratch` is now warmed** (`FEATHER_WARM_WORKSPACE=scratch npm run warm-session`;
-re-launch lands already signed in; throwaway confirmed, not primary) — but **password-only, NOT
-passkey/device-bound**: this Fedora box **can't create a local passkey** (Chromium has no platform
-authenticator), and the prior "passkey⇒DBSC" assumption is **unverified** (separate mechanisms). So the
-cookie-isolation spike's FIRST job = **MEASURE** whether scratch's session is DBSC-bound, not assume.
-**Next session = paste the kickoff prompt** (in `context/next.md`) to execute the plan via
-`executing-plans`. Joint-call decisions held for Roi: shell-stack pick · cookie-iso-for-`primary` · vault
-backend.
+**▶ NEXT = a joint session on the three teed-up calls** (executor must NOT decide alone):
+1. **Shell-stack final pick** — ADR-0009 recommends **GTK4-native (Rust) + Casilda Wayland-compositor
+   widget + headed-Chromium two-window stopgap**; Tauri stays a genuine trade. Gate acceptance on a
+   **Casilda+Chromium latency/input spike** on this box. Then **start the Phase-4 GUI** (sketch ready:
+   `research/2026-06-05-phase4-gui-architecture-sketch.md`).
+2. **Cookie-isolation for the real `primary`** — proven safe on a *non-device-bound* session (scratch);
+   does NOT transfer. **Measure `primary`'s DBSC binding read-only FIRST; never a blind clone.**
+3. **Behavioral-profile / vault storage backend** — design ready (`docs/specs/2026-06-05-behavioral-fidelity-design.md`);
+   backend ties to the frozen ADR-0008 vault. Recording is a you-in-the-loop wall.
+
+Smaller open follow-up: the **Xvfb WebGL question** (does Xvfb fall back to SwiftShader?) needs a **sudo
+Xvfb install → Roi** to finish the 3-way anti-detection table.
+
+**(Prior milestone, still true)** `dev` → `master` graduated 2026-06-04 (PR #1 merged, `e39d167`); `dev`
+remains the working branch and is now well ahead again with this run's work.
 
 **Pre-shell #4 (warmed Google session) is DONE and verified end-to-end (2026-06-04 23:07).**
 `npm run warm-session` (`src/tools/warm-session.ts`) launches the `primary` persistent workspace in

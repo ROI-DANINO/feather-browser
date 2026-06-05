@@ -1,6 +1,36 @@
 # Next — Context Bridge
 
 ---
+## 2026-06-05 — Autonomous research run COMPLETE (all 4 workstreams, CI green)
+
+### Done (13 commits, `dev` 877d02a..2bbddca; full record: `ops/sessions/autonomous-research-run-20260605.md`)
+- **① ozone-platform configurable + un-gated the 2 headed tests.** `resolveSpawnExtraArgs()` drives
+  ozone/headless/no-sandbox from env. CI took 3 red iterations that each caught something real (stale
+  wayland assertion; no-sandbox needed in CI containers; ubuntu snap-chromium can't expose CDP →
+  `system-chromium` skipped on CI). **CI green: 36 passed + 1 skipped; local Wayland 37.**
+- **② live `scratch` spikes (roionly9, throwaway — primary never touched):**
+  - cookie-isolation: scratch is **NOT DBSC-bound**; clone **survived** + **no session-theft** →
+    `research/2026-06-05-cookie-isolation-spike-findings.md`.
+  - **pre-shell #6 Cookie Mine loop CLOSED** (ADR-0007 gate) → `…cookie-mine-loop-demo.md`. **GUI unblocked.**
+  - anti-detection: **headless is trivially detectable** (HeadlessChrome UA + SwiftShader) → headed/Xvfb
+    only → `…anti-detection-self-test.md`.
+- **③** warm-session password-manager-disable shipped + verified on scratch; **vitest ^2→^4 (audit 0)**.
+- **④ (parallel subagents):** ADR-0009 shell-stack (**GTK4-native + Casilda** rec; joint call),
+  `…phase4-gui-architecture-sketch.md`, `docs/specs/2026-06-05-behavioral-fidelity-design.md`.
+
+### Decisions (Roi, this run)
+- **Cookie-isolation full clone test APPROVED** despite the shared-iPhone worry (accounts are separate
+  security domains; risk to primary very low, not provably zero). Sequenced safely anyway.
+- **Primary deliberately NOT touched** — skipped even the optional read-only closeout check.
+
+### Next action (joint session — do NOT decide alone)
+1. **Shell stack:** review ADR-0009; run a **Casilda+Chromium latency/input spike** to gate the pick;
+   then **start the Phase-4 GUI** from the sketch.
+2. **Cookie-iso for `primary`:** measure primary's DBSC binding **read-only first**; never blind-clone.
+3. **Vault/behavioral storage backend:** unfreeze ADR-0008 decision when ready.
+- Minor: **sudo Xvfb install (Roi)** to finish the 3-way anti-detection WebGL comparison.
+
+---
 ## 2026-06-05 01:29 — scratch warmed (password-only); run deferred to next session
 
 ### Done
