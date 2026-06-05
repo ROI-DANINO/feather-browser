@@ -5,6 +5,18 @@ destination → `ROADMAP.md`; history → `journal/log.md` + `ops/sessions/`.
 
 ## Now
 
+**🧹 Housekeeping (2026-06-05 17:14 STOP, commit `43933fc`):** research inbox **fully processed →
+empty** (positioning → `docs/public-positioning.md`; composio → memory; branching → **git-worktree
+workflow now in AGENTS.md**; security-risks → absorbed). **New workflow rule:** unrelated workstreams
+each get a branch in its own worktree, one chat per worktree (token/context efficiency); create
+as-needed, not pre-created. Session file: `ops/sessions/inbox-processing-worktree-workflow-20260605-1714.md`.
+
+**▶ CHOSEN NEXT FOCUS (Roi, this stop): the shell-stack joint call** — review ADR-0009 (GTK4-native +
+Casilda rec), run a **Casilda+Chromium latency/input spike** on this box to gate the pick, then begin
+the Phase-4 GUI from `research/2026-06-05-phase4-gui-architecture-sketch.md`. The other two joint calls
+(cookie-isolation for `primary`; vault backend) stay open but are not this session's focus. Substantive
+state below is unchanged — pre-shell #1–6 all done; GUI is unblocked.
+
 **🎯 AUTONOMOUS RESEARCH RUN COMPLETE (2026-06-05).** All 4 Ratchet workstreams landed on `dev`,
 CI green (13 commits, `877d02a..2bbddca`; full record → `ops/sessions/autonomous-research-run-20260605.md`).
 **Pre-shell #6 Cookie Mine loop is CLOSED → ADR-0007 gate cleared → the Visual Desktop Shell GUI is now
