@@ -5,6 +5,17 @@ destination → `ROADMAP.md`; history → `journal/log.md` + `ops/sessions/`.
 
 ## Now
 
+**✅ HERO DEMO BUILT + VERIFIED WORKING LIVE (2026-06-06 18:33, `d1b5718`).** Roi: *"it works."* The
+ChatGPT→Gmail cross-site script is real: `scripts/demo/hero-chatgpt-gmail.ts` drives the warmed
+`primary` profile **headed** through ChatGPT (type `hello world` → send → `wait until:"stable"` on the
+**last** answer → read the reply) → Gmail (compose a **draft** to Anthropic with that reply, **stops
+before send**). Resilient fallback selectors (EN+HE Gmail labels), no screenshots/cookies in the repo,
+browser kept open on failure. ChatGPT is warmed into `primary` (now holds Google/Gmail + ChatGPT in one
+jar). Spec/plan `docs/specs|plans/2026-06-06-hero-demo-workflow*.md`. Gates: **212 unit (incl. 5 new
+demo-helper tests) + `tsc --noEmit` 0**; committed + pushed (`origin/dev` in sync). ▶ **NEXT = the only
+step left: record the live run (screen-capture while it drives the window) → final README touch-ups →
+LinkedIn debut.** (Minor: recipient defaults to `support@anthropic.com`, overridable via `HERO_DEMO_TO`.)
+
 **✅ HERO DEMO GATE CLOSED — Core input commands shipped on `dev` (2026-06-06 17:33).** Executed
 `docs/plans/2026-06-06-core-input-commands.md` end-to-end (10 implementation commits
 `cae8ef7`..`684396d`): `click`, `type` (`fill`/`sequential`), `press`, and `wait` are now exposed
