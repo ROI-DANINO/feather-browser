@@ -5,16 +5,14 @@ destination → `ROADMAP.md`; history → `journal/log.md` + `ops/sessions/`.
 
 ## Now
 
-**▶ HERO DEMO GATE — SPEC + PLAN READY, execution not started (2026-06-06 16:58 /next).** Brainstormed
-+ specced + planned the gating Core capability: **input commands `click`/`type`/`press` + a `wait`
-command** (Feather observe-only → **act**). Spec `docs/specs/2026-06-06-core-input-commands-design.md`
-(`a6f3792`, hardened `07b7482`); plan `docs/plans/2026-06-06-core-input-commands.md` (`776cc8c`) — 10
-TDD tasks, full code, CI-friendly real-Chromium tests. **Verified vs Playwright 1.60.0**; hardening
-closed 4 demo-breaking gaps: positional `at:"last"` (ChatGPT reply is the *last* sibling, not first),
-`wait until:"stable"` non-empty guard (don't settle on ChatGPT's attached-but-empty answer node),
-`type` `fill|sequential` (ProseMirror fallback), coded errors (`ELEMENT_NOT_FOUND`/
-`ELEMENT_NOT_ACTIONABLE`/`WAIT_TIMEOUT`). ▶ **NEXT = execute the plan from Task 1** — Roi picks
-subagent-driven (recommended) vs inline. Bridge: `journal/context/next.md`.
+**✅ HERO DEMO GATE CLOSED — Core input commands shipped on `dev` (2026-06-06 17:33).** Executed
+`docs/plans/2026-06-06-core-input-commands.md` end-to-end (10 implementation commits
+`cae8ef7`..`684396d`): `click`, `type` (`fill`/`sequential`), `press`, and `wait` are now exposed
+through the HTTP API with Target locators, `at:"first"|"last"|n`, streaming-safe `wait until:"stable"`,
+and coded errors (`ELEMENT_NOT_FOUND`/`ELEMENT_NOT_ACTIONABLE`/`WAIT_TIMEOUT`). Feather Core moved from
+observe-only → **act**. Fresh final gate: **207 unit pass, 43 integration pass, `tsc --noEmit` exit 0**.
+▶ **NEXT = warm a ChatGPT session** with the same agent-blind pattern as Google, then write/record the
+ChatGPT→Gmail hero demo script.
 
 **✅ PHASE 4a SHIPPED — Feather Core is publicly runnable & LIVE on the default branch (2026-06-05 stop).**
 Executed `docs/plans/2026-06-05-core-first-reorientation.md` end-to-end via subagent-driven-development
@@ -44,21 +42,17 @@ world" → send → wait for + extract GPT's reply → Gmail → start a **draft
 as the body (draft, NOT send). **This replaces "just a screenshot" as the LinkedIn debut centerpiece.**
 
 **⚠️ HONEST GATE (research-driven — verified this session, don't skip):**
-1. **Feather Core has NO input commands today.** Handlers = `close, debug-bundle, extract, launch,
-   navigate, open-tab, screenshot, snapshot, status`. Missing `click` / `type`(`fill`) / `press`.
-   **The demo requires building interaction commands in Core first** — Feather goes from observe-only
-   to **act**. Genuine Core feature step, not a demo script. (Playwright underneath supports it; the
-   gap is Feather's command surface + handlers + API contract.) Likely also need a **wait-for-stable**
-   primitive (ChatGPT streams its answer — must wait for it to finish before extracting).
+1. **Core interaction commands are now present on `dev`** (`click`/`type`/`press`/`wait`), but the
+   real hero flow still needs a warmed ChatGPT session and a site-specific demo script. Treat the
+   demo as a recorded workflow, not a generic agent runtime.
 2. **Both sites need login → Cookie Mine + headed stopgap.** `primary` already has a warmed Google
    session (Gmail ✓); **ChatGPT needs warming** (same agent-blind warm-session pattern — Roi types creds).
 3. **This is a SECOND demo, not a replacement for `examples/quickstart.sh`.** Quickstart stays the
    *stranger-runnable* public artifact (no accounts); the cross-site flow is the **recorded hero demo**
    (GIF/asciinema/video) for the LinkedIn post. Decide explicitly next session.
 
-Likely next-session shape (brainstorm/plan first — TDD, real-Chromium gate): build Core input + wait
-commands → warm a ChatGPT session → write the headed cross-site demo script → record for debut. Full
-prep: `ops/sessions/master-merge-and-hero-demo-vision-20260606-1620.md`.
+Likely next-session shape: warm a ChatGPT session → write the headed cross-site demo script → record
+for debut. Full prep: `ops/sessions/master-merge-and-hero-demo-vision-20260606-1620.md`.
 
 **Then Phase 4b** (shell-stack joint call + GUI). Housekeeping available anytime: archive the processed
 Anchor brief out of `journal/raw/_inbox/`; Anchor report §12's 5 open questions parked for Roi (none block).
@@ -159,13 +153,11 @@ manager by policy — see Flags (credentials-in-the-jar boundary) + `tasks.md`.
 
 ## Recommend next
 
-**▶ Phase 4a shipped (2026-06-05) AND graduated to `master` (2026-06-06, PR #2 `5e808cd`).** Next =
-build the **HERO DEMO** (ChatGPT→Gmail cross-site agentic flow). The gating Core work — input + wait
-commands — is now **specced + planned** (see "Now"); **▶ immediate next = execute
-`docs/plans/2026-06-06-core-input-commands.md` from Task 1** (Roi: subagent-driven vs inline). After
-the commands land: warm a ChatGPT session → write the cross-site demo script → record → **LinkedIn
-debut** → then **Phase 4b** (shell-stack joint call + GUI). The pre-shell sequence below is DONE; the
-GUI it unblocked is Phase 4b.
+**▶ Phase 4a shipped (2026-06-05) AND graduated to `master` (2026-06-06, PR #2 `5e808cd`).** The
+HERO DEMO's Core gate is now closed on `dev`: input + wait commands shipped and verified. **Immediate
+next = warm a ChatGPT session** (Roi types creds, agent-blind), then write the headed cross-site demo
+script → record → **LinkedIn debut** → then **Phase 4b** (shell-stack joint call + GUI). The pre-shell
+sequence below is DONE; the GUI it unblocked is Phase 4b.
 
 **Pre-shell infrastructure sequence (locked 2026-06-04) — MUST precede any Visual Desktop Shell GUI:**
 1. ✅ **Storage-isolation fix — DONE** (XDG split shipped, pushed `dev`).
