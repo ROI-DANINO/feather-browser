@@ -5,6 +5,17 @@ destination → `ROADMAP.md`; history → `journal/log.md` + `ops/sessions/`.
 
 ## Now
 
+**▶ HERO DEMO GATE — SPEC + PLAN READY, execution not started (2026-06-06 16:58 /next).** Brainstormed
++ specced + planned the gating Core capability: **input commands `click`/`type`/`press` + a `wait`
+command** (Feather observe-only → **act**). Spec `docs/specs/2026-06-06-core-input-commands-design.md`
+(`a6f3792`, hardened `07b7482`); plan `docs/plans/2026-06-06-core-input-commands.md` (`776cc8c`) — 10
+TDD tasks, full code, CI-friendly real-Chromium tests. **Verified vs Playwright 1.60.0**; hardening
+closed 4 demo-breaking gaps: positional `at:"last"` (ChatGPT reply is the *last* sibling, not first),
+`wait until:"stable"` non-empty guard (don't settle on ChatGPT's attached-but-empty answer node),
+`type` `fill|sequential` (ProseMirror fallback), coded errors (`ELEMENT_NOT_FOUND`/
+`ELEMENT_NOT_ACTIONABLE`/`WAIT_TIMEOUT`). ▶ **NEXT = execute the plan from Task 1** — Roi picks
+subagent-driven (recommended) vs inline. Bridge: `journal/context/next.md`.
+
 **✅ PHASE 4a SHIPPED — Feather Core is publicly runnable & LIVE on the default branch (2026-06-05 stop).**
 Executed `docs/plans/2026-06-05-core-first-reorientation.md` end-to-end via subagent-driven-development
 (7 commits `8d42aab`..`16f5ab7`; pushed `387d601..16f5ab7`). GitHub default branch = `dev`, so the new
@@ -149,8 +160,10 @@ manager by policy — see Flags (credentials-in-the-jar boundary) + `tasks.md`.
 ## Recommend next
 
 **▶ Phase 4a shipped (2026-06-05) AND graduated to `master` (2026-06-06, PR #2 `5e808cd`).** Next =
-build the **HERO DEMO** (ChatGPT→Gmail cross-site agentic flow — see "Now" ▶NEXT for the honest gate:
-**Feather has no input commands yet; building them is the gating Core work**) → record it → **LinkedIn
+build the **HERO DEMO** (ChatGPT→Gmail cross-site agentic flow). The gating Core work — input + wait
+commands — is now **specced + planned** (see "Now"); **▶ immediate next = execute
+`docs/plans/2026-06-06-core-input-commands.md` from Task 1** (Roi: subagent-driven vs inline). After
+the commands land: warm a ChatGPT session → write the cross-site demo script → record → **LinkedIn
 debut** → then **Phase 4b** (shell-stack joint call + GUI). The pre-shell sequence below is DONE; the
 GUI it unblocked is Phase 4b.
 

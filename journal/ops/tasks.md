@@ -14,12 +14,16 @@ wait for + extract GPT reply → Gmail → start a **draft** to Anthropic with t
 **Replaces "just a screenshot" as the LinkedIn debut centerpiece.** Full prep:
 `ops/sessions/master-merge-and-hero-demo-vision-20260606-1620.md`.
 
-- [ ] **Build Core input commands** — `click`, `type`/`fill`, `press`(Enter). **GATING:** Feather has
-  NONE today (handlers = close/debug-bundle/extract/launch/navigate/open-tab/screenshot/snapshot/status).
-  Moves Feather observe-only → **act**. Playwright supports it; gap = command surface + handlers + API
-  contract. TDD, real-Chromium gate.
-- [ ] **Build a wait-for-stable / wait-for primitive** — ChatGPT streams its answer; must wait for it to
-  finish before extracting (don't grab mid-stream).
+**📋 SPEC + PLAN READY (2026-06-06)** — the two input/wait tasks below are designed + verified vs
+Playwright 1.60.0, ready to execute (TDD, 10 tasks). Spec:
+`docs/specs/2026-06-06-core-input-commands-design.md`. Plan:
+`docs/plans/2026-06-06-core-input-commands.md`. ▶ Execution not started — Roi picks subagent-driven
+(recommended) vs inline.
+
+- [ ] **Build Core input commands** — `click`, `type`(fill/sequential), `press`(Enter). **GATING:**
+  Feather has NONE today. Moves observe-only → **act**. *Designed — see spec+plan above.*
+- [ ] **Build a wait-for-stable / wait-for primitive** — `wait` command, two flavours (element-state +
+  site-agnostic `until:"stable"` with non-empty guard for ChatGPT streaming). *Designed — see plan above.*
 - [ ] **Warm a ChatGPT session** — same agent-blind warm-session pattern as Google (Roi types creds).
   Gmail is already covered by the warmed `primary` Google session.
 - [ ] **Write the headed cross-site demo script** — `chromium-headed-cdp` stopgap, against warmed sessions.
