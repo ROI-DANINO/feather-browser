@@ -1,74 +1,88 @@
 # Feather Browser
 
-**https://github.com/ROI-DANINO/feather-browser**
+**Feather is a local Chromium runtime for AI agents.**
 
-A headless-first Chromium browser core for agentic automation, built around Playwright-managed sessions with a local HTTP control API.
+It gives agents (and you) controlled, real Chromium sessions over a small local HTTP API —
+persistent or disposable profiles, page snapshots, structured extraction, screenshots, and
+debug bundles. It is infrastructure for when a plain API isn't enough: sites with no useful
+API, visual state that matters, logins and cookies that must persist, or automation you need
+to reproduce and debug.
 
-## Status
+> Linux-first, developed on Fedora (Wayland). Cross-platform support is not promised yet.
+> This is an early, developer-focused open-source project — see the honest limits below.
 
-Phase 3 Complete | Stabilization & Linux-Readiness program closed (S1 + S2 + S3) | Phase 4 Step 0 done (Cookie Mine proven) | 175 unit + 37 integration + 4 measurement tests passing | CI: GitHub Actions on ubuntu (2 Wayland-headed integration tests gated) | Fastify 5.8.5 + Playwright 1.60
+## Who it's for
 
-## What It Does
+Developers building local AI agents and browser automation: MCP and Playwright users, people
+wiring up personal AI workflows, and researchers working on browser agents who need
+persistent, authenticated sessions an agent can drive.
 
-- Launches and controls isolated headless Chromium sessions over a local HTTP API
-- Supports persistent workspace sessions and disposable temporary sessions
-- Enforces profile file locks to prevent concurrent session conflicts
-- Accepts per-session proxy configuration at launch time
-- Emits structured JSONL logs with automatic credential redaction
-- Captures debug bundles (console logs, network events, screenshots) on demand
-- Measures session resource usage (CPU, memory) via configurable sampling runs
+## See it work (~60 seconds)
 
-## Quick Start
+**Prerequisites:** Node.js 20+, `curl`.
 
-**Prerequisites:** Node.js 20+, npm
-
-**Install**
-
-```
+```bash
 npm install
+npm run dev          # starts the server; prints its address + token/endpoint file paths
 ```
 
-**Run**
+In another terminal, run the demo — it drives a full session loop end to end
+(launch → navigate → snapshot → extract → screenshot → debug-bundle → close):
 
-```
-npm run dev
-```
-
-The server binds to `127.0.0.1:3000`. A random token is generated at startup and written to the token file (path printed at startup). Pass it in the `X-Feather-Token` header on all API calls.
-
-**Health check**
-
-```
-curl http://localhost:3000/health
+```bash
+./examples/quickstart.sh
 ```
 
-**Authenticated request (example)**
+The server binds to `127.0.0.1` on an **OS-assigned port** (set `FEATHER_PORT` to pin one).
+The exact address and the auth token path are written to `endpoint.json` at startup and
+printed on the `Endpoint:` / `Token file:` lines — the demo reads them automatically. See
+`examples/README.md`.
 
-```
-TOKEN=$(cat .feather/token)
-curl -H "X-Feather-Token: $TOKEN" http://localhost:3000/v1/sessions
-```
+## What works today
 
-See `docs/api-reference.md` for the full API reference (launch, navigate, snapshot, extract, screenshot, debug-bundle, close, and more).
+- Launch and control isolated Chromium sessions over a local HTTP API
+- Persistent **and** disposable profiles, with profile locks to prevent collisions
+- Page snapshots, structured (CSS-recipe) extraction, screenshots
+- On-demand debug bundles (trace, console, network) + a read-only event stream
+- Structured JSONL logs with automatic credential redaction
+- Per-session proxy configuration; resource measurement
+- Transport-separated handlers, so the same core can later expose MCP/other protocols
+
+## What it doesn't do yet
+
+Stated plainly so the scope is honest:
+
+- Not a Chrome replacement or a general consumer browser
+- Not an Arc / Zen / Dia / Comet competitor
+- Not a polished cross-platform GUI product
+- Not a complete agent framework, and not a broad integration/connector platform
+
+## Architecture
+
+A headless-first Chromium core: Playwright-managed sessions behind a Fastify local control
+service, with transport-separated command handlers. Full walkthrough in
+[`docs/architecture.md`](docs/architecture.md).
+
+## For AI agents
+
+The machine-readable contract is [`docs/api-reference.md`](docs/api-reference.md). In short:
+discover the base URL from `endpoint.json` (`baseUrl` field), send the token from its
+`tokenFile` in the `X-Feather-Token` header, and every response uses the envelope
+`{ ok, requestId, data | error }`.
 
 ## Testing
 
+```bash
+npm test                   # unit tests
+npm run test:integration   # integration tests against real Chromium
+npm run test:measurement   # resource measurement scenarios
 ```
-npm test                   # unit tests (175)
-npm run test:integration   # integration tests with real Chromium headless shell (37)
-npm run test:measurement   # resource measurement scenarios (4)
-```
 
-Two integration tests (`attach-cdp`, `system-chromium`) drive a *headed* Chromium via
-`spawnAndConnect`, which currently hardcodes `--ozone-platform=wayland`. They require a Wayland
-desktop session and self-skip elsewhere (X11 / headless / CI) — so on CI the integration suite
-reports **35 passed + 2 skipped**. Making the ozone platform configurable so they run anywhere is
-tracked tech-debt.
+## Status — built in the open
 
-## Project Structure
-
-See `docs/architecture.md` for a full walkthrough of the source layout and component boundaries.
-
-## Development Status
-
-Phase 3 complete (merged to `master`); the Stabilization & Linux-Readiness program (S1/S2/S3) is closed; **Phase 4 (Visual Desktop Shell) Step 0 is done** (Cookie Mine proven by spikes). Feather Browser targets **Linux (Fedora)** as its primary platform. For the current state and next action see `journal/context/active.md`; for the roadmap see `ROADMAP.md`.
+Phases 0–3 are complete. The project is currently developed openly on the default `dev`
+branch. Current focus is **Feather Core open-source readiness** (Phase 4a) ahead of the
+visual desktop shell (Phase 4b) — see [`ROADMAP.md`](ROADMAP.md). This project is built in
+the open: the full design history, decisions, and session-by-session log live under
+[`journal/`](journal/) and [`docs/specs/`](docs/specs/) for anyone who likes to read how
+it's made.

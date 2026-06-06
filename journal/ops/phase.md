@@ -1,6 +1,6 @@
 ---
 phase: phase-4-visual-desktop-shell
-sub_phase: pre-shell-1-2-3-4-5-done-only-6-left-next-is-master-merge-readiness
+sub_phase: phase-4a-core-readiness-DONE-shipped-public-dev-next-master-merge-then-debut-then-4b-shell
 adr: docs/specs/adr-0007-phase-4-shell-sequencing.md
 prior_phase: stabilization-linux-readiness-closed
 blocking: null

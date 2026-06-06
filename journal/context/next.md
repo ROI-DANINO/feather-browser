@@ -1,61 +1,45 @@
 # Next — Context Bridge
 
 ---
-## 2026-06-04 23:55 — CI added; first run caught a real Wayland-portability bug
+## 2026-06-06 03:11 — Anchor Browser product-reference research (autonomous run)
 
 ### Done
-- **Added CI** (`.github/workflows/ci.yml`, commit `3863da9`): full suite on ubuntu/Node-22 (push to
-  dev/master + PRs). Node pinned (`engines>=20` + `.nvmrc 22`). README test counts fixed 137→175/33→37.
-- **CI's first run went RED on integration — and that was the point.** Surfaced a latent bug local
-  runs hid: `spawnAndConnect` (`src/browser/modes.ts:44`) **hardcodes `--ozone-platform=wayland`** +
-  spawns headed → the CDP-attach path only runs on a Wayland desktop; on a display-less runner
-  Chromium exits before exposing CDP.
-- **Fix (`f0bdd6d`, fast + honest per Roi's "merge first, break later"):** env-gated the 2 headed
-  integration tests (`attach-cdp`, `system-chromium`) on `WAYLAND_DISPLAY`, mirroring the existing
-  conditional-skip. **CI now GREEN: 175 unit + 35 integration passed + 2 skipped** (verified in the
-  run logs, not just the checkmark). Local (Wayland) stays 37 passed.
-- **Corrected docs to actual state** (the earlier README/active.md edits overstated "green
-  everywhere"): README CI/test lines state the gating; active.md records the CI finding honestly.
-- **PR #1: OPEN · MERGEABLE · `verify` check = SUCCESS.**
+- Processed the inbox brief `journal/raw/_inbox/anchor-browser-research-brief-2026-06-06.md`
+  (arrived via the remote-dev pull this session, commit `c5d68ba`).
+- Ran an autonomous, primary-source research pass on Anchor Browser + a **ground-truth SDK probe**
+  (unpacked `anchorbrowser@0.16.3` in a throwaway worktree `crash/anchor-sdk-probe`; nothing installed
+  or executed; worktree removed after).
+- Wrote two reports → committed on crash branch `crash/anchor-research-2026-06-06` (`30cccb3`):
+  - `research/2026-06-06-anchor-browser-product-reference.md` (full 13-section brief output).
+  - `research/2026-06-06-anchorbrowser-sdk-probe-notes.md` (raw SDK evidence).
+- **Merged → `dev` (fast-forward `c5d68ba..30cccb3`), pushed `origin/dev`, deleted the crash branch.**
+  Research only — no `src/` changes; `master` untouched.
 
-### Decisions
-- Defer the real portability fix (make ozone-platform configurable so the 2 tests run on CI/X11/
-  headless, then un-gate) to **post-merge** — tracked in `tasks.md` alongside the vitest 2→4 bump.
-
-### Next action
-**Roi decides on PR #1.** CI is green and gates the PR; evidence supports graduating `dev`→`master`.
-After merge, post-merge tech-debt queue: (1) make `--ozone-platform` configurable + un-gate the 2
-tests; (2) bump `vitest` ^2→^4 to clear the dev-only audit. Then pre-shell **#6** (prove e2e Cookie
-Mine loop) → Visual Desktop Shell GUI.
-
-### Cosmetic / noted
-- CI logs a non-fatal warning: `actions/checkout@v4` + `setup-node@v4` run on Node 20, which GitHub
-  deprecates 2026-06-16. Already on the latest action majors; harmless for now.
-
----
-## 2026-06-04 23:24 — Master merge-readiness: full verification pass (all green)
-
-### Done
-- Ran the **full verification pass** on `dev`, all fresh this session:
-  - Unit: **175/175 pass** (23 files), 0 fail, 0 skip.
-  - Integration (real Chromium): **37/37 pass** (11 files) — incl. attach-cdp anti-detection gate (`webdriver===false`), system-Chromium probe, DebugCapture e2e, secret-leakage gate.
-  - Measurement: **4/4 pass**.
-  - Typecheck (`tsc --noEmit`): **exit 0**. Build (`tsc`): **exit 0**. Tree clean after build.
-- Reviewed the `master..dev` delta: **111 commits** (was 110; +1 from the last `/stop` handoff commit), linear (no merge commits), no `wip`/`revert`/`fixup`/`broken` markers. Composition: 43 docs, 14 chore, 13 feat, 12 ops, 8 test, 6 fix, 2 refactor + research/inbox notes. Source changes **+1637/−75** across 31 files — heavily additive; all map to the documented pre-shell sequence (S1–S3 + storage isolation + attach-cdp + chromium-path + observability + warm-session).
-- Source-smell scan: **no TODO/FIXME/HACK in src**. The one `it.skip` is a conditional guard (`systemBin && systemBuild ? it : it.skip`) that **actually ran** this session (system-Chromium present), not a hidden disabled test.
-- Dependency health: `npm audit --omit=dev` (production tree) = **0 vulnerabilities**. The 5 audit vulns (4 moderate, 1 critical) are **dev-only test tooling** (vitest/vite/esbuild/vite-node/@vitest/mocker); the critical esbuild advisory is dev-server-only — never ships.
-- PR #1 state confirmed: **OPEN · MERGEABLE (no conflicts) · not draft**, title already updated to full scope (`feat: Stabilization (S1–S3) + Phase 4 pre-shell infrastructure (dev → master)`).
+### Key findings (see report §1)
+- Marketing ≫ docs: "Anchor Chromium", "OmniConnect", "Web Action Cache" are brand names; docs map them
+  to a generic specialized Chromium, an Embedded End-User Auth UI, and Tasks+Generation+Demonstrations.
+- Architecture **verified in shipped code**: cloud browser = CDP-over-WebSocket, SDK attaches Playwright
+  (`connectOverCDP`) — same control model as Feather's local `spawnAndConnect`. Cloud-vs-local =
+  deployment, not mechanism. Their "Official Headful Browser Environments" validates our headless self-test.
+- Identity model (Application→Identity→attach; human-logs-in/agent-inherits) = direct Cookie-Mine parallel.
+- 12X/80X/23X are **unverified vendor claims** (no public benchmark entry).
+- Stealth has *no documented mechanism*; the responsible idea pair = minimal-CDP-surface + Web-Bot-Auth
+  (RFC 9421 declared-good-bot, the opposite of stealth). Captcha/Web-Unlocker = ToS/abuse-flagged.
 
 ### Unfinished / open threads
-- **The actual merge of PR #1 is NOT done** — stopped short on purpose. Graduating `dev`→`master` is the human milestone decision (dev/master policy); the goal scoped me to verification + `/next`, not the merge. Roi pulls the trigger.
-- **No CI** (`.github/workflows` absent) — every check ran locally. Known solo-project trade-off; worth adding before multi-person/shipping. Not a merge blocker.
-- **Dev-tooling vuln cleanup** — fix is a breaking `vitest@4` bump; defer to its own task. Not gating.
-- README status line still says "137 unit tests" (now 175) + "Phase 3 Complete" framing — cosmetic doc drift.
-- Pre-shell **#6** (prove e2e Cookie Mine loop on headed stopgap) still the only pre-GUI item left — a *forward* item, not unfinished work inside this delta.
+- **Report §12 has 5 open questions for Roi** (determinism-layer spike? deeper anti-detection spike?
+  Web-Bot-Auth posture? identity-model→Vault influence? promote any of §10 into a `docs/specs` ADR /
+  Phase-5 note, or keep as reference?). All deferred to Roi — none block anything.
+- The inbox brief file still sits in `journal/raw/_inbox/` (it's on `dev`). Left in place — clearing it
+  is the inbox-lifecycle ritual's call, not this research pass.
 
 ### Decisions
-- **Verdict: `dev` IS a genuine stable milestone.** Meets both bars — the dev/master policy ("merge only at a stable milestone": coherent, complete, not mid-change) and general release-readiness (all tests green, clean automated checks, mergeable). Evidence supports merging PR #1.
-- Held the merge as Roi's call rather than auto-merging.
+- Kept this strictly research-only per the brief — no Feather roadmap edits, no feature-by-feature compare.
+- Pushed to remote `dev`, not `master` (research is not a master-milestone; per dev/master policy).
 
 ### Next action
-**Roi decides on PR #1.** If go: merge PR #1 (`dev`→`master`) to graduate the stable milestone. (Optional pre-merge polish, non-blocking: refresh README status line 137→175 / Phase framing.) After merge, the next substantive work item is pre-shell **#6** (prove the end-to-end Cookie Mine loop on the headed-Chromium stopgap), then the Visual Desktop Shell GUI.
+The pre-existing trajectory is unchanged and still owns "next": **Roi's call = merge `dev`→`master`**
+(milestone graduation; `dev` verified stable as of the 2026-06-05 4a ship) → then LinkedIn debut polish
+(separate session) → then Phase 4b (shell-stack joint call + GUI). The Anchor report is reference input
+for those later calls, not a new work item.
+</content>

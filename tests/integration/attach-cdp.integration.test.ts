@@ -5,11 +5,11 @@ import * as path from "path";
 import { chromium } from "playwright";
 import { spawnAndConnect } from "../../src/browser/modes";
 
-// spawnAndConnect currently hardcodes `--ozone-platform=wayland` + spawns headed, so this
-// CDP-attach gate only runs on a real Wayland desktop session. Skip elsewhere (CI / X11 /
-// headless) — mirrors the system-chromium probe's conditional-skip. Making the ozone platform
-// configurable so this runs anywhere is tracked post-merge (journal/ops/tasks.md).
-const waylandIt = process.env.WAYLAND_DISPLAY ? it : it.skip;
+// spawnAndConnect now derives --ozone-platform from env (resolveSpawnExtraArgs): wayland when
+// WAYLAND_DISPLAY is set, otherwise omitted so Chromium auto-picks (X11/Xvfb). So this CDP-attach
+// gate runs everywhere — Wayland desktop, X11, and CI under Xvfb (ci.yml wraps the suite in
+// xvfb-run). Previously env-gated on WAYLAND_DISPLAY; un-gated once ozone became configurable.
+const waylandIt = it;
 
 let tmpDir: string;
 let cleanup: (() => Promise<void>) | null = null;

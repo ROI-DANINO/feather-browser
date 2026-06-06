@@ -44,5 +44,17 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
+      # The headed CDP-attach tests (attach-cdp, system-chromium) need a display. On a display-less
+      # runner we attach over CDP to `--headless=new` Chromium: the assertions these tests make
+      # (navigator.webdriver === false; system-build version) are identical headless vs headed, since
+      # webdriver is set by --disable-blink-features=AutomationControlled + the CDP attach, not by
+      # headedness. The headed-vs-headless *fingerprint* fidelity (WebGL renderer, etc.) is measured
+      # separately on a real display (anti-detection self-test), not here.
+      # --no-sandbox: CI containers can't init Chromium's user-namespace sandbox, so the raw
+      # spawnAndConnect Chromium aborts ("exited with code null") before exposing CDP without it.
+      # Neither flag is JS-observable; both are off by default everywhere outside CI.
       - name: Integration tests
+        env:
+          FEATHER_SPAWN_HEADLESS: "1"
+          FEATHER_SPAWN_NO_SANDBOX: "1"
         run: npm run test:integration

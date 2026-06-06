@@ -5,6 +5,70 @@ destination → `ROADMAP.md`; history → `journal/log.md` + `ops/sessions/`.
 
 ## Now
 
+**✅ PHASE 4a SHIPPED — Feather Core is publicly runnable & LIVE on the default branch (2026-06-05 stop).**
+Executed `docs/plans/2026-06-05-core-first-reorientation.md` end-to-end via subagent-driven-development
+(7 commits `8d42aab`..`16f5ab7`; pushed `387d601..16f5ab7`). GitHub default branch = `dev`, so the new
+public README + demo are **live now** — no master merge needed for the debut. Shipped: ① verified
+`examples/quickstart.sh` demo (full session loop ran green, 8/8 `state=closed`) + `examples/README.md`;
+② artifact-forward `README.md` rewrite (fixed the `:3000` + `.feather/token` doc bugs; dropped an
+unimplemented "screenshots" claim); ③ ROADMAP Core-vs-Shell split + Phase 4a/4b; ④ steering files →
+4a; ⑤ final gate (**184 unit pass, tsc 0, demo re-verified green**). No `src/` feature changes — docs
++ one bash demo. Reviews double-gated every task (spec then quality); final holistic review = READY TO
+SHIP, all 5 acceptance criteria MET. Blog `0009-the-demo-that-fact-checked-me.md` written. Session
+record: `ops/sessions/core-first-execution-20260605-1853.md`.
+
+**▶ NEXT (Roi's call this stop): merge `dev`→`master`** — milestone graduation, gated on "dev is
+stable" (**it is: verified green this session** — 184u + tsc 0 + demo green, tree clean, `dev` pushed).
+Like PR #1, the merge is Roi's milestone call. **Then, in a SEPARATE session: LinkedIn debut polish**
+(optional demo GIF/asciinema; actually post). Phase 4b (shell-stack joint call) follows after.
+
+**📎 Reference landed (2026-06-06, on `dev` `30cccb3`):** autonomous **Anchor Browser product-reference
+research** → `research/2026-06-06-anchor-browser-product-reference.md` (+ SDK probe notes). Primary
+sources + ground-truth inspection of shipped `anchorbrowser@0.16.3` (throwaway worktree, nothing run).
+Net reads for later: Anchor's arch = **CDP-over-WebSocket + Playwright `connectOverCDP`** (same model as
+our `spawnAndConnect`); its identity model (human-logs-in/agent-inherits) is a **direct Cookie-Mine
+parallel**; "Web Action Cache"/"OmniConnect"/"Anchor Chromium" are marketing brands, stealth has no
+documented mechanism, 12X/80X/23X are unverified. **Report §12 = 5 open questions for Roi** (defer; none
+block). Research-only, no `src/` changes; does NOT alter the master-merge trajectory below.
+
+**🧹 Housekeeping (2026-06-05 17:14 STOP, commit `43933fc`):** research inbox **fully processed →
+empty** (positioning → `docs/public-positioning.md`; composio → memory; branching → **git-worktree
+workflow now in AGENTS.md**; security-risks → absorbed). **New workflow rule:** unrelated workstreams
+each get a branch in its own worktree, one chat per worktree (token/context efficiency); create
+as-needed, not pre-created. Session file: `ops/sessions/inbox-processing-worktree-workflow-20260605-1714.md`.
+
+**(History — superseded by the Core-first pivot, then by 4a shipping above.)** The shell-stack joint
+call (review ADR-0009 GTK4+Casilda; run a Casilda+Chromium latency/input spike; then begin the Phase-4
+GUI from `research/2026-06-05-phase4-gui-architecture-sketch.md`) is now **Phase 4b**, sequenced after
+the master-merge + debut. The other two joint calls (cookie-isolation for `primary`; vault backend)
+stay open/parked. Substantive state below is unchanged — pre-shell #1–6 all done; GUI is unblocked.
+
+**🎯 AUTONOMOUS RESEARCH RUN COMPLETE (2026-06-05).** All 4 Ratchet workstreams landed on `dev`,
+CI green (13 commits, `877d02a..2bbddca`; full record → `ops/sessions/autonomous-research-run-20260605.md`).
+**Pre-shell #6 Cookie Mine loop is CLOSED → ADR-0007 gate cleared → the Visual Desktop Shell GUI is now
+unblocked.** Net: ① ozone-platform configurable + the 2 headed tests un-gated (CI **36 passed + 1
+skipped**, local Wayland 37); ② live `scratch` spikes (cookie-isolation, #6 loop, anti-detection); ③
+warm-session password-manager hardening + vitest ^2→^4 (**audit now 0**); ④ shell-stack ADR-0009 +
+GUI sketch + behavioral-fidelity design (parallel subagents). **`primary` was NEVER touched** (the
+optional read-only closeout check was deliberately skipped given Roi's nervousness — zero primary
+contact). Verification (local): **184 unit + 37 integration + 4 measurement green, typecheck 0, audit 0**.
+
+**▶ NEXT = a joint session on the three teed-up calls** (executor must NOT decide alone):
+1. **Shell-stack final pick** — ADR-0009 recommends **GTK4-native (Rust) + Casilda Wayland-compositor
+   widget + headed-Chromium two-window stopgap**; Tauri stays a genuine trade. Gate acceptance on a
+   **Casilda+Chromium latency/input spike** on this box. Then **start the Phase-4 GUI** (sketch ready:
+   `research/2026-06-05-phase4-gui-architecture-sketch.md`).
+2. **Cookie-isolation for the real `primary`** — proven safe on a *non-device-bound* session (scratch);
+   does NOT transfer. **Measure `primary`'s DBSC binding read-only FIRST; never a blind clone.**
+3. **Behavioral-profile / vault storage backend** — design ready (`docs/specs/2026-06-05-behavioral-fidelity-design.md`);
+   backend ties to the frozen ADR-0008 vault. Recording is a you-in-the-loop wall.
+
+Smaller open follow-up: the **Xvfb WebGL question** (does Xvfb fall back to SwiftShader?) needs a **sudo
+Xvfb install → Roi** to finish the 3-way anti-detection table.
+
+**(Prior milestone, still true)** `dev` → `master` graduated 2026-06-04 (PR #1 merged, `e39d167`); `dev`
+remains the working branch and is now well ahead again with this run's work.
+
 **Pre-shell #4 (warmed Google session) is DONE and verified end-to-end (2026-06-04 23:07).**
 `npm run warm-session` (`src/tools/warm-session.ts`) launches the `primary` persistent workspace in
 stealth `chromium-headed-cdp` against system Chromium 148 (`/usr/bin/chromium-browser`). Roi logged
@@ -53,6 +117,11 @@ a blind run. Reasoning + procedure:
 manager by policy — see Flags (credentials-in-the-jar boundary) + `tasks.md`.
 
 ## Recommend next
+
+**▶ Phase 4a (Core open-source readiness) is DONE & shipped to the public default branch (2026-06-05).**
+Next = **merge `dev`→`master`** (milestone graduation, Roi's call; dev verified stable this session) →
+then **LinkedIn debut polish** in a separate session → then **Phase 4b** (shell-stack joint call + GUI).
+The pre-shell sequence below is DONE; the GUI it unblocked is Phase 4b.
 
 **Pre-shell infrastructure sequence (locked 2026-06-04) — MUST precede any Visual Desktop Shell GUI:**
 1. ✅ **Storage-isolation fix — DONE** (XDG split shipped, pushed `dev`).
@@ -105,8 +174,10 @@ visually but are text-invisible → policy, not OCR. Design:
   hard deadline = first agent action. Hardening task in `tasks.md`; detail in ADR-0008 corollary.
 - Shell stack is **active R&D** — don't let any doc imply it's locked (ADR-0007).
 - Inbox lifecycle is live: promoted/superseded notes → `journal/raw/archive/` (NOT `_processed/`,
-  rnd's dropped convention). Inbox holds 2 genuinely-open files (branching-strategy gate +
-  browser-agent-security-risks); 3 promoted notes archived 2026-06-04.
+  rnd's dropped convention). **Inbox is now empty (README only)** — all 4 remaining notes processed
+  2026-06-05: positioning → `docs/public-positioning.md`; composio → memory + ADR-0006; branching
+  → worktree workflow in `AGENTS.md`; security-risks → already absorbed (ADR-0005/0008 + Parked list).
+  (3 earlier notes archived 2026-06-04.)
 - `rnd` branch deleted (ADR-0006 graduated; now a standing design lens on `dev`). `ui-playground`
   KEPT as stealth/attach-don't-launch reference.
 - **`.remember` plugin DISABLED + CLEANED for this project** (2026-06-04) → journal is the **sole**

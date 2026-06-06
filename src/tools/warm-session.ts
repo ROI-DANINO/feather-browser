@@ -21,6 +21,7 @@ import { FeatherPaths, ensureDirs } from "../fs-layout";
 import { ProfileLock, ProfileLockedError } from "../profiles/lock";
 import { WorkspaceMetadata } from "../profiles/workspace";
 import { SessionManager } from "../sessions/manager";
+import { disablePasswordManager } from "../browser/profile-policy";
 
 const WORKSPACE_ID = process.env.FEATHER_WARM_WORKSPACE ?? "primary";
 const START_URL = process.env.FEATHER_WARM_URL ?? "https://accounts.google.com/";
@@ -58,6 +59,11 @@ async function main(): Promise<void> {
   console.log(`\n  Feather — warming the "${WORKSPACE_ID}" session`);
   console.log(`  profile : ${paths.profileDir(WORKSPACE_ID)}`);
   console.log(`  chromium: ${process.env.FEATHER_CHROMIUM_PATH ?? "(bundled)"}\n`);
+
+  // Keep raw credentials out of the shared cookie jar: disable Chromium's built-in password
+  // manager on this profile by policy before launch (creds belong in a dedicated vault, separate
+  // from the context agents piggyback on). Safe merge — runs while Chromium isn't running.
+  await disablePasswordManager(paths.profileDir(WORKSPACE_ID));
 
   let session;
   try {

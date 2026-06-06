@@ -1,9 +1,11 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
 
 vi.mock("../../../src/debug/bundle", () => ({
-  DebugBundle: vi.fn().mockImplementation(() => ({
-    finalize: vi.fn().mockResolvedValue("/tmp/.feather/debug/ses_test_001/manifest.json"),
-  })),
+  // vitest 4 requires a mock used with `new` to be implemented with `function`/`class`,
+  // not an arrow returning an object (arrows are not constructors).
+  DebugBundle: vi.fn().mockImplementation(function () {
+    return { finalize: vi.fn().mockResolvedValue("/tmp/.feather/debug/ses_test_001/manifest.json") };
+  }),
 }));
 
 import { DebugBundleHandler } from "../../../src/commands/debug-bundle";
@@ -24,9 +26,9 @@ describe("DebugBundleHandler", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockManager.get.mockReturnValue(mockSession);
-    (DebugBundle as ReturnType<typeof vi.fn>).mockImplementation(() => ({
-      finalize: vi.fn().mockResolvedValue("/tmp/.feather/debug/ses_test_001/manifest.json"),
-    }));
+    (DebugBundle as ReturnType<typeof vi.fn>).mockImplementation(function () {
+      return { finalize: vi.fn().mockResolvedValue("/tmp/.feather/debug/ses_test_001/manifest.json") };
+    });
   });
 
   it("calls manager.get with the correct sessionId", async () => {
@@ -41,7 +43,9 @@ describe("DebugBundleHandler", () => {
 
   it("calls finalize with reason 'requested'", async () => {
     const mockFinalize = vi.fn().mockResolvedValue("/tmp/.feather/debug/ses_test_001/manifest.json");
-    (DebugBundle as ReturnType<typeof vi.fn>).mockImplementation(() => ({ finalize: mockFinalize }));
+    (DebugBundle as ReturnType<typeof vi.fn>).mockImplementation(function () {
+      return { finalize: mockFinalize };
+    });
     await new DebugBundleHandler(mockManager as any, mockPaths as any).execute({ sessionId: "ses_test_001" }, ctx);
     expect(mockFinalize).toHaveBeenCalledWith("requested");
   });
