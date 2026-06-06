@@ -4,6 +4,19 @@ Use this desk for browser engine research, shell architecture, extension compati
 
 ## Current Focus
 
+**Core command surface: observe-only → ACT (2026-06-06, `dev` `cae8ef7`..`684396d`).** Feather Core
+now exposes page-interaction commands over HTTP: `POST /v1/sessions/:id/{click,type,press,wait}`.
+Architecture: one `*Handler` class per command (mirrors `navigate`/`extract`), a shared
+`resolveLocator(page, target)` (`src/browser/locators.ts`) turning a `Target` descriptor
+(role/text/placeholder/testid/css + positional `at:"first"|"last"|n`) into a single Playwright
+`Locator`, and `withActionErrors` (`src/commands/input-errors.ts`) mapping Playwright `TimeoutError`
+→ coded errors `ELEMENT_NOT_FOUND`(404)/`ELEMENT_NOT_ACTIONABLE`(409)/`WAIT_TIMEOUT`(408). `type`
+supports `fill` (default) + `sequential` (contenteditable/ProseMirror fallback). `wait` has two
+flavours: element-state (`visible|hidden|attached|detached`) and a site-agnostic streaming-safe
+`until:"stable"` (settles when text is unchanged for `quietMs`, with a non-empty guard so it won't
+settle on an attached-but-empty node like ChatGPT's streaming placeholder). All handlers emit no
+events; no route logs `request.body` (credential boundary). 207u + 43i (real Chromium) green.
+
 **Phase 4 Step 0 DONE (2026-06-04)** — answered by spikes, not specs. Cookie Mine proven
 end-to-end on a real site (agent acted in Roi's live ChatGPT).
 

@@ -10,9 +10,14 @@ destination → `ROADMAP.md`; history → `journal/log.md` + `ops/sessions/`.
 `cae8ef7`..`684396d`): `click`, `type` (`fill`/`sequential`), `press`, and `wait` are now exposed
 through the HTTP API with Target locators, `at:"first"|"last"|n`, streaming-safe `wait until:"stable"`,
 and coded errors (`ELEMENT_NOT_FOUND`/`ELEMENT_NOT_ACTIONABLE`/`WAIT_TIMEOUT`). Feather Core moved from
-observe-only → **act**. Fresh final gate: **207 unit pass, 43 integration pass, `tsc --noEmit` exit 0**.
-▶ **NEXT = warm a ChatGPT session** with the same agent-blind pattern as Google, then write/record the
-ChatGPT→Gmail hero demo script.
+observe-only → **act**. Executed via **subagent-driven-development** (fresh implementer per task,
+double-gated spec-then-quality reviews); Task 10 gate finished in a handed-off Codex session, then
+**independently re-verified**: **207 unit pass, 43 integration pass** (real Chromium, incl. 6 new input
+tests), **`tsc --noEmit` exit 0**, tree clean. **Pushed `origin/dev`** (`689db67..f4a0ec0`, in sync) —
+no master merge (feature completion, not a milestone). Session: `ops/sessions/core-input-execution-20260606-1740.md`.
+▶ **NEXT = warm a ChatGPT session** (agent-blind, Roi types creds), then **walk Roi through building +
+recording** the headed ChatGPT→Gmail hero demo. The demo runs **headed** (`chromium-headed-cdp`) — visible
+in real time, required (logged-in sessions + headless is bot-detectable) and ideal to screen-record.
 
 **✅ PHASE 4a SHIPPED — Feather Core is publicly runnable & LIVE on the default branch (2026-06-05 stop).**
 Executed `docs/plans/2026-06-05-core-first-reorientation.md` end-to-end via subagent-driven-development
