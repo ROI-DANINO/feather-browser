@@ -43,6 +43,8 @@ printed on the `Endpoint:` / `Token file:` lines — the demo reads them automat
 - Launch and control isolated Chromium sessions over a local HTTP API
 - Persistent **and** disposable profiles, with profile locks to prevent collisions
 - Page snapshots, structured (CSS-recipe) extraction, screenshots
+- Drive pages: click, type, and press keys (robust role/text/CSS targeting), plus a streaming-safe
+  wait for dynamic content to settle
 - On-demand debug bundles (trace, console, network) + a read-only event stream
 - Structured JSONL logs with automatic credential redaction
 - Per-session proxy configuration; resource measurement
