@@ -4,6 +4,7 @@ import {
   withActionErrors,
   ElementNotFoundError,
   ElementNotActionableError,
+  WaitTimeoutError,
 } from "../../../src/commands/input-errors";
 
 describe("withActionErrors", () => {
@@ -38,5 +39,13 @@ describe("withActionErrors", () => {
         throw new Error("boom");
       }),
     ).rejects.toThrow("boom");
+  });
+});
+
+describe("error classes", () => {
+  it("WaitTimeoutError carries code WAIT_TIMEOUT", () => {
+    const e = new WaitTimeoutError("x");
+    expect(e.code).toBe("WAIT_TIMEOUT");
+    expect(e.name).toBe("WaitTimeoutError");
   });
 });
