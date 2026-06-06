@@ -17,6 +17,7 @@ This is a build-in-public journal and a decision history. It's the *why* behind 
 | 0007 | [The Keys Were Under the Doormat](0007-the-keys-were-under-the-doormat.md) | 2026-06-04 | Pre-shell security groundwork — found secrets stored inside the (non-gitignored) project folder; decided the Linux-native XDG fix; spec + plan landed, build next |
 | 0008 | [The Shared Room](0008-the-shared-room.md) | 2026-06-04 | Pre-shell #4 done — a real warm logged-in session on disk (Google via passkey, survives restart, no bot wall); a "Save password?" box surfaced the rule that matters most: the shared browser must never hold raw credentials |
 | 0009 | [The Demo That Fact-Checked Me](0009-the-demo-that-fact-checked-me.md) | 2026-06-05 | Phase 4a — Feather Core made publicly runnable: caught myself about to build the Shell against my own "Core first" rule, pivoted to an artifact-forward README + a 60-second `quickstart.sh` demo; the running demo caught two stale lies in my own docs (port + token path) |
+| 0010 | [The Three Locks](0010-the-three-locks.md) | 2026-06-07 | Agent Browsing Stack vision — studied Anchor Browser as product reference; found the architecture is already right; identified the three locks between agents and every site (fingerprint, login wall, identity); three-feature plan written |
 
 ## How entries are written (style guardrails)
 
