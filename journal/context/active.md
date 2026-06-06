@@ -5,15 +5,13 @@ destination → `ROADMAP.md`; history → `journal/log.md` + `ops/sessions/`.
 
 ## Now
 
-**✅ HERO DEMO HARDENED + SUPERPOWERS INSTALLED (2026-06-06).**
-- **Continuity:** `scripts/demo/hero-chatgpt-gmail.ts` now uses `ensureHumanAuth` to handle missing Google logins by waiting for the human.
-- **Isolation:** Fixed `FEATHER_DIR` and `FEATHER_WARM_WORKSPACE` support in the demo script to allow RAM-backed "burner" profiles (`/run/user/1000/feather-demo`).
-- **Superpowers:** Installed the `@obra/superpowers` extension.
-- **Next:** User to verify the burner flow and record the LinkedIn debut.
+**✅ BURNER DEMO FULLY WORKING (2026-06-06, `a2e9ec9`).**
+- `npm run demo:hero` — single command; starts RAM-backed server, runs hero script, tears down on exit.
+- Gating: Recording requires a screen recorder. Environment is **Niri/Wayland**. Recommended **Kooha** or **wf-recorder**.
 
 ## Recommend next
 
-**▶ Record the Hero Demo.** Run the server and script using the `FEATHER_DIR` burner path to ensure a clean, isolated demo for the recording. Then post to LinkedIn.
+**▶ Record the Hero Demo.** Once a screen recorder is installed, run `npm run demo:hero`, screen-capture the live run, post to LinkedIn.
 
 ---
 
