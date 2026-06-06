@@ -26,10 +26,31 @@ carried: Phase 4a Core-readiness (README/demo/ROADMAP split/blog 0009) + post-me
 (ozone-platform configurable, vitest ^2→^4 audit-0, Cookie-Mine loop closed, isolation/password-manager
 hardening on `scratch`) + Anchor research (reference, no `src/`).
 
-**▶ NEXT: LinkedIn debut polish (SEPARATE session)** — optional demo GIF/asciinema of `quickstart.sh`;
-any final README touch-ups; then actually post. (Public README + demo are already live.) **Then Phase 4b**
-(shell-stack joint call + GUI). Smaller housekeeping available now: archive the processed Anchor brief out
-of `journal/raw/_inbox/`; Anchor report §12's 5 open questions are parked for Roi (none block).
+**▶ NEXT (Roi's call, 2026-06-06): build a HERO DEMO for the debut — a real cross-site agentic
+workflow.** Roi: *"go to chatGPT and say hello world and send it, copy gpts respond, then go to gmail
+and start a draft mail to anthropic with gpts answer as the respond."* Flow: ChatGPT → type "hello
+world" → send → wait for + extract GPT's reply → Gmail → start a **draft** to Anthropic with that reply
+as the body (draft, NOT send). **This replaces "just a screenshot" as the LinkedIn debut centerpiece.**
+
+**⚠️ HONEST GATE (research-driven — verified this session, don't skip):**
+1. **Feather Core has NO input commands today.** Handlers = `close, debug-bundle, extract, launch,
+   navigate, open-tab, screenshot, snapshot, status`. Missing `click` / `type`(`fill`) / `press`.
+   **The demo requires building interaction commands in Core first** — Feather goes from observe-only
+   to **act**. Genuine Core feature step, not a demo script. (Playwright underneath supports it; the
+   gap is Feather's command surface + handlers + API contract.) Likely also need a **wait-for-stable**
+   primitive (ChatGPT streams its answer — must wait for it to finish before extracting).
+2. **Both sites need login → Cookie Mine + headed stopgap.** `primary` already has a warmed Google
+   session (Gmail ✓); **ChatGPT needs warming** (same agent-blind warm-session pattern — Roi types creds).
+3. **This is a SECOND demo, not a replacement for `examples/quickstart.sh`.** Quickstart stays the
+   *stranger-runnable* public artifact (no accounts); the cross-site flow is the **recorded hero demo**
+   (GIF/asciinema/video) for the LinkedIn post. Decide explicitly next session.
+
+Likely next-session shape (brainstorm/plan first — TDD, real-Chromium gate): build Core input + wait
+commands → warm a ChatGPT session → write the headed cross-site demo script → record for debut. Full
+prep: `ops/sessions/master-merge-and-hero-demo-vision-20260606-1620.md`.
+
+**Then Phase 4b** (shell-stack joint call + GUI). Housekeeping available anytime: archive the processed
+Anchor brief out of `journal/raw/_inbox/`; Anchor report §12's 5 open questions parked for Roi (none block).
 
 **📎 Reference landed (2026-06-06, on `dev` `30cccb3`):** autonomous **Anchor Browser product-reference
 research** → `research/2026-06-06-anchor-browser-product-reference.md` (+ SDK probe notes). Primary
@@ -127,10 +148,11 @@ manager by policy — see Flags (credentials-in-the-jar boundary) + `tasks.md`.
 
 ## Recommend next
 
-**▶ Phase 4a (Core open-source readiness) is DONE & shipped to the public default branch (2026-06-05).**
-Next = **merge `dev`→`master`** (milestone graduation, Roi's call; dev verified stable this session) →
-then **LinkedIn debut polish** in a separate session → then **Phase 4b** (shell-stack joint call + GUI).
-The pre-shell sequence below is DONE; the GUI it unblocked is Phase 4b.
+**▶ Phase 4a shipped (2026-06-05) AND graduated to `master` (2026-06-06, PR #2 `5e808cd`).** Next =
+build the **HERO DEMO** (ChatGPT→Gmail cross-site agentic flow — see "Now" ▶NEXT for the honest gate:
+**Feather has no input commands yet; building them is the gating Core work**) → record it → **LinkedIn
+debut** → then **Phase 4b** (shell-stack joint call + GUI). The pre-shell sequence below is DONE; the
+GUI it unblocked is Phase 4b.
 
 **Pre-shell infrastructure sequence (locked 2026-06-04) — MUST precede any Visual Desktop Shell GUI:**
 1. ✅ **Storage-isolation fix — DONE** (XDG split shipped, pushed `dev`).
