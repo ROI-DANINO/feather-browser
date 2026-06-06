@@ -88,7 +88,7 @@ if [[ "$MODEL" == codex-* ]] || [[ "$MODEL" == *-codex ]] || [[ "$MODEL" == o3-*
     ')
 else
     # Use v1/chat/completions API
-    ENDPOINT="https://api.openai.com/v1/chat/completions"
+    ENDPOINT="${OPENAI_ENDPOINT:-https://api.openai.com/v1/chat/completions}"
 
     # Standard models use base token limit directly
     TOKENS="$BASE_TOKENS"

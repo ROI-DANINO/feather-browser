@@ -42,9 +42,15 @@ check_provider() {
                 "https://generativelanguage.googleapis.com/v1beta/models/${model}?key=${api_key}" 2>/dev/null || echo "000")
             ;;
         openai)
+            # Use OPENAI_ENDPOINT if it's set by OpenRouter/compat endpoints
+            local openai_url="${OPENAI_ENDPOINT:-https://api.openai.com/v1/chat/completions}"
+            # For OpenRouter we can't just hit /models easily, so minimalist chat like perplexity
             http_code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 \
+                -X POST \
                 -H "Authorization: Bearer ${api_key}" \
-                "https://api.openai.com/v1/models" 2>/dev/null || echo "000")
+                -H "Content-Type: application/json" \
+                -d "{\"model\":\"${model}\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}],\"max_tokens\":1}" \
+                "${openai_url}" 2>/dev/null || echo "000")
             ;;
         grok)
             http_code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 \
@@ -112,6 +118,7 @@ openai_status=$(check_provider "openai" "OPENAI_API_KEY" "OPENAI_MODEL" "gpt-5.5
 grok_status=$(check_provider "grok" "GROK_API_KEY" "GROK_MODEL" "grok-4.20-reasoning")
 perplexity_status=$(check_provider "perplexity" "PERPLEXITY_API_KEY" "PERPLEXITY_MODEL" "sonar-reasoning-pro")
 codex_status=$(check_cli_provider "codex" "codex")
+claude_status=$(check_cli_provider "claude" "claude")
 gemini_cli_status=$(check_cli_provider "gemini-cli" "gemini")
 
 # Format output
@@ -164,6 +171,7 @@ format_status "$(provider_emoji openai)"     "$(provider_color openai)"     "Ope
 format_status "$(provider_emoji grok)"       "$(provider_color grok)"       "Grok"       "$grok_status"
 format_status "$(provider_emoji perplexity)" "$(provider_color perplexity)" "Perplexity" "$perplexity_status"
 format_status "$(provider_emoji codex)"      "$(provider_color codex)"      "Codex CLI"  "$codex_status"
+format_status "$(provider_emoji claude)"      "$(provider_color claude)"      "Claude CLI"  "$claude_status"
 format_status "$(provider_emoji gemini-cli)" "$(provider_color gemini-cli)" "Gemini CLI" "$gemini_cli_status"
 
 echo ""
@@ -175,7 +183,8 @@ available=0
 [[ "$grok_status" == ok:* ]] && ((available++))
 [[ "$perplexity_status" == ok:* ]] && ((available++))
 [[ "$codex_status" == ok:* ]] && ((available++))
+[[ "$claude_status" == ok:* ]] && ((available++))
 [[ "$gemini_cli_status" == ok:* ]] && ((available++))
 
-echo -e "${DIM}${available}/6 providers available${RESET}"
+echo -e "${DIM}${available}/7 providers available${RESET}"
 echo ""
