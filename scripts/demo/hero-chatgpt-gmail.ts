@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as readline from "readline";
+import { ensureHumanAuth } from "./continuity";
 
 type Env = Record<string, string | undefined>;
 
@@ -38,6 +39,9 @@ const SUBJECT = process.env.HERO_DEMO_SUBJECT ?? "ChatGPT hello world reply";
 export function endpointFileFromEnv(env: Env = process.env): string {
   if (env.FEATHER_ENDPOINT_FILE && env.FEATHER_ENDPOINT_FILE.trim() !== "") {
     return env.FEATHER_ENDPOINT_FILE;
+  }
+  if (env.FEATHER_DIR && env.FEATHER_DIR.trim() !== "") {
+    return path.join(env.FEATHER_DIR, "run", "endpoint.json");
   }
   if (env.XDG_RUNTIME_DIR && env.XDG_RUNTIME_DIR.trim() !== "") {
     return path.join(env.XDG_RUNTIME_DIR, "feather", "run", "endpoint.json");
@@ -141,10 +145,11 @@ async function main(): Promise<void> {
   const api = new FeatherApi(endpoint.baseUrl, token);
 
   console.log(`Feather at ${endpoint.baseUrl}`);
-  console.log("Launching warmed primary profile in headed mode...");
+  const workspaceId = process.env.FEATHER_WARM_WORKSPACE ?? "primary";
+  console.log(`Launching warmed "${workspaceId}" profile in headed mode...`);
 
   const session = await api.request<SessionLaunch>("POST", "/v1/sessions", {
-    workspaceId: "primary",
+    workspaceId,
     profile: { kind: "persistent" },
     browserMode: "chromium-headed-cdp",
     viewport: { width: 1366, height: 900 },
@@ -154,6 +159,17 @@ async function main(): Promise<void> {
   console.log(`Session ${sessionId} is visible. No screenshots/debug bundles will be created.`);
 
   try {
+    // 1. Ensure human authentication (Google/Gmail) before starting the cross-site flow.
+    // This implements the "Cookie Mine" pattern: agent piggybacks on human trust.
+    await ensureHumanAuth(api, sessionId, {
+      targetUrl: GMAIL_URL,
+      checkTargets: [
+        { by: "css", selector: "div[role='button'][gh='cm']" },
+        { by: "role", role: "button", name: "Compose" },
+        { by: "role", role: "button", name: "אימייל חדש" },
+      ],
+    });
+
     console.log("Opening ChatGPT...");
     await api.request("POST", `/v1/sessions/${sessionId}/navigate`, {
       url: CHATGPT_URL,

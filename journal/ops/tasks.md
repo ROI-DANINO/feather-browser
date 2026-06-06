@@ -33,7 +33,9 @@ wait for + extract GPT reply → Gmail → start a **draft** to Anthropic with t
 - [x] **Decide: hero demo = SECOND demo, not a replacement for `quickstart.sh`.** Confirmed — spec
   states `quickstart.sh` stays the public no-login demo; this is the recorded debut workflow.
 - [ ] **LinkedIn debut** — record the live run (screen-capture while the script drives the headed
-  window), final README touch-ups, then post. *Only step left.*
+  window), then post.
+- [x] **Hero Demo Hardening** — burner profile (`npm run demo:hero`): fixed auth polling bug (now
+  re-navigates to targetUrl each iteration), removed warm-session prerequisite, single-command launch.
 
 ## Done — milestone graduation `dev`→`master` (2026-06-06; PR #2 `5e808cd`)
 - [x] **Re-verified stable before merging** — 184u + tsc 0; no `src/`/`tests/` changes since last full

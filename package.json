@@ -8,6 +8,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "ts-node src/index.ts",
+    "demo:hero": "bash scripts/demo/run-hero-demo.sh",
     "warm-session": "ts-node src/tools/warm-session.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --config vitest.config.ts",

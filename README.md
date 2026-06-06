@@ -26,12 +26,26 @@ npm install
 npm run dev          # starts the server; prints its address + token/endpoint file paths
 ```
 
-In another terminal, run the demo — it drives a full session loop end to end
-(launch → navigate → snapshot → extract → screenshot → debug-bundle → close):
+### 1. Basic Demo (No login)
+In another terminal, run the quickstart demo — it drives a full session loop end to end:
 
 ```bash
 ./examples/quickstart.sh
 ```
+
+### 2. Hero Demo (ChatGPT → Gmail)
+This demo showcases the "Cookie Mine" foundation: an agent piggybacks on your existing human-warmed sessions to perform cross-site tasks.
+
+```bash
+npm run demo:hero
+```
+
+A browser window opens. If you aren't logged into Google, log in when prompted —
+Feather detects the login and continues automatically. On a second run (before
+rebooting), the session profile is already warmed and the demo skips straight to
+the action.
+
+The session profile is RAM-backed and wiped on reboot (`/run/user/<uid>/feather-demo`).
 
 The server binds to `127.0.0.1` on an **OS-assigned port** (set `FEATHER_PORT` to pin one).
 The exact address and the auth token path are written to `endpoint.json` at startup and
