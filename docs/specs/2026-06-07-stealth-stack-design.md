@@ -44,7 +44,16 @@ Adds behavioral and active hardening on top of Fast. Adds per-action latency (~5
 | Layer | What it does | Why |
 |-------|-------------|-----|
 | **3 — Behavioral timing** | Randomized delay + jitter on every click, type, and scroll action | Synthetic events at machine speed (0ms between actions) are detectable by timing analysis; human actions have natural variance |
-| **4 — Active fingerprint hardening** | Canvas noise injection (per-session pixel variation), WebGL vendor/renderer consistency, font enumeration guard | Required for hardest sites; verify impact with self-test before enabling broadly |
+| **4 — Fingerprint consistency check** | WebGL vendor/renderer verification + font enumeration guard. **No canvas noise** (see note). | Catches the case where the real fingerprint has degraded (e.g. SwiftShader = headless leaked through); guards font probing against an empty-set tell |
+
+> **Why no canvas noise injection.** An earlier draft proposed injecting per-session noise into
+> canvas `getImageData`. We dropped it. Feather runs **real system Chromium with a real GPU**, so
+> it already has a genuine, stable canvas fingerprint — exactly what a real human browser has.
+> Injecting noise makes that fingerprint *unstable* across sessions, which is the signature of
+> anti-fingerprinting tooling (Tor Browser, Brave shields) — i.e. it makes Feather look *more*
+> like a privacy-hardened bot, not more human. The honest, lighter, and more human posture is to
+> **leave the real canvas alone.** Layer 4 therefore *verifies* the real fingerprint is intact
+> rather than *spoofing* it.
 
 ---
 
@@ -58,16 +67,24 @@ Initial Tier C domains and patterns:
 - `linkedin.com`, `*.linkedin.com`
 - `instagram.com`, `*.instagram.com`
 - `facebook.com`, `*.facebook.com`
-- Any URL behind Cloudflare bot detection (detected by response headers: `cf-ray`, `cf-mitigated`)
-- Any URL behind DataDome (detected by response headers: `x-datadome-*`)
 
-The list is a plain array of matchers — easy to extend in future without a schema change.
+The list is a plain array of domain matchers — easy to extend in future without a schema change.
+
+**v1 is domain-list only — by design.** The classifier decides from the **target URL alone**,
+before any navigation. This is deliberate: the "stop before entrance" promise (below) only holds
+if Feather can classify *without first visiting the site*. Header-based detection (Cloudflare
+`cf-ray` / DataDome `x-datadome-*`) cannot do this — you must already be on the site to read its
+response headers, by which point the fast-mode session is open and the chance to upgrade
+pre-emptively is gone. Reactive header detection is therefore **deferred to a future version**
+(see "Future" below), where it would surface as a post-navigation warning for the *next* visit,
+not a pre-entrance gate. Keeping v1 to a domain list avoids a self-contradicting design and stays
+lightweight.
 
 ### Two-path behavior
 
 **Interactive session** (human is present — API call with human in the loop):
-- If the target URL matches Tier C and `stealthMode` is `fast` (or unset): Feather stops before
-  the session opens and returns a `stealthRecommendation` in the response.
+- If the target URL matches Tier C and `stealth.mode` is `fast` (or unset): Feather stops before
+  the session opens and returns the recommendation soft-block in the response.
 - Response uses Feather's standard envelope with HTTP `200` and a typed soft-block:
   `{ ok: false, requestId, error: { code: 'STEALTH_UPGRADE_RECOMMENDED', message: 'LinkedIn is a Tier C site — secure mode recommended', data: { recommendation: 'secure' } } }`.
 - The caller re-submits with `stealth: { mode: 'secure' }` to proceed. The session does not open
@@ -78,10 +95,10 @@ The list is a plain array of matchers — easy to extend in future without a sch
 - Log entry records the upgrade: `[stealth] auto-upgraded to secure — Tier C site detected (linkedin.com)`.
 - `stealthApplied` in the response reflects the upgraded mode.
 
-**Explicit override always wins:** if the caller passes `stealthMode: 'secure'` explicitly, the
-classifier is bypassed and secure is applied regardless of domain. If the caller passes
-`stealthMode: 'fast'` explicitly on a Tier C site, fast is used with a warning in the log — the
-human made a deliberate choice.
+**Explicit override always wins:** if the caller passes `stealth: { mode: 'secure' }` explicitly,
+the classifier is bypassed and secure is applied regardless of domain. If the caller passes
+`stealth: { mode: 'fast' }` explicitly on a Tier C site, fast is used with a warning in the log —
+the human made a deliberate choice. (The soft-block only fires when mode was *unset*.)
 
 ---
 
@@ -135,11 +152,13 @@ export function withStealthTiming<T>(
   config: StealthConfig
 ): Promise<T>
 
-// Layer 4: active fingerprint hardening (call on each new page, secure only)
-export function applyFingerprintHardening(
+// Layer 4: fingerprint consistency check + font guard (call on each new page, secure only)
+// Verifies real WebGL renderer is intact (flags SwiftShader); guards font enumeration.
+// Does NOT spoof or inject canvas noise — see "Why no canvas noise injection" above.
+export function applyFingerprintCheck(
   page: Page,
   config: StealthConfig
-): Promise<void>
+): Promise<{ ok: boolean; warnings: string[] }>
 ```
 
 ### Session type changes (`src/sessions/types.ts`)
@@ -166,21 +185,23 @@ Request body gains two optional fields:
 - `stealth?: { mode: 'fast' | 'secure' }` — explicit mode selection
 - `autonomous?: boolean` — if true, auto-upgrade on Tier C; no recommendation gate
 
-Response gains:
+Response gains (success case):
 - `stealthApplied: 'fast' | 'secure'` — what was actually applied
-- `stealthRecommendation?: string` — present when the classifier recommends a switch
 
-When the classifier fires in interactive mode: `202` with `stealthRecommendation` instead of
-opening the session. Caller re-submits with `stealthMode: 'secure'` to confirm.
+When the classifier recommends an upgrade in interactive mode, the session is **not** opened.
+Instead the standard envelope returns a typed soft-block (HTTP `200`, `ok: false`):
+`{ ok: false, requestId, error: { code: 'STEALTH_UPGRADE_RECOMMENDED', message: '…', data: { recommendation: 'secure' } } }`.
+Caller re-submits with `stealth: { mode: 'secure' }` to confirm.
 
 ### Integration point in session creation
 
 In the session creation handler (wherever sessions are currently opened):
 1. Call `resolveStealthMode({ config, url, autonomous })` — gets the resolution
-2. If resolution returns a recommendation and session is interactive: return `202` with recommendation, do not open session
-3. Otherwise: pass resolved mode through to `spawnAndConnect` wrapper
+2. If resolution returns a recommendation and session is interactive: return the
+   `STEALTH_UPGRADE_RECOMMENDED` soft-block, do not open session
+3. Otherwise: open the session as today (no change to `spawnAndConnect`)
 4. After connect: call `applyStealthCDP(context, config)`
-5. On each new page (via `context.on('page', ...)`): call `applyStealthEnvironment` and (if secure) `applyFingerprintHardening`
+5. On each new page (via `context.on('page', ...)`): call `applyStealthEnvironment` and (if secure) `applyFingerprintCheck`
 6. Action wrappers (click, type, scroll) call `withStealthTiming` when secure
 
 ---
@@ -239,32 +260,34 @@ delay (10–30ms per character).
   (do not copy — understand the approach): https://github.com/berstend/puppeteer-extra
 - Consider Fitts's Law for mouse movement timing if cursor path simulation is added later
 
-### Layer 4 — Active fingerprint hardening
+### Layer 4 — Fingerprint consistency check + font guard
 
-**Canvas noise injection:** inject a tiny, per-session, deterministic pixel variation into canvas
-`getImageData` responses. The variation must be: consistent within a session (same noise seed),
-invisible to the human eye, but enough to make the canvas hash unique per Feather instance.
-Apply via `page.addInitScript`.
+**No canvas spoofing.** Feather runs real Chromium on a real GPU and already has a genuine, stable
+canvas/WebGL fingerprint — the same as any real human browser. Layer 4 *verifies* that real
+fingerprint is intact; it does not spoof or inject noise (see "Why no canvas noise injection" in
+the modes section above for the full rationale).
 
-**WebGL vendor/renderer consistency:** verify the real GPU strings match a plausible desktop
-value. On this machine: `Google Inc. (Intel)` / `ANGLE (Intel, Mesa Intel(R) Iris(R) Xe ...)`.
-Do not spoof — verify the real values are present and flag if a SwiftShader renderer is detected
-(which would mean the headless path is active and the session is already detectable).
+**WebGL vendor/renderer consistency check:** read the live GPU strings and assert they are a real
+hardware renderer. On this machine the real values are `Google Inc. (Intel)` /
+`ANGLE (Intel, Mesa Intel(R) Iris(R) Xe ...)`. **Flag (do not spoof)** if a `SwiftShader`
+software renderer is detected — that means the headless path leaked through and the session is
+already trivially detectable. Return this as a warning in `applyFingerprintCheck`'s result so the
+caller/self-test can surface it.
 
-**Font enumeration guard:** limit font probing responses to a consistent, realistic set. Many
-sites enumerate installed fonts via canvas text measurement. Return a real desktop font list
-(not an empty set, which is itself a tell).
+**Font enumeration guard:** many sites enumerate installed fonts via canvas text measurement. The
+guard ensures probing returns a consistent, realistic desktop font set — never an empty set, which
+is itself a tell. Apply via `page.addInitScript`. This is the one active intervention in Layer 4,
+and it is *additive consistency*, not spoofing.
 
 **Research directive for implementing agent:**
-- Search for "canvas fingerprint noise injection Playwright" and "canvas getImageData override
-  stealth" for implementation approaches using `page.addInitScript`
 - Read: https://coveryourtracks.eff.org/ — run this against a Feather session to see what
-  the baseline fingerprint looks like before and after hardening
+  the baseline (real) fingerprint looks like; confirm canvas/WebGL are already plausible
 - Read: https://bot.sannysoft.com/ — primary reference for CDP/automation detection signals
 - Read: https://arh.antoinevastel.com/bots/areyouheadless — headless/automation detector
-- Search for "playwright-stealth canvas WebGL fingerprint" and review the `puppeteer-extra-plugin-stealth`
-  source for each evasion technique (reference only — do not import the library)
+- Search for "WebGL SwiftShader detection headless" to confirm the renderer-leak signal
 - Search for "font enumeration fingerprinting defense" for the font guard approach
+- Review the `puppeteer-extra-plugin-stealth` source for the font/WebGL evasions specifically
+  (reference only — do not import the library; and note we deliberately skip its canvas noise)
 
 ---
 
@@ -299,16 +322,19 @@ The existing probe script (`scripts/spikes/anti-detection-probe.ts`) must be ext
 
 ---
 
-## Future: Declared Good-Bot Posture (not in this spec)
+## Future (not in this spec)
 
-The sustainable long-term alternative to stealth is declaring yourself as a verified, authorized
-bot via RFC 9421 HTTP Message Signatures (the Web-Bot-Auth standard). Cloudflare already accepts
-this from Anchor Browser. This is:
-- Standards-based and defensible
-- No arms race
-- Legally clean
+**Reactive header-based Tier C detection.** v1 classifies from the URL alone (domain list). A
+future version could *also* detect Cloudflare (`cf-ray`, `cf-mitigated`) and DataDome
+(`x-datadome-*`) from response headers after the first navigation, surfacing a "this site uses bot
+detection — consider secure mode for next visit" warning. This is **reactive, not preventive** (you
+must already be on the site to read its headers), so it complements — never replaces — the v1
+pre-entrance domain gate.
 
-Flag for Phase 5+ consideration. Track the standard at: https://www.rfc-editor.org/rfc/rfc9421
+**Declared good-bot posture (Web-Bot-Auth / RFC 9421).** The sustainable long-term alternative to
+stealth is *declaring* yourself a verified, authorized bot via RFC 9421 HTTP Message Signatures.
+Cloudflare already accepts this from Anchor Browser. Standards-based, no arms race, legally clean.
+Track at: https://www.rfc-editor.org/rfc/rfc9421
 
 ---
 
@@ -318,12 +344,13 @@ Flag for Phase 5+ consideration. Track the standard at: https://www.rfc-editor.o
 - [ ] `StealthConfig` type added to `src/sessions/types.ts`
 - [ ] Session creation handler calls `resolveStealthMode` and applies result
 - [ ] `POST /v1/sessions` accepts `stealth` and `autonomous` fields; response includes `stealthApplied`
-- [ ] Interactive Tier C detection returns `202` with `stealthRecommendation` before opening session
+- [ ] Interactive Tier C detection returns the `STEALTH_UPGRADE_RECOMMENDED` soft-block (200, `ok: false`) before opening session
 - [ ] Autonomous Tier C detection auto-upgrades and logs the upgrade
+- [ ] Tier C classification is domain-list only (no header-based detection in v1)
 - [ ] Layer 1 (CDP surface): verified via CDP protocol inspector that `Runtime.enable` is not sent on clean session open
 - [ ] Layer 2 (environment): viewport/timezone/locale/dpr consistent; verified via self-test
 - [ ] Layer 3 (behavioral timing): click/type/scroll wrapped with jitter in secure mode
-- [ ] Layer 4 (fingerprint hardening): canvas noise + WebGL check + font guard in secure mode
+- [ ] Layer 4 (fingerprint check): WebGL renderer verified (SwiftShader flagged) + font guard in secure mode; **no canvas noise injection**
 - [ ] Self-test extended: bot.sannysoft.com run in fast and secure mode; per-signal report
 - [ ] All existing tests still pass (`npm test`, `npm run test:integration`)
 - [ ] TypeScript clean (`tsc --noEmit`)
