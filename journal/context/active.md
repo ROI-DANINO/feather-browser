@@ -15,6 +15,7 @@ jar). Spec/plan `docs/specs|plans/2026-06-06-hero-demo-workflow*.md`. Gates: **2
 demo-helper tests) + `tsc --noEmit` 0**; committed + pushed (`origin/dev` in sync). ▶ **NEXT = the only
 step left: record the live run (screen-capture while it drives the window) → final README touch-ups →
 LinkedIn debut.** (Minor: recipient defaults to `support@anthropic.com`, overridable via `HERO_DEMO_TO`.)
+Verified + journal-reconciled this session: `ops/sessions/hero-demo-verified-20260606-1854.md`.
 
 **✅ HERO DEMO GATE CLOSED — Core input commands shipped on `dev` (2026-06-06 17:33).** Executed
 `docs/plans/2026-06-06-core-input-commands.md` end-to-end (10 implementation commits

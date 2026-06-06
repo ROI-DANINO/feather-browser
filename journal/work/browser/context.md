@@ -17,6 +17,13 @@ flavours: element-state (`visible|hidden|attached|detached`) and a site-agnostic
 settle on an attached-but-empty node like ChatGPT's streaming placeholder). All handlers emit no
 events; no route logs `request.body` (credential boundary). 207u + 43i (real Chromium) green.
 
+**Cookie Mine proven across TWO sites in one warmed context (2026-06-06).** ChatGPT is now warmed
+into the same `primary` persistent profile as Google, so one human-warmed jar carries both logins.
+A single headed Feather session drives an authenticated cross-site flow end-to-end — ChatGPT →
+read its reply → Gmail compose draft — via the new input commands (`scripts/demo/hero-chatgpt-gmail.ts`,
+verified working live). This is the Cookie-Mine model working as designed: warm once (human), agent
+piggybacks across sites. Warming a second site = same `warm-session` tool with `FEATHER_WARM_URL`.
+
 **Phase 4 Step 0 DONE (2026-06-04)** — answered by spikes, not specs. Cookie Mine proven
 end-to-end on a real site (agent acted in Roi's live ChatGPT).
 
