@@ -59,6 +59,36 @@ export interface SnapshotResult {
   limits: { textChars: number; links: number };
 }
 
+type TargetBy =
+  | { by: "role"; role: string; name?: string; exact?: boolean }
+  | { by: "text"; text: string; exact?: boolean }
+  | { by: "placeholder"; text: string }
+  | { by: "testid"; testId: string }
+  | { by: "css"; selector: string };
+
+/** How a command locates an element. `at` chooses which match when several match (default "first"). */
+export type Target = TargetBy & { at?: "first" | "last" | number };
+
+export interface ClickInput { sessionId: string; pageId?: string; target: Target; timeoutMs?: number; }
+export interface ClickOutput { pageId: string; clicked: true; }
+
+export interface TypeInput {
+  sessionId: string; pageId?: string; target: Target; text: string;
+  mode?: "fill" | "sequential"; delayMs?: number; timeoutMs?: number;
+}
+export interface TypeOutput { pageId: string; typed: true; }
+
+export interface PressInput { sessionId: string; pageId?: string; target?: Target; key: string; timeoutMs?: number; }
+export interface PressOutput { pageId: string; pressed: string; }
+
+export type WaitInput =
+  | { sessionId: string; pageId?: string; target: Target; until: "visible" | "hidden" | "attached" | "detached"; timeoutMs?: number }
+  | { sessionId: string; pageId?: string; target: Target; until: "stable"; quietMs?: number; pollMs?: number; timeoutMs?: number };
+
+export type WaitOutput =
+  | { pageId: string; matched: true }
+  | { pageId: string; settled: true; elapsedMs: number; text: string };
+
 export interface CommandContext {
   requestId: string;
 }
