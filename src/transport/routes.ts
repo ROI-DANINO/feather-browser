@@ -12,6 +12,11 @@ import { ScreenshotHandler } from "../commands/screenshot";
 import { DebugBundleHandler } from "../commands/debug-bundle";
 import { CloseSessionHandler } from "../commands/close";
 import { OpenTabHandler } from "../commands/open-tab";
+import { ClickHandler } from "../commands/click";
+import { TypeHandler } from "../commands/type";
+import { PressHandler } from "../commands/press";
+import { WaitHandler } from "../commands/wait";
+import type { WaitInput } from "../sessions/types";
 import { registerSseRoute } from "./sse";
 
 const LaunchSchema = z.object({
@@ -48,6 +53,54 @@ const ExtractSchema = z.object({
   }),
 });
 
+const atField = z.union([z.enum(["first", "last"]), z.number().int().nonnegative()]).optional();
+const TargetSchema = z.discriminatedUnion("by", [
+  z.object({ by: z.literal("role"), role: z.string().min(1), name: z.string().optional(), exact: z.boolean().optional(), at: atField }),
+  z.object({ by: z.literal("text"), text: z.string().min(1), exact: z.boolean().optional(), at: atField }),
+  z.object({ by: z.literal("placeholder"), text: z.string().min(1), at: atField }),
+  z.object({ by: z.literal("testid"), testId: z.string().min(1), at: atField }),
+  z.object({ by: z.literal("css"), selector: z.string().min(1), at: atField }),
+]);
+
+const ClickSchema = z.object({
+  pageId: z.string().optional(),
+  target: TargetSchema,
+  timeoutMs: z.number().int().positive().optional(),
+});
+
+const TypeSchema = z.object({
+  pageId: z.string().optional(),
+  target: TargetSchema,
+  text: z.string(),
+  mode: z.enum(["fill", "sequential"]).optional(),
+  delayMs: z.number().int().positive().optional(),
+  timeoutMs: z.number().int().positive().optional(),
+});
+
+const PressSchema = z.object({
+  pageId: z.string().optional(),
+  target: TargetSchema.optional(),
+  key: z.string().min(1),
+  timeoutMs: z.number().int().positive().optional(),
+});
+
+const WaitSchema = z.union([
+  z.object({
+    pageId: z.string().optional(),
+    target: TargetSchema,
+    until: z.enum(["visible", "hidden", "attached", "detached"]),
+    timeoutMs: z.number().int().positive().optional(),
+  }),
+  z.object({
+    pageId: z.string().optional(),
+    target: TargetSchema,
+    until: z.literal("stable"),
+    quietMs: z.number().int().positive().optional(),
+    pollMs: z.number().int().positive().optional(),
+    timeoutMs: z.number().int().positive().optional(),
+  }),
+]);
+
 const ScreenshotSchema = z.object({ pageId: z.string().optional(), fullPage: z.boolean().optional() });
 const CloseSchema = z.object({ force: z.boolean().optional(), quarantineDisposableProfile: z.boolean().optional() });
 
@@ -57,6 +110,9 @@ const ERROR_STATUS: Record<string, number> = {
   SESSION_NOT_RUNNING: 409,
   PAGE_NOT_FOUND: 404,
   VALIDATION_ERROR: 400,
+  ELEMENT_NOT_FOUND: 404,
+  ELEMENT_NOT_ACTIONABLE: 409,
+  WAIT_TIMEOUT: 408,
 };
 
 function errorStatus(code: string): number { return ERROR_STATUS[code] ?? 500; }
@@ -91,6 +147,10 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
   const debugBundleHandler = new DebugBundleHandler(manager, paths);
   const closeHandler = new CloseSessionHandler(manager);
   const openTabHandler = new OpenTabHandler(manager);
+  const clickHandler = new ClickHandler(manager);
+  const typeHandler = new TypeHandler(manager);
+  const pressHandler = new PressHandler(manager);
+  const waitHandler = new WaitHandler(manager);
 
   app.get("/health", async (_req: FastifyRequest, reply: FastifyReply) => {
     await reply.status(200).send({ ok: true, data: { status: "ok" } });
@@ -157,6 +217,46 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
       const { sessionId } = request.params as { sessionId: string };
       const input = ExtractSchema.parse(request.body);
       const result = await extractHandler.execute({ sessionId, ...input }, { requestId });
+      await reply.status(200).send(ok(requestId, result));
+    } catch (err) { await handleRouteError(err, request, reply); }
+  });
+
+  app.post("/v1/sessions/:sessionId/click", { preHandler: [tokenAuth] }, async (request: FastifyRequest, reply: FastifyReply) => {
+    const requestId = getRequestId(request);
+    try {
+      const { sessionId } = request.params as { sessionId: string };
+      const input = ClickSchema.parse(request.body);
+      const result = await clickHandler.execute({ sessionId, ...input }, { requestId });
+      await reply.status(200).send(ok(requestId, result));
+    } catch (err) { await handleRouteError(err, request, reply); }
+  });
+
+  app.post("/v1/sessions/:sessionId/type", { preHandler: [tokenAuth] }, async (request: FastifyRequest, reply: FastifyReply) => {
+    const requestId = getRequestId(request);
+    try {
+      const { sessionId } = request.params as { sessionId: string };
+      const input = TypeSchema.parse(request.body);
+      const result = await typeHandler.execute({ sessionId, ...input }, { requestId });
+      await reply.status(200).send(ok(requestId, result));
+    } catch (err) { await handleRouteError(err, request, reply); }
+  });
+
+  app.post("/v1/sessions/:sessionId/press", { preHandler: [tokenAuth] }, async (request: FastifyRequest, reply: FastifyReply) => {
+    const requestId = getRequestId(request);
+    try {
+      const { sessionId } = request.params as { sessionId: string };
+      const input = PressSchema.parse(request.body);
+      const result = await pressHandler.execute({ sessionId, ...input }, { requestId });
+      await reply.status(200).send(ok(requestId, result));
+    } catch (err) { await handleRouteError(err, request, reply); }
+  });
+
+  app.post("/v1/sessions/:sessionId/wait", { preHandler: [tokenAuth] }, async (request: FastifyRequest, reply: FastifyReply) => {
+    const requestId = getRequestId(request);
+    try {
+      const { sessionId } = request.params as { sessionId: string };
+      const input = WaitSchema.parse(request.body);
+      const result = await waitHandler.execute({ sessionId, ...input } as WaitInput, { requestId });
       await reply.status(200).send(ok(requestId, result));
     } catch (err) { await handleRouteError(err, request, reply); }
   });
