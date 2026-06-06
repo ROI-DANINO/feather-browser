@@ -4,6 +4,8 @@ docs/superpowers/
 # Claude Code: track command/skill definitions, ignore machine-local state
 .claude/*
 !.claude/commands/
+!.claude/agents/
+!.claude/plugins/
 .claude/settings.local.json
 node_modules/
 .browser-profile/
