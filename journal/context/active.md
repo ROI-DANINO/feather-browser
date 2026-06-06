@@ -22,6 +22,15 @@ stable" (**it is: verified green this session** — 184u + tsc 0 + demo green, t
 Like PR #1, the merge is Roi's milestone call. **Then, in a SEPARATE session: LinkedIn debut polish**
 (optional demo GIF/asciinema; actually post). Phase 4b (shell-stack joint call) follows after.
 
+**📎 Reference landed (2026-06-06, on `dev` `30cccb3`):** autonomous **Anchor Browser product-reference
+research** → `research/2026-06-06-anchor-browser-product-reference.md` (+ SDK probe notes). Primary
+sources + ground-truth inspection of shipped `anchorbrowser@0.16.3` (throwaway worktree, nothing run).
+Net reads for later: Anchor's arch = **CDP-over-WebSocket + Playwright `connectOverCDP`** (same model as
+our `spawnAndConnect`); its identity model (human-logs-in/agent-inherits) is a **direct Cookie-Mine
+parallel**; "Web Action Cache"/"OmniConnect"/"Anchor Chromium" are marketing brands, stealth has no
+documented mechanism, 12X/80X/23X are unverified. **Report §12 = 5 open questions for Roi** (defer; none
+block). Research-only, no `src/` changes; does NOT alter the master-merge trajectory below.
+
 **🧹 Housekeeping (2026-06-05 17:14 STOP, commit `43933fc`):** research inbox **fully processed →
 empty** (positioning → `docs/public-positioning.md`; composio → memory; branching → **git-worktree
 workflow now in AGENTS.md**; security-risks → absorbed). **New workflow rule:** unrelated workstreams
