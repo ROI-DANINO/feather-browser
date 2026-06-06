@@ -17,10 +17,19 @@ unimplemented "screenshots" claim); ③ ROADMAP Core-vs-Shell split + Phase 4a/4
 SHIP, all 5 acceptance criteria MET. Blog `0009-the-demo-that-fact-checked-me.md` written. Session
 record: `ops/sessions/core-first-execution-20260605-1853.md`.
 
-**▶ NEXT (Roi's call this stop): merge `dev`→`master`** — milestone graduation, gated on "dev is
-stable" (**it is: verified green this session** — 184u + tsc 0 + demo green, tree clean, `dev` pushed).
-Like PR #1, the merge is Roi's milestone call. **Then, in a SEPARATE session: LinkedIn debut polish**
-(optional demo GIF/asciinema; actually post). Phase 4b (shell-stack joint call) follows after.
+**✅ `dev`→`master` MERGED (2026-06-06, PR #2 `5e808cd`).** Milestone graduation done — `origin/master`
+is now at the Phase-4a tip; `origin/master..origin/dev` = **0** (fully in sync). Re-verified stable
+before merging: **184 unit pass, tsc 0**, no `src/`/`tests/` changes since the last full integration
+verification (37i + 4m green at `16f5ab7`) so that green still holds. Journal bridge notes committed to
+`dev` first (`9c91f42`). Local `master` fast-forwarded to `origin/master`. This 37-commit graduation
+carried: Phase 4a Core-readiness (README/demo/ROADMAP split/blog 0009) + post-merge tech-debt
+(ozone-platform configurable, vitest ^2→^4 audit-0, Cookie-Mine loop closed, isolation/password-manager
+hardening on `scratch`) + Anchor research (reference, no `src/`).
+
+**▶ NEXT: LinkedIn debut polish (SEPARATE session)** — optional demo GIF/asciinema of `quickstart.sh`;
+any final README touch-ups; then actually post. (Public README + demo are already live.) **Then Phase 4b**
+(shell-stack joint call + GUI). Smaller housekeeping available now: archive the processed Anchor brief out
+of `journal/raw/_inbox/`; Anchor report §12's 5 open questions are parked for Roi (none block).
 
 **📎 Reference landed (2026-06-06, on `dev` `30cccb3`):** autonomous **Anchor Browser product-reference
 research** → `research/2026-06-06-anchor-browser-product-reference.md` (+ SDK probe notes). Primary
