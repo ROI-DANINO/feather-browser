@@ -478,6 +478,142 @@ curl -s -X POST http://localhost:4000/v1/sessions/ses_abc123/extract \
 
 ---
 
+### Input (acting on a page)
+
+All four commands locate elements with a shared **Target** object:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `by` | `"role"` \| `"text"` \| `"placeholder"` \| `"testid"` \| `"css"` | Yes | Locator strategy |
+| `role` | string | Yes (if `by="role"`) | ARIA role, e.g. `"button"` |
+| `name` | string | No (`by="role"`) | Accessible name to match |
+| `text` | string | Yes (if `by="text"` or `"placeholder"`) | Visible text / placeholder text |
+| `testId` | string | Yes (if `by="testid"`) | Value of the `data-testid` attribute |
+| `selector` | string | Yes (if `by="css"`) | CSS selector |
+| `exact` | boolean | No (`role`/`text`) | Exact (not substring) match |
+| `at` | `"first"` \| `"last"` \| number | No | Which match to use when several match (default `"first"`) |
+
+#### `POST /v1/sessions/:sessionId/click` — Click an element
+
+**Path parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sessionId` | string | Session identifier |
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `target` | Target | Yes | Element to click |
+| `pageId` | string | No | Page to act on (defaults to the active page) |
+| `timeoutMs` | number | No | Action timeout (default 15000) |
+
+**Response `data`:** `{ "pageId": string, "clicked": true }`
+
+**Error responses:**
+
+| Status | Code | When |
+|--------|------|------|
+| 400 | `VALIDATION_ERROR` | Request body / target fails schema validation |
+| 404 | `ELEMENT_NOT_FOUND` | No element matched the target |
+| 409 | `ELEMENT_NOT_ACTIONABLE` | Target matched but the action timed out (covered, disabled, off-screen) |
+
+---
+
+#### `POST /v1/sessions/:sessionId/type` — Type text into a field
+
+**Path parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sessionId` | string | Session identifier |
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `target` | Target | Yes | Field to type into (`<input>`, `<textarea>`, or `[contenteditable]`) |
+| `text` | string | Yes | Text to enter |
+| `mode` | `"fill"` \| `"sequential"` | No | `fill` (default) clears + sets; `sequential` types key-by-key (for editors that ignore `fill`) |
+| `delayMs` | number | No | Per-keystroke delay in milliseconds (sequential only) |
+| `pageId` | string | No | Page to act on (defaults to the active page) |
+| `timeoutMs` | number | No | Action timeout (default 15000) |
+
+**Response `data`:** `{ "pageId": string, "typed": true }`
+
+**Error responses:**
+
+| Status | Code | When |
+|--------|------|------|
+| 400 | `VALIDATION_ERROR` | Request body / target fails schema validation |
+| 404 | `ELEMENT_NOT_FOUND` | No element matched the target |
+| 409 | `ELEMENT_NOT_ACTIONABLE` | Target matched but the action timed out (covered, disabled, off-screen) |
+
+---
+
+#### `POST /v1/sessions/:sessionId/press` — Press a key
+
+**Path parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sessionId` | string | Session identifier |
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `key` | string | Yes | Playwright key name, e.g. `"Enter"`, `"Tab"`, `"Control+A"` |
+| `target` | Target | No | Element to focus first; omit to press on the currently focused element |
+| `pageId` | string | No | Page to act on (defaults to the active page) |
+| `timeoutMs` | number | No | Action timeout when `target` is provided (default 15000) |
+
+**Response `data`:** `{ "pageId": string, "pressed": string }`
+
+**Error responses:**
+
+| Status | Code | When |
+|--------|------|------|
+| 400 | `VALIDATION_ERROR` | Request body / target fails schema validation |
+| 404 | `ELEMENT_NOT_FOUND` | No element matched the target |
+| 409 | `ELEMENT_NOT_ACTIONABLE` | Target matched but the action timed out (covered, disabled, off-screen) |
+
+---
+
+#### `POST /v1/sessions/:sessionId/wait` — Wait for an element or for text to settle
+
+**Path parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sessionId` | string | Session identifier |
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `target` | Target | Yes | Element to watch |
+| `until` | `"visible"` \| `"hidden"` \| `"attached"` \| `"detached"` \| `"stable"` | Yes | Condition to wait for |
+| `quietMs` | number | No | (`stable`) settle once text is unchanged this long (default 1500) |
+| `pollMs` | number | No | (`stable`) poll interval in milliseconds (default 250) |
+| `pageId` | string | No | Page to act on (defaults to the active page) |
+| `timeoutMs` | number | No | Overall timeout (default 15000; `stable` default 30000) |
+
+**Response `data`:** `{ "pageId": string, "matched": true }` for element states (`visible`/`hidden`/`attached`/`detached`), or
+`{ "pageId": string, "settled": true, "elapsedMs": number, "text": string }` for `until="stable"`.
+
+**Error responses:**
+
+| Status | Code | When |
+|--------|------|------|
+| 400 | `VALIDATION_ERROR` | Request body / target fails schema validation |
+| 404 | `ELEMENT_NOT_FOUND` | No element matched the target |
+| 408 | `WAIT_TIMEOUT` | `wait` condition not met within the timeout |
+| 409 | `ELEMENT_NOT_ACTIONABLE` | Target matched but the action timed out (covered, disabled, off-screen) |
+
+---
+
 #### `POST /v1/sessions/:sessionId/screenshot` — Take a screenshot
 
 Captures a PNG screenshot of the current page and saves it to the session's debug directory.
@@ -569,4 +705,7 @@ curl -s -X POST http://localhost:4000/v1/sessions/ses_abc123/debug-bundle \
 | `PROFILE_LOCKED` | 409 | A persistent profile directory is already locked by another active session |
 | `SESSION_NOT_RUNNING` | 409 | The session exists but is not in `running` state; cannot open a tab |
 | `PAGE_NOT_FOUND` | 404 | The requested `pageId` does not exist within the session |
+| `ELEMENT_NOT_FOUND` | 404 | No element matched the target locator |
+| `ELEMENT_NOT_ACTIONABLE` | 409 | Element matched but the action timed out (covered, disabled, or off-screen) |
+| `WAIT_TIMEOUT` | 408 | `wait` condition not met within the allotted timeout |
 | `INTERNAL_ERROR` | 500 | An unexpected server-side error occurred; check server logs with the `requestId` |
