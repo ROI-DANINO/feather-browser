@@ -4,7 +4,7 @@ If slash commands are not natively supported by the current agent, open this fil
 
 Pause and write a handoff.
 
-1. Check for `journal/context/next.md`. If it exists, read it and fold all its timestamped sections into the analysis below as prior-chat context.
+1. Check `journal/context/next.md`. If it exists and contains pending `/next` entries, read all accumulated entries and fold them into the analysis below as prior-chat context. Ignore header-only or already-reset buffers.
 2. Analyze the conversation:
    - Done this session (including any prior-chat sections from `next.md`)
    - Left unfinished
@@ -24,5 +24,10 @@ Pause and write a handoff.
 9. Archive `journal/ops/tasks.md` to `journal/ops/archive/tasks-<timestamp>.md`.
 10. Update `journal/ops/tasks.md`.
 11. Append a `STOP` line to `journal/log.md`.
-12. If `journal/context/next.md` existed (step 1), delete it.
-13. Commit the changed tracking files.
+12. If the current stop flow uses `.remember/remember.md`, update it too.
+13. If `journal/context/next.md` had pending entries, archive the consumed buffer instead of deleting it:
+    - single entry: `journal/archive/next/YYYY-MM-DD/HHMM-<short-session-name>.md`
+    - multiple entries: `journal/archive/next/YYYY-MM-DD/HHMM-stop-bundle-<short-session-name>.md`
+14. Reset `journal/context/next.md` to an empty active buffer after archiving consumed entries.
+15. If any temporary stop draft, next-bundle draft, or other project-memory scratch file would otherwise be overwritten or removed, move it into `journal/archive/handoffs/YYYY-MM-DD/HHMM-<short-name>.md` first. Durable `journal/ops/sessions/` files are append-only history and should not be overwritten.
+16. Commit the changed tracking files.

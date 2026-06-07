@@ -165,6 +165,31 @@ Research doc: `research/2026-06-07-open-source-integration-research.md`. Durable
 - **Maxun AGPL = permanent code blocker.** `WorkflowFile` `where/what` DSL pattern is worth porting
   by hand. `rrweb` (MIT, separate package) usable independently for a future session recorder.
 
+## Council Design Review — security-first re-sequencing (2026-06-07)
+
+A 5-model council (Gemini 3.1 Pro, Grok 4.3, DeepSeek-R1, Claude Opus 4.8, GPT-5.5) reviewed the
+roadmap, OSS strategy, and the MFA + Identity plans. **Decision: go with the findings — reverse the
+sequence to "capability/security model first, interop through it."** Full record:
+`research/2026-06-07-council-design-review.md`. Next session = **Session 4a.6b** (re-sequencing pass).
+This **qualifies/supersedes** several facts above; treat the originals as the prior design, not current:
+
+- **CDP/WS exposure is NOT a "low-effort, high-leverage" win** (corrects the OSS-findings line above).
+  CDP is root access to a warmed session (`Network.getCookies`/`Storage.getCookies`/`Runtime.evaluate`
+  read raw tokens). Must not ship on warmed profiles before a safety gate. 4a.7 is on hold pending the
+  cold-profile-vs-deferred scope decision.
+- **`identity.id IS workspaceId` / strict 1:1:1** is premature narrowing — split into separable
+  fields (`defaultWorkspaceId`/`defaultProfileId`); enforce 1-session-per-profile in code, not as the
+  domain model. (Qualifies "Identity Model Architecture" above.)
+- **Warm-status via event bus is unsafe** — that bus is the *logging* bus, and a session close does
+  not mean "warm" (failed login / logout / abandoned all get marked warm). Use an explicit, direct
+  awaited `markWarm()`. (Corrects "Warm-status via event bus" above.)
+- **The warmed profile itself is the credential-at-rest store** — `vaultRef` dormancy is a red
+  herring; cookies/refresh-tokens/DBSC keys are live on disk now (extends the "credentials never in
+  the shared jar" decision). Needs FS perms / at-rest encryption / OS keyring before broad use.
+- **Unauthenticated MFA local routes** (planned) need capability-token + Origin/Host + CSRF-nonce;
+  "localhost" is transport, not a security boundary. Agent-supplied MFA prompt/target = phishing risk.
+- Unanimous **green:** the OSS license calls (Maxun AGPL reference-only; fingerprint npm deps safe).
+
 ## Key Spike Results
 
 - **fastify-sse-v2 v5 compat** — **RESOLVED (S3, 2026-06-03):** proven compatible with Fastify

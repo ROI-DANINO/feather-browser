@@ -1,50 +1,44 @@
-# Active — state owner (where we are, what's next)
+# Active - startup pointer
 
-This is the single owner of current state + next action. Task checklist → `journal/ops/tasks.md`;
-destination → `ROADMAP.md`; history → `journal/log.md` + `ops/sessions/`.
+This file is the short live pointer for `/start`. Full phase/session map -> `ROADMAP.md`;
+operational checklist -> `journal/ops/tasks.md`; machine pointer -> `journal/ops/phase.md`.
 
-## Now
+## Current pointer
 
-**✅ AGENT BROWSING STACK — ALL 3 SPEC SESSIONS DONE (2026-06-07).** Brief: `docs/specs/2026-06-07-agent-browsing-stack-brief.md`. All specs carry design + plan. No phase numbers yet — roadmap re-sequencing pass assigns them.
+- **Current phase:** Phase 4a - Feather Core Open-Source Readiness And Public Proof.
+- **Current recommended session:** `ROADMAP.md` -> `### Session 4a.6b - Security & Capability
+  Re-Sequencing (from council review)`. This supersedes "start 4a.7 as-is".
+- **Next concrete action:** run Session 4a.6b - read `research/2026-06-07-council-design-review.md`,
+  decide the 4a.7 cold-vs-deferred split, write the control-plane/capability ADR, and re-order the
+  Phase 5 spine (safety gate -> Identity -> MFA -> warmed CDP -> Stealth). Planning only, no code.
+- **Why:** a 5-model council review (2026-06-07) unanimously flagged that Feather is exposing
+  high-privilege surfaces (CDP attach, unauth MFA routes, warmed creds on disk) before the safety
+  machinery that governs them. Decision: go with the findings - security model first.
+- **Task state:** roadmap rebase done; council review recorded + spec addenda added; 4a.7 flagged and
+  on hold pending the re-sequencing pass.
 
-- **Feature 1 — Stealth Stack ✅** spec+plan rev 2 (commits `bb3c065`/`8a46065`, local dev, unpushed to origin).
-  Docs: `docs/specs/2026-06-07-stealth-stack-{design,plan}.md`. Audit: `research/2026-06-07-council-audit-stealth-stack.md`.
-  Secure/assisted mode model; fingerprint layers always-on; kinematic input = spike-first.
+## Files to read next
 
-- **Feature 2 — MFA Handler ✅** spec+plan (14 TDD tasks, composable).
-  Docs: `docs/specs/2026-06-07-mfa-handler-{design,plan}.md`.
-  Scope: TOTP + SMS + push. Approach B (Feather types code, agent never sees it). Telegram seam designed in.
+- `research/2026-06-07-council-design-review.md`
+- `ROADMAP.md` (Session 4a.6b)
+- `journal/ops/tasks.md`
+- `docs/specs/2026-06-07-mfa-handler-design.md` (Security addendum)
+- `docs/specs/2026-06-07-identity-model-design.md` (Security addendum)
+- `docs/specs/adr-0008-credentials-vault.md`
 
-- **Feature 3 — Identity Model ✅** spec rev 2 + plan (13 TDD tasks, self-contained).
-  Docs: `docs/specs/2026-06-07-identity-model-{design,plan}.md`. Session: `ops/sessions/agent-browsing-stack-identity-spec-20260607.md`.
-  Identity ID = workspaceId. Warm-status via event bus. PATCH omitted v1. vaultRef dormant. 3 guardrails: no cloud sync, 1:1:1 mapping, no RBAC.
+## Blockers / notes
 
-**✅ OPEN-SOURCE INTEGRATION RESEARCH DONE (2026-06-07).** Research doc: `research/2026-06-07-open-source-integration-research.md`. Original session brief archived: `journal/raw/archive/2026-06-07-open-source-integration-research-brief.md`. Constraint block in tasks.md must be incorporated in the re-sequencing pass.
+- `journal/context/next.md` exists as the reset header only; no pending `/next` entries.
+- LinkedIn debut recording remains valid but blocked on installing a Niri/Wayland screen recorder
+  (Kooha or `wf-recorder`).
+- `journal/raw/_inbox/` still has two social-research use-case stubs plus its README; triage is
+  Session 4a.10, not the next engineering session.
+- Command workflow docs were already stabilized in a previous pass; do not redo them unless a direct
+  contradiction blocks current work.
 
-**✅ BURNER DEMO FULLY WORKING (2026-06-06, `a2e9ec9`).** `npm run demo:hero` — gating: needs a Niri/Wayland screen recorder (Kooha / wf-recorder).
+## Recent completed context
 
-## Recommend next
-
-**▶ Roadmap re-sequencing pass.** All 3 plans are written; now assign phases/milestones, incorporate integration research constraints, and cut into work sessions. Read all 3 plans + the constraint block in tasks.md. Output: updated `ROADMAP.md` + revised `journal/ops/tasks.md` with phased work sessions.
-
-**Also pending before re-sequencing:** push local `dev` commits (`bb3c065`, `8a46065`, MFA+Stealth specs) to `origin/dev`. These are on the local branch but not remote.
-
-Alternatives: process inbox files (Track C), or install screen recorder and record hero demo (Track A).
-
-**⚑ ROADMAP RE-SEQUENCING CONSTRAINT (2026-06-07):** When assigning tasks and phases during the
-re-sequencing pass, incorporate findings from `research/2026-06-07-open-source-integration-research.md`:
-- **Stealth Stack implementation sprint:** evaluate `fingerprint-injector` + `fingerprint-generator`
-  + `idcac-playwright` (independent npm packages, no AGPL) before building fingerprint injection from scratch.
-- **CDP/WS endpoint exposure:** add to Feather's `LaunchSession` response — unlocks Browser Use + Crawl4AI
-  agent attach with zero further Feather changes (high-leverage, low-effort).
-- **Markdown extraction (snapshot upgrade):** port Crawl4AI's `DefaultMarkdownGenerator` logic to TS —
-  add `markdown` output to snapshot command; highest-leverage content-quality improvement.
-- **MCP surface (Phase 5):** once built, a ~200-line `FeatherBrowserTool` makes Feather a browser
-  runtime for OpenHands agents; Maxun sidecar HTTP path also becomes available.
-- **Maxun AGPL:** permanent blocker — never import code; schema patterns only.
-
----
-
-**(History — superseded.)**
-**✅ CLAUDE-COUNCIL PLUGIN INSTALLED (2026-06-06).** `/claude-council:ask` + `/claude-council:status` live; `council-advisor` agent. Pending: run it on a real project question (needs API key).
-**✅ HERO DEMO HARDENED + SUPERPOWERS INSTALLED (2026-06-06).** Login Continuity, burner profile isolation, `@obra/superpowers` extension.
+- Agent Browsing Stack specs are complete: Stealth Stack, MFA Handler, and Identity Model.
+- Open-source integration research is complete and folded into the roadmap sequence.
+- Hero demo is working: `npm run demo:hero`; recording still needs a screen recorder.
+- Core open-source README and `examples/quickstart.sh` are already in place.

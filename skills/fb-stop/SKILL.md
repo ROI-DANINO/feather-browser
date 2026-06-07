@@ -7,12 +7,14 @@ description: Feather Browser /stop command. Pauses a session and writes handoff 
 
 When the user invokes `/stop` inside this project:
 
-1. Summarize done work, unfinished work, next action, decisions, ideas, and 3-5 verbatim user quotes.
-2. Ask the three stop questions and wait for answers.
-3. Blog check: if a phase completed or a significant decision landed, write or update a `blog/NNNN-slug.md` entry and the `blog/README.md` index; otherwise skip.
-4. Write `journal/ops/sessions/<nickname>-<timestamp>.md`.
-5. Update `journal/context/active.md`, `journal/ops/phase.md`, `journal/ops/tasks.md`, `journal/log.md`, and `.remember/remember.md`.
-6. Reconcile desk context: for the desk(s) this session actually advanced (`browser` / `product` / `automation` / `general`), update `journal/work/<desk>/context.md` only when a durable desk-level fact changed (architecture decision, spike result, corrected fact). Skip untouched desks; keep volatile next-action state in `journal/context/active.md`, not here.
-7. Archive the previous `journal/ops/tasks.md` to `journal/ops/archive/tasks-<timestamp>.md`.
-8. Commit the tracking changes.
-
+1. Read `journal/context/next.md` if it contains pending `/next` entries, and fold them into the current stop analysis.
+2. Summarize done work, unfinished work, next action, decisions, ideas, and 3-5 verbatim user quotes.
+3. Ask the three stop questions and wait for answers.
+4. Blog check: if a phase completed or a significant decision landed, write or update a `blog/NNNN-slug.md` entry and the `blog/README.md` index; otherwise skip.
+5. Write `journal/ops/sessions/<nickname>-<timestamp>.md`.
+6. Update `journal/context/active.md`, `journal/ops/phase.md`, `journal/ops/tasks.md`, `journal/log.md`, and `.remember/remember.md` when that short handoff surface is still in use.
+7. Reconcile desk context: for the desk(s) this session actually advanced (`browser` / `product` / `automation` / `general`), update `journal/work/<desk>/context.md` only when a durable desk-level fact changed (architecture decision, spike result, corrected fact). Skip untouched desks; keep volatile next-action state in `journal/context/active.md`, not here.
+8. Archive the previous `journal/ops/tasks.md` to `journal/ops/archive/tasks-<timestamp>.md`.
+9. If `journal/context/next.md` had pending entries, archive the consumed buffer under `journal/archive/next/YYYY-MM-DD/HHMM-<short-name>.md` (or `HHMM-stop-bundle-<short-name>.md` for multi-entry bundles), then reset `journal/context/next.md` to an empty active buffer.
+10. If any temporary stop draft or other project-memory scratch file would otherwise be overwritten or removed, move it into `journal/archive/handoffs/YYYY-MM-DD/HHMM-<short-name>.md` first.
+11. Commit the tracking changes.

@@ -39,6 +39,7 @@ This file does not narrate live state (that drifts). Read the owners instead:
 - Stabilization program spec: `docs/specs/2026-06-03-stabilization-linux-readiness-design.md`
 
 Do not reopen earlier phases unless there is a critical correctness issue.
+When a phase is complete, do not jump straight into implementation of the next one; do the planning/reconciliation pass first.
 
 ## Branch Rules
 
@@ -89,9 +90,18 @@ Do not start web research, architecture comparison, or implementation before the
 ## When To Use Each Command
 
 - **`/start`** — at the beginning of *every* session. Always. Loads context and reports state (read-only). Also reads `journal/context/next.md` if present.
-- **`/next`** — when you need a fresh context window mid-work but are *not* at a real stopping point. Snapshots the conversation to `journal/context/next.md` (appends) and does a light touch to `tasks.md` / `active.md` (tick completed boxes, refresh **Now** / **Recommend next**) so the next `/start` boots on current state. No commit, no session file, no task archive. Use this instead of `/stop` when you intend to keep going in a new chat.
-- **`/stop`** — at the end of a *real* stopping point (end of work block, phase milestone, significant decision). Folds any accumulated `/next` snapshots into the full handoff, then commits tracking files.
+- **`/next`** — when you need a fresh context window mid-work but are *not* at a real stopping point. Work happens in sessions, and `/next` is the short bridge between them: it appends a lightweight structured snapshot to `journal/context/next.md`, then does only a light touch to `tasks.md` / `active.md` (tick completed boxes, refresh **Now** / **Recommend next**) so the next `/start` boots on current state. No commit, no session file, no task archive. Use this instead of `/stop` when you intend to keep going in a new chat.
+- **`/stop`** — at the end of a *real* stopping point (end of work block, workday, phase milestone, significant decision). It consumes the accumulated `/next` buffer plus the current session, writes the durable handoff/state, archives the consumed `next.md` bundle, resets the active `journal/context/next.md` buffer, and then commits the tracking files.
 - **`/init`** — only when you arrive with a *new goal* you want gate-checked against the current phase before any work. It overlaps with `/start` for normal continuation, so it is optional day-to-day.
+
+## Session Memory Rules
+
+- Work is organized as sessions.
+- `journal/context/active.md` stays the live current-state pointer.
+- `journal/context/next.md` is the active short-term bridge that accumulates `/next` entries until `/stop`.
+- Historical material must be archived, not deleted, when lifecycle files are consumed or superseded.
+- Keep active context files short for token/context efficiency.
+- Archive files are preserved history and should not be read by default unless the active docs explicitly require them.
 
 ## Tech Stack
 
@@ -127,5 +137,5 @@ A codebase audit was performed on 2026-05-31. Findings and architecture verdict 
 
 - `/init`: confirm project orientation after reading context and before research.
 - `/start`: resume a session and ask before doing work.
-- `/next`: snapshot context before a fresh chat — lighter than `/stop`: updates `next.md` + a light touch to `tasks.md`/`active.md`, no commit/session file.
-- `/stop`: pause a session and write a full handoff.
+- `/next`: append a lightweight structured bridge entry before a fresh chat — updates `next.md` + a light touch to `tasks.md`/`active.md`, no commit/session file.
+- `/stop`: pause a session, consume the accumulated `next.md` bridge, archive it, reset the active bridge buffer, and write the full handoff.

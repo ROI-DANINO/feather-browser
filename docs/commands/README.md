@@ -4,5 +4,5 @@ Local workflow command documentation.
 
 - `/start`: Orient at the beginning of a session.
 - `/init`: Confirm orientation after reading project files and before research.
-- `/next`: Snapshot context before a fresh chat — lighter than `/stop`, no commit.
-- `/stop`: Pause and write a handoff.
+- `/next`: Append a lightweight structured bridge entry before a fresh chat — lighter than `/stop`, no commit.
+- `/stop`: Pause, write the durable handoff, archive any consumed `/next` bridge material, and reset the active bridge buffer.

@@ -12,14 +12,53 @@ Snapshot the current conversation before switching to a fresh chat, without the 
 
 ## Steps
 
-1. Analyze the conversation for done work, unfinished threads, decisions, and the next concrete action.
-2. Append a timestamped section to `journal/context/next.md`. Create the file with a `# Next — Context Bridge` header if it doesn't exist yet.
+1. Analyze the conversation for the current work thread, done work, unfinished threads, user decisions, agent decisions, and the next concrete action.
+2. Append a timestamped section to `journal/context/next.md`. Create the file with a `# Next — Context Bridge` header if it doesn't exist yet. Keep it compact and structured. Every `/next` entry should include, when available:
+
+   ```md
+   ---
+   ## <YYYY-MM-DD HH:MM> — <short session name>
+
+   ### Session pointer
+   - Roadmap/session pointer: <current roadmap item or "unknown">
+
+   ### Summary
+   - <1-3 bullets max>
+
+   ### Completed
+   - <completed work>
+
+   ### User decisions / quotes
+   - Decision: <decision>
+   - Quote: "<verbatim user quote>"
+
+   ### Agent decisions / assumptions / rationale
+   - <decision, assumption, or rationale>
+
+   ### Files read or touched
+   - Read: `<path>`
+   - Touched: `<path>`
+
+   ### Open threads / unresolved questions
+   - <open thread or "none">
+
+   ### Next action
+   - <single concrete next step>
+
+   ### Next session should read
+   - `<path>`
+
+   ### Risks / blockers
+   - <risk/blocker or "none">
+   ```
+
+   Keep sections terse. `/next` is a bridge, not a blog entry or full handoff.
 3. Append a `NEXT` line to `journal/log.md`.
 4. Light tracker touch: tick completed checkboxes in `journal/ops/tasks.md` and refresh the **Now** / **Recommend next** sections of `journal/context/active.md`. Minimal — not the full `/stop` handoff.
 
 ## What /stop does with it
 
-When you eventually run `/stop`, it reads `journal/context/next.md`, folds all accumulated sessions into the full handoff, then deletes the file.
+When you eventually run `/stop`, it reads all accumulated `/next` entries, folds them into the full handoff, archives the consumed buffer under `journal/archive/next/YYYY-MM-DD/`, then resets `journal/context/next.md` to an empty active buffer.
 
 ## Writes
 
@@ -32,5 +71,6 @@ When you eventually run `/stop`, it reads `journal/context/next.md`, folds all a
 
 - Session files (`journal/ops/sessions/`)
 - Desk context files (`journal/work/<desk>/context.md`)
+- `journal/ops/phase.md`
 - Blog entries
 - No git commit, no task archive (the full handoff is still `/stop`'s job)

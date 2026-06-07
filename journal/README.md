@@ -12,10 +12,12 @@ behind it.
 ## What lives here
 
 - `context/active.md` — **the single owner of current state + next action** (resume context for `/start`).
+- `context/next.md` — active short-term `/next` bridge buffer; accumulates pending session snapshots until `/stop`.
 - `ops/phase.md` — machine-readable current phase pointer (frontmatter only).
 - `ops/tasks.md` — current-phase task checklist (checkboxes only, no state narration).
 - `ops/sessions/` — `/stop` handoff files (history, one per session).
 - `ops/archive/` — superseded task lists; rotated-out history (`log-archive.md`, `phase-3-progress.md`, `roadmap-phases-0-3.md`).
+- `archive/` — archived `/next` bundles and other superseded temporary handoff material. Historical only; not auto-loaded at `/start`.
 - `work/<desk>/context.md` — desk-specific working context (browser / product / automation).
 - `raw/_inbox/` — rough notes, dropped links, research intake, session checkpoints.
 - `log.md` — append-only work log (≤140-char lines; holds only the current phase; older → `ops/archive/log-archive.md`).
@@ -31,3 +33,5 @@ Related surfaces outside this directory:
 
 Only the current phase gets detailed tasks. Future phases stay in `ROADMAP.md` until the
 prior phase is complete.
+
+Keep active context files short. Archives preserve history, but they are not part of the default `/start` read path.

@@ -1,9 +1,9 @@
 ---
-phase: phase-4-visual-desktop-shell
-sub_phase: phase-4a-DONE-hero-demo-READY-to-record-AGENT-BROWSING-STACK-ALL-3-specs-DONE-integration-research-DONE-NEXT-roadmap-resequencing-pass
-adr: docs/specs/adr-0007-phase-4-shell-sequencing.md
+phase: phase-4a-core-open-source-readiness
+sub_phase: council-review-done-next-session-4a6b-security-resequencing
+adr: docs/specs/2026-06-05-core-first-reorientation-design.md
 prior_phase: stabilization-linux-readiness-closed
-blocking: null
-# Machine pointer only. Current state + next action live in journal/context/active.md (owner).
-# Current-phase task checklist lives in journal/ops/tasks.md. Session history in journal/ops/sessions/.
+blocking: linked-in-recording-needs-wayland-screen-recorder
+# Machine pointer only. Current state + next action live in journal/context/active.md.
+# Current-phase task checklist lives in journal/ops/tasks.md. Session map lives in ROADMAP.md.
 ---

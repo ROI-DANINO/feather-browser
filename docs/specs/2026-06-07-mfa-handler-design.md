@@ -357,3 +357,37 @@ logs it to the terminal, you open it. That is the complete v1 path.
 - Not email OTP auto-reading. Email OTP via Gmail MCP is a separate spike.
 - Not a phone number or SMS gateway. Feather does not send SMS — the carrier does. Feather only relays the code the user received.
 - Not cloud infrastructure. The local page is `localhost`. Nothing leaves the machine except optionally a Telegram notification.
+
+---
+
+## Security addendum (council review, 2026-06-07)
+
+> A 5-model design review flagged the items below. **Address these before implementing the plan.**
+> Full record + rationale: `research/2026-06-07-council-design-review.md`.
+
+- **Unauthenticated local routes are unsafe as designed (consensus).** `GET /v1/mfa/:id` and
+  `POST /v1/mfa/:id/submit` run on the same server as the warmed browser with no auth. "Localhost"
+  is a transport location, not a security boundary: a malicious site the warmed browser visits can
+  CSRF `fetch(127.0.0.1/v1/mfa/<id>/submit, {mode:"no-cors"})` (no preflight) to forge a code or
+  flip the session back to `secure`. **Before code:** make `challengeId` a 256-bit CSPRNG token (not
+  the only secret), add a separate single-use `humanToken`, validate `Origin`/`Referer`/`Host`
+  (kills DNS-rebinding), add a per-page CSRF nonce, strict CSP with no external resources. The
+  challengeId must be an identifier, not the bearer secret.
+- **Malicious-agent phishing via challenge create.** The create route accepts an agent-supplied
+  `prompt` AND `target`. A compromised agent can sit on `attacker.com`, raise "Enter your bank code,"
+  point `target` at an attacker input, and wait for Feather to type the real code in — HTML-escaping
+  does not stop this. **Mitigation:** before typing, show the human the current origin/URL + target +
+  a screenshot ("Feather will type into `<origin>`") and verify the page origin is unchanged since
+  challenge creation; pause the agent and suspend CDP/snapshot access during the MFA flow.
+- **Drop the direct `setStealthMode` toggle.** Flipping stealth on create/resolve is racy
+  (concurrent challenges share one boolean; a closed session leaves a timer firing into a dead page)
+  and dropping stealth mid-login can trip anti-bot behavioral detection. Use a **session-hold
+  primitive** instead (`reason: "mfa" | "human-approval" | …`): MFA creates a hold, the policy layer
+  observes holds. Refcount holds — return to `secure` only at zero pending.
+- **Prefer the existing SSE bus over polling.** `mfa.challenge.*` events are already emitted; the
+  `GET …/:id` poll endpoint is redundant (keep only as a fallback). Clear timers on
+  resolve/cancel/session-close; check expiry on read/write; cancel challenges when the session closes.
+- **Reframe "agent never sees the code."** Honest boundary: it keeps the reusable secret (TOTP seed /
+  single-use code) out of agent/LLM/log space and enforces the human gate — it does **not** make an
+  untrusted agent safe on an authenticated account. `secure`/`assisted` naming overpromises;
+  `assisted` is arguably the more dangerous mode (human entering live secrets).

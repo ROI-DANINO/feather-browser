@@ -407,3 +407,39 @@ No `identity.deleted` — deletion is a local metadata operation with no agent-v
   borrow across identities. The profile lock enforces this at runtime.
 - No RBAC or multi-user access control. Feather is a single-user local tool. Identities are not
   principals in an authorization system — they are named profiles on the local machine.
+
+---
+
+## Security addendum (council review, 2026-06-07)
+
+> A 5-model design review flagged the items below. **Address these before implementing the plan.**
+> Full record + rationale: `research/2026-06-07-council-design-review.md`.
+
+- **`identityId == workspaceId` strict 1:1:1 is premature narrowing (consensus).** It blocks obvious
+  near-term needs (human + agent on one identity; profile rotation/re-warm without breaking the
+  handle). Keep the stable named handle but store **separable fields** (e.g. `defaultWorkspaceId`,
+  `defaultProfileId`) defaulting to the id; enforce "one active persistent session per profile" in
+  code, not as the permanent domain model. Identity / workspace / profile / session are distinct
+  concepts — don't fuse them into one identifier.
+- **Warm-status must be explicit, not inferred from session close.** The plan flips an identity to
+  `warm` when `SessionManager` fires `SESSION_CLOSE_COMPLETED`. Two problems: (1) that bus is the
+  **logging bus** (`src/logs/bus.ts`), so a persistent state transition rides on a fire-and-forget
+  log emission — gate/sample/change logging and warm-status silently breaks; (2) closing a session
+  does not mean warm (failed login, logout, MFA abandoned, wrong account all get marked warm). Fix:
+  set warm via a **direct awaited call** (`await identityManager.markWarm(id)`) driven by an explicit
+  human confirmation or a verified login signal — not a close event.
+- **The warmed profile is the real credential-at-rest store; `vaultRef` is secondary.** The profile
+  dir already holds cookies / refresh tokens / localStorage / IndexedDB tokens / DBSC keys today.
+  Disabling the password manager protects stored passwords, not session material. Prerequisites
+  before broad warmed-profile operation: restrictive FS permissions, no world-readable or
+  cloud-synced profile paths, per-identity deletion, at-rest encryption (LUKS/encrypted home) or OS
+  keyring via DBus (libsecret / GNOME Keyring / KWallet) with `vaultRef` as a **keyring locator, not
+  a JSON path**. Gate `vaultRef` activation on the Phase-5.0 safety gate (secret-leakage harness),
+  not just ADR-0008. Consider not returning `vaultRef` in normal identity GET responses.
+- **JSON store needs read-modify-write protection.** Atomic tmp+rename prevents partial reads, not
+  lost updates: two warms racing, or the (to-be-removed) bus listener writing while a route reads,
+  silently clobber each other. Add a per-identity write mutex/queue + an `updatedAt`/version field
+  with optimistic concurrency. SQLite is a reasonable alternative once state grows; not required yet.
+- **Don't pre-commit cross-module type contracts.** Identity importing placeholder
+  `StealthConfig`/`MfaConfig` shapes ahead of those modules risks ossifying into compatibility debt.
+  Prefer opaque/versioned policy references until the real Stealth/MFA modules exist.
