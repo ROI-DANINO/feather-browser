@@ -30,6 +30,18 @@ After Feature 3: the **roadmap re-sequencing pass** (assign phases/milestones, c
 work sessions). Alternatives: run the **kinematic input spike** (stealth plan Task 11), or **push `dev`**
 (commits local-only). Hero-demo LinkedIn debut still parked on a screen recorder install.
 
+**⚑ ROADMAP RE-SEQUENCING CONSTRAINT (2026-06-07):** When assigning tasks and phases during the
+re-sequencing pass, incorporate findings from `research/2026-06-07-open-source-integration-research.md`:
+- **Stealth Stack implementation sprint:** evaluate `fingerprint-injector` + `fingerprint-generator`
+  + `idcac-playwright` (independent npm packages, no AGPL) before building fingerprint injection from scratch.
+- **CDP/WS endpoint exposure:** add to Feather's `LaunchSession` response — unlocks Browser Use + Crawl4AI
+  agent attach with zero further Feather changes (high-leverage, low-effort).
+- **Markdown extraction (snapshot upgrade):** port Crawl4AI's `DefaultMarkdownGenerator` logic to TS —
+  add `markdown` output to snapshot command; highest-leverage content-quality improvement.
+- **MCP surface (Phase 5):** once built, a ~200-line `FeatherBrowserTool` makes Feather a browser
+  runtime for OpenHands agents; Maxun sidecar HTTP path also becomes available.
+- **Maxun AGPL:** permanent blocker — never import code; schema patterns only.
+
 ---
 
 **(History — superseded.)**
