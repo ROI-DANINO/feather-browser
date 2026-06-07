@@ -7,6 +7,12 @@ docs/superpowers/
 !.claude/agents/
 !.claude/plugins/
 .claude/settings.local.json
+# Claude Council: ignore the infrastructure, keep only its output artifacts
+.claude/council-cache/
+.claude/agents/council-advisor.md
+.claude/commands/claude-council/
+.claude/plugins/claude-council/
+skills/council-execution/
 node_modules/
 .browser-profile/
 .feather/
