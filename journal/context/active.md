@@ -19,7 +19,7 @@ destination → `ROADMAP.md`; history → `journal/log.md` + `ops/sessions/`.
   Docs: `docs/specs/2026-06-07-identity-model-{design,plan}.md`. Session: `ops/sessions/agent-browsing-stack-identity-spec-20260607.md`.
   Identity ID = workspaceId. Warm-status via event bus. PATCH omitted v1. vaultRef dormant. 3 guardrails: no cloud sync, 1:1:1 mapping, no RBAC.
 
-**✅ OPEN-SOURCE INTEGRATION RESEARCH DONE (2026-06-07).** Research doc: `research/2026-06-07-open-source-integration-research.md`. Constraint block in tasks.md must be incorporated in the re-sequencing pass.
+**✅ OPEN-SOURCE INTEGRATION RESEARCH DONE (2026-06-07).** Research doc: `research/2026-06-07-open-source-integration-research.md`. Original session brief archived: `journal/raw/archive/2026-06-07-open-source-integration-research-brief.md`. Constraint block in tasks.md must be incorporated in the re-sequencing pass.
 
 **✅ BURNER DEMO FULLY WORKING (2026-06-06, `a2e9ec9`).** `npm run demo:hero` — gating: needs a Niri/Wayland screen recorder (Kooha / wf-recorder).
 

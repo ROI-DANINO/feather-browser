@@ -44,10 +44,7 @@ Master brief: `docs/specs/2026-06-07-agent-browsing-stack-brief.md`
 ## Track C — Social Research Use Cases (inbox seeds, unprocessed)
 
 - [ ] **Process inbox files** — `journal/raw/_inbox/2026-06-07-social-research-{agent,mode}-usecase.md`
-  Read (2026-06-07 housekeeping session): both are partial stubs — same use case (personal social
-  research agent on own authenticated session; not a bot). Directly enabled by Browser Use CDP +
-  Crawl4AI extraction + Feather persistent profiles. Route to product desk as future spec seed, or
-  fold into re-sequencing pass. Brief archived: `journal/raw/archive/2026-06-07-open-source-integration-research-brief.md`.
+  Route to product desk or Identity Model spec as relevant. Read and archive.
 
 ## Parked — claude-council
 - [x] `/claude-council:ask` — consulted on Stealth Stack (Opus 4.8 + Gemini CLI; 2026-06-07).
