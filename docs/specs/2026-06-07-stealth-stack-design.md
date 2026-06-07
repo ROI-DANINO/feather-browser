@@ -1,104 +1,110 @@
 # Stealth Stack Design
-**Date:** 2026-06-07
+**Date:** 2026-06-07 (rev 2 — post Opus/Gemini council audit)
 **Status:** 📐 Spec — ready for implementation planning
 **Phase:** Phase 5 input (Agent Browsing Stack — Feature 1 of 3)
 **Brief:** `docs/specs/2026-06-07-agent-browsing-stack-brief.md`
-**Output spec:** `docs/specs/2026-06-07-stealth-stack-design.md` (this file)
+**Audit:** `research/2026-06-07-council-audit-stealth-stack.md`
 
 ---
 
 ## Goal
 
-Make Feather's automated browser sessions indistinguishable from a real human browser on sites
-with active bot detection (Tier C: LinkedIn, Instagram, Facebook, Cloudflare-protected,
-DataDome-protected sites).
+Make Feather's automated browser sessions indistinguishable from a real human on sites with
+active bot detection (LinkedIn, Instagram, Cloudflare/DataDome-protected), while staying
+lightweight, local-first, and honest.
 
-Feather already has a strong foundation: real headful system Chromium, `navigator.webdriver = false`
-via CDP-attach (`spawnAndConnect`), human-warmed sessions (Cookie Mine), real GPU/fonts/canvas.
-This spec fills the remaining gaps with four targeted layers and a fast/secure control model.
+**The core insight (from the council audit):** Feather's real stealth is its *architecture*, not
+this module. Attaching to **real headful system Chromium on the user's real IP** already provides a
+genuine TLS/JA3/JA4 fingerprint, real HTTP/2 framing, real GPU/fonts, a residential IP, and an
+IP-matched locale — exactly the signals Cloudflare and DataDome lean on hardest, all for free. This
+module's job is narrow and honest:
 
-**Guiding constraints (from the master brief):**
-- Local-first always — no cloud relay, no external fingerprinting services
-- Lightweight — don't add weight unless it pulls real weight
-- Legal — agent acts as the authorized user, not as an attacker; no captcha bypass, no
-  paywall bypass, no mass scraping
-- Gradual — each layer adds value on its own
+1. **Keep the architecture's tells from leaking** (don't enable automation-revealing CDP surface).
+2. **Verify they haven't leaked** (consistency checks — never spoof).
+3. **Add the one thing the architecture can't give for free: human-shaped *input*** — but only when
+   the *agent* is the one generating that input.
 
----
-
-## The Two Modes
-
-### Fast (always-on, zero runtime overhead)
-
-Applied to every session. No latency cost, no user decision required.
-
-| Layer | What it does | Why |
-|-------|-------------|-----|
-| **1 — CDP surface minimization** | Do not enable `Runtime.enable` / `console.on` CDP events unless explicitly requested | Anchor Browser independently confirmed this is a real detection tell; Feather's self-test (`research/2026-06-05-anti-detection-self-test.md`) flagged it as an open gap |
-| **2 — Consistent environment** | Pin viewport to 1280×900, timezone to system local, locale to `en-US`, `deviceScaleFactor` to 2 | Inconsistencies between these values and the real display are a low-cost detection signal; Feather's self-test confirms 1440×900 / dpr=2 on this box |
-
-### Secure (opt-in or auto-applied on Tier C sites)
-
-Adds behavioral and active hardening on top of Fast. Adds per-action latency (~50–150ms jitter).
-
-| Layer | What it does | Why |
-|-------|-------------|-----|
-| **3 — Behavioral timing** | Randomized delay + jitter on every click, type, and scroll action | Synthetic events at machine speed (0ms between actions) are detectable by timing analysis; human actions have natural variance |
-| **4 — Fingerprint consistency check** | WebGL vendor/renderer verification + font enumeration guard. **No canvas noise** (see note). | Catches the case where the real fingerprint has degraded (e.g. SwiftShader = headless leaked through); guards font probing against an empty-set tell |
-
-> **Why no canvas noise injection.** An earlier draft proposed injecting per-session noise into
-> canvas `getImageData`. We dropped it. Feather runs **real system Chromium with a real GPU**, so
-> it already has a genuine, stable canvas fingerprint — exactly what a real human browser has.
-> Injecting noise makes that fingerprint *unstable* across sessions, which is the signature of
-> anti-fingerprinting tooling (Tor Browser, Brave shields) — i.e. it makes Feather look *more*
-> like a privacy-hardened bot, not more human. The honest, lighter, and more human posture is to
-> **leave the real canvas alone.** Layer 4 therefore *verifies* the real fingerprint is intact
-> rather than *spoofing* it.
+**Guiding constraints (from the master brief):** local-first always; lightweight; legal (agent acts
+as the authorized user, never bypasses captcha/paywalls/scraping limits); gradual delivery.
 
 ---
 
-## Site Classification and the Recommendation System
+## The Mode Model: secure (default) vs assisted
 
-### Tier C list
+The single knob is **who is generating the input** — not "how much do we hide."
 
-A static lookup built into `src/browser/stealth.ts`. No network call. No external dependency.
+- When an **agent** drives, every click and keystroke is synthetic. That is exactly where behavioral
+  detection bites, so it needs human-shaped input synthesis. → **secure**
+- When a **human** drives (hands actually on the keyboard/mouse), the input is *genuinely* human —
+  there is nothing to fake, and adding artificial delay only hurts the human's experience for zero
+  stealth gain. → **assisted**
 
-Initial Tier C domains and patterns:
-- `linkedin.com`, `*.linkedin.com`
-- `instagram.com`, `*.instagram.com`
-- `facebook.com`, `*.facebook.com`
+| Mode | When to use | Behavioral layer | Fingerprint layers |
+|------|-------------|------------------|--------------------|
+| **`secure`** (default) | the **agent** is the input source | human-shaped input (typing cadence in v1; kinematic mouse/typing after the spike — see Deferred) | **always on** |
+| **`assisted`** | a **human** is the input source, or a friendly/dev site | none — real human input needs no synthesis; clicks/typing fire at native machine speed | **always on** |
 
-The list is a plain array of domain matchers — easy to extend in future without a schema change.
+**The only mechanical difference between the modes is input behavior.** Fingerprint cleanliness
+(CDP surface, environment, WebGL) is identical and always on in both. "assisted" is not "less safe"
+— it is *safe because a real human (or a trusted context) is producing the behavior*.
 
-**v1 is domain-list only — by design.** The classifier decides from the **target URL alone**,
-before any navigation. This is deliberate: the "stop before entrance" promise (below) only holds
-if Feather can classify *without first visiting the site*. Header-based detection (Cloudflare
-`cf-ray` / DataDome `x-datadome-*`) cannot do this — you must already be on the site to read its
-response headers, by which point the fast-mode session is open and the chance to upgrade
-pre-emptively is gone. Reactive header detection is therefore **deferred to a future version**
-(see "Future" below), where it would surface as a post-navigation warning for the *next* visit,
-not a pre-entrance gate. Keeping v1 to a domain list avoids a self-contradicting design and stays
-lightweight.
+> **Precision that matters:** assisted is for when the human is *driving*, not merely *watching*. A
+> human passively observing an autonomous agent is still a synthetic-input session → that stays
+> `secure`. The trigger is "human is the input source," full stop.
 
-### Two-path behavior
+### Mode is mutable (reflects who's driving *now*)
 
-**Interactive session** (human is present — API call with human in the loop):
-- If the target URL matches Tier C and `stealth.mode` is `fast` (or unset): Feather stops before
-  the session opens and returns the recommendation soft-block in the response.
-- Response uses Feather's standard envelope with HTTP `200` and a typed soft-block:
-  `{ ok: false, requestId, error: { code: 'STEALTH_UPGRADE_RECOMMENDED', message: 'LinkedIn is a Tier C site — secure mode recommended', data: { recommendation: 'secure' } } }`.
-- The caller re-submits with `stealth: { mode: 'secure' }` to proceed. The session does not open
-  until the caller makes a deliberate choice.
+A session's mode can change during its life because *who is driving* can legitimately change. The
+canonical case is a human takeover: agent works in `secure` → hits a login wall → human takes the
+wheel (`assisted`) → finishes the sensitive step → hands back to the agent (`secure`). This is
+exactly the handoff the **MFA Handler (Feature 2)** will own, so the mode-switch primitive is
+designed here and consumed there.
 
-**Autonomous agent** (no human in the loop — `autonomous: true` flag on session create):
-- Auto-upgrade to secure on Tier C sites. No approval gate.
-- Log entry records the upgrade: `[stealth] auto-upgraded to secure — Tier C site detected (linkedin.com)`.
-- `stealthApplied` in the response reflects the upgraded mode.
+> Supersedes rev 1's "immutable per session." The council flagged immutability as a direct conflict
+> with the MFA handler (a captcha in a locked mode forces a teardown that destroys the very session
+> state the handoff exists to preserve). Mutable mode resolves this.
 
-**Explicit override always wins:** if the caller passes `stealth: { mode: 'secure' }` explicitly,
-the classifier is bypassed and secure is applied regardless of domain. If the caller passes
-`stealth: { mode: 'fast' }` explicitly on a Tier C site, fast is used with a warning in the log —
-the human made a deliberate choice. (The soft-block only fires when mode was *unset*.)
+### Why this dissolves the mid-navigation trap
+
+Rev 1 classified the launch URL and gated fast/secure before opening. The council showed that gate
+was trivially bypassed: launch on `google.com` (fast), then *navigate* to `linkedin.com` and you're
+stuck in fast on a hostile site. **Secure-by-default removes the trap entirely:** the dangerous case
+(an autonomous agent anywhere) is already `secure`. The only way to be in `assisted` is to
+deliberately take the wheel — and a human on LinkedIn is just a human on LinkedIn. No classification
+gate, no soft-block, no auto-upgrade machinery needed.
+
+---
+
+## The Layers
+
+Three of the four layers are **always on** (they cost nothing and concern the browser's *identity*,
+not its behavior). Only the behavioral layer is mode-differentiated.
+
+### Always-on (both modes)
+
+| Layer | What it does | Notes |
+|-------|-------------|-------|
+| **1 — CDP surface minimization** | Do not enable `Runtime.enable` / attach `console`/`pageerror` listeners on the real session path | Inherently a "don't do X" layer. Enforced by audit + self-test assertion, not by positive runtime code. The detection tell is Playwright auto-sending `Runtime.enable` when console listeners attach. |
+| **2 — Environment consistency check** | Verify viewport/screen/dpr/languages/timezone are internally consistent; **warn, never spoof** | Spoofing locale/timezone without a matching geo-proxy *introduces* an Accept-Language/timezone-vs-IP mismatch — a real DataDome/Cloudflare tell. On a real desktop the values already match the IP. Warnings surface in the session record. |
+| **4 — Fingerprint consistency check** | Verify the real WebGL renderer is intact; flag `SwiftShader` (the headless-leak signal) | **No canvas noise. No font guard.** (See "Cut from rev 1.") Real Chromium on a real GPU already has a genuine, stable fingerprint; *tampering* is what detectors look for first. |
+
+### Behavioral (mode-differentiated) — Layer 3
+
+This is the only layer that differs by mode, and it is the honest weak point of v1.
+
+- **`assisted`:** native machine-speed input. No synthesis.
+- **`secure`, v1:** human typing cadence only — type sequentially with a per-keystroke jitter
+  (≈50–150 ms) instead of an instant `fill()`. Clicks/keypresses remain native in v1 (see below).
+- **`secure`, after the spike:** full kinematic input — curved mouse trajectories with overshoot and
+  variable speed (not dead-center, not instant), plus statistically-modeled keystroke cadence. This
+  is **deferred behind a spike** (Roi's call: spike first, then build).
+
+> **Honest limitation, stated plainly (per the council):** a pre-click *sleep* before a Playwright
+> `click()` that teleports the cursor and fires instantly is **not** human behavior — possibly a
+> *worse* signal than a fast click. So v1 deliberately does **not** add a pre-click delay. The only
+> real behavioral improvement v1 ships is typing cadence. Genuine behavioral indistinguishability
+> requires kinematic input, which needs the spike. Until then, v1's protection is overwhelmingly the
+> always-on fingerprint layers, and `secure`/`assisted` differ behaviorally only in typing.
 
 ---
 
@@ -106,261 +112,172 @@ the human made a deliberate choice. (The soft-block only fires when mode was *un
 
 ### New file: `src/browser/stealth.ts`
 
-Single-responsibility module for all stealth logic. Does not modify `modes.ts`.
-Parallel to the existing proxy pattern (`ProxyConfig` in `src/sessions/types.ts`).
-
-**Exports:**
+Single-responsibility module, parallel to the existing proxy pattern (`ProxyConfig` in
+`src/sessions/types.ts`). `modes.ts` is not modified.
 
 ```typescript
-// Types
-export type StealthMode = 'fast' | 'secure';
+import type { Page } from "playwright";
+
+export type StealthMode = "secure" | "assisted";
+export type SiteClass = "standard" | "tier-c";
 export interface StealthConfig { mode: StealthMode; }
-export type SiteClass = 'standard' | 'tier-c';
-export interface StealthResolution {
-  mode: StealthMode;
-  siteClass: SiteClass;
-  recommendation?: string; // present when classifier fired and mode was not explicit
-  autoUpgraded?: boolean;  // true when autonomous auto-upgrade occurred
-}
+export interface StealthCheckResult { ok: boolean; warnings: string[]; }
 
-// Site classification
-export function classifySite(url: string): SiteClass
+// Mode resolution — trivial by design (secure-by-default; no classification gate).
+export function resolveStealthMode(config: StealthConfig | null): StealthMode; // => config?.mode ?? "secure"
 
-// Mode resolution (call before session opens)
-export function resolveStealthMode(opts: {
-  config: StealthConfig | null;
-  url: string | null;
-  autonomous: boolean;
-}): StealthResolution
+// Site classification — OBSERVABILITY ONLY (labeling/logging), never a control-flow gate.
+export function classifySite(url: string): SiteClass;
 
-// Layer 1: CDP surface minimization (call on the context after connect)
-// Suppresses Runtime.enable and disables console/error listeners on the stealth path
-export function applyStealthCDP(
-  context: BrowserContext,
-  config: StealthConfig
-): Promise<void>
+// Layer 1 — documented seam; the real guarantee is the audit + self-test (no positive code).
+// (Kept as a no-op seam for symmetry; may be omitted in favor of a comment — see plan.)
 
-// Layer 2: environment consistency (call on each new page)
-export function applyStealthEnvironment(
-  page: Page,
-  config: StealthConfig
-): Promise<void>
+// Layer 2 — environment consistency check (always on).
+export function applyStealthEnvironment(page: Page, config: StealthConfig): Promise<StealthCheckResult>;
 
-// Layer 3: behavioral timing wrapper
-export function withStealthTiming<T>(
-  fn: () => Promise<T>,
-  config: StealthConfig
-): Promise<T>
+// Layer 4 — fingerprint consistency check (always on). No font guard.
+export function applyFingerprintCheck(page: Page, config: StealthConfig): Promise<StealthCheckResult>;
 
-// Layer 4: fingerprint consistency check + font guard (call on each new page, secure only)
-// Verifies real WebGL renderer is intact (flags SwiftShader); guards font enumeration.
-// Does NOT spoof or inject canvas noise — see "Why no canvas noise injection" above.
-export function applyFingerprintCheck(
-  page: Page,
-  config: StealthConfig
-): Promise<{ ok: boolean; warnings: string[] }>
+// Layer 3 (typing cadence) lives in the type command handler, keyed on session.stealthMode.
+// A per-keystroke jitter helper:
+export function jitterDelayMs(): number; // [50,150]
 ```
 
 ### Session type changes (`src/sessions/types.ts`)
 
-Add `StealthConfig` to the session creation options — same pattern as `ProxyConfig`:
-
 ```typescript
-export interface SessionCreateOptions {
-  // ... existing fields ...
-  stealth?: StealthConfig | null;
-  autonomous?: boolean;
-}
+export type StealthMode = "secure" | "assisted";
+export interface StealthConfig { mode: StealthMode; }
 
-export interface SessionInfo {
-  // ... existing fields ...
-  stealthApplied: StealthMode;
-  stealthRecommendation?: string;
+export interface SessionRecord {
+  // ... existing ...
+  proxy: ProxySummary | null;
+  stealthApplied: StealthMode;       // current mode (mutable)
+  stealthWarnings: string[];         // env + fingerprint check warnings, surfaced to caller
+  startedAt: string;
+  // ... rest ...
 }
 ```
 
+`ISession` gains a **mutable** `stealthMode` (getter + `setStealthMode(mode)`), so action handlers
+read the current mode and the MFA handler can switch it.
+
 ### API changes (`POST /v1/sessions`)
 
-Request body gains two optional fields:
-- `stealth?: { mode: 'fast' | 'secure' }` — explicit mode selection
-- `autonomous?: boolean` — if true, auto-upgrade on Tier C; no recommendation gate
+Request body gains:
+- `stealth?: { mode: "secure" | "assisted" }` — optional; **defaults to `secure`**.
 
-Response gains (success case):
-- `stealthApplied: 'fast' | 'secure'` — what was actually applied
+Response (`SessionRecord`) gains:
+- `stealthApplied: "secure" | "assisted"`
+- `stealthWarnings: string[]`
 
-When the classifier recommends an upgrade in interactive mode, the session is **not** opened.
-Instead the standard envelope returns a typed soft-block (HTTP `200`, `ok: false`):
-`{ ok: false, requestId, error: { code: 'STEALTH_UPGRADE_RECOMMENDED', message: '…', data: { recommendation: 'secure' } } }`.
-Caller re-submits with `stealth: { mode: 'secure' }` to confirm.
+**No soft-block, no `url` gate, no `autonomous` flag, no auto-upgrade** — all deleted with the
+classification gate. Autonomous agents are simply `secure` by default, which covers the original
+"autonomous must be safe on flagged sites" requirement more completely (secure everywhere, not just
+on a hardcoded list).
+
+### Mode-switch primitive (the MFA seam)
+
+A minimal mutation endpoint so a human takeover (or, later, the MFA handler) can flip the mode:
+
+```
+POST /v1/sessions/:sessionId/stealth   body: { mode: "secure" | "assisted" }
+→ 200 { ok, data: { stealthApplied } }
+```
+
+> **Convention for Feature 2 (carried from the council):** model "needs a human decision" as a
+> **first-class result type** (e.g. `{ status: "needs-confirmation", ... }`), *not* a thrown
+> control-flow exception. Rev 1's `STEALTH_UPGRADE_RECOMMENDED` thrown error is deleted; the MFA
+> handler should establish the result-type pattern instead.
 
 ### Integration point in session creation
 
-In the session creation handler (wherever sessions are currently opened):
-1. Call `resolveStealthMode({ config, url, autonomous })` — gets the resolution
-2. If resolution returns a recommendation and session is interactive: return the
-   `STEALTH_UPGRADE_RECOMMENDED` soft-block, do not open session
-3. Otherwise: open the session as today (no change to `spawnAndConnect`)
-4. After connect: call `applyStealthCDP(context, config)`
-5. On each new page (via `context.on('page', ...)`): call `applyStealthEnvironment` and (if secure) `applyFingerprintCheck`
-6. Action wrappers (click, type, scroll) call `withStealthTiming` when secure
+1. `resolveStealthMode(input.stealth ?? null)` → mode (default `secure`).
+2. Construct the session with that mode.
+3. Open as today (no change to `spawnAndConnect` / `buildLaunchOptions`).
+4. On the headed-CDP path, against the first page (best-effort; never block launch):
+   - Layer 2: `applyStealthEnvironment` → collect warnings.
+   - Layer 4: `applyFingerprintCheck` → collect warnings.
+   - Store warnings on the record (`stealthWarnings`); also log them.
+   - Log the site class of the first page via `classifySite` (observability).
+5. Action handlers (`type`) read `session.stealthMode` to choose typing cadence.
 
 ---
 
-## Layer Implementation Notes
+## Cut from rev 1 (council consensus)
 
-### Layer 1 — CDP surface minimization
-
-**What to avoid:** enabling `Runtime.enable` domain on the CDP session unless the caller
-explicitly uses `console.on` or stack trace features. Playwright enables this domain when you
-attach `page.on('console', ...)` listeners. Feather should not attach these by default on the
-stealth path.
-
-**Implementation direction:** audit all `page.on('console', ...)` and `page.on('pageerror', ...)`
-calls in `src/`. Remove or gate any that are attached unconditionally on the real session path.
-Verify with a CDP protocol inspector that `Runtime.enable` is not sent on a clean session open.
-
-**Research directive for implementing agent:**
-- Read the Chrome DevTools Protocol documentation for the `Runtime` domain:
-  https://chromedevtools.github.io/devtools-protocol/tot/Runtime/
-- Search for "Runtime.enable CDP detection" and "console listener webdriver detection" to
-  understand how detectors observe this signal
-- Check whether `playwright-core` exposes a way to suppress auto-enabling of CDP domains
-
-### Layer 2 — Consistent environment
-
-**What to set:** viewport, `deviceScaleFactor`, timezone ID, locale, `userAgent` (confirm it
-matches the system Chromium version on the host — do not spoof a different version).
-
-**Implementation direction:** use Playwright's `BrowserContext` options (`viewport`,
-`deviceScaleFactor`, `timezoneId`, `locale`) at context creation time. Read the system timezone
-via `Intl.DateTimeFormat().resolvedOptions().timeZone` at runtime rather than hardcoding.
-
-**Research directive for implementing agent:**
-- Read Playwright's `BrowserContext` options documentation for environment consistency:
-  https://playwright.dev/docs/api/class-browser#browser-new-context
-- Search for "Playwright timezone locale fingerprinting" for known inconsistency patterns
-- Check the Feather self-test findings for what the real desktop values are on this machine
-
-### Layer 3 — Behavioral timing
-
-**What to add:** a randomized delay before each action completes. Range: 50–150ms per action,
-drawn from a non-uniform distribution (slightly right-skewed, like real human reaction times).
-Apply to: `click`, `type`/`fill`, scroll, `press`.
-
-**Implementation direction:** wrap Feather's action handlers (in `src/sessions/` or wherever
-click/type/press/scroll commands are dispatched) with `withStealthTiming`. The wrapper adds
-a `await delay(randomInRange(50, 150))` before the action. For `type`, also add inter-keystroke
-delay (10–30ms per character).
-
-**Research directive for implementing agent:**
-- Search for "human typing speed distribution milliseconds" and "mouse click reaction time
-  distribution" for empirical data on realistic delay ranges
-- Search for "bot detection timing analysis" to understand what detectors measure
-- Look at how playwright-extra's `stealth` plugin handles timing, as a reference implementation
-  (do not copy — understand the approach): https://github.com/berstend/puppeteer-extra
-- Consider Fitts's Law for mouse movement timing if cursor path simulation is added later
-
-### Layer 4 — Fingerprint consistency check + font guard
-
-**No canvas spoofing.** Feather runs real Chromium on a real GPU and already has a genuine, stable
-canvas/WebGL fingerprint — the same as any real human browser. Layer 4 *verifies* that real
-fingerprint is intact; it does not spoof or inject noise (see "Why no canvas noise injection" in
-the modes section above for the full rationale).
-
-**WebGL vendor/renderer consistency check:** read the live GPU strings and assert they are a real
-hardware renderer. On this machine the real values are `Google Inc. (Intel)` /
-`ANGLE (Intel, Mesa Intel(R) Iris(R) Xe ...)`. **Flag (do not spoof)** if a `SwiftShader`
-software renderer is detected — that means the headless path leaked through and the session is
-already trivially detectable. Return this as a warning in `applyFingerprintCheck`'s result so the
-caller/self-test can surface it.
-
-**Font enumeration guard:** many sites enumerate installed fonts via canvas text measurement. The
-guard ensures probing returns a consistent, realistic desktop font set — never an empty set, which
-is itself a tell. Apply via `page.addInitScript`. This is the one active intervention in Layer 4,
-and it is *additive consistency*, not spoofing.
-
-**Research directive for implementing agent:**
-- Read: https://coveryourtracks.eff.org/ — run this against a Feather session to see what
-  the baseline (real) fingerprint looks like; confirm canvas/WebGL are already plausible
-- Read: https://bot.sannysoft.com/ — primary reference for CDP/automation detection signals
-- Read: https://arh.antoinevastel.com/bots/areyouheadless — headless/automation detector
-- Search for "WebGL SwiftShader detection headless" to confirm the renderer-leak signal
-- Search for "font enumeration fingerprinting defense" for the font guard approach
-- Review the `puppeteer-extra-plugin-stealth` source for the font/WebGL evasions specifically
-  (reference only — do not import the library; and note we deliberately skip its canvas noise)
+- **Font guard (`FONT_GUARD_INIT`) — deleted entirely.** Both reviewers flagged it, emphatically: it
+  monkeypatches a native function so `document.fonts.check.toString()` no longer returns
+  `[native code]` — a loud, actively-probed bot tell (CF Turnstile / DataDome) — and it defends a
+  non-existent problem (a real Linux desktop already enumerates a realistic font set). It directly
+  contradicts the "verify, don't spoof" principle. Keep only the WebGL/SwiftShader verification.
+- **Classification gate, soft-block, `url` param, `autonomous` flag, auto-upgrade, `StealthUpgradeRecommendedError`
+  — all deleted.** Secure-by-default makes them unnecessary. `classifySite` survives as an
+  observability label only.
+- **`withStealthTiming` pre-action sleep — deleted.** A sleep before a teleport-click is not behavior
+  and may be a worse signal. Typing cadence (real) replaces it as v1's only behavioral difference.
 
 ---
 
-## Self-Test Extension
+## Self-Test (extend `scripts/spikes/anti-detection-probe.ts`)
 
-The existing probe script (`scripts/spikes/anti-detection-probe.ts`) must be extended to:
+The probe is a throwaway developer tool (ships nothing). Extend it to assert the load-bearing tells,
+including two the council flagged as cheap-but-currently-unverified:
 
-1. Run a Feather session (fast mode) against `https://bot.sannysoft.com/` and capture the result page
-2. Run again in secure mode and compare
-3. Report per-signal pass/fail: webdriver, userAgent, WebGL vendor/renderer, canvas hash, CDP tell (Runtime.enable), behavioral timing consistency
-4. The self-test is a developer tool only — not shipped as a production endpoint
+- **`navigator.webdriver === false`** — HARD assertion (one line, fundamental; if ever true, every
+  other layer is moot).
+- **`Runtime.enable` absent on a clean session open** — HARD assertion (the Layer 1 guarantee).
+- Per-signal report for a `secure`-mode session against `https://bot.sannysoft.com/` (online,
+  opt-in via env flag): WebGL renderer, env consistency, fingerprint consistency.
 
-**Research directive for implementing agent:**
-- Review the existing probe script before modifying it
-- Understand what signals `bot.sannysoft.com` tests — inspect the page source or its GitHub repo
-  to know what to assert against programmatically
-- Search for "playwright bot detection test automation" to find other test harnesses used in
-  the stealth community
+---
+
+## Deferred (not in v1)
+
+- **Kinematic input synthesis (the real Layer 3).** Roi's decision: **spike first, then build.** A
+  research spike must prove curved mouse trajectories (overshoot, variable speed, non-center targets)
+  + statistically-modeled keystroke cadence, measured against real detectors, *before* it is built.
+  The build is a follow-up plan gated on the spike's findings. This is the **single highest-value
+  missing piece** per both reviewers — v1 establishes the mode architecture it will slot into.
+- **Passive header observation.** Record Cloudflare (`cf-ray`) / DataDome (`x-datadome-*`) presence
+  *after* navigation, as observability only (never a gate), to grow the Tier-C label set over time
+  and cover the long tail behind those vendors (which a hardcoded domain list cannot). Cheap; defer
+  to keep v1 tight.
+- **Declared good-bot posture (Web-Bot-Auth / RFC 9421).** The sustainable long-term alternative to
+  stealth — *declare* yourself a verified bot instead of hiding. Track: https://www.rfc-editor.org/rfc/rfc9421
+
+---
+
+## Composition With Features 2 and 3
+
+| This feature EXPOSES | Consumed by |
+|---|---|
+| `StealthConfig` / `StealthMode` on session create | **Identity Model** — a named identity carries a default `StealthConfig`. |
+| `session.stealthMode` getter + `setStealthMode` + `POST …/stealth` | **MFA Handler** — human-takeover handoff is a `secure → assisted → secure` switch. |
+| The "captcha/wall = hand off to human, never bypass" stance | **MFA Handler** — Feature 2 *is* that handoff. |
+| `classifySite` (observability) | **Identity Model** — pre-label an identity's site list. |
+
+This feature consumes nothing from the others — it is the root dependency, built first.
 
 ---
 
 ## What This Is Not
 
-- **Not captcha bypass.** If Feather hits a captcha, it surfaces it as a human-handoff event
-  (Feature 2 — MFA Handler). Captcha solving is out of scope and ToS-sensitive.
-- **Not paywall bypass or scraping infrastructure.** The legal constraint from the master brief
-  applies: agent acts as the authorized user, not as an attacker.
-- **Not a replacement for a warmed human session.** The stealth stack makes the browser look real;
-  the Cookie Mine provides the trust context (real cookies). Both are needed for Tier C sites.
-- **Not an arms race commitment.** Each layer is measured against real test sites before being
-  declared effective. Claims are evidence-based, not asserted.
-
----
-
-## Future (not in this spec)
-
-**Reactive header-based Tier C detection.** v1 classifies from the URL alone (domain list). A
-future version could *also* detect Cloudflare (`cf-ray`, `cf-mitigated`) and DataDome
-(`x-datadome-*`) from response headers after the first navigation, surfacing a "this site uses bot
-detection — consider secure mode for next visit" warning. This is **reactive, not preventive** (you
-must already be on the site to read its headers), so it complements — never replaces — the v1
-pre-entrance domain gate.
-
-**Declared good-bot posture (Web-Bot-Auth / RFC 9421).** The sustainable long-term alternative to
-stealth is *declaring* yourself a verified, authorized bot via RFC 9421 HTTP Message Signatures.
-Cloudflare already accepts this from Anchor Browser. Standards-based, no arms race, legally clean.
-Track at: https://www.rfc-editor.org/rfc/rfc9421
-
----
-
-## Exit Criteria for Implementation
-
-- [ ] `src/browser/stealth.ts` created with all exports defined above
-- [ ] `StealthConfig` type added to `src/sessions/types.ts`
-- [ ] Session creation handler calls `resolveStealthMode` and applies result
-- [ ] `POST /v1/sessions` accepts `stealth` and `autonomous` fields; response includes `stealthApplied`
-- [ ] Interactive Tier C detection returns the `STEALTH_UPGRADE_RECOMMENDED` soft-block (200, `ok: false`) before opening session
-- [ ] Autonomous Tier C detection auto-upgrades and logs the upgrade
-- [ ] Tier C classification is domain-list only (no header-based detection in v1)
-- [ ] Layer 1 (CDP surface): verified via CDP protocol inspector that `Runtime.enable` is not sent on clean session open
-- [ ] Layer 2 (environment): viewport/timezone/locale/dpr consistent; verified via self-test
-- [ ] Layer 3 (behavioral timing): click/type/scroll wrapped with jitter in secure mode
-- [ ] Layer 4 (fingerprint check): WebGL renderer verified (SwiftShader flagged) + font guard in secure mode; **no canvas noise injection**
-- [ ] Self-test extended: bot.sannysoft.com run in fast and secure mode; per-signal report
-- [ ] All existing tests still pass (`npm test`, `npm run test:integration`)
-- [ ] TypeScript clean (`tsc --noEmit`)
+- Not captcha/paywall bypass or scraping infrastructure. Walls are handed to the human (Feature 2).
+- Not fingerprint *spoofing* — it verifies the real one and keeps it from leaking.
+- Not a replacement for a warmed human session — the Cookie Mine provides the trust context (real
+  cookies); stealth keeps the browser's tells clean. Both are needed for Tier C.
+- Not an arms-race commitment — every claim is measured against real detectors before being believed.
 
 ---
 
 ## Files to Read Before Implementing
 
-- `src/browser/modes.ts` — current session launch mechanics (do not modify)
-- `src/sessions/types.ts` — existing session types including `ProxyConfig` (follow this pattern)
-- `scripts/spikes/anti-detection-probe.ts` — existing self-test probe to extend
+- `src/browser/modes.ts` — current launch mechanics (do not modify)
+- `src/sessions/types.ts`, `src/sessions/session.ts`, `src/sessions/manager.ts` — session lifecycle;
+  `ProxyConfig` is the pattern to mirror
+- `src/commands/type.ts`, `click.ts`, `press.ts` — action handlers (typing cadence wires into `type`)
+- `src/transport/routes.ts` — HTTP surface + envelope helpers
+- `scripts/spikes/anti-detection-probe.ts` — self-test probe to extend
 - `research/2026-06-05-anti-detection-self-test.md` — baseline fingerprint findings
-- `docs/specs/2026-06-07-agent-browsing-stack-brief.md` — master brief, guiding constraints
+- `research/2026-06-07-council-audit-stealth-stack.md` — the audit that shaped this rev

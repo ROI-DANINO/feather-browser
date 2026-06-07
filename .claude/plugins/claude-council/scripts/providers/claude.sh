@@ -30,8 +30,11 @@ ${PROMPT}"
 ERR_TMP=$(mktemp)
 trap 'rm -f "$ERR_TMP"' EXIT
 
-# Run Claude in print mode (headless single prompt output) using standard flags
-if RESPONSE=$(claude -p "$FULL_PROMPT" 2>"$ERR_TMP"); then
+# Run Claude in print mode (headless single prompt output) using standard flags.
+# Honor CLAUDE_MODEL so the council can run a specific model (e.g. Opus); the
+# CLI accepts model aliases like "opus"/"sonnet" or full IDs.
+MODEL=$(get_model claude)
+if RESPONSE=$(claude -p --model "$MODEL" "$FULL_PROMPT" 2>"$ERR_TMP"); then
     # Output the result clean
     echo "$RESPONSE"
 else
