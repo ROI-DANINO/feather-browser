@@ -8,7 +8,9 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 
 - **Current phase:** Phase 4a - Feather Core Open-Source Readiness And Public Proof.
 - **Just completed:** `Session 4a.6b - Security & Capability Re-Sequencing` (planning only, no product
-  code). Acted on the 2026-06-07 council review: reversed to "security model first, interop through it."
+  code) + `Session 4a.10 - Social-research inbox triage`. Acted on the 2026-06-07 council review:
+  reversed to "security model first, interop through it." All 4a.6b+4a.10 docs committed + pushed
+  (`56bd985`, `dev == origin/dev`).
 - **Current recommended session:** `Session 4a.7 - CDP cold-profile interop proof` ->
   `docs/sessions/4a.7-cdp-cold-profile-interop.md`. This is the **re-scoped** 4a.7: cold/throwaway
   profiles only. Warmed-profile CDP attach is deferred to Phase 5c, behind the capability gate.
