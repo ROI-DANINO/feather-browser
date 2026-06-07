@@ -53,11 +53,17 @@ export async function ensureHumanAuth(
   console.log("  → Log in in the browser window (it should be showing the login page now).");
   console.log(`  → Checking every ${Math.round(pollIntervalMs / 1000)}s — up to ${Math.round(timeoutMs / 1000 / 60)} minutes.\n`);
 
+  // Poll by probing the CURRENT page — do NOT re-navigate while the human is
+  // logging in. Re-navigating mid-login interrupts Google's OAuth redirect
+  // chain, which bounces the tab to the workspace.google.com marketing page and
+  // makes it look like the login "wasn't remembered" (forcing a second login).
+  // After login, Google's own `continue=` redirect lands on the inbox, and this
+  // probe detects the compose button. `wait until visible` returns as soon as
+  // the element appears, so detection is near-instant — pollIntervalMs is only
+  // the per-attempt ceiling.
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    await sleep(pollIntervalMs);
-    await navigateTo(api, sessionId, config.targetUrl);
-    if (await probeTargets(api, sessionId, config.checkTargets, 5000)) {
+    if (await probeTargets(api, sessionId, config.checkTargets, pollIntervalMs)) {
       console.log("[Continuity] ✓ Authenticated. Resuming demo.\n");
       return;
     }
@@ -97,8 +103,4 @@ async function probeTargets(
     }
   }
   return false;
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }

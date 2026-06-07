@@ -41,9 +41,9 @@ npm run demo:hero
 ```
 
 A browser window opens. If you aren't logged into Google, log in when prompted —
-Feather detects the login and continues automatically. On a second run (before
-rebooting), the session profile is already warmed and the demo skips straight to
-the action.
+Feather detects the login and continues automatically on the first run, no restart
+needed. Re-running before reboot reuses the warmed profile, so it skips the login and
+Chromium's first-run popups — handy for a cleaner screen recording.
 
 The session profile is RAM-backed and wiped on reboot (`/run/user/<uid>/feather-demo`).
 

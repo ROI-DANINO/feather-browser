@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Starts a RAM-backed Feather server and runs the hero demo in one command.
 # The session profile lives in /run/user/<uid>/feather-demo (tmpfs, wiped on reboot).
-# On a second run (same boot), the profile is already warmed — demo skips straight to the action.
+# The first run works end-to-end: log in when prompted and Feather continues automatically.
+# Re-running before reboot reuses the warmed profile — it skips the login and Chromium's
+# first-run popups, which makes for a cleaner screen recording.
 set -uo pipefail
 
 FEATHER_DEMO_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/feather-demo"
