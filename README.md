@@ -36,6 +36,8 @@ In another terminal, run the quickstart demo — it drives a full session loop e
 ### 2. Hero Demo (ChatGPT → Gmail)
 This demo showcases the "Cookie Mine" foundation: an agent piggybacks on your existing human-warmed sessions to perform cross-site tasks.
 
+**Demo video:** See it in action — [`demo-final.mp4`](demo-final.mp4) (28 seconds).
+
 ```bash
 npm run demo:hero
 ```
