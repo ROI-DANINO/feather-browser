@@ -134,6 +134,18 @@ URL query / visible text) and scanned every output surface. Durable facts:
   wired into `manager.launch` for `chromium-headed-cdp`. Guarded probe proves the system build runs
   (CDP `browser.version()` == system `.215`, not bundled `.96`) with `webdriver===false`.
 
+## Identity Model Architecture (2026-06-07)
+
+Agent Browsing Stack Feature 3. Spec+plan: `docs/specs/2026-06-07-identity-model-{design,plan}.md`.
+
+- **Identity = named workspace.** `identity.id` IS the `workspaceId`. `paths.profileDir(identity.id)` resolves the profile — no indirection layer. Creating an identity creates a named workspace with policy.
+- **Warm-status via event bus.** `SESSION_CLOSE_COMPLETED` gains `workspaceId` in data. `IdentityManager` subscribes via `onBusEvent`. `SessionManager` knows nothing about identities — coupling runs one way.
+- **Password manager disabled at create.** `disablePasswordManager(profileDir)` called on every new identity — raw creds cannot accumulate in the warm jar.
+- **vaultRef dormant.** String key stored in `IdentityRecord`; ignored at runtime until ADR-0008 Spikes A/B clear. Stable seam; no Identity API change needed when vault is built.
+- **PATCH omitted v1** (YAGNI — atomic JSON overwrite via delete+re-create is sufficient for local single-user).
+- **Guardrails:** no cloud sync/remote storage; strict 1:1:1 identity:profile:session mapping; no RBAC.
+- **Self-contained plan** (13 TDD tasks). Runs before Stealth Stack or MFA Handler are built; stealthConfig/mfaConfig stored now, applied to sessions when those plans execute.
+
 ## Open-Source Integration Research Findings (2026-06-07)
 
 Research doc: `research/2026-06-07-open-source-integration-research.md`. Durable architecture inputs:
