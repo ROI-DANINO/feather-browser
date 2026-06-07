@@ -167,11 +167,12 @@ export interface CreateIdentityInput {
 1. Look up the identity
 2. Call `sessionManager.launch({ workspaceId: identity.id, profile: { kind: "persistent" }, browserMode: "chromium-headed-cdp" })`
 3. Return the sessionId. The user now has a live headed browser to log into manually.
-4. On session close: `markWarm(identity.id)` — update `warmStatus: "warm"`, `lastWarmAt`.
+4. On session close: `SessionManager` emits `SESSION_CLOSED` on the event bus. `IdentityManager`
+   subscribes at startup and updates `warmStatus: "warm"`, `lastWarmAt` when the closed session's
+   `workspaceId` matches a known identity ID.
 
-The session manager's `close()` path needs to call `markWarm` when the closed session's
-`workspaceId` matches a known identity. This is done via a lightweight callback registered at
-startup (not a hard dependency — identity is optional infrastructure).
+`SessionManager` is not modified beyond what it already does — it fires `SESSION_CLOSED` and knows
+nothing about identities. `IdentityManager` is the listener; the coupling runs one way.
 
 **Password manager policy:** `manager.create()` calls `disablePasswordManager(profileDir)` on
 the identity's profile path at creation time. Credentials stay out of the warm jar from day one.
@@ -394,10 +395,15 @@ No `identity.deleted` — deletion is a local metadata operation with no agent-v
 - Not a session multiplexer. One identity = one profile path. Running two simultaneous agent
   sessions on the same identity's profile will be blocked by the existing profile lock.
 - Not a cloud identity store. Identities are JSON files in `~/.local/share/feather/identities/`.
-  Nothing leaves the machine.
+  Nothing leaves the machine. No remote storage, no cloud sync, no external identity provider.
 - Not a browser account sync. The warm profile is local. If the user's device changes, they warm
   again. Syncing profiles across devices is out of scope.
 - Not a user authentication layer for Feather itself. Identities describe *target sites* an agent
   works on, not who is operating Feather.
 - Not dependent on the vault being built. Every feature of the Identity Model except `vaultRef`
   runtime resolution works today, without ADR-0008.
+- No cross-identity session sharing. The mapping is strict 1:1:1 — one identity, one profile, one
+  session at a time. An agent session belongs to exactly one identity and no session may span or
+  borrow across identities. The profile lock enforces this at runtime.
+- No RBAC or multi-user access control. Feather is a single-user local tool. Identities are not
+  principals in an authorization system — they are named profiles on the local machine.
