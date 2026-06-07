@@ -1,44 +1,55 @@
 # Active - startup pointer
 
-This file is the short live pointer for `/start`. Full phase/session map -> `ROADMAP.md`;
-operational checklist -> `journal/ops/tasks.md`; machine pointer -> `journal/ops/phase.md`.
+This file is the short live pointer for `/start`. Full phase/session map -> `ROADMAP.md` (now a thin
+index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md`; machine pointer ->
+`journal/ops/phase.md`.
 
 ## Current pointer
 
 - **Current phase:** Phase 4a - Feather Core Open-Source Readiness And Public Proof.
-- **Current recommended session:** `ROADMAP.md` -> `### Session 4a.6b - Security & Capability
-  Re-Sequencing (from council review)`. This supersedes "start 4a.7 as-is".
-- **Next concrete action:** run Session 4a.6b - read `research/2026-06-07-council-design-review.md`,
-  decide the 4a.7 cold-vs-deferred split, write the control-plane/capability ADR, and re-order the
-  Phase 5 spine (safety gate -> Identity -> MFA -> warmed CDP -> Stealth). Planning only, no code.
-- **Why:** a 5-model council review (2026-06-07) unanimously flagged that Feather is exposing
-  high-privilege surfaces (CDP attach, unauth MFA routes, warmed creds on disk) before the safety
-  machinery that governs them. Decision: go with the findings - security model first.
-- **Task state:** roadmap rebase done; council review recorded + spec addenda added; 4a.7 flagged and
-  on hold pending the re-sequencing pass.
+- **Just completed:** `Session 4a.6b - Security & Capability Re-Sequencing` (planning only, no product
+  code). Acted on the 2026-06-07 council review: reversed to "security model first, interop through it."
+- **Current recommended session:** `Session 4a.7 - CDP cold-profile interop proof` ->
+  `docs/sessions/4a.7-cdp-cold-profile-interop.md`. This is the **re-scoped** 4a.7: cold/throwaway
+  profiles only. Warmed-profile CDP attach is deferred to Phase 5c, behind the capability gate.
+- **Next concrete action:** start 4a.7 (implementation) — expose the CDP/WS endpoint for cold/disposable
+  sessions only, token-gated + loopback-bound, with a test asserting the endpoint is absent on warmed
+  profiles. Verify Playwright 1.60 endpoint shape from docs first.
+- **Task state:** roadmap split into thin index + `docs/sessions/`; ADR-0010 (capability model) written
+  as CANDIDATE; Phase 5 spine re-ordered; MFA + Identity plan security tasks folded in.
 
-## Files to read next
+## What changed in 4a.6b (read if resuming the re-sequencing thread)
 
-- `research/2026-06-07-council-design-review.md`
-- `ROADMAP.md` (Session 4a.6b)
-- `journal/ops/tasks.md`
-- `docs/specs/2026-06-07-mfa-handler-design.md` (Security addendum)
-- `docs/specs/2026-06-07-identity-model-design.md` (Security addendum)
-- `docs/specs/adr-0008-credentials-vault.md`
+- **New ADR:** `docs/specs/adr-0010-local-control-plane-capability-model.md` (CANDIDATE) — three
+  privilege tiers, capability-grant primitive, global `Origin`/`Host` hook, session-hold primitive.
+- **4a.7 re-scoped:** cold-profile interop proof now; warmed attach -> Phase 5c behind the gate.
+- **Phase 5 spine re-ordered:** `capability gate (5.0.0) -> Identity (5a) -> MFA (5b) -> warmed CDP
+  (5c) -> Stealth (5d, last) -> Agent Runtime (5e)`. Renumbering map + dependency graph in `ROADMAP.md`.
+- **Two dependency-breaking decisions** (why the order is possible): the session-hold primitive
+  replaces MFA's `setStealthMode` (frees Stealth to be last); Identity stores stealth/MFA policy as
+  opaque/versioned refs, not concrete imports (frees Identity to be first).
+- **Roadmap split (council Q1):** `ROADMAP.md` is now a thin index; session bodies live in
+  `docs/sessions/`; completed-session detail stays in git + `journal/ops/sessions/`.
+
+## Files to read next (for 4a.7)
+
+- `docs/sessions/4a.7-cdp-cold-profile-interop.md`
+- `docs/specs/adr-0010-local-control-plane-capability-model.md`
+- `research/2026-06-07-open-source-integration-research.md`
+- `src/browser/modes.ts`, `src/sessions/session.ts`, `src/sessions/manager.ts`, `src/transport/routes.ts`
 
 ## Blockers / notes
 
-- `journal/context/next.md` exists as the reset header only; no pending `/next` entries.
-- LinkedIn debut recording remains valid but blocked on installing a Niri/Wayland screen recorder
+- `journal/context/next.md` is the reset header only; no pending `/next` entries.
+- LinkedIn debut recording (4a.9) still blocked on installing a Niri/Wayland screen recorder
   (Kooha or `wf-recorder`).
-- `journal/raw/_inbox/` still has two social-research use-case stubs plus its README; triage is
-  Session 4a.10, not the next engineering session.
-- Command workflow docs were already stabilized in a previous pass; do not redo them unless a direct
-  contradiction blocks current work.
+- `journal/raw/_inbox/` is clear (README only). The two social-research stubs were triaged (4a.10):
+  consolidated into a `Proposed` Social Research Mode use-case seed in `journal/work/product/context.md`
+  and archived to `journal/raw/archive/`.
 
 ## Recent completed context
 
-- Agent Browsing Stack specs are complete: Stealth Stack, MFA Handler, and Identity Model.
-- Open-source integration research is complete and folded into the roadmap sequence.
-- Hero demo is working: `npm run demo:hero`; recording still needs a screen recorder.
-- Core open-source README and `examples/quickstart.sh` are already in place.
+- Agent Browsing Stack specs complete (Stealth, MFA, Identity); plan security tasks now folded in.
+- Open-source integration research complete and folded into the roadmap sequence.
+- Hero demo works: `npm run demo:hero`; recording still needs a screen recorder.
+- Core open-source README and `examples/quickstart.sh` are in place.

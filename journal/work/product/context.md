@@ -48,6 +48,21 @@ pre-authenticated. Wraps Features 1+2. Formalizes what's already half-built.
 — confirms architecture is correct (same CDP-attach pattern); Cookie Mine parallel confirmed;
 stealth claims are mostly marketing — concrete ideas are minimal-CDP-surface + declared-bot path.
 
+## Use-case seed — Social Research Mode  (`Proposed / needs confirmation`)
+
+A motivating *application* of the Agent Browsing Stack (not a new feature; not committed scope).
+Consolidated 2026-06-07 from two near-duplicate inbox captures (now archived under
+`journal/raw/archive/`).
+
+A personal social-research assistant that uses the **user's own authenticated** browser session to
+inspect social posts, save references, read **visible** comments, and turn audience reactions into
+content insights. Instagram is the named example; it exercises Identity Model (named authenticated
+profile), MFA Handler (login walls), and the Stealth/Runtime modes.
+
+**Framing guardrail (preserve):** this is a *personal research assistant*, explicitly **not** an
+Instagram bot, scraping farm, engagement-automation tool, or anti-detection system. Own-accounts
+only, human-warmed session, read/observe what's already visible.
+
 ## North-Star behavioral objectives (Phase 5+; defined sharply — `journal/ops/archive/roadmap-future.md`)
 
 Defined so a passive, lesser version is never mistaken for the milestone:

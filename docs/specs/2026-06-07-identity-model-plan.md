@@ -4,7 +4,7 @@
 
 **Goal:** Give agents a stable named handle — an **Identity** — that they attach to by name, which resolves to a warmed Chromium profile and carries default stealth/MFA configs and a dormant vault reference. Human warms once; agent attaches pre-authenticated; raw credentials never reach the agent.
 
-**Architecture:** A new `src/identity/` module (types, JSON-file store, manager with event-bus listener). Five new token-authenticated routes. `LaunchSessionInput` gains `identityId?`; `SessionRecord` gains `identityId?`. Warm-status update is decoupled: `SessionManager` fires `SESSION_CLOSE_COMPLETED` with `workspaceId` in data; `IdentityManager` subscribes to the bus — `SessionManager` knows nothing about identities.
+**Architecture:** A new `src/identity/` module (types, JSON-file store with a per-identity write mutex, manager). Five new token-authenticated routes. `LaunchSessionInput` gains `identityId?`; `SessionRecord` gains `identityId?`. **Warm-status is explicit** — an awaited `identityManager.markWarm(id)` driven by human confirmation or a verified login signal. (Superseded the original "infer warm from a `SESSION_CLOSE_COMPLETED` bus event" design — see Build-Order Notes + Security Tasks.)
 
 **Tech stack:** TypeScript, Fastify + Zod (HTTP), Vitest (tests), Node `fs/promises` (JSON file storage). No new dependencies.
 
@@ -21,6 +21,46 @@
 - `vaultRef` is stored as a string and ignored at runtime — it becomes active when ADR-0008 is accepted.
 
 If Stealth Stack and/or MFA Handler are already built when this plan executes, Task 10 should perform the full merge. The implementing agent should check for the presence of `stealthConfig`/`mfaConfig` on `LaunchSessionInput` and merge if available.
+
+---
+
+## Security Tasks (folded from the council review, 2026-06-07 — do these)
+
+> Source: `research/2026-06-07-council-design-review.md` + the Security addendum in
+> `docs/specs/2026-06-07-identity-model-design.md`. These **modify** the numbered tasks below. Under
+> the security-first re-sequencing, Identity is the **first** feature (Phase 5a) and is self-contained
+> — it must not pre-commit cross-module type contracts.
+
+- [ ] **S1 — Separable identifiers, not strict 1:1:1 (modifies Tasks 4, 7, 8).** Do **not** fuse
+  identity / workspace / profile / session into one id. Keep the stable named handle but store
+  **separable fields** — `defaultWorkspaceId`, `defaultProfileId` — each defaulting to `id`. Enforce
+  "one active persistent session per profile" **in code** (the existing profile lock), not as the
+  permanent domain model. Tests: an identity can carry a `defaultWorkspaceId` distinct from `id`;
+  launch resolves the profile via `defaultProfileId`.
+- [ ] **S2 — Explicit `markWarm()`, remove the bus-inference (replaces Tasks 3 + 6 bus listener).**
+  Delete the `subscribeToClosedSessions()` warm-on-close listener. Add `async markWarm(id)` as a
+  **direct awaited call**, driven by an explicit human confirmation or a verified login signal — not a
+  session-close event. Rationale: the close bus is the *logging* bus (`src/logs/bus.ts`), and a close
+  does not mean warm (failed login / logout / abandoned MFA / wrong account all close). Task 3
+  (`workspaceId` on the close event) is no longer needed for warm-status; drop it unless used elsewhere.
+- [ ] **S3 — Don't pre-commit cross-module type contracts (modifies Tasks 4, 8, 10).** Store
+  stealth/MFA policy as **opaque/versioned references** (e.g. `stealthPolicy?: { v: number; … }` or an
+  opaque blob), not by importing `StealthConfig`/`MfaConfig` from modules that don't exist yet. Remove
+  the placeholder-import guard in favour of an opaque type. Merge the real types only when Stealth (5d)
+  / MFA (5b) are built. This is what keeps Identity self-contained and first.
+- [ ] **S4 — JSON store read-modify-write protection (modifies Task 5).** Atomic tmp+rename prevents
+  partial reads, not lost updates. Add a **per-identity write mutex/queue** + an `updatedAt`/version
+  field with optimistic concurrency. Test: two concurrent `markWarm`/update calls don't clobber each
+  other. SQLite is a reasonable later alternative once state grows; **not required now** (guiding
+  constraint: no DB).
+- [ ] **S5 — Treat the warmed profile as credential-at-rest; gate `vaultRef` on Gate A (modifies
+  Tasks 6, 10).** The profile dir already holds cookies / refresh tokens / DBSC keys — disabling the
+  password manager protects stored *passwords*, not session material. Prerequisites before broad
+  warmed-profile use: restrictive FS permissions, no world-readable / cloud-synced profile paths,
+  per-identity deletion. Treat `vaultRef` as a **keyring locator (libsecret / GNOME Keyring / KWallet),
+  not a JSON path**, and gate its activation on the Phase-5.0 safety gate
+  ([[adr-0010-local-control-plane-capability-model]]), not only on ADR-0008. Consider **not** returning
+  `vaultRef` in normal identity `GET` responses.
 
 ---
 

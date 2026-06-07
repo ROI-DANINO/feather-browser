@@ -4,7 +4,7 @@
 
 **Goal:** When an agent hits a TOTP/SMS/push MFA wall, Feather pauses, notifies the user, the user resolves it via a local web page (types the code, or taps their phone then confirms), and Feather enters the code (code types only) and resumes the agent — without the agent ever seeing the raw code.
 
-**Architecture:** A new single-responsibility `src/mfa/` module holds an in-memory challenge store (`MfaChallengeManager`), an HTML renderer for a dumb local page, and a pluggable notifier (console always; Telegram when configured). Two agent-facing routes create and poll challenges; two no-auth local-page routes serve the page and accept the user's submission. Resolving/expiring a challenge flips the session's stealth mode via the seam built in the Stealth Stack.
+**Architecture:** A new single-responsibility `src/mfa/` module holds an in-memory challenge store (`MfaChallengeManager`), an HTML renderer for a dumb local page, and a pluggable notifier (console always; Telegram when configured). Two agent-facing routes create and poll challenges; two hardened local-page routes serve the page and accept the user's submission. Creating a challenge takes a refcounted **session hold** (`reason: "mfa"`) from the capability gate; resolving/expiring releases it. (Superseded the original "flips stealth mode" tie-in — see Build-Order Dependency + Security Tasks.)
 
 **Tech Stack:** TypeScript, Fastify + Zod (HTTP), Playwright (typing the code into the page, via the existing type command), Vitest (tests). Node 20 global `fetch` for Telegram (no SDK).
 
@@ -14,17 +14,65 @@
 
 ## Build-Order Dependency (read first)
 
-This feature **consumes** one contract from the Stealth Stack plan
-(`docs/specs/2026-06-07-stealth-stack-plan.md`):
+> **Updated 2026-06-07 (Session 4a.6b, security-first re-sequencing).** The original dependency
+> below — MFA consuming Stealth's `setStealthMode` — is **superseded.** Under the new spine
+> (`capability gate → Identity → MFA → warmed CDP → Stealth last`), MFA depends on the **session-hold
+> primitive** from the capability gate (Session 5.0.0 / [[adr-0010-local-control-plane-capability-model]]),
+> **not** on the Stealth Stack. This is exactly what lets Stealth move to last. Read the **Security
+> Tasks** section below before implementing — it modifies Tasks 6, 8, 9, 10, and 11–14.
 
-- `ISession.setStealthMode(mode: StealthMode): void` and `export type StealthMode = "secure" | "assisted"` in `src/sessions/types.ts`.
+This feature **consumes** the **session-hold primitive** from the capability gate
+(`docs/sessions/5.0.0-capability-gate.md`):
 
-**If the Stealth Stack has not been built yet, build its `stealthMode` task first** (the mutable-mode
-task that adds `StealthMode`, the `stealthMode` getter, and `setStealthMode()`). Do **not** re-implement
-it here — that would duplicate Stealth's work and cause a merge conflict. A failing typecheck on
-`setStealthMode` / `StealthMode` is the correct signal that this dependency is unmet.
+- A refcounted `session.createHold({ reason: "mfa" })` / release pair (exact signature fixed when
+  5.0.0 is built). MFA *creates* a hold on challenge-create and *releases* it on resolve/expire; a
+  policy layer observes holds. MFA **must not** call `setStealthMode` directly.
+
+**If the capability gate (5.0.0) has not been built yet, build the session-hold primitive first.** Do
+not re-implement it here. A failing typecheck on the hold API is the correct signal that this
+dependency is unmet.
 
 Everything else in this plan is self-contained.
+
+> **Note on the tasks below:** Tasks 8–10 as written call `session.setStealthMode("assisted"|"secure")`.
+> Treat those calls as **placeholders for the hold primitive** — replace them per the Security Tasks
+> section. The rest of each task (challenge lifecycle, typing the code, expiry) is unchanged.
+
+---
+
+## Security Tasks (folded from the council review, 2026-06-07 — do these)
+
+> Source: `research/2026-06-07-council-design-review.md` + the Security addendum in
+> `docs/specs/2026-06-07-mfa-handler-design.md`. These **modify** the numbered tasks below; address
+> them as part of the same TDD cycles, not as an afterthought. Most depend on Gate A
+> ([[adr-0010-local-control-plane-capability-model]], Session 5.0.0).
+
+- [ ] **S1 — Harden the no-auth local routes (modifies Tasks 11–14).** `GET /v1/mfa/:id` and
+  `POST /v1/mfa/:id/submit` must not be reachable by a CSRF drive-by. Add: the global
+  `Origin`/`Referer`/`Host` validation hook (from Gate A); a **single-use `humanToken`** carried in
+  the local URL (the `challengeId` is an identifier, **not** the bearer secret); a **per-page CSRF
+  nonce** posted back on submit; a **strict CSP with no external resources**. Tests: a request with a
+  foreign `Origin` is rejected; a submit without the correct `humanToken`/nonce is rejected.
+- [ ] **S2 — Make `challengeId` a 256-bit CSPRNG value, separate from `humanToken`.** Replace the
+  `mfa_<uuid-slice>` id generation with CSPRNG; mint and store a distinct single-use `humanToken`.
+- [ ] **S3 — Origin-verify before typing (anti-phishing; modifies Task 9).** Before Feather types a
+  code into `target`, capture the page origin/URL at challenge-create and **verify it is unchanged**
+  at resolve; surface the current origin/target (and a screenshot if available) to the human for
+  confirmation. Pause the agent and suspend CDP/snapshot during the MFA flow. Test: a navigation away
+  from the create-time origin blocks the type and fails the resolve with a clear error.
+- [ ] **S4 — Replace `setStealthMode` with the session-hold primitive (modifies Tasks 6, 8, 9, 10).**
+  On create: `session.createHold({ reason: "mfa" })`. On resolve/expire: release the hold. **Refcount**
+  — a session returns to its base behavior only at zero pending MFA holds (fixes the concurrent-
+  challenge race where one resolve flips a session while another is still pending). Update the Task
+  8–10 tests to assert hold create/release instead of `setStealthMode` calls.
+- [ ] **S5 — Lifecycle hygiene (modifies Tasks 8, 10, 12).** Clear timers on resolve/cancel/**session
+  close**; **cancel pending challenges when the session closes** (no timer firing into a dead page);
+  check expiry on read/write. Prefer the existing `mfa.challenge.*` SSE events over the poll endpoint
+  (keep `GET …/:id` as a fallback only).
+- [ ] **S6 — Reframe the security claim in docs (modifies API docs / Task 14).** "Agent never sees the
+  code" defends the **reusable secret** (TOTP seed / single-use code stays out of agent/LLM/log space)
+  and enforces the **human gate** — it does not make an untrusted agent safe on an authenticated
+  account. Note that `secure`/`assisted` naming overpromises (`assisted` is arguably more dangerous).
 
 ---
 

@@ -68,3 +68,4 @@ Pre–Phase 4 history (Phases 0–3): `journal/ops/archive/log-archive.md`.
 2026-06-07 | NEXT | -> journal/context/next.md | Command workflow docs aligned across docs/.claude/skills + journal archive docs; ROADMAP untouched. Next = review/commit this pass or resume roadmap re-sequencing.
 2026-06-07 | PLAN | -> ROADMAP.md + active/tasks/phase.md | rebased ROADMAP to session map; pointers -> Session 4a.7 CDP/WS; no product code
 2026-06-07 | STOP | -> ops/sessions/council-review-closeout-20260607-2217.md | Codex work verified docs-only; 5-model council -> security-first; next=Session 4a.6b
+2026-06-07 | NEXT | -> journal/context/next.md | Session 4a.6b done: council security-first reversal — ADR-0010 capability model, 4a.7 re-scoped cold-only, Phase 5 spine re-ordered (gate→Identity→MFA→warmed-CDP→Stealth-last), ROADMAP split into index+docs/sessions, MFA+Identity plan security tasks folded. Docs-only, uncommitted. NEXT = 4a.7 cold-profile CDP interop.
