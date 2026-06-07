@@ -5,6 +5,8 @@ destination → `ROADMAP.md`; history → `journal/log.md` + `ops/sessions/`.
 
 ## Now
 
+**✅ OPEN-SOURCE INTEGRATION RESEARCH DONE (2026-06-07).** Audited Browser Use, Crawl4AI, OpenHands, Maxun. Research doc: `research/2026-06-07-open-source-integration-research.md`. Roadmap re-sequencing pass must incorporate findings (see constraint block below). Session: `ops/sessions/open-source-integration-research-20260607.md`.
+
 **✅ AGENT BROWSING STACK — 2 of 3 SPEC SESSIONS DONE (2026-06-07).** Build order: **Stealth ✅ → MFA ✅ → Identity (next).** Brief: `docs/specs/2026-06-07-agent-browsing-stack-brief.md`. Plans carry no phase numbers (roadmap pass assigns them later).
 
 **✅ FEATURE 1 — STEALTH STACK — spec+plan+Opus council, rev 2 (commits `bb3c065`/`8a46065`, unpushed).**

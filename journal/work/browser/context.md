@@ -134,6 +134,25 @@ URL query / visible text) and scanned every output surface. Durable facts:
   wired into `manager.launch` for `chromium-headed-cdp`. Guarded probe proves the system build runs
   (CDP `browser.version()` == system `.215`, not bundled `.96`) with `webdriver===false`.
 
+## Open-Source Integration Research Findings (2026-06-07)
+
+Research doc: `research/2026-06-07-open-source-integration-research.md`. Durable architecture inputs:
+
+- **CDP/WS endpoint exposure:** exposing the browser's WS endpoint in `LaunchSession` response enables
+  Browser Use (`BrowserSession(cdp_url=...)`) and Crawl4AI (`BrowserConfig(cdp_url=...)`) to attach
+  to Feather sessions with zero further code changes. High-leverage, low-effort. Add to Stealth/Phase 5 tasks.
+- **Fingerprint npm packages (Stealth Stack):** `fingerprint-generator`, `fingerprint-injector`,
+  `idcac-playwright` are independent npm packages (no AGPL) used by Maxun. Evaluate before building
+  fingerprint injection from scratch. Task 1 of Stealth implementation sprint.
+- **Snapshot/Markdown upgrade:** Crawl4AI's `DefaultMarkdownGenerator` (HTML→clean Markdown, ~300 lines,
+  Apache 2.0) should be ported to TypeScript and added as a `markdown` output on the snapshot command.
+  Also: `JsonCssExtractionStrategy` pattern informs Feather's `extract` recipe schema evolution.
+- **OpenHands MCP path:** once Feather has an MCP surface (ADR-0006, Phase 5), a ~200-line
+  `FeatherBrowserTool` makes Feather the browser runtime for OpenHands agents. OpenHands V1 is
+  `fastmcp`-based; install `openhands-ai` (MIT PyPI package); never touch `enterprise/`.
+- **Maxun AGPL = permanent code blocker.** `WorkflowFile` `where/what` DSL pattern is worth porting
+  by hand. `rrweb` (MIT, separate package) usable independently for a future session recorder.
+
 ## Key Spike Results
 
 - **fastify-sse-v2 v5 compat** — **RESOLVED (S3, 2026-06-03):** proven compatible with Fastify

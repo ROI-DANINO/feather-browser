@@ -4,8 +4,7 @@ Checklist only. Current state, recommendation, evidence → `journal/context/act
 Phase map + exit criteria → `ROADMAP.md`.
 
 Active track: Agent Browsing Stack — 2 of 3 spec sessions done (Stealth ✅, MFA ✅). Next: Identity
-Model spec, then the roadmap re-sequencing pass (incorporating integration research findings).
-Hero demo ready to record; LinkedIn debut still pending.
+Model spec, then the roadmap re-sequencing pass. Hero demo ready to record; LinkedIn debut still pending.
 
 ---
 
@@ -36,17 +35,7 @@ Each session reads the brief section for its feature, does the listed research, 
   Output: `docs/specs/2026-06-07-identity-model-design.md`
 
 - [ ] **Roadmap re-sequencing pass** (after Feature 3) — assign phases/milestones to the 3 plans,
-  cut tasks into work sessions. **Incorporate integration research findings** when assigning tasks:
-  - Stealth Sprint Task 1: evaluate `fingerprint-generator` + `fingerprint-injector` + `idcac-playwright` (npm, no AGPL)
-  - Add: expose CDP/WS endpoint in `LaunchSession` response (unlocks Browser Use + Crawl4AI interop, near-zero effort)
-  - Add: port Crawl4AI's `DefaultMarkdownGenerator` to TypeScript → `markdown` output in snapshot command
-  - Add (Phase 5 gate): `FeatherBrowserTool` (~200 lines Python) once MCP surface is built
-  - Research file: `research/2026-06-07-open-source-integration-research.md`
-
-## Track C — Social Research Use Cases (inbox seeds, unprocessed)
-
-- [ ] **Process inbox files** — `journal/raw/_inbox/2026-06-07-social-research-{agent,mode}-usecase.md`
-  Route to product desk or Identity Model spec as relevant. Read and archive.
+  cut tasks into work sessions, repeat the assign step at each phase boundary.
 
 ## Parked — claude-council
 - [x] `/claude-council:ask` — consulted on the Stealth Stack design+plan (Opus 4.8 + Gemini CLI; 2026-06-07). Claude provider patched to honor `CLAUDE_MODEL` (runs Opus, not stale Sonnet).
