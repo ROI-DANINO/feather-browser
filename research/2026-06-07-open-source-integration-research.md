@@ -219,14 +219,22 @@ High. Maxun is a **platform**: recording UI + browser service + job scheduler + 
 - **`WorkflowFile` DSL pattern** (`where/what` pairs, `$and/$or/$not` conditions): well-designed and documented in types — port by hand into Feather's automation layer.
 - **`scrapeSchema` / `scrapeList` action model**: structured CSS-selector-based extraction with list detection — compare and inform Feather's `extract` command recipe format.
 - **Pagination strategies** (`clickNext`, `clickLoadMore`, `scrollDown`): well-abstracted — copy as patterns, not code.
-- **`rrweb` recording** (MIT licensed, separate npm package): if Feather ever builds a session recorder, `rrweb` itself can be used independently of Maxun.
+- **`rrweb`** (MIT, separate npm package): DOM streaming replay — usable independently for a future Feather session recorder.
+- **Anti-bot npm packages (independently licensed — directly applicable to Feather Stealth Stack):**
+  - `fingerprint-generator` — browser fingerprint spoofing
+  - `fingerprint-injector` — injects spoofed fingerprint into a Playwright context
+  - `idcac-playwright` — dismisses cookie consent banners automatically
+  - `@cliqz/adblocker-playwright` — ad blocker integration for Playwright
+  These are the npm packages Maxun uses for stealth. They are **independent npm packages**, not AGPL-covered. Feather's Stealth Stack should evaluate these before building fingerprint injection from scratch.
+- **MCP worker**: Maxun includes `@modelcontextprotocol/sdk` v1.12.1 and a `mcp-worker.ts`. Worth reading for MCP server implementation patterns.
 
 ### Risks
 - **AGPL-3.0**: hard blocker for importing maxun-core or any Maxun code.
-- No CDP attach: fundamental session model incompatibility with Feather's persistent profiles.
+- No CDP attach: fundamental session model incompatibility with Feather's persistent profiles (`chromium.connect(wsEndpoint)` ≠ `connectOverCDP()`).
 - Tight platform coupling: can't extract recorder or DSL engine without significant work.
 - PostHog analytics embedded in server: must be patched out for clean local deployment.
-- v0.0.34 — unstable API surface.
+- **CVE-2025-15105** (hardcoded crypto key in `server/src/routes/auth.ts`, versions ≤ 0.0.28, vendor did not respond to disclosure): low risk for local Feather use, yellow flag for project security culture.
+- v0.0.41 — beta, unstable API surface.
 
 ### Recommendation: **Use as reference only**
 AGPL makes direct code reuse legally hazardous for Feather (unless Feather is also AGPL). More importantly, Maxun's browser model (WS tunnel, no CDP attach, no persistent profile reuse) is incompatible with Feather's session architecture at the infrastructure level. The DSL patterns and extraction abstractions are valuable — port them by hand into Feather's automation layer to keep the license clean.
@@ -260,6 +268,10 @@ AGPL makes direct code reuse legally hazardous for Feather (unless Feather is al
 
 3. **The workflow DSL pattern (Maxun's `WorkflowFile`) is worth designing into Feather independently.** A `where/what` declarative automation format fits naturally on top of Feather's existing click/type/press/wait commands. Design it from scratch (Maxun's patterns as reference) to stay AGPL-clear.
 
-4. **Feather's MCP surface (ADR-0006) is the long-term interop bet.** None of these projects speak MCP today, but the standard is moving fast. A well-designed MCP interface makes Feather pluggable into any of them (OpenHands, future Browser Use, custom Claude agents) without bilateral integration work.
+4. **Feather's MCP surface (ADR-0006) is the long-term interop bet.** OpenHands already ships `fastmcp` and an `mcp-worker.ts`; Maxun already ships `@modelcontextprotocol/sdk`. The MCP seam is becoming standard quickly. A well-designed MCP interface makes Feather pluggable into any of them (OpenHands, future Browser Use, custom Claude agents) without bilateral integration work.
 
-5. **Maxun's AGPL is a permanent blocker** — not a risk to monitor, a decision already made. Reference only; never import.
+5. **Maxun's anti-bot npm packages are directly applicable to Feather's Stealth Stack and carry no AGPL risk.** `fingerprint-generator`, `fingerprint-injector`, `idcac-playwright` are independent npm packages Maxun uses but does not own. Feather should evaluate these before building fingerprint injection from scratch.
+
+6. **Maxun's AGPL is a permanent blocker** — not a risk to monitor, a decision already made. Reference only; never import.
+
+7. **OpenHands' `FeatherBrowserTool` path is clean (~200 lines Python) once Feather has an MCP surface.** A custom `Tool` subclass that proxies all browser actions to Feather's REST endpoints would replace OpenHands' BrowserGym browser entirely — giving Feather's persistent-profile, anti-detection sessions to OpenHands agents. Install `openhands-ai` (MIT) from PyPI; never touch `enterprise/`.
