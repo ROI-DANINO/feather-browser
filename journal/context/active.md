@@ -11,12 +11,19 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
   code) + `Session 4a.10 - Social-research inbox triage`. Acted on the 2026-06-07 council review:
   reversed to "security model first, interop through it." All 4a.6b+4a.10 docs committed + pushed
   (`56bd985`, `dev == origin/dev`).
-- **Current recommended session:** `Session 4a.7 - CDP cold-profile interop proof` ->
-  `docs/sessions/4a.7-cdp-cold-profile-interop.md`. This is the **re-scoped** 4a.7: cold/throwaway
-  profiles only. Warmed-profile CDP attach is deferred to Phase 5c, behind the capability gate.
-- **Next concrete action:** start 4a.7 (implementation) — expose the CDP/WS endpoint for cold/disposable
-  sessions only, token-gated + loopback-bound, with a test asserting the endpoint is absent on warmed
-  profiles. Verify Playwright 1.60 endpoint shape from docs first.
+- **Current recommended session:** a **tight docs-only integration-doctrine reconciliation pass**
+  (brainstorm-first), THEN `Session 4a.8 - Markdown snapshot extraction` (port Crawl4AI natively).
+  **`Session 4a.7` (CDP attach) is PARKED / reframed** — it builds the "let outside tools drive Feather"
+  door, which is the opposite of Roi's native-port philosophy. See the 2026-06-08 bridge in `next.md`.
+- **Build-vs-buy doctrine (decided 2026-06-08, to be written up next session):** default = **port the
+  recipe natively** (read source, rebuild in TS); **buy a native npm package only** for hard /
+  fast-moving / security-critical work (e.g. Stealth fingerprint deps); **expose-to-external = deferred
+  Phase 5e track.** Crawl4AI = port, Browser Use = port DOM bits, Maxun = AGPL reference-only, fingerprint
+  npm = buy, OpenHands = undecided.
+- **Next concrete action:** open a FRESH chat, paste the prompt in the 2026-06-08 `next.md` entry, run
+  the doctrine pass (doctrine ADR + per-repo disposition table + re-tag 4a.7/4a.8/5d/5e), then 4a.8.
+  Anti-perfectionism guardrails apply. **The real near-term deliverable remains the demo GIF/video for
+  GitHub + LinkedIn (4a.9), blocked on a Wayland screen-recorder install.**
 - **Task state:** roadmap split into thin index + `docs/sessions/`; ADR-0010 (capability model) written
   as CANDIDATE; Phase 5 spine re-ordered; MFA + Identity plan security tasks folded in.
 

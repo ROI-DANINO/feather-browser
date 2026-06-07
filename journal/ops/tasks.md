@@ -25,7 +25,12 @@ Active session: **Session 4a.7 - CDP cold-profile interop proof**
   - [x] Split `ROADMAP.md` into thin index + `docs/sessions/` (council Q1).
   - [x] Reconcile `active.md`, `tasks.md`, `phase.md`.
 
-- [ ] **4a.7 - CDP cold-profile interop proof** <- NEXT (`docs/sessions/4a.7-cdp-cold-profile-interop.md`)
+- [ ] **4a.7 - CDP cold-profile interop proof** — ⏸ **PARKED / reframed 2026-06-08.** Builds the
+      "let outside tools drive Feather over CDP" door — opposite of the native-port philosophy. Decide
+      its fate (park vs move to 5e) in the integration-doctrine reconciliation pass. (`docs/sessions/4a.7-cdp-cold-profile-interop.md`)
+  - [ ] **NEW pre-4a.8: integration-doctrine reconciliation pass** (docs-only, time-boxed): doctrine
+        ADR (build-vs-buy, recipe-first default, 3 tracks) + per-repo disposition table + re-tag
+        4a.7/4a.8/5d/5e. Brainstorm-first. Paste-prompt + guardrails in `next.md` (2026-06-08 entry).
   - [ ] Verify Playwright 1.60 CDP/WS endpoint shape from docs.
   - [ ] Expose a sanitized endpoint field on `SessionRecord`/launch output **for cold/disposable
         profiles only**; absent for persistent/warmed.
