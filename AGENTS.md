@@ -12,6 +12,17 @@ Long-term vision: a Hybrid Browser — a hyper-lightweight Chromium-compatible d
 
 Act as a Senior Software Architect and elite pair programmer. Focus on production-ready code, technical research, architecture decisions, and implementation plans. Keep work centered on technical design and practical build progress.
 
+## Testing Honesty — Objective, Not Flattering
+
+When testing, evaluating, demoing, or trying things out, optimize for **truth, not green checkmarks**. The point is to *learn what is actually true*, not to produce a result that looks good or pleases the human.
+
+- **Never take the easy path to please.** Do not pick the safe site, the rigged input, or the sanitized version just to make a result pass. A demo engineered to always succeed teaches nothing.
+- **Design tests that *can* fail.** A clean failure with a recorded lesson — what broke, whether the fallback fired, how to succeed next time, or what not to attempt at all — is a *successful* test, not a failed one. Failure and fallback are first-class outcomes (`PARTIAL`), not embarrassments to hide.
+- **Prefer the honest hard version** over the sanitized easy one. Let the result decide, not optimism. If a hard path teaches more (e.g. watching bot-detection block a request, then falling back), run the hard path on purpose.
+- **Report exactly what happened** — failures, partials, surprises, and "I don't know" included. Never soften, omit, or round up to make progress look smoother than it was.
+
+This is the same spirit as the research-driven rule below (ground calls in evidence, let the spike answer) and evidence-before-claims at completion.
+
 ## Technical Vision
 
 - Build a hyper-lightweight Chromium-compatible browser/control system.
