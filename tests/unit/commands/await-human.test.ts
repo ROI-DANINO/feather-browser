@@ -63,8 +63,8 @@ describe("AwaitHumanHandler", () => {
   it("injects the banner on pause and removes it on resolve (banner default on)", async () => {
     await new AwaitHumanHandler(mockManager as any).execute(
       { sessionId: "ses_1", reason: "x", timeoutMs: 20 }, ctx);
-    // showBanner + removeBanner each run one page.evaluate
-    expect(mockPage.evaluate).toHaveBeenCalledTimes(2);
+    // showBanner and removeBanner each fire at least one page.evaluate; CDP polls may add more
+    expect(mockPage.evaluate.mock.calls.length).toBeGreaterThanOrEqual(2);
   });
 
   it("skips banner injection when banner:false", async () => {
@@ -78,5 +78,43 @@ describe("AwaitHumanHandler", () => {
     const result = await new AwaitHumanHandler(mockManager as any).execute(
       { sessionId: "ses_1", reason: "x", timeoutMs: 20 }, ctx);
     expect(result.resumedBy).toBe("timeout");
+  });
+
+  it("lingers ~1s on the resume confirmation before removing the banner", async () => {
+    vi.useFakeTimers();
+
+    // page.evaluate call semantics:
+    //   call 1 (showBanner)   → undefined
+    //   call 2 (bannerResumed poll) → true  (signals click)
+    //   call 3+ (removeBanner) → undefined
+    let evaluateCallCount = 0;
+    mockPage.evaluate = vi.fn().mockImplementation(() => {
+      evaluateCallCount++;
+      // 2nd call is the first bannerResumed poll — return true to trigger resume
+      if (evaluateCallCount === 2) return Promise.resolve(true);
+      return Promise.resolve(undefined);
+    });
+
+    const run = new AwaitHumanHandler(mockManager as any).execute(
+      { sessionId: "ses_1", reason: "x", timeoutMs: 30000 }, ctx);
+
+    // Advance 300ms so the first CDP poll fires (bannerResumed returns true → race resolves)
+    await vi.advanceTimersByTimeAsync(300);
+
+    // At this point the race has resolved but the 1s sleep hasn't elapsed yet.
+    // removeBanner is call #3; it should NOT have been called yet.
+    const callsAfterPoll = (mockPage.evaluate as ReturnType<typeof vi.fn>).mock.calls.length;
+    expect(callsAfterPoll).toBe(2); // showBanner + one bannerResumed poll only
+
+    // Advance the remaining 1000ms for the linger sleep
+    await vi.advanceTimersByTimeAsync(1000);
+
+    const result = await run;
+    expect(result.resumedBy).toBe("human");
+
+    // Now removeBanner should have fired (call #3)
+    expect((mockPage.evaluate as ReturnType<typeof vi.fn>).mock.calls.length).toBeGreaterThanOrEqual(3);
+
+    vi.useRealTimers();
   });
 });

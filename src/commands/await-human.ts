@@ -69,6 +69,7 @@ export class AwaitHumanHandler implements CommandHandler<AwaitHumanInput, AwaitH
     if (timer) clearTimeout(timer);
     discardPause(pause.token);
     if (wantBanner) {
+      await sleep(1000);
       await removeBanner(page).catch(() => {});
     }
     emitBusEvent({
