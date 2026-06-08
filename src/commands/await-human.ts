@@ -2,6 +2,8 @@ import type { CommandHandler, CommandContext } from "./handler";
 import type { AwaitHumanInput, AwaitHumanOutput } from "../sessions/types";
 import { resolveLocator } from "../browser/locators";
 import { createPause, discardPause } from "./pause-registry";
+import { showBanner, removeBanner } from "../browser/pause-banner";
+import { getBaseUrl } from "../transport/server-info";
 import { emitBusEvent } from "../logs/bus";
 import { EVENTS } from "../logs/events";
 
@@ -25,6 +27,13 @@ export class AwaitHumanHandler implements CommandHandler<AwaitHumanInput, AwaitH
       ts: new Date().toISOString(),
     });
 
+    // On-page banner (default on). Injection failures (page navigating/closed) must not break the
+    // pause — the SSE event + off-page resume URL remain as the fallback.
+    const wantBanner = input.banner !== false;
+    if (wantBanner) {
+      await showBanner(page, input.reason, getBaseUrl() + pause.resumePath).catch(() => {});
+    }
+
     let timer: ReturnType<typeof setTimeout> | undefined;
     const racers: Promise<AwaitHumanOutput["resumedBy"]>[] = [
       pause.humanResumed.then(() => "human" as const),
@@ -45,6 +54,9 @@ export class AwaitHumanHandler implements CommandHandler<AwaitHumanInput, AwaitH
 
     if (timer) clearTimeout(timer);
     discardPause(pause.token);
+    if (wantBanner) {
+      await removeBanner(page).catch(() => {});
+    }
     emitBusEvent({
       event: EVENTS.HUMAN_PAUSE_RESOLVED,
       sessionId: input.sessionId,

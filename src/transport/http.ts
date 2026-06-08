@@ -7,6 +7,7 @@ import type { FeatherPaths } from "../fs-layout";
 import { injectRequestId } from "./middleware";
 import { registerRoutes } from "./routes";
 import { registerSsePlugin } from "./sse";
+import { setBaseUrl } from "./server-info";
 
 export interface StartHttpServerResult {
   server: FastifyInstance;
@@ -27,6 +28,10 @@ export async function startHttpServer(
 
   app.addHook("onRequest", async (request) => { injectRequestId(request); });
 
+  // Accept (and ignore) urlencoded bodies so the on-page banner's cross-origin form POST to the
+  // resume route is not rejected with 415. No other route consumes urlencoded.
+  app.addContentTypeParser("application/x-www-form-urlencoded", { parseAs: "string" }, (_req, _body, done) => done(null, {}));
+
   await registerSsePlugin(app);
 
   registerRoutes(app, manager, paths, token);
@@ -38,6 +43,7 @@ export async function startHttpServer(
     throw new Error("Fastify server address is not available after listen().");
   }
   const actualPort = address.port;
+  setBaseUrl(`http://${host}:${actualPort}`);
 
   const endpointData = {
     transport: "http",

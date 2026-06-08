@@ -113,6 +113,7 @@ const AwaitHumanSchema = z.object({
     until: z.enum(["visible", "hidden", "attached", "detached"]),
   }).optional(),
   timeoutMs: z.number().int().positive().optional(),
+  banner: z.boolean().optional(),
 });
 
 const ScreenshotSchema = z.object({ pageId: z.string().optional(), fullPage: z.boolean().optional() });

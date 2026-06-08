@@ -101,4 +101,57 @@ describe("await-human (real Chromium)", () => {
     await fetch(`${baseUrl}${resumePath}`, { method: "POST" }); // settle so the test ends
     await pausePromise;
   });
+
+  it("injects an on-page banner and removes it after resume", async () => {
+    await api("POST", `/v1/sessions/${sessionId}/navigate`, {
+      url: dataUrl(`<body><h1>work page</h1></body>`),
+    });
+    const { resumePath, pausePromise } = await captureResumePath("solve the wall", 10000);
+
+    // banner appears on the working page
+    const appeared = await api("POST", `/v1/sessions/${sessionId}/wait`, {
+      target: { by: "css", selector: "#__feather_pause_banner__" }, until: "visible", timeoutMs: 3000,
+    });
+    expect(appeared.status).toBe(200);
+
+    // resume the way the banner's form does: urlencoded POST (the 415-prone path)
+    const r = await fetch(`${baseUrl}${resumePath}`, {
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: "",
+    });
+    expect(r.status).toBe(200);
+    expect(await r.text()).toMatch(/Resumed/);
+
+    const { body } = await pausePromise;
+    expect(body.data.resumedBy).toBe("human");
+
+    // banner is gone again before automation resumes
+    const gone = await api("POST", `/v1/sessions/${sessionId}/wait`, {
+      target: { by: "css", selector: "#__feather_pause_banner__" }, until: "detached", timeoutMs: 3000,
+    });
+    expect(gone.status).toBe(200);
+  });
+
+  it("banner:false leaves the working page untouched", async () => {
+    await api("POST", `/v1/sessions/${sessionId}/navigate`, {
+      url: dataUrl(`<body><h1>clean page</h1></body>`),
+    });
+    const events = await fetch(`${baseUrl}/v1/events`, { headers: { "X-Feather-Token": token } });
+    const reader = events.body!.getReader();
+    const dec = new TextDecoder();
+    const pausePromise = api("POST", `/v1/sessions/${sessionId}/await-human`, { reason: "no banner", timeoutMs: 10000, banner: false });
+    let resumePath = "";
+    while (!resumePath) {
+      const m = dec.decode((await reader.read()).value).match(/"resumePath":"([^"]+)"/);
+      if (m) resumePath = m[1];
+    }
+    await reader.cancel();
+
+    const present = await api("POST", `/v1/sessions/${sessionId}/wait`, {
+      target: { by: "css", selector: "#__feather_pause_banner__" }, until: "visible", timeoutMs: 1000,
+    });
+    expect(present.status).toBe(408); // WAIT_TIMEOUT — no banner was injected
+
+    await fetch(`${baseUrl}${resumePath}`, { method: "POST" });
+    await pausePromise;
+  });
 });

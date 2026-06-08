@@ -95,6 +95,8 @@ export interface AwaitHumanInput {
   reason: string;
   resumeOn?: { target: Target; until: "visible" | "hidden" | "attached" | "detached" };
   timeoutMs?: number;
+  /** Inject an on-page Resume banner into the working page (default true). false = off-page only. */
+  banner?: boolean;
 }
 export interface AwaitHumanOutput {
   pageId: string;

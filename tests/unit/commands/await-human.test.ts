@@ -6,7 +6,7 @@ import { onBusEvent } from "../../../src/logs/bus";
 
 vi.mock("../../../src/browser/locators", () => ({ resolveLocator: vi.fn() }));
 
-const mockPage = {};
+const mockPage: any = {};
 const mockSession = { getPage: vi.fn().mockReturnValue({ pageId: "page_001", page: mockPage }) };
 const mockManager = { get: vi.fn().mockReturnValue(mockSession) };
 const ctx = { requestId: "req_test" };
@@ -14,6 +14,7 @@ const ctx = { requestId: "req_test" };
 beforeEach(() => {
   vi.clearAllMocks();
   _resetForTests();
+  mockPage.evaluate = vi.fn().mockResolvedValue(undefined); // banner show/remove run through here
   mockSession.getPage.mockReturnValue({ pageId: "page_001", page: mockPage });
   mockManager.get.mockReturnValue(mockSession);
   (resolveLocator as any).mockReturnValue({ waitFor: vi.fn(() => new Promise(() => {})) }); // never resolves by default
@@ -56,6 +57,26 @@ describe("AwaitHumanHandler", () => {
     const result = await new AwaitHumanHandler(mockManager as any).execute(
       { sessionId: "ses_1", reason: "x", timeoutMs: 30,
         resumeOn: { target: { by: "css", selector: "#done" }, until: "visible" } }, ctx);
+    expect(result.resumedBy).toBe("timeout");
+  });
+
+  it("injects the banner on pause and removes it on resolve (banner default on)", async () => {
+    await new AwaitHumanHandler(mockManager as any).execute(
+      { sessionId: "ses_1", reason: "x", timeoutMs: 20 }, ctx);
+    // showBanner + removeBanner each run one page.evaluate
+    expect(mockPage.evaluate).toHaveBeenCalledTimes(2);
+  });
+
+  it("skips banner injection when banner:false", async () => {
+    await new AwaitHumanHandler(mockManager as any).execute(
+      { sessionId: "ses_1", reason: "x", timeoutMs: 20, banner: false }, ctx);
+    expect(mockPage.evaluate).not.toHaveBeenCalled();
+  });
+
+  it("a banner injection failure does not break the pause", async () => {
+    mockPage.evaluate = vi.fn().mockRejectedValue(new Error("page navigated"));
+    const result = await new AwaitHumanHandler(mockManager as any).execute(
+      { sessionId: "ses_1", reason: "x", timeoutMs: 20 }, ctx);
     expect(result.resumedBy).toBe("timeout");
   });
 });
