@@ -276,7 +276,7 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
     } catch (err) { await handleRouteError(err, request, reply); }
   });
 
-  app.post("/v1/sessions/:sessionId/select-option", { preHandler: [tokenAuth] }, async (request, reply) => {
+  app.post("/v1/sessions/:sessionId/select-option", { preHandler: [tokenAuth] }, async (request: FastifyRequest, reply: FastifyReply) => {
     const requestId = getRequestId(request);
     try {
       const { sessionId } = request.params as { sessionId: string };
