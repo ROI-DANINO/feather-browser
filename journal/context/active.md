@@ -7,11 +7,25 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 ## Current pointer
 
 - **Current phase:** Phase 4a — now framed for humans as **Feather v1** (front door: `feather.md`).
-- **Just completed (2026-06-08):** **v1→v2→v3 roadmap restructure + open-source doctrine.** Roi was
-  confused about what he's building; we re-grounded the whole product into three versions he approved,
-  wrote `feather.md` + `docs/roadmap/{v1,v2,v3}.md`, and closed the doctrine deliverable as
-  `adr-0011`. Closeout: `journal/ops/sessions/v1-v2-v3-roadmap-doctrine-20260608-0355.md`.
-- **THE NEXT ACTION IS A TEST, NOT PLANNING — the v1 Instagram test:**
+- **Just built (2026-06-08, `dev` tip `5d7a9b8`, NOT yet folded into ROADMAP/tasks):** a
+  **pause-for-human primitive** — thin, ungated precursor to the v2 MFA Handler and enabler for the IG
+  test's human-in-the-loop. Agent calls `await-human` → blocks until the human clicks an on-page
+  **Resume banner** (or optional signal / timeout). Specs:
+  `docs/specs/2026-06-08-pause-for-human-{design,plan}.md`. TDD; 15 unit + integration green (1
+  pre-existing `continuity` flake, not ours). **Full bridge:** `journal/context/next.md` (05:31).
+- **Live banner test DONE/PASS (2026-06-08, with Roi):** resumedBy human, no new tab, banner removed.
+  *Key finding:* banner dies on page navigation → breaks login/MFA one-click resume (core v2 input).
+- **IMMEDIATE next = SMOOTH FILMED v1 Instagram REMAKE.** Dry run this session reached a fully-filled
+  IG signup form over the API then **stopped pre-Submit (no account)** at Roi's request — remake to run
+  cleanly on camera. First decide: build enablers first (navigation-survivable resume +
+  interactive-element/a11y snapshot, ties to 4a.8) vs run-with-workarounds. Throwaway Google
+  `roionly9@gmail.com` already warmed on the scratch profile; reuse it. Full bridge + learnings:
+  `journal/context/next.md` (06:07). Server tips: kill by pid from `endpoint.json` (never
+  `pkill -f ts-node…`); read baseUrl with `grep -o '"baseUrl": *"[^"]*"'`; start server from a shell
+  with `WAYLAND_DISPLAY`/`DISPLAY` for the headed window.
+- **Prior (2026-06-08):** v1→v2→v3 roadmap restructure + open-source doctrine (`adr-0011`; closeout
+  `journal/ops/sessions/v1-v2-v3-roadmap-doctrine-20260608-0355.md`).
+- **THE BIG TEST (after the live banner check) — the v1 Instagram test:**
   1. Roi hand-starts a **throwaway Instagram** on the **scratch profile** (warm via throwaway Google;
      no phone needed). Collaborative: agent fills/navigates, Roi solves CAPTCHA + does Gmail verify,
      agent resumes (a manual dry-run of the v2 MFA Handler).

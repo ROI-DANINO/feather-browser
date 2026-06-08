@@ -23,11 +23,20 @@ execution index → `ROADMAP.md`; live pointer → `journal/context/active.md`.
 
 ### Open v1 work
 
-- [ ] **THE v1 INSTAGRAM TEST (next):**
-  - [ ] Roi hand-starts a throwaway Instagram on the **scratch profile** (warm Google; no phone).
-        Collaborative: agent navigates, Roi solves CAPTCHA + Gmail verify, agent resumes.
-  - [ ] Agent (Claude first) drives Feather's local API: smoke test ("open IG, scroll, describe 3 posts").
-  - [ ] Level up: Social Research errand (public profile → read visible comments → summarize).
+- [x] **Pause-for-human primitive** (2026-06-08, `dev` 5d7a9b8) — `await-human` blocks until human
+      clicks an on-page Resume banner / optional signal / timeout. Thin precursor to v2 MFA Handler;
+      enables the IG test's human-in-the-loop. Specs `docs/specs/2026-06-08-pause-for-human-*`.
+      - [x] **Live click test WITH Roi DONE (2026-06-08)** — headed, resumedBy human, no new tab,
+            banner removed. *Finding:* banner dies on page navigation (breaks login/MFA resume).
+      - [ ] Deferred fixes: confirmation linger ~1s; disposable headed-cdp `ENOTEMPTY`; navigation-
+            survivable resume (re-inject on `framenavigated`) — the last is core v2 MFA Handler work.
+      - [ ] Fold pause-for-human into ROADMAP at `/stop`.
+- [ ] **THE v1 INSTAGRAM TEST — DRY RUN done 2026-06-08, REMAKE next (smooth + filmed):**
+  - [~] Warmed throwaway Google on **scratch profile** + filled full IG signup form via API; **STOPPED
+        pre-Submit (no account)** at Roi's call. Recipe proven; remake to run smoothly.
+  - [ ] Before remake decide: build enablers first (navigation-survivable resume + interactive-element
+        snapshot, ties to 4a.8) vs re-run with manual workarounds.
+  - [ ] Agent drives smoke test ("open IG, scroll, describe 3 posts") + Social Research errand.
   - [ ] Verdict: pass = stealthy enough; flag = v2 stealth hardening is next (fallback: v2 LinkedIn).
 - [ ] **4a.8 — Markdown snapshot extraction** — port Crawl4AI to TS (first v1 "Port"). `docs/sessions/4a.8-markdown-snapshot.md`
 - [ ] **Agent can drive Feather end-to-end** smoothly enough to run an errand (proven via the IG test).
