@@ -1,7 +1,7 @@
-# Next — Context Bridge
+# next.md archive — consumed by /stop 2026-06-08 (v1 Instagram test complete)
 
-_Empty active buffer. Prior entries through 2026-06-08 were consumed by the `/stop` on 2026-06-08 (v1 Instagram test complete)
-and archived to `journal/archive/next/2026-06-08/0345-stop-bundle-v1-instagram-test-complete.md`._
+_Archived from `journal/context/next.md`. Entries cover the pause-for-human build sessions,
+the live banner test, and the v1 IG dry-run — all leading up to the final v1 IG test completion._
 
 ---
 ## 2026-06-08 05:31 — Pause-for-Human primitive (built) + on-page Resume banner

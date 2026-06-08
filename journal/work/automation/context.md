@@ -24,3 +24,21 @@ Brief: `docs/specs/2026-06-07-agent-browsing-stack-brief.md`.
 
 **Plans carry no phase/milestone numbers** — a roadmap re-sequencing pass (after all 3 plans exist)
 assigns them and cuts tasks into work sessions.
+
+## v1 Instagram test findings (2026-06-08) — feed into v2 MFA Handler design
+
+- **Banner dies on navigation.** CDP-injected DOM banner is wiped on any full page navigation (e.g.
+  Google password submit). For the v2 MFA Handler: must re-inject on `framenavigated` while a pause is
+  active, OR use `resumeOn` end-state polling, OR an off-page persistent resume surface.
+- **Confirmation code inputs on IG ignore `fill` + `type` modes.** Workaround: Shift+Tab to move
+  keyboard focus to the input, then individual `press` per digit. Root cause: custom React input
+  handling. Pattern to remember for any code-entry step.
+- **Check spam first** for confirmation/verification emails. IG sends to spam. Inbox-first search wastes
+  time. Rule: inbox → spam → wait+retry.
+- **Tab API creates blank page** — `POST /tabs` does not auto-navigate; must follow with explicit
+  `POST /navigate` on the new pageId.
+- **Element discovery friction.** IG markup has no `placeholder`/`name`, aria-labels only on some
+  fields → must probe DOM and fall back to index selectors (`input >> nth=N`, `[role=combobox] >> nth=N`).
+  This is the primary input for Session 4a.8 (a11y/DOM snapshot so the agent gets stable handles).
+- **Core driving works end-to-end.** Form fill → email verify → social interaction (like, comment) all
+  passed on a real site. Friction is tooling, not the core architecture.

@@ -20,6 +20,7 @@ This is a build-in-public journal and a decision history. It's the *why* behind 
 | 0010 | [The Three Locks](0010-the-three-locks.md) | 2026-06-07 | Agent Browsing Stack vision — studied Anchor Browser as product reference; found the architecture is already right; identified the three locks between agents and every site (fingerprint, login wall, identity); three-feature plan written |
 | 0011 | [The Doors Before the Guards](0011-the-doors-before-the-guards.md) | 2026-06-07 | Council design review — asked five AI models to tear apart the roadmap + agent-stack plans; unanimous verdict: high-privilege surfaces (CDP attach, unauth MFA page, warmed credentials) were sequenced before the safety layer; decision: reverse it — security model first; re-sequencing session queued |
 | 0012 | [The Map I Drew for Myself](0012-the-map-i-drew-for-myself.md) | 2026-06-08 | Got lost in my own plans — too many well-specced features, no single picture. Stopped mid-planning, zoomed out, and reframed the whole product as v1 → v2 → v3 (feather.md + three version roadmaps). Wrote the open-source rule in one line: build native by default (ADR-0011). No code shipped; clarity restored |
+| 0013 | [The Test That Passed](0013-the-test-that-passed.md) | 2026-06-08 | v1 proven end-to-end: agent created a throwaway Instagram account, retrieved the confirmation code from Gmail spam, then liked a real post and posted a comment — all over Feather's local HTTP API. The v1 claim ("it runs errands for me") is no longer a plan. |
 
 ## How entries are written (style guardrails)
 

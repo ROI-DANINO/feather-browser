@@ -6,71 +6,39 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 
 ## Current pointer
 
-- **Current phase:** Phase 4a — now framed for humans as **Feather v1** (front door: `feather.md`).
-- **Just built (2026-06-08, `dev` tip `5d7a9b8`, NOT yet folded into ROADMAP/tasks):** a
-  **pause-for-human primitive** — thin, ungated precursor to the v2 MFA Handler and enabler for the IG
-  test's human-in-the-loop. Agent calls `await-human` → blocks until the human clicks an on-page
-  **Resume banner** (or optional signal / timeout). Specs:
-  `docs/specs/2026-06-08-pause-for-human-{design,plan}.md`. TDD; 15 unit + integration green (1
-  pre-existing `continuity` flake, not ours). **Full bridge:** `journal/context/next.md` (05:31).
-- **Live banner test DONE/PASS (2026-06-08, with Roi):** resumedBy human, no new tab, banner removed.
-  *Key finding:* banner dies on page navigation → breaks login/MFA one-click resume (core v2 input).
-- **IMMEDIATE next = SMOOTH FILMED v1 Instagram REMAKE.** Dry run this session reached a fully-filled
-  IG signup form over the API then **stopped pre-Submit (no account)** at Roi's request — remake to run
-  cleanly on camera. First decide: build enablers first (navigation-survivable resume +
-  interactive-element/a11y snapshot, ties to 4a.8) vs run-with-workarounds. Throwaway Google
-  `roionly9@gmail.com` already warmed on the scratch profile; reuse it. Full bridge + learnings:
-  `journal/context/next.md` (06:07). Server tips: kill by pid from `endpoint.json` (never
-  `pkill -f ts-node…`); read baseUrl with `grep -o '"baseUrl": *"[^"]*"'`; start server from a shell
-  with `WAYLAND_DISPLAY`/`DISPLAY` for the headed window.
-- **Prior (2026-06-08):** v1→v2→v3 roadmap restructure + open-source doctrine (`adr-0011`; closeout
-  `journal/ops/sessions/v1-v2-v3-roadmap-doctrine-20260608-0355.md`).
-- **THE BIG TEST (after the live banner check) — the v1 Instagram test:**
-  1. Roi hand-starts a **throwaway Instagram** on the **scratch profile** (warm via throwaway Google;
-     no phone needed). Collaborative: agent fills/navigates, Roi solves CAPTCHA + does Gmail verify,
-     agent resumes (a manual dry-run of the v2 MFA Handler).
-  2. An agent (Claude can be the first, driving Feather's local HTTP API) runs a smoke test —
-     "open Instagram, scroll the feed, describe the first 3 posts" — then a Social Research errand
-     (open a public profile → read visible comments → summarize).
-  - **Pass** = stealthy enough; **flag** = v2 stealth hardening is the real next job (fallback: v2
-    creates its own LinkedIn). Signup is IG's highest-scrutiny moment — a flag *there* ≠ Feather failed.
-- **Then:** `Session 4a.8 — Markdown snapshot extraction` (port Crawl4AI natively) — the first v1 "Port".
-- **Doctrine (now recorded, `adr-0011`):** build native by default; buy a package only for
-  hard/fast-moving/security-critical (rare); expose-to-external = v3/5e (governed by `adr-0006`).
-  Open-source repos = recipe books consulted per-feature. **4a.7 moved to v3/5e** (not deleted).
-- **Version→phase map:** v1 = Phase 4a; v2 = Phase 5.0 + 5a/5b/5d; v3 = Phase 4b + 5e.
+- **Current phase:** Phase 4a — framed for humans as **Feather v1** ("It runs errands for me").
+- **v1 Instagram test — DONE (2026-06-08, this session).** Account created (`feather_test_roi`),
+  Gmail confirmation retrieved from spam, social errand complete (liked @shaked_golan1's latest post +
+  posted comment "Sinai looks unreal bro absolute king"). All over the local HTTP API. **v1 is proven.**
+  Session closeout: `journal/ops/sessions/v1-instagram-test-complete-20260608-0345.md`.
+  Blog entry: `blog/0013-the-test-that-passed.md`.
+- **NEXT = Session 4a.8 — Markdown snapshot extraction.** Port Crawl4AI's DefaultMarkdownGenerator
+  to TypeScript natively. First v1 "Port". Session spec: `docs/sessions/4a.8-markdown-snapshot.md`.
+- **Deferred fixes (not blocking 4a.8):**
+  - Resume-confirmation linger ~1s (`src/browser/pause-banner.ts`)
+  - Disposable headed-CDP `ENOTEMPTY` cleanup race
+  - No `selectOption` command
+  - `extract` empty-body on multi-match selector
+  These can be a single short pass before or after 4a.8.
 
-## What changed in 4a.6b (read if resuming the re-sequencing thread)
+## Key facts for next session
 
-- **New ADR:** `docs/specs/adr-0010-local-control-plane-capability-model.md` (CANDIDATE) — three
-  privilege tiers, capability-grant primitive, global `Origin`/`Host` hook, session-hold primitive.
-- **4a.7 re-scoped:** cold-profile interop proof now; warmed attach -> Phase 5c behind the gate.
-- **Phase 5 spine re-ordered:** `capability gate (5.0.0) -> Identity (5a) -> MFA (5b) -> warmed CDP
-  (5c) -> Stealth (5d, last) -> Agent Runtime (5e)`. Renumbering map + dependency graph in `ROADMAP.md`.
-- **Two dependency-breaking decisions** (why the order is possible): the session-hold primitive
-  replaces MFA's `setStealthMode` (frees Stealth to be last); Identity stores stealth/MFA policy as
-  opaque/versioned refs, not concrete imports (frees Identity to be first).
-- **Roadmap split (council Q1):** `ROADMAP.md` is now a thin index; session bodies live in
-  `docs/sessions/`; completed-session detail stays in git + `journal/ops/sessions/`.
-
-## Files to read next (for the v1 Instagram test)
-
-- `feather.md` (front door) + `docs/roadmap/v1.md` (the test is written in here)
-- `docs/specs/adr-0011-open-source-consumption-doctrine.md` (the doctrine just recorded)
-- For driving Feather: `README.md` ("For AI agents"), `docs/api-reference.md`, `endpoint.json` at runtime
-- Demo/continuity reference (warm-profile flow): `scripts/demo/hero-chatgpt-gmail.ts`, `scripts/demo/continuity.ts`
-
-## Blockers / notes
-
-- **No blockers for the test itself** — it needs Roi to hand-start the throwaway IG (scratch profile,
-  warm Google), then an agent drives Feather. The scratch profile is a throwaway by design, so we can
-  test agent-driving *before* the v2 safety gate exists.
-- `journal/raw/_inbox/` is clear (README only).
+- **Scratch profile** (`workspaceId: scratch`) has `feather_test_roi` IG account + warmed
+  `roionly9@gmail.com` Google session. Handle carefully — this is the test identity.
+- **Server lifecycle:** kill by pid from `endpoint.json`; read baseUrl with
+  `grep -o '"baseUrl": *"[^"]*"'`; start from a shell with `WAYLAND_DISPLAY`/`DISPLAY` for headed windows.
+- **IG input quirk:** confirmation code input ignores `fill` + `type` modes. Use Shift+Tab +
+  individual `press` keypresses. Filed under things to watch for.
+- **Spam first** for email confirmation codes — learned this session; saved to memory.
+- **Tab API:** `POST /tabs` creates blank page; must follow with explicit `/navigate`.
+- `continuity.test.ts` is a pre-existing flake — ignore it.
 
 ## Recent completed context
 
-- **v1→v2→v3 restructure DONE (2026-06-08):** `feather.md` + `docs/roadmap/{v1,v2,v3}.md`; `ROADMAP.md`
-  is now the execution engine-room behind them; doctrine recorded as `adr-0011`; 4a.7 moved to v3/5e.
-- **4a.9 DONE:** demo recorded (28s, 1.25x), in README, pushed.
-- Agent Browsing Stack specs complete (Stealth, MFA, Identity); these are **v2**.
-- Open-source integration research complete; dispositions now locked in `adr-0011` + `feather.md`.
+- **v1 Instagram test DONE (2026-06-08):** full signup + email verify + social errand. PASS.
+- **Pause-for-human primitive DONE (2026-06-08, `dev` 5d7a9b8):** `await-human` + on-page Resume
+  banner (DOM-flag/CDP-poll). Live-tested with Roi. Specs `docs/specs/2026-06-08-pause-for-human-*`.
+  Finding: banner dies on page navigation → v2 MFA Handler must re-inject on `framenavigated`.
+- **v1→v2→v3 restructure + open-source doctrine (2026-06-08):** `feather.md`,
+  `docs/roadmap/{v1,v2,v3}.md`, `adr-0011`; ROADMAP is now the execution engine-room index.
+- **4a.9 DONE:** hero demo recorded (28s, 1.25x), in README, pushed.
