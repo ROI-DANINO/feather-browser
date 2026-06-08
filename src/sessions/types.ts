@@ -89,6 +89,19 @@ export type WaitOutput =
   | { pageId: string; matched: true }
   | { pageId: string; settled: true; elapsedMs: number; text: string };
 
+export interface AwaitHumanInput {
+  sessionId: string;
+  pageId?: string;
+  reason: string;
+  resumeOn?: { target: Target; until: "visible" | "hidden" | "attached" | "detached" };
+  timeoutMs?: number;
+}
+export interface AwaitHumanOutput {
+  pageId: string;
+  resumedBy: "human" | "signal" | "timeout";
+  elapsedMs: number;
+}
+
 export interface CommandContext {
   requestId: string;
 }

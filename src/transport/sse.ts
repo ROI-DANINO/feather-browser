@@ -15,6 +15,8 @@ const LIFECYCLE_EVENTS = new Set<EventName>([
   "tab.created",
   "tab.updated",
   "tab.closed",
+  "human.pause.requested",
+  "human.pause.resolved",
 ]);
 
 async function* sseSource(

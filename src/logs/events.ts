@@ -20,6 +20,8 @@ export const EVENTS = {
   TAB_CREATED: "tab.created",
   TAB_UPDATED: "tab.updated",
   TAB_CLOSED: "tab.closed",
+  HUMAN_PAUSE_REQUESTED: "human.pause.requested",
+  HUMAN_PAUSE_RESOLVED: "human.pause.resolved",
 } as const;
 
 export type EventName = (typeof EVENTS)[keyof typeof EVENTS];
