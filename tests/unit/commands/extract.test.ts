@@ -129,4 +129,16 @@ describe("ExtractHandler", () => {
     expect(result.title).toBe("Title text");
     expect(result.link).toBe("https://example.com");
   });
+
+  it("returns the first match when selector matches multiple elements", async () => {
+    mockLocator.textContent.mockResolvedValue("First item");
+    const handler = new ExtractHandler(mockManager as any);
+    const recipe: ExtractRecipe = { fields: { item: { selector: ".list-item", type: "text" } } };
+    const result = await handler.execute({ sessionId: "ses_test_001", recipe }, ctx);
+    // Verify that .first() was called to handle multi-match case (strict-mode violation protection)
+    expect(mockLocator.first).toHaveBeenCalled();
+    // Verify that the first match's text content is returned correctly
+    expect(mockLocator.textContent).toHaveBeenCalled();
+    expect(result.item).toBe("First item");
+  });
 });
