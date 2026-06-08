@@ -284,6 +284,16 @@ export class SessionManager implements ISessionManager {
     }
 
     if (session.profileKind === "disposable") {
+      const child = session.getChildProcess();
+      if (child) {
+        // Chromium may still be writing files after kill(); wait for the process
+        // to fully exit before we delete the profile dir to avoid ENOTEMPTY races.
+        await new Promise<void>((resolve) => {
+          const timer = setTimeout(resolve, 3000); // don't wait forever
+          child.once("exit", () => { clearTimeout(timer); resolve(); });
+        });
+      }
+
       const sessionDir = this.paths.disposableSessionDir(sessionId);
       if (opts?.quarantineDisposableProfile) {
         const quarantineDir = this.paths.quarantinedProfileDir(sessionId);

@@ -561,3 +561,101 @@ describe("SessionManager.close — CDP session kills child process", () => {
     expect(childProcess.kill).toHaveBeenCalled();
   });
 });
+
+describe("SessionManager.close — disposable CDP race fix", () => {
+  it("waits for child process exit before deleting disposable profile dir", async () => {
+    // Build a controllable child process mock: once('exit', cb) defers until we fire it
+    let exitCallback: (() => void) | null = null;
+    const childProcessMock = {
+      kill: vi.fn(),
+      once: vi.fn((event: string, cb: () => void) => {
+        if (event === "exit") exitCallback = cb;
+      }),
+    };
+
+    vi.mocked(spawnAndConnect).mockResolvedValueOnce({
+      context: {
+        pages: () => [],
+        on: vi.fn(),
+        close: vi.fn().mockResolvedValue(undefined),
+        tracing: { start: vi.fn(), stop: vi.fn() },
+      },
+      childProcess: childProcessMock as any,
+    });
+
+    const session = await manager.launch({
+      workspaceId: "ws_cdp_race_001",
+      profile: { kind: "disposable" },
+      browserMode: "chromium-headed-cdp",
+    });
+    const sessionId = session.sessionId;
+
+    // Spy on fs.promises.rm to detect when it gets called
+    const rmSpy = vi.spyOn(fs.promises, "rm").mockResolvedValue(undefined);
+
+    // Start close() but don't await yet — it should block waiting for exit
+    const closePromise = manager.close(sessionId);
+
+    // Give the event loop a few ticks to reach the await-exit point
+    await new Promise((r) => setTimeout(r, 50));
+
+    // rm should NOT have been called yet — still waiting for child exit
+    const rmCalledBeforeExit = rmSpy.mock.calls.some(
+      ([p]) => typeof p === "string" && p.includes(sessionId)
+    );
+    expect(rmCalledBeforeExit).toBe(false);
+
+    // Now fire the exit event — close() should unblock and call rm
+    expect(exitCallback).not.toBeNull();
+    exitCallback!();
+
+    await closePromise;
+
+    const rmCalledAfterExit = rmSpy.mock.calls.some(
+      ([p]) => typeof p === "string" && p.includes(sessionId)
+    );
+    expect(rmCalledAfterExit).toBe(true);
+
+    rmSpy.mockRestore();
+  });
+
+  it("proceeds with cleanup after timeout if child process does not exit", async () => {
+    // once('exit', cb) is registered but never fired → timeout path
+    const childProcessMock = {
+      kill: vi.fn(),
+      once: vi.fn(), // captures the callback but never calls it
+    };
+
+    vi.mocked(spawnAndConnect).mockResolvedValueOnce({
+      context: {
+        pages: () => [],
+        on: vi.fn(),
+        close: vi.fn().mockResolvedValue(undefined),
+        tracing: { start: vi.fn(), stop: vi.fn() },
+      },
+      childProcess: childProcessMock as any,
+    });
+
+    const session = await manager.launch({
+      workspaceId: "ws_cdp_race_002",
+      profile: { kind: "disposable" },
+      browserMode: "chromium-headed-cdp",
+    });
+
+    const rmSpy = vi.spyOn(fs.promises, "rm").mockResolvedValue(undefined);
+
+    // This will wait up to the timeout (3 s default) then proceed.
+    // Use fake timers to skip the wait.
+    vi.useFakeTimers();
+    const closePromise = manager.close(session.sessionId);
+    // Advance past the 3 s timeout
+    await vi.advanceTimersByTimeAsync(3100);
+    vi.useRealTimers();
+
+    await closePromise;
+
+    // rm should have been called despite child never exiting
+    expect(rmSpy).toHaveBeenCalled();
+    rmSpy.mockRestore();
+  });
+});
