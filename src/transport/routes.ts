@@ -17,6 +17,10 @@ import { TypeHandler } from "../commands/type";
 import { PressHandler } from "../commands/press";
 import { WaitHandler } from "../commands/wait";
 import type { WaitInput } from "../sessions/types";
+import { AwaitHumanHandler } from "../commands/await-human";
+import type { AwaitHumanInput } from "../sessions/types";
+import { peekPause, resumePause } from "../commands/pause-registry";
+import { promptPage, confirmedPage, expiredPage } from "./resume-page";
 import { registerSseRoute } from "./sse";
 
 const LaunchSchema = z.object({
@@ -101,6 +105,16 @@ const WaitSchema = z.union([
   }),
 ]);
 
+const AwaitHumanSchema = z.object({
+  pageId: z.string().optional(),
+  reason: z.string().min(1),
+  resumeOn: z.object({
+    target: TargetSchema,
+    until: z.enum(["visible", "hidden", "attached", "detached"]),
+  }).optional(),
+  timeoutMs: z.number().int().positive().optional(),
+});
+
 const ScreenshotSchema = z.object({ pageId: z.string().optional(), fullPage: z.boolean().optional() });
 const CloseSchema = z.object({ force: z.boolean().optional(), quarantineDisposableProfile: z.boolean().optional() });
 
@@ -151,6 +165,7 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
   const typeHandler = new TypeHandler(manager);
   const pressHandler = new PressHandler(manager);
   const waitHandler = new WaitHandler(manager);
+  const awaitHumanHandler = new AwaitHumanHandler(manager);
 
   app.get("/health", async (_req: FastifyRequest, reply: FastifyReply) => {
     await reply.status(200).send({ ok: true, data: { status: "ok" } });
@@ -259,6 +274,33 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
       const result = await waitHandler.execute({ sessionId, ...input } as WaitInput, { requestId });
       await reply.status(200).send(ok(requestId, result));
     } catch (err) { await handleRouteError(err, request, reply); }
+  });
+
+  app.post("/v1/sessions/:sessionId/await-human", { preHandler: [tokenAuth] }, async (request: FastifyRequest, reply: FastifyReply) => {
+    const requestId = getRequestId(request);
+    try {
+      const { sessionId } = request.params as { sessionId: string };
+      const input = AwaitHumanSchema.parse(request.body);
+      const result = await awaitHumanHandler.execute({ sessionId, ...input } as AwaitHumanInput, { requestId });
+      await reply.status(200).send(ok(requestId, result));
+    } catch (err) { await handleRouteError(err, request, reply); }
+  });
+
+  // Human-facing resume routes: NO API token (a browser click can't send the header).
+  // Security is the single-use, unguessable per-pause token in the query string (local-only).
+  app.get("/v1/sessions/:sessionId/resume", async (request: FastifyRequest, reply: FastifyReply) => {
+    const { token: resumeToken } = (request.query as { token?: string }) ?? {};
+    const info = resumeToken ? peekPause(resumeToken) : undefined;
+    await reply.status(200).type("text/html")
+      .send(info ? promptPage(info.reason) : expiredPage());
+  });
+
+  app.post("/v1/sessions/:sessionId/resume", async (request: FastifyRequest, reply: FastifyReply) => {
+    const { sessionId } = request.params as { sessionId: string };
+    const { token: resumeToken } = (request.query as { token?: string }) ?? {};
+    const settled = resumeToken ? resumePause(resumeToken, sessionId) : false;
+    await reply.status(200).type("text/html")
+      .send(settled ? confirmedPage() : expiredPage());
   });
 
   app.post("/v1/sessions/:sessionId/screenshot", { preHandler: [tokenAuth] }, async (request: FastifyRequest, reply: FastifyReply) => {
