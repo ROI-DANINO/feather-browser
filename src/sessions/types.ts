@@ -73,6 +73,18 @@ export type Target = TargetBy & { at?: "first" | "last" | number };
 export interface ClickInput { sessionId: string; pageId?: string; target: Target; timeoutMs?: number; }
 export interface ClickOutput { pageId: string; clicked: true; }
 
+export interface SelectOptionInput {
+  sessionId: string;
+  pageId?: string;
+  target: Target;
+  values: string | string[];
+  timeoutMs?: number;
+}
+export interface SelectOptionOutput {
+  pageId: string;
+  selected: string[];
+}
+
 export interface TypeInput {
   sessionId: string; pageId?: string; target: Target; text: string;
   mode?: "fill" | "sequential"; delayMs?: number; timeoutMs?: number;

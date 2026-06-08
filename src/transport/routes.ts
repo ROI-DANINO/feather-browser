@@ -18,6 +18,7 @@ import { PressHandler } from "../commands/press";
 import { WaitHandler } from "../commands/wait";
 import type { WaitInput } from "../sessions/types";
 import { AwaitHumanHandler } from "../commands/await-human";
+import { SelectOptionHandler } from "../commands/select-option";
 import type { AwaitHumanInput } from "../sessions/types";
 import { peekPause, resumePause } from "../commands/pause-registry";
 import { promptPage, confirmedPage, expiredPage } from "./resume-page";
@@ -105,6 +106,13 @@ const WaitSchema = z.union([
   }),
 ]);
 
+const SelectOptionSchema = z.object({
+  pageId: z.string().optional(),
+  target: TargetSchema,
+  values: z.union([z.string(), z.array(z.string())]),
+  timeoutMs: z.number().int().positive().optional(),
+});
+
 const AwaitHumanSchema = z.object({
   pageId: z.string().optional(),
   reason: z.string().min(1),
@@ -167,6 +175,7 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
   const pressHandler = new PressHandler(manager);
   const waitHandler = new WaitHandler(manager);
   const awaitHumanHandler = new AwaitHumanHandler(manager);
+  const selectOptionHandler = new SelectOptionHandler(manager);
 
   app.get("/health", async (_req: FastifyRequest, reply: FastifyReply) => {
     await reply.status(200).send({ ok: true, data: { status: "ok" } });
@@ -263,6 +272,16 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
       const { sessionId } = request.params as { sessionId: string };
       const input = PressSchema.parse(request.body);
       const result = await pressHandler.execute({ sessionId, ...input }, { requestId });
+      await reply.status(200).send(ok(requestId, result));
+    } catch (err) { await handleRouteError(err, request, reply); }
+  });
+
+  app.post("/v1/sessions/:sessionId/select-option", { preHandler: [tokenAuth] }, async (request, reply) => {
+    const requestId = getRequestId(request);
+    try {
+      const { sessionId } = request.params as { sessionId: string };
+      const input = SelectOptionSchema.parse(request.body);
+      const result = await selectOptionHandler.execute({ sessionId, ...input }, { requestId });
       await reply.status(200).send(ok(requestId, result));
     } catch (err) { await handleRouteError(err, request, reply); }
   });
