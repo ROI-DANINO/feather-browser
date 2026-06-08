@@ -1,76 +1,58 @@
-# Current Tasks - Phase 4a
+# Current Tasks — Phase 4a  (= Feather v1)
 
-Checklist only. Full session bodies -> `docs/sessions/<id>.md`; thin map -> `ROADMAP.md`; live
-pointer -> `journal/context/active.md`.
+Checklist only. Front door → `feather.md`; version roadmaps → `docs/roadmap/{v1,v2,v3}.md`;
+execution index → `ROADMAP.md`; live pointer → `journal/context/active.md`.
 
-Active session: **Session 4a.7 - CDP cold-profile interop proof**
-(`docs/sessions/4a.7-cdp-cold-profile-interop.md`). 4a.6b (security re-sequencing) is done.
+**Next action = the v1 Instagram test (a TEST, not planning).** See `docs/roadmap/v1.md`.
 
 ---
 
-## Phase 4a - Core Open-Source Readiness And Public Proof
+## Feather v1 — "It runs errands for me" (Phase 4a)
 
-- [x] **4a.1 - Core-first reorientation + quickstart** — README Core positioning + `examples/quickstart.sh`.
-- [x] **4a.2 - Core input commands** — click/type/press/wait API.
-- [x] **4a.3 - Hero demo workflow** — `npm run demo:hero` works live; recording blocked on recorder.
-- [x] **4a.4 - Agent Browsing Stack specs** — Stealth, MFA, Identity specs/plans complete.
-- [x] **4a.5 - Open-source integration research** — Browser Use / Crawl4AI / OpenHands / Maxun.
-- [x] **4a.6 - Roadmap + task reconciliation** — session-map rebase.
-- [x] **4a.6b - Security & capability re-sequencing (council review)**
-  - [x] Read the council review + spec security addenda.
-  - [x] Decide the 4a.7 split: **cold/throwaway-profile proof now; warmed attach deferred to 5c.**
-  - [x] Write the control-plane/capability ADR: `docs/specs/adr-0010-...`.
-  - [x] Re-order the Phase 5 spine: gate -> Identity -> MFA -> warmed CDP -> Stealth last.
-  - [x] Fold MFA + Identity security addenda into their plan task lists.
-  - [x] Split `ROADMAP.md` into thin index + `docs/sessions/` (council Q1).
-  - [x] Reconcile `active.md`, `tasks.md`, `phase.md`.
+- [x] **4a.1 — Core-first reorientation + quickstart**
+- [x] **4a.2 — Core input commands** (click/type/press/wait)
+- [x] **4a.3 — Hero demo workflow** (`npm run demo:hero`, first-try cold run)
+- [x] **4a.4 — Agent Browsing Stack specs** (Stealth, MFA, Identity — these are **v2**)
+- [x] **4a.5 — Open-source integration research**
+- [x] **4a.6 — Roadmap + task reconciliation**
+- [x] **4a.6b — Security & capability re-sequencing** (council review; ADR-0010; Phase 5 spine)
+- [x] **4a.9 — LinkedIn debut recording** (`52b63fe`, pushed; in README)
+- [x] **4a.10 — Social-research triage** (inbox clear)
+- [x] **v1→v2→v3 restructure + open-source doctrine** (2026-06-08) — `feather.md`,
+      `docs/roadmap/{v1,v2,v3}.md`, `adr-0011`; ROADMAP banner; stale build-order line fixed.
 
-- [ ] **4a.7 - CDP cold-profile interop proof** — ⏸ **PARKED / reframed 2026-06-08.** Builds the
-      "let outside tools drive Feather over CDP" door — opposite of the native-port philosophy. Decide
-      its fate (park vs move to 5e) in the integration-doctrine reconciliation pass. (`docs/sessions/4a.7-cdp-cold-profile-interop.md`)
-  - [ ] **NEW pre-4a.8: integration-doctrine reconciliation pass** (docs-only, time-boxed): doctrine
-        ADR (build-vs-buy, recipe-first default, 3 tracks) + per-repo disposition table + re-tag
-        4a.7/4a.8/5d/5e. Brainstorm-first. Paste-prompt + guardrails in `next.md` (2026-06-08 entry).
-  - [ ] Verify Playwright 1.60 CDP/WS endpoint shape from docs.
-  - [ ] Expose a sanitized endpoint field on `SessionRecord`/launch output **for cold/disposable
-        profiles only**; absent for persistent/warmed.
-  - [ ] Keep token-gated + loopback-bound; no widened remote exposure.
-  - [ ] Tests incl. "no endpoint on warmed profile"; update `docs/api-reference.md`.
-  - [ ] Document attach (Browser Use / Crawl4AI) without importing them.
+### Open v1 work
 
-- [ ] **4a.8 - Markdown snapshot extraction** (`docs/sessions/4a.8-markdown-snapshot.md`)
-- [ ] **4a.9 - LinkedIn debut recording** (`docs/sessions/4a.9-linkedin-debut.md`) — blocked on recorder.
-- [x] **4a.10 - Social-research triage** — consolidated 2 inbox stubs into a `Proposed` use-case
-      seed in product desk context; both archived to `journal/raw/archive/`. Inbox clear.
+- [ ] **THE v1 INSTAGRAM TEST (next):**
+  - [ ] Roi hand-starts a throwaway Instagram on the **scratch profile** (warm Google; no phone).
+        Collaborative: agent navigates, Roi solves CAPTCHA + Gmail verify, agent resumes.
+  - [ ] Agent (Claude first) drives Feather's local API: smoke test ("open IG, scroll, describe 3 posts").
+  - [ ] Level up: Social Research errand (public profile → read visible comments → summarize).
+  - [ ] Verdict: pass = stealthy enough; flag = v2 stealth hardening is next (fallback: v2 LinkedIn).
+- [ ] **4a.8 — Markdown snapshot extraction** — port Crawl4AI to TS (first v1 "Port"). `docs/sessions/4a.8-markdown-snapshot.md`
+- [ ] **Agent can drive Feather end-to-end** smoothly enough to run an errand (proven via the IG test).
+- [ ] **Basic "act human"** (human typing cadence) + **"do I look like a bot?" self-check** — cheap v1 stealth.
 
-## Phase 4b - Visual Desktop Shell (deferred)
+## Feather v2 — "It survives the scary sites, safely"  (`docs/roadmap/v2.md`)
 
-Bodies live in `adr-0007`, `adr-0009`, `research/2026-06-05-phase4-gui-architecture-sketch.md`.
-- [ ] 4b.0 planning reconciliation -> 4b.1 shell-stack joint call / Casilda spike plan ->
-      4b.2 thin shell event projection -> 4b.3 browser-surface spike -> 4b.4 visual shell prototype.
+Security-first spine: `gate → Identity → MFA → warmed attach → Stealth last`. Do not start before Gate A.
 
-## Phase 5+ - Security-first spine (do not start before gates)
+- [ ] **5.0.0 — Capability/safety gate** (implements ADR-0010) — Gate A
+- [ ] **5.0.1 — MCP & tool-surface reconciliation**
+- [ ] **5.0.2 — First-agent safety gate** — Gate B
+- [ ] **5a — Identity Model** (plan: `docs/specs/2026-06-07-identity-model-plan.md`)
+- [ ] **5b — MFA Handler** (plan: `docs/specs/2026-06-07-mfa-handler-plan.md`)
+- [ ] **5d — Stealth Stack** (verify-not-spoof; plan: `docs/specs/2026-06-07-stealth-stack-plan.md`)
+- [ ] **Learn-your-behavior** (kinematic mouse/typing; spike-first) + **active anti-bot self-detection**
+- [ ] **Teach-a-workflow / action cache** (Anchor-inspired determinism layer)
 
-Build order: `capability gate -> Identity -> MFA -> warmed CDP -> Stealth last`. Renumbering map +
-dependency graph in `ROADMAP.md`.
+## Feather v3 — "The polished product"  (`docs/roadmap/v3.md`)
 
-- [ ] **5.0.0 - Local control-plane & capability gate** (`docs/sessions/5.0.0-capability-gate.md`)
-      — implements ADR-0010; **first Phase 5 work**; gates 5a `vaultRef`, 5b routes, 5c warmed CDP.
-- [ ] **5.0.1 - MCP & tool-surface reconciliation** (`docs/sessions/5.0.1-mcp-tool-surface.md`).
-- [ ] **5.0.2 - First-agent safety gate** (`docs/sessions/5.0.2-first-agent-safety-gate.md`).
-- [ ] **5a - Identity Model** (was 5c; first feature). Plan: `docs/specs/2026-06-07-identity-model-plan.md`
-      (+ folded Security Tasks). Self-contained; opaque policy refs; explicit `markWarm()`; separable ids.
-- [ ] **5b - MFA Handler.** Plan: `docs/specs/2026-06-07-mfa-handler-plan.md` (+ folded Security Tasks).
-      Depends on Gate A's session-hold primitive (not Stealth).
-- [ ] **5c - Warmed-profile CDP attach** (new; the deferred half of old 4a.7). Behind Gate A:
-      `cdp-attach` capability grant, one-time token, TTL, audit, revoke-on-MFA/close.
-- [ ] **5d - Stealth Stack** (was 5a; now last). Plan: `docs/specs/2026-06-07-stealth-stack-plan.md`.
-      Constraint: evaluate fingerprint npm deps before custom injection; never import AGPL Maxun.
-- [ ] **5e - Agent Runtime Surface & Ecosystem Interop** (was 5d). MCP-compatible seam; token/context
-      efficiency; Claude Code / Codex drivability.
+- [ ] Visual Zen-style browser shell (Phase 4b; adr-0007/0009; gated on Casilda spike)
+- [ ] **5e — Agent Runtime / ecosystem interop** — absorbs old **4a.7** (CDP attach), correctly last
+- [ ] True perception / generalized workflows (north star)
 
 ## Parked / External Blockers
 
-- [ ] Screen recorder install for hero demo recording (Kooha / `wf-recorder`).
 - [ ] Optional Gemini/OpenAI provider keys for future `claude-council` runs.
 - [ ] Vault Spikes A/B remain frozen until explicitly pulled forward.

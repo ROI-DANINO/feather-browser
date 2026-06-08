@@ -1,5 +1,11 @@
 # Roadmap (Index)
 
+> **📍 Start at [`feather.md`](feather.md).** The product is now framed as **v1 → v2 → v3**, with one
+> roadmap per version in [`docs/roadmap/`](docs/roadmap/). Those version files own the *product
+> narrative* ("what you'll have"). **This file is the execution engine room** behind them: phase
+> status, the security-first dependency spine, security gates, and pointers to session bodies/ADRs.
+> Version → phase map: **v1 = Phase 4a**, **v2 = Phase 5.0 + 5a/5b/5d**, **v3 = Phase 4b + 5e**.
+
 This file is the **thin index**: phase status, dependency graph, and security gates. The executable
 body of each active/near-term session lives in `docs/sessions/<id>.md`; phases with a detailed
 implementation plan point to that plan; lasting decisions live in ADRs (`docs/specs/adr-*`).

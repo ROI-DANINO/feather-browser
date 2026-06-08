@@ -6,6 +6,17 @@ Current focus: preserve the original intent while narrowing the first buildable 
 
 ## Standing design lenses
 
+- **Product shape — "v1 → v2 → v3"** (`feather.md` + `docs/roadmap/{v1,v2,v3}.md`, 2026-06-08).
+  The destination is now framed as three versions Roi can hold in his head and attend to one at a time:
+  **v1** = an agent runs errands in a browser (basic Claude-for-Chrome; mostly built); **v2** = it works
+  on bot-hostile sites *as you*, safely (the Cookie Mine payoff + the whole security-first spine);
+  **v3** = the visual shell + ecosystem interop (lowest priority). The version files own the *product
+  narrative*; `ROADMAP.md` stays the execution engine-room. Born from Roi losing track of "what am I
+  building" amid well-specced feature sprawl — keep the picture small. Version→phase map:
+  v1=Phase 4a, v2=Phase 5.0+5a/5b/5d, v3=Phase 4b+5e.
+- **Open-source consumption — "build native by default"** (`adr-0011`, 2026-06-08). Other repos are
+  *recipe books* consulted per-feature, not a feature shopping list. Buy a package only for
+  hard/fast-moving/security-critical work (rare); expose-to-external is v3/5e (governed by `adr-0006`).
 - **Public positioning — "Core first, Shell later"** (`docs/public-positioning.md`, 2026-06-05).
   Lead with **Feather Core = "a local Chromium runtime for AI agents"** (the adoptable, near-term
   OSS surface); the visual Shell + Cookie Mine are the larger, more platform-specific vision that
@@ -42,7 +53,9 @@ never holds raw credentials. Handles: TOTP, SMS OTP, push approval, passkey.
 name + profile + site list + optional Vault reference. Agent attaches by name, starts
 pre-authenticated. Wraps Features 1+2. Formalizes what's already half-built.
 
-**Build order:** Stealth → MFA Handler → Identity Model.
+**Build order (security-first spine — council reversal 2026-06-07; SUPERSEDES the earlier
+Stealth→MFA→Identity):** capability/safety gate → Identity → MFA → warmed-profile attach → Stealth
+(last, most complex). All of this is **Feather v2** — see `docs/roadmap/v2.md` + `ROADMAP.md`.
 **Guiding constraints:** local-first, lightweight (no cloud relay), legal (own accounts only).
 **Anchor Browser research reference:** `research/2026-06-06-anchor-browser-product-reference.md`
 — confirms architecture is correct (same CDP-attach pattern); Cookie Mine parallel confirmed;

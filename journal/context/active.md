@@ -6,26 +6,25 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 
 ## Current pointer
 
-- **Current phase:** Phase 4a - Feather Core Open-Source Readiness And Public Proof.
-- **Just completed:** `Session 4a.6b - Security & Capability Re-Sequencing` (planning only, no product
-  code) + `Session 4a.10 - Social-research inbox triage`. Acted on the 2026-06-07 council review:
-  reversed to "security model first, interop through it." All 4a.6b+4a.10 docs committed + pushed
-  (`56bd985`, `dev == origin/dev`).
-- **Current recommended session:** a **tight docs-only integration-doctrine reconciliation pass**
-  (brainstorm-first), THEN `Session 4a.8 - Markdown snapshot extraction` (port Crawl4AI natively).
-  **`Session 4a.7` (CDP attach) is PARKED / reframed** — it builds the "let outside tools drive Feather"
-  door, which is the opposite of Roi's native-port philosophy. See the 2026-06-08 bridge in `next.md`.
-- **Build-vs-buy doctrine (decided 2026-06-08, to be written up next session):** default = **port the
-  recipe natively** (read source, rebuild in TS); **buy a native npm package only** for hard /
-  fast-moving / security-critical work (e.g. Stealth fingerprint deps); **expose-to-external = deferred
-  Phase 5e track.** Crawl4AI = port, Browser Use = port DOM bits, Maxun = AGPL reference-only, fingerprint
-  npm = buy, OpenHands = undecided.
-- **Next concrete action:** open a FRESH chat, paste the prompt in the 2026-06-08 `next.md` entry, run
-  the doctrine pass (doctrine ADR + per-repo disposition table + re-tag 4a.7/4a.8/5d/5e), then 4a.8.
-  Anti-perfectionism guardrails apply. **The real near-term deliverable remains the demo GIF/video for
-  GitHub + LinkedIn (4a.9), blocked on a Wayland screen-recorder install.**
-- **Task state:** roadmap split into thin index + `docs/sessions/`; ADR-0010 (capability model) written
-  as CANDIDATE; Phase 5 spine re-ordered; MFA + Identity plan security tasks folded in.
+- **Current phase:** Phase 4a — now framed for humans as **Feather v1** (front door: `feather.md`).
+- **Just completed (2026-06-08):** **v1→v2→v3 roadmap restructure + open-source doctrine.** Roi was
+  confused about what he's building; we re-grounded the whole product into three versions he approved,
+  wrote `feather.md` + `docs/roadmap/{v1,v2,v3}.md`, and closed the doctrine deliverable as
+  `adr-0011`. Closeout: `journal/ops/sessions/v1-v2-v3-roadmap-doctrine-20260608-0355.md`.
+- **THE NEXT ACTION IS A TEST, NOT PLANNING — the v1 Instagram test:**
+  1. Roi hand-starts a **throwaway Instagram** on the **scratch profile** (warm via throwaway Google;
+     no phone needed). Collaborative: agent fills/navigates, Roi solves CAPTCHA + does Gmail verify,
+     agent resumes (a manual dry-run of the v2 MFA Handler).
+  2. An agent (Claude can be the first, driving Feather's local HTTP API) runs a smoke test —
+     "open Instagram, scroll the feed, describe the first 3 posts" — then a Social Research errand
+     (open a public profile → read visible comments → summarize).
+  - **Pass** = stealthy enough; **flag** = v2 stealth hardening is the real next job (fallback: v2
+    creates its own LinkedIn). Signup is IG's highest-scrutiny moment — a flag *there* ≠ Feather failed.
+- **Then:** `Session 4a.8 — Markdown snapshot extraction` (port Crawl4AI natively) — the first v1 "Port".
+- **Doctrine (now recorded, `adr-0011`):** build native by default; buy a package only for
+  hard/fast-moving/security-critical (rare); expose-to-external = v3/5e (governed by `adr-0006`).
+  Open-source repos = recipe books consulted per-feature. **4a.7 moved to v3/5e** (not deleted).
+- **Version→phase map:** v1 = Phase 4a; v2 = Phase 5.0 + 5a/5b/5d; v3 = Phase 4b + 5e.
 
 ## What changed in 4a.6b (read if resuming the re-sequencing thread)
 
@@ -40,25 +39,24 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 - **Roadmap split (council Q1):** `ROADMAP.md` is now a thin index; session bodies live in
   `docs/sessions/`; completed-session detail stays in git + `journal/ops/sessions/`.
 
-## Files to read next (for 4a.7)
+## Files to read next (for the v1 Instagram test)
 
-- `docs/sessions/4a.7-cdp-cold-profile-interop.md`
-- `docs/specs/adr-0010-local-control-plane-capability-model.md`
-- `research/2026-06-07-open-source-integration-research.md`
-- `src/browser/modes.ts`, `src/sessions/session.ts`, `src/sessions/manager.ts`, `src/transport/routes.ts`
+- `feather.md` (front door) + `docs/roadmap/v1.md` (the test is written in here)
+- `docs/specs/adr-0011-open-source-consumption-doctrine.md` (the doctrine just recorded)
+- For driving Feather: `README.md` ("For AI agents"), `docs/api-reference.md`, `endpoint.json` at runtime
+- Demo/continuity reference (warm-profile flow): `scripts/demo/hero-chatgpt-gmail.ts`, `scripts/demo/continuity.ts`
 
 ## Blockers / notes
 
-- `journal/context/next.md` is the reset header only; no pending `/next` entries.
-- LinkedIn debut recording (4a.9) still blocked on installing a Niri/Wayland screen recorder
-  (Kooha or `wf-recorder`).
-- `journal/raw/_inbox/` is clear (README only). The two social-research stubs were triaged (4a.10):
-  consolidated into a `Proposed` Social Research Mode use-case seed in `journal/work/product/context.md`
-  and archived to `journal/raw/archive/`.
+- **No blockers for the test itself** — it needs Roi to hand-start the throwaway IG (scratch profile,
+  warm Google), then an agent drives Feather. The scratch profile is a throwaway by design, so we can
+  test agent-driving *before* the v2 safety gate exists.
+- `journal/raw/_inbox/` is clear (README only).
 
 ## Recent completed context
 
-- Agent Browsing Stack specs complete (Stealth, MFA, Identity); plan security tasks now folded in.
-- Open-source integration research complete and folded into the roadmap sequence.
-- Hero demo works: `npm run demo:hero`; recording still needs a screen recorder.
-- Core open-source README and `examples/quickstart.sh` are in place.
+- **v1→v2→v3 restructure DONE (2026-06-08):** `feather.md` + `docs/roadmap/{v1,v2,v3}.md`; `ROADMAP.md`
+  is now the execution engine-room behind them; doctrine recorded as `adr-0011`; 4a.7 moved to v3/5e.
+- **4a.9 DONE:** demo recorded (28s, 1.25x), in README, pushed.
+- Agent Browsing Stack specs complete (Stealth, MFA, Identity); these are **v2**.
+- Open-source integration research complete; dispositions now locked in `adr-0011` + `feather.md`.
