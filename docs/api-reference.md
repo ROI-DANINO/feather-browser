@@ -358,7 +358,7 @@ curl -s -X POST http://localhost:4000/v1/sessions/ses_abc123/navigate \
 
 #### `POST /v1/sessions/:sessionId/snapshot` — Take a page snapshot
 
-Extracts a text snapshot of the current page, including body text, all hyperlinks, and the `<meta name="description">` tag.
+Extracts a text snapshot of the current page, including body text, all hyperlinks, and the `<meta name="description">` tag. Also generates a clean Markdown representation of the page, suitable for LLM context.
 
 **Path parameters:**
 
@@ -391,6 +391,8 @@ Extracts a text snapshot of the current page, including body text, all hyperlink
 | `meta.description` | string | Content of `<meta name="description">`, or `""` if absent |
 | `limits.textChars` | integer | The text character limit that was applied (`20000`) |
 | `limits.links` | integer | The links count limit that was applied (`200`) |
+| `markdown` | string | Clean Markdown of the page content — boilerplate (nav, header, footer) stripped; headings, links, lists, code blocks preserved |
+| `limits.markdownChars` | integer | The markdown character limit applied (`20000`) |
 
 **Error responses:**
 
@@ -433,7 +435,7 @@ Runs a field-extraction recipe against the current page using CSS selectors. Eac
 | `recipe.fields.<name>.type` | `"text"` \| `"attribute"` | Yes | Whether to extract text content or an element attribute |
 | `recipe.fields.<name>.attribute` | string | No (required when `type` is `"attribute"`) | Attribute name to read (e.g. `"href"`, `"src"`) |
 | `recipe.limits` | object | No | Output limits |
-| `recipe.limits.items` | integer (> 0) | No | Maximum number of items (reserved for future multi-match extraction) |
+| `recipe.limits.items` | integer (> 0) | No | Reserved for future multi-result extraction; currently ignored (the first matching element is always used) |
 | `recipe.limits.textChars` | integer (> 0) | No | Truncates extracted text values to this many characters |
 
 **Response `data`:**
@@ -570,6 +572,39 @@ All four commands locate elements with a shared **Target** object:
 | `timeoutMs` | number | No | Action timeout when `target` is provided (default 15000) |
 
 **Response `data`:** `{ "pageId": string, "pressed": string }`
+
+**Error responses:**
+
+| Status | Code | When |
+|--------|------|------|
+| 400 | `VALIDATION_ERROR` | Request body / target fails schema validation |
+| 404 | `ELEMENT_NOT_FOUND` | No element matched the target |
+| 409 | `ELEMENT_NOT_ACTIONABLE` | Target matched but the action timed out (covered, disabled, off-screen) |
+
+---
+
+#### `POST /v1/sessions/:sessionId/select-option` — Select options in a `<select>` element
+
+Selects one or more options in a native `<select>` dropdown element.
+
+**Path parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sessionId` | string | Session identifier |
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `target` | Target | Yes | The `<select>` element to drive |
+| `values` | string \| string[] | Yes | Option value(s) to select — matched against option `value` attributes |
+| `pageId` | string | No | Page to act on (defaults to the active page) |
+| `timeoutMs` | number | No | Action timeout in milliseconds (default 15000) |
+
+**Response `data`:** `{ "pageId": string, "selected": string[] }`
+
+The `selected` array contains the values of the options that were actually selected (as confirmed by Playwright).
 
 **Error responses:**
 
