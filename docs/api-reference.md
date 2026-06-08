@@ -614,6 +614,51 @@ All four commands locate elements with a shared **Target** object:
 
 ---
 
+#### `POST /v1/sessions/:sessionId/await-human` — Pause until a human completes a step
+
+Blocks until the human clicks the Resume link, an optional `resumeOn` element reaches its state, or
+`timeoutMs` elapses. Use for walls only a human can clear (CAPTCHA, "confirm you're human").
+
+> **Long-running.** Set your HTTP client timeout above `timeoutMs` (default 300000 ms / 5 min).
+
+**Path parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sessionId` | string | Session identifier |
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `reason` | string | Yes | Human-facing instruction, shown on the Resume page and emitted on the event stream |
+| `resumeOn` | `{ target: Target, until: "visible" \| "hidden" \| "attached" \| "detached" }` | No | Auto-resume when this element reaches the given state (same `target` shapes as `wait`) |
+| `timeoutMs` | number | No | Overall timeout (default 300000) |
+| `pageId` | string | No | Page to act on (defaults to the active page) |
+
+**Response `data`:** `{ "pageId": string, "resumedBy": "human" \| "signal" \| "timeout", "elapsedMs": number }`.
+A `"timeout"` is a normal result, not an error — re-prompt or retry as needed.
+
+**Events:** on pause, `human.pause.requested` carries `{ reason, resumePath }` on `GET /v1/events`; on
+resolution, `human.pause.resolved` carries `{ resumedBy }`. Compose the absolute Resume URL by prefixing
+`resumePath` with `baseUrl` from `endpoint.json`, and show it to the human.
+
+---
+
+#### `GET /v1/sessions/:sessionId/resume?token=<one-time>` — Resume page (human-facing)
+
+**No API token.** Authorised by the single-use `token` minted by `await-human`. Serves a small local
+HTML page with the `reason` and a Resume button. A missing/used/unknown token renders a friendly
+"already resumed or expired" page.
+
+#### `POST /v1/sessions/:sessionId/resume?token=<one-time>` — Confirm resume (human-facing)
+
+**No API token.** The Resume button's action. Validates and consumes the single-use `token`, ends the
+matching pause, and renders a confirmation. Idempotent: a reused/expired token renders the
+"already resumed" page. The token is session-scoped — a mismatched `sessionId` is rejected.
+
+---
+
 #### `POST /v1/sessions/:sessionId/screenshot` — Take a screenshot
 
 Captures a PNG screenshot of the current page and saves it to the session's debug directory.
