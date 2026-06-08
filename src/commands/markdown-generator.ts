@@ -37,8 +37,15 @@ export async function generateMarkdown(page: Page): Promise<string> {
           const text = children().trim();
           return href && text ? `[${text}](${href})` : text;
         }
+        case 'img': {
+          const alt = (el.getAttribute('alt') ?? '').trim();
+          return alt ? `![${alt}]` : '';
+        }
         case 'ul': case 'ol': return `\n${children()}\n`;
-        case 'li': return `- ${children().trim()}\n`;
+        case 'li': {
+          const prefix = el.parentElement?.tagName.toLowerCase() === 'ol' ? '1. ' : '- ';
+          return `${prefix}${children().trim()}\n`;
+        }
         default: return children();
       }
     }
