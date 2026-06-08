@@ -146,12 +146,18 @@ rather than living only in a background tab he has to hunt for. Added a banner s
 - On pause, inject a fixed strip at the top of the working page: `⏸ Feather paused: <reason>` + a
   **Resume ▸** button. Remove it the instant the pause resolves (so the DOM is clean before any
   automated action resumes).
-- The button is a **cross-origin form POST** (`target="_blank"`) to the existing resume route — one
-  click resumes, the `✓ Resumed` confirmation opens in a new tab, and the working page keeps its
-  state. A form POST is a "simple request" (no CORS needed to *send*); we only can't read the
-  response, which is fine because the confirmation renders in its own tab.
-- **Requires** a Fastify parser for `application/x-www-form-urlencoded` (empty body, ignored) — its
-  absence is what produced a 415 on form submit. Added globally; no other route uses urlencoded.
+- **The button makes NO network request.** Clicking it sets a DOM flag (`data-resumed="1"`) on the
+  banner. Feather already drives the page over CDP, so `AwaitHumanHandler` polls the page (300 ms)
+  for that flag and resolves `"human"`. One click, **no new tab**, working page keeps its state; the
+  banner turns green "✓ Resumed" and the server removes it.
+- **Why a DOM flag, not a network call:** every page→`127.0.0.1` network path is blocked by
+  Chromium's Private Network Access — `fetch(no-cors)` (no preflight) and subframe/iframe form POSTs
+  are both rejected; only a top-level `_blank` navigation works, but that opens a tab. Polling a
+  client-side flag over the CDP channel Feather already owns sidesteps PNA/CORS/mixed-content
+  entirely. *(Iteration: `_blank` form (worked, but tab) → `fetch(no-cors)` (PNA) → hidden-iframe
+  form (PNA on subframe) → DOM flag + CDP poll.)*
+- A Fastify parser for `application/x-www-form-urlencoded` (empty body, ignored) is kept so a direct
+  browser form POST to the **off-page** resume route still works as a fallback; no other route uses it.
 - The absolute resume URL (needed in the cross-origin form `action`) comes from a tiny
   `server-info` module that `startHttpServer` populates with `baseUrl` after `listen()`.
 - **Toggle:** `banner` field on `await-human` (default `true` for v1 usability). `banner:false`

@@ -2,10 +2,11 @@ import type { CommandHandler, CommandContext } from "./handler";
 import type { AwaitHumanInput, AwaitHumanOutput } from "../sessions/types";
 import { resolveLocator } from "../browser/locators";
 import { createPause, discardPause } from "./pause-registry";
-import { showBanner, removeBanner } from "../browser/pause-banner";
-import { getBaseUrl } from "../transport/server-info";
+import { showBanner, removeBanner, bannerResumed } from "../browser/pause-banner";
 import { emitBusEvent } from "../logs/bus";
 import { EVENTS } from "../logs/events";
+
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 interface IManager {
   get(sessionId: string): { getPage(pageId?: string): { pageId: string; page: import("playwright").Page } };
@@ -31,7 +32,7 @@ export class AwaitHumanHandler implements CommandHandler<AwaitHumanInput, AwaitH
     // pause — the SSE event + off-page resume URL remain as the fallback.
     const wantBanner = input.banner !== false;
     if (wantBanner) {
-      await showBanner(page, input.reason, getBaseUrl() + pause.resumePath).catch(() => {});
+      await showBanner(page, input.reason).catch(() => {});
     }
 
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -50,8 +51,21 @@ export class AwaitHumanHandler implements CommandHandler<AwaitHumanInput, AwaitH
       );
     }
 
+    // Poll the on-page banner's DOM flag (set client-side on click — no network, so PNA/CORS-proof).
+    let stopPoll = false;
+    if (wantBanner) {
+      racers.push((async () => {
+        while (!stopPoll) {
+          await sleep(300);
+          if (await bannerResumed(page)) return "human" as const;
+        }
+        return new Promise<never>(() => {});
+      })());
+    }
+
     const resumedBy = await Promise.race(racers);
 
+    stopPoll = true;
     if (timer) clearTimeout(timer);
     discardPause(pause.token);
     if (wantBanner) {

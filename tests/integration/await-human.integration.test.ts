@@ -131,6 +131,26 @@ describe("await-human (real Chromium)", () => {
     expect(gone.status).toBe(200);
   });
 
+  it("clicking the banner's Resume button resumes the pause (one click, no new tab)", async () => {
+    await api("POST", `/v1/sessions/${sessionId}/navigate`, {
+      url: dataUrl(`<body><h1>work page</h1></body>`),
+    });
+    const { pausePromise } = await captureResumePath("click the banner", 10000);
+
+    const appeared = await api("POST", `/v1/sessions/${sessionId}/wait`, {
+      target: { by: "css", selector: "#__feather_pause_banner__" }, until: "visible", timeoutMs: 3000,
+    });
+    expect(appeared.status).toBe(200);
+
+    const click = await api("POST", `/v1/sessions/${sessionId}/click`, {
+      target: { by: "css", selector: "#__feather_pause_banner__ button" },
+    });
+    expect(click.status).toBe(200);
+
+    const { body } = await pausePromise;
+    expect(body.data.resumedBy).toBe("human");
+  });
+
   it("banner:false leaves the working page untouched", async () => {
     await api("POST", `/v1/sessions/${sessionId}/navigate`, {
       url: dataUrl(`<body><h1>clean page</h1></body>`),
