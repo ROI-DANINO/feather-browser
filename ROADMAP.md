@@ -119,7 +119,7 @@ Make Core understandable, runnable, and useful before over-investing in the shel
 | 4a.6 — Roadmap + task reconciliation | ✅ done | session-map rebase |
 | 4a.6b — Security & capability re-sequencing | ✅ done | this reversal + ADR-0010 + roadmap split |
 | 4a.7 — CDP cold-profile interop proof | ↩ deferred → 5c | [`docs/sessions/4a.7-cdp-cold-profile-interop.md`](docs/sessions/4a.7-cdp-cold-profile-interop.md) |
-| 4a.8 — Markdown snapshot extraction | 🔵 in progress | [`docs/sessions/4a.8-markdown-snapshot.md`](docs/sessions/4a.8-markdown-snapshot.md) |
+| 4a.8 — Markdown snapshot extraction | ✅ done | [`docs/sessions/4a.8-markdown-snapshot.md`](docs/sessions/4a.8-markdown-snapshot.md) |
 | 4a.9 — LinkedIn debut recording | blocked (recorder) | [`docs/sessions/4a.9-linkedin-debut.md`](docs/sessions/4a.9-linkedin-debut.md) |
 | 4a.10 — Social-research triage | optional | [`docs/sessions/4a.10-social-research-triage.md`](docs/sessions/4a.10-social-research-triage.md) |
 

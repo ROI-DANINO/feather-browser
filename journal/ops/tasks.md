@@ -3,7 +3,8 @@
 Checklist only. Front door → `feather.md`; version roadmaps → `docs/roadmap/{v1,v2,v3}.md`;
 execution index → `ROADMAP.md`; live pointer → `journal/context/active.md`.
 
-**Next action = Session 4a.8 Markdown snapshot extraction.** See `docs/sessions/4a.8-markdown-snapshot.md`.
+**Next action = Showcase/eval suite + v1 wrap.** Build a multi-task agent demo suite (measure + "show off");
+remaining v1 gaps = act-human typing cadence + bot self-check. (4a.8 done this session.)
 
 ---
 
@@ -28,10 +29,10 @@ execution index → `ROADMAP.md`; live pointer → `journal/context/active.md`.
       Specs `docs/specs/2026-06-08-pause-for-human-*`. Folded into ROADMAP/tasks at this `/stop`.
       - [x] **Live click test WITH Roi DONE** — headed, resumedBy human, no new tab, banner removed.
             *Finding:* banner dies on page navigation (breaks login/MFA resume → core v2 MFA Handler input).
-      - [ ] **Deferred fixes (short pass, not blocking 4a.8):**
-            (a) Resume-confirmation linger ~1s (`src/browser/pause-banner.ts` + `resume-page.ts`);
-            (b) Disposable headed-CDP `ENOTEMPTY` cleanup race (await child exit before rmdir, ~20min TDD);
-            (c) Navigation-survivable resume — re-inject banner on `framenavigated` while pause active (v2 core).
+      - [~] **Deferred fixes:**
+            (a) [x] Resume-confirmation linger ~1s — `6329ae9`;
+            (b) [x] Disposable headed-CDP `ENOTEMPTY` cleanup race (await child exit before rmdir) — `0e4bd33`;
+            (c) [ ] Navigation-survivable resume — re-inject banner on `framenavigated` while pause active (v2 core, OPEN).
 
 - [x] **THE v1 INSTAGRAM TEST — COMPLETE (2026-06-08):**
       Session: `journal/ops/sessions/v1-instagram-test-complete-20260608-0345.md`
@@ -42,17 +43,25 @@ execution index → `ROADMAP.md`; live pointer → `journal/context/active.md`.
       - [x] Social errand: navigated to @shaked_golan1, liked latest post, read comments, posted comment
       - **Verdict: PASS** — stealthy enough for signup. Friction = element-discovery + small gaps below.
 
-- [ ] **Small gaps found in the IG test (log for 4a.8 / v1 polish):**
-      - No `selectOption` command (native `<select>` elements undriven — didn't block IG, real gap)
-      - `extract` returns empty body on multi-match selector (should return first match or `MULTIPLE_MATCHES` error)
-      - IG confirmation input ignores `fill`/`type` — Shift+Tab + individual `press` is the workaround
+- [~] **Small gaps found in the IG test:**
+      - [x] `select-option` command added (native `<select>`) — `23fabd2`
+      - [x] `extract` multi-match — confirmed `.first()` already handles it; behavior test added — `54fcc67`
+      - [ ] IG confirmation input ignores `fill`/`type` — Shift+Tab + individual `press` workaround (not fixed)
 
-- [ ] **4a.8 — Markdown snapshot extraction** ← **NEXT BUILD TASK**
-      Port Crawl4AI's DefaultMarkdownGenerator to TypeScript natively. First v1 "Port".
-      Session spec: `docs/sessions/4a.8-markdown-snapshot.md`
+- [x] **4a.8 — Markdown snapshot extraction** (DONE this session) — self-contained DOM walker in
+      `page.evaluate()`, zero deps, 20k cap, img alt + ordered-list numbering. `snapshot` now returns
+      `markdown`. Commits `43f46bd`/`817f3cb`. (ROADMAP.md ✅.)
 
 - [x] **Agent can drive Feather end-to-end** smoothly enough to run an errand ← **PROVEN by IG test**
 - [ ] **Basic "act human"** (human typing cadence) + **"do I look like a bot?" self-check** — cheap v1 stealth.
+      *(Last real v1 feature gaps. Decide next session: ship in v1 or defer to v2 stealth work.)*
+
+- [~] **Showcase / eval suite** — spec DONE (`docs/specs/2026-06-09-showcase-eval-suite-design.md`,
+      `f76a59a`). User reviews spec next session → writing-plans → implementation plan → Pass 1 (interactive)
+      → `examples/showcase.sh` (filmable). 10 tasks: 3 easy + 3 medium + 4 hard (warmed sessions).
+- [x] **Agent operator skills + playbook** (DONE this session) — `docs/agent-playbook.md` +
+      `skills/{using-feather-browser,feather-form-filling,feather-human-handoff,feather-data-extraction}`
+      + AGENTS.md pointer. Commit `0c0e7ee`, pushed to origin/dev.
 
 ## Feather v2 — "It survives the scary sites, safely"  (`docs/roadmap/v2.md`)
 

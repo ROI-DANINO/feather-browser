@@ -12,14 +12,18 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
   posted comment "Sinai looks unreal bro absolute king"). All over the local HTTP API. **v1 is proven.**
   Session closeout: `journal/ops/sessions/v1-instagram-test-complete-20260608-0345.md`.
   Blog entry: `blog/0013-the-test-that-passed.md`.
-- **NEXT = Session 4a.8 — Markdown snapshot extraction.** Port Crawl4AI's DefaultMarkdownGenerator
-  to TypeScript natively. First v1 "Port". Session spec: `docs/sessions/4a.8-markdown-snapshot.md`.
-- **Deferred fixes (not blocking 4a.8):**
-  - Resume-confirmation linger ~1s (`src/browser/pause-banner.ts`)
-  - Disposable headed-CDP `ENOTEMPTY` cleanup race
-  - No `selectOption` command
-  - `extract` empty-body on multi-match selector
-  These can be a single short pass before or after 4a.8.
+- **4a.8 + deferred fixes DONE (2026-06-09, this session).** Markdown snapshot built (DOM walker,
+  zero deps, 20k cap); `select-option` command added; resume-confirmation linger; disposable
+  `ENOTEMPTY` cleanup race fixed; `extract` multi-match behavior tested. 9 commits + a docs/skills
+  commit (`0c0e7ee`), all pushed to origin/dev. 240/241 tests (1 pre-existing flake).
+- **Agent operator layer DONE:** `docs/agent-playbook.md` + 4 skills
+  (`skills/using-feather-browser` + form-filling/human-handoff/data-extraction) + AGENTS.md pointer.
+- **Showcase/eval suite DESIGNED (2026-06-09).** 10-task suite spec written + committed
+  (`docs/specs/2026-06-09-showcase-eval-suite-design.md`, `f76a59a`). User reviewing next session.
+  Two-pass model: interactive discovery → filmable shell script. Hard tasks match IG test complexity.
+- **NEXT = User reviews spec → writing-plans → implementation plan.** After that: Pass 1 (interactive
+  agent session), then build `examples/showcase.sh`. Remaining v1 gaps (act-human cadence, bot
+  self-check) decided after Pass 1 results.
 
 ## Key facts for next session
 
