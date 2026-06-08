@@ -1,5 +1,6 @@
 import type { CommandHandler, CommandContext } from "./handler";
 import type { SnapshotResult } from "../sessions/types";
+import { generateMarkdown } from "./markdown-generator";
 
 interface IManager {
   get(sessionId: string): {
@@ -34,6 +35,7 @@ export class SnapshotHandler implements CommandHandler<SnapshotInput, SnapshotRe
       const m = document.querySelector('meta[name="description"]');
       return m ? m.getAttribute("content") ?? "" : "";
     });
+    const markdown = await generateMarkdown(page);
     return {
       pageId: resolvedPageId,
       url,
@@ -41,7 +43,8 @@ export class SnapshotHandler implements CommandHandler<SnapshotInput, SnapshotRe
       text,
       links,
       meta: { description },
-      limits: { textChars: 20000, links: 200 },
+      limits: { textChars: 20000, links: 200, markdownChars: 20000 },
+      markdown,
     };
   }
 }

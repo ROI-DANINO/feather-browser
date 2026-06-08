@@ -56,7 +56,8 @@ export interface SnapshotResult {
   text: string;
   links: Array<{ text: string; href: string }>;
   meta: { description: string };
-  limits: { textChars: number; links: number };
+  limits: { textChars: number; links: number; markdownChars: number };
+  markdown: string;
 }
 
 type TargetBy =
