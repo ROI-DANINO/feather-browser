@@ -94,6 +94,16 @@ Do not start web research, architecture comparison, or implementation before the
 - **`/stop`** — at the end of a *real* stopping point (end of work block, workday, phase milestone, significant decision). It consumes the accumulated `/next` buffer plus the current session, writes the durable handoff/state, archives the consumed `next.md` bundle, resets the active `journal/context/next.md` buffer, and then commits the tracking files.
 - **`/init`** — only when you arrive with a *new goal* you want gate-checked against the current phase before any work. It overlaps with `/start` for normal continuation, so it is optional day-to-day.
 
+## Driving Feather (operator skills)
+
+When you need to *operate* Feather (drive a site through the HTTP API — e.g. testing a flow end-to-end), use the agent skills instead of working from raw endpoints:
+
+- **`using-feather-browser`** — the entry skill. The golden loop, session setup, the five rules, targeting, and error→recovery. Start here; it auto-triggers on any Feather-driving task.
+- **`feather-form-filling`** / **`feather-human-handoff`** / **`feather-data-extraction`** — focused workflow skills that auto-trigger on their own keywords (forms/signup, CAPTCHA/MFA, scrape/read).
+- **`docs/agent-playbook.md`** — the full reference behind the skills (every endpoint, profiles, modes, gotchas). The skills point here for depth.
+
+These are operator-facing (how to *use* Feather). The rest of this file is contributor-facing (how to *build* Feather).
+
 ## Session Memory Rules
 
 - Work is organized as sessions.
