@@ -42,3 +42,24 @@ assigns them and cuts tasks into work sessions.
   This is the primary input for Session 4a.8 (a11y/DOM snapshot so the agent gets stable handles).
 - **Core driving works end-to-end.** Form fill → email verify → social interaction (like, comment) all
   passed on a real site. Friction is tooling, not the core architecture.
+
+## Session-launch recipes (durable; verified against source 2026-06-09)
+
+- **Disposable headless:** `POST /v1/sessions` `{"profile":{"kind":"disposable"},"browserMode":"chromium-new-headless","viewport":{...}}`.
+- **Warmed headed:** `{"profile":{"kind":"persistent"},"workspaceId":"scratch","browserMode":"chromium-headed-cdp","viewport":{...}}`.
+  The **persistent profile dir is keyed by `workspaceId`** (`src/sessions/manager.ts:85-87` → `paths.profileDir(workspaceId)`),
+  so `workspaceId:"scratch"` reuses the warmed jar. **One session per profile** → a 2nd launch on a locked profile
+  returns `409 PROFILE_LOCKED` (close the stale session, then relaunch). Headed needs the server started with
+  `WAYLAND_DISPLAY`/`DISPLAY`.
+- **Stale doc:** `docs/api-reference.md`'s `browserMode` enum omits `chromium-headed-cdp` — the real enum
+  (`src/transport/routes.ts:30`) has all three. (Fix queued as showcase plan Task D4.)
+
+## Showcase/eval suite — execution delegated to pi_agency (durable direction, 2026-06-09)
+
+- The Feather v1 **showcase/eval suite** (spec `docs/specs/2026-06-09-showcase-eval-suite-design.md`, plan
+  `docs/specs/2026-06-09-showcase-eval-suite-plan.md`) is to be **run by Roi's pi_agency agent team** (Pi harness),
+  not by Claude Code. Setup ("set the ground") is done via **Codex**. Brief:
+  `docs/specs/2026-06-09-codex-handoff-pi-agency-runs-feather.md`.
+- pi agents have `bash` → drive Feather over the localhost API directly (no bridge). The suite is a
+  **stress-and-learn instrument**: `PARTIAL`+lesson is a first-class pass. Governing principle: root `AGENTS.md`
+  § "Testing Honesty — Objective, Not Flattering".

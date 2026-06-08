@@ -18,12 +18,21 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
   commit (`0c0e7ee`), all pushed to origin/dev. 240/241 tests (1 pre-existing flake).
 - **Agent operator layer DONE:** `docs/agent-playbook.md` + 4 skills
   (`skills/using-feather-browser` + form-filling/human-handoff/data-extraction) + AGENTS.md pointer.
-- **Showcase/eval suite DESIGNED (2026-06-09).** 10-task suite spec written + committed
-  (`docs/specs/2026-06-09-showcase-eval-suite-design.md`, `f76a59a`). User reviewing next session.
-  Two-pass model: interactive discovery → filmable shell script. Hard tasks match IG test complexity.
-- **NEXT = User reviews spec → writing-plans → implementation plan.** After that: Pass 1 (interactive
-  agent session), then build `examples/showcase.sh`. Remaining v1 gaps (act-human cadence, bot
-  self-check) decided after Pass 1 results.
+- **Showcase/eval suite REVIEWED + APPROVED + PLANNED (2026-06-09, this session).** Spec revised into a
+  **stress-and-learn instrument** (`PARTIAL`+lesson first-class; proof split headed→film/headless→artifact;
+  M1 hard-path-first; H1 fragile calendar-write on purpose; E3 suffix-parse). Full implementation plan
+  written → `docs/specs/2026-06-09-showcase-eval-suite-plan.md` (Phases A–D, grounded in real API source).
+  Recorder = `wf-recorder` (installed). Committed `8a040b5` (spec+AGENTS) ; plan + Codex handoff committed at
+  this `/stop`.
+- **Testing Honesty is now repo law:** root `AGENTS.md` § "Testing Honesty — Objective, Not Flattering" +
+  memory `feedback_testing_honesty`. (Test for truth, not green checkmarks; never go easy to please.)
+- **EXECUTION PIVOT:** the suite will be **run by Roi's pi_agency agent team** (Pi harness), with the setup
+  ("set the ground") done via **Codex** — NOT by Claude Code. Brief:
+  `docs/specs/2026-06-09-codex-handoff-pi-agency-runs-feather.md`.
+- **NEXT = Roi sets up pi_agency-runs-Feather with Codex → pi team runs the suite (Phases A–D).** Claude Code
+  resumes only to tweak the plan/handoff or reconcile results. Remaining v1 gaps (act-human cadence, bot
+  self-check) decided after the Pass-1 verdict (plan Task B4). Plan flags: fix stale `api-reference.md`
+  (missing `chromium-headed-cdp`, Task D4); spec's `jq` claim was wrong (use node).
 
 ## Key facts for next session
 
