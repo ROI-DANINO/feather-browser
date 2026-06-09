@@ -45,11 +45,18 @@ The `pi-subagents` extension resolves agents/chains/skills in **two scopes**:
   - settings: `<root>/.pi/settings.json` (`agents.ts:258`)
 
 Scope is `user | project | both`; default `both` (`agent-scope.ts`). Selecting **`project` scope excludes
-the user team entirely** (`agents.ts:828-829`).
+the user team entirely** (`agents.ts:828-829`). Scope is selectable **explicitly** in two places:
+- at **create** time: `config.scope: "project"` (`schemas.ts:253`) → writes the file into `<root>/.pi/...`
+- at **run** time: `agentScope: "project"` on the subagents tool (`schemas.ts:271`)
 
-**Consequence:** a `.pi/` inside feather-browser is seen **only when `pi` is launched from inside this repo**.
-It does *not* teach Pi about Feather globally. This satisfies the "Feather-only, not global" requirement
-directly, and is the extension's intended, supported mechanism.
+An agent can be given an **explicit skill allowlist** via a `skills:` field (comma-separated;
+`schemas.ts:253`, parsed `agent-management.ts:261-264`); with `inheritSkills:false` the agent resolves
+**only** those listed skills.
+
+**Consequence:** a `.pi/` inside feather-browser is seen only when `pi` runs inside this repo — but the
+implementation does **not** rely on cwd as the isolation guarantee. The plan **forces project scope
+explicitly** (create with `scope:project`, run with `agentScope:project`) so the Feather team/chains are the
+active set regardless of how Pi is launched. This is the extension's intended, supported mechanism.
 
 ## Design — project-local `.pi/` in feather-browser
 
@@ -75,8 +82,9 @@ feather-browser/.pi/
   English per `AGENTS.md`).
 - **Write fresh (the Feather-specific glue only):**
   - `feather-operator.md` — the agent that actually drives Feather. `tools: read, bash, grep, find, ls`
-    (needs `bash` for `curl`/the script). `inheritSkills: false`; `inheritProjectContext: true` (so it gets
-    Feather's `AGENTS.md`). System prompt: golden loop + targeting rules, pointing at the project skill.
+    (needs `bash` for `curl`/the script). `inheritSkills: false` **and** `skills: feather-operator` (explicit
+    allowlist); `inheritProjectContext: true` (so it gets Feather's `AGENTS.md`). Created with
+    `scope:project`. System prompt: golden loop + targeting rules, pointing at the project skill.
   - `showcase-run.chain.md` — the phase→role flow (below), in pi chain format (`## role`, `phase:`, `label:`,
     `as:`, body with `{task}` / `{outputs.X}`).
   - `feather-operator/SKILL.md` — ~20 lines: name/description frontmatter + a pointer to Feather's existing
@@ -88,6 +96,7 @@ feather-browser/.pi/
 
 | Showcase phase | Role | Notes |
 |---|---|---|
+| Pre-suite — sacrificial account setup | `feather-operator` | first autonomous op: create/warm new Google + IG into a fresh `scratch` (Roi gate; VPN/proxy on) |
 | A — scaffolding (codegen) | `coder` | builds `examples/showcase.sh` per the plan |
 | C — per-task functions (codegen) | `coder` → `opus-reviewer` | review gates commits |
 | B — Pass-1 live discovery | `feather-operator` | drives the 10 tasks live; writes the recipe log |
@@ -102,14 +111,40 @@ feather-browser/.pi/
 
 ## Trust & scoping guarantees
 
-- **No pi_agency skills imported.** We copy *agent profiles* only; the only skill present is the new thin
-  Feather-operator pointer.
-- **`inheritSkills: false`** on the project agents → they cannot pull the laptop-global skills
-  (Hebrew/content) Roi doesn't trust for Feather.
-- **Run in project scope** (or simply launch `pi` from inside feather-browser) → Feather configs are the
-  active team; nothing leaks to other projects.
+- **Project scope is forced, not assumed.** Agents/chains are created with `scope:project` and run with
+  `agentScope:project`. The Feather team is the active set regardless of launch directory — cwd is a
+  convenience, not the wall.
+- **Skills are an explicit project-local allowlist, not inheritance.** Each project agent sets
+  `inheritSkills:false` **and** lists only `skills: feather-operator` (the thin project skill). With
+  `inheritSkills:false` the agent resolves *only* the allowlisted skill. To keep that airtight, the project
+  `.pi/settings.json` lists **no** `skills`, and **no** skill-bearing project packages are installed under
+  `.pi/npm` — so the *only* resolvable skill in this project is `.pi/skills/feather-operator`.
+- **No pi_agency / global skills reachable.** We copy *agent profiles* only; no pi_agency skill is imported,
+  and the laptop-global Hebrew/content skills are out of scope by the above.
 - **No secrets in the repo.** `auth.json` / API keys stay under `~/.pi/agent/`. The committed `.pi/` holds
   only role definitions and model-id strings.
+
+## Sacrificial scratch identities, pre-suite setup, and privacy
+
+The live/hard tier intentionally touches logged-in sessions and probes failure/blocking boundaries — that is
+the point, and the plan must **not** over-sanitize it. But it must run against **dedicated sacrificial
+accounts**, not Roi's existing warmed profile.
+
+- **Keep the workspace name `scratch`, but rebuild it fresh.** Before the full suite, the existing `scratch`
+  profile dir is cleared/recreated so the hard tier runs against brand-new throwaway accounts (the prior
+  `feather_test_roi` / warmed Google are *not* reused).
+- **Pre-suite setup task (the first autonomous Feather operation).** Before the eval suite, the
+  `feather-operator` agent creates and warms a **new Google account** and a **new Instagram account** that
+  look normal / non-bot-like (human-plausible cadence, realistic warm-up browsing), then registers them as
+  the `scratch` identities (`markWarm`). This is itself a real boundary test — account creation commonly
+  hits phone/SMS/again-later walls — so it carries a **Roi human gate** (he may need to help clear an SMS or
+  CAPTCHA) and honest `PASS/PARTIAL/FAIL` reporting per Testing Honesty.
+- **Privacy preference (practical, not a hard requirement):** route the sacrificial Google/IG setup through
+  a **VPN/proxy** so the new `scratch` profile is less easily associated with Roi's home IP / personal
+  identity cluster. Feather exposes a per-session `proxy` on `POST /v1/sessions` (`routes.ts:32`:
+  server/username/password/bypass), so the setup session can carry the proxy directly; a system-level VPN is
+  an equivalent fallback. Treated as a default-on convenience for the setup, not a security architecture
+  change.
 
 ## Decisions (settled with Roi)
 
@@ -126,10 +161,13 @@ feather-browser/.pi/
 ## Definition of done (for this integration)
 
 - `feather-browser/.pi/` exists with the files above; committed to `dev`.
-- Launching `pi` from inside feather-browser exposes the Feather team (coder / validator / opus-reviewer /
-  feather-operator) and the `showcase-run` chain, and **not** the global Hebrew/content skills.
+- Running with `agentScope:project` exposes the Feather team (coder / validator / opus-reviewer /
+  feather-operator) and the `showcase-run` chain, and resolves **only** the `feather-operator` skill — no
+  pi_agency / global Hebrew/content skill is reachable (verified by listing resolvable skills).
 - `feather-operator` can: discover the Feather endpoint (`endpoint.json` → `baseUrl`/`tokenFile`), hit
   `GET /health`, launch a disposable headless session, and run one easy showcase task end to end (proves the
   loop).
 - The thin skill points the driver at Feather's existing playbook (golden loop + targeting rules reachable).
+- A **fresh `scratch`** profile exists holding **new sacrificial** Google + Instagram accounts (created via
+  the pre-suite operator task, VPN/proxy on); the old warmed accounts are not reused.
 - Roi confirms; the pi team then runs the full suite (showcase plan Phases A–D).
