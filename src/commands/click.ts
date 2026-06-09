@@ -1,10 +1,13 @@
 import type { CommandHandler, CommandContext } from "./handler";
 import type { ClickInput, ClickOutput } from "../sessions/types";
-import { resolveLocator } from "../browser/locators";
+import { resolveActionable } from "../browser/locators";
 import { withActionErrors } from "./input-errors";
 
 interface IManager {
-  get(sessionId: string): { getPage(pageId?: string): { pageId: string; page: import("playwright").Page } };
+  get(sessionId: string): {
+    getPage(pageId?: string): { pageId: string; page: import("playwright").Page };
+    getObserveCache(pageId: string): { refs: Map<string, import("playwright").ElementHandle> } | undefined;
+  };
 }
 
 export class ClickHandler implements CommandHandler<ClickInput, ClickOutput> {
@@ -12,9 +15,11 @@ export class ClickHandler implements CommandHandler<ClickInput, ClickOutput> {
 
   async execute(input: ClickInput, _ctx: CommandContext): Promise<ClickOutput> {
     const { sessionId, pageId, target, timeoutMs } = input;
-    const { pageId: resolvedPageId, page } = this.manager.get(sessionId).getPage(pageId);
-    const loc = resolveLocator(page, target);
-    await withActionErrors(loc, "click", () => loc.click({ timeout: timeoutMs ?? 15000 }));
+    const session = this.manager.get(sessionId);
+    const { pageId: resolvedPageId, page } = session.getPage(pageId);
+    const refLookup = (r: string) => session.getObserveCache(resolvedPageId)?.refs.get(r);
+    const { act, probe } = resolveActionable(page, target, refLookup);
+    await withActionErrors(probe, "click", () => act.click({ timeout: timeoutMs ?? 15000 }));
     return { pageId: resolvedPageId, clicked: true };
   }
 }

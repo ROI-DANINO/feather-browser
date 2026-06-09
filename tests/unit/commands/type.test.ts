@@ -1,16 +1,20 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import { TypeHandler } from "../../../src/commands/type";
-import { resolveLocator } from "../../../src/browser/locators";
+import { resolveLocator, resolveActionable } from "../../../src/browser/locators";
 
-vi.mock("../../../src/browser/locators", () => ({ resolveLocator: vi.fn() }));
+vi.mock("../../../src/browser/locators", () => ({ resolveLocator: vi.fn(), resolveActionable: vi.fn() }));
 
 const fakeLoc = {
   fill: vi.fn().mockResolvedValue(undefined),
   pressSequentially: vi.fn().mockResolvedValue(undefined),
   count: vi.fn().mockResolvedValue(1),
 };
+const probe = vi.fn().mockResolvedValue(1);
 const mockPage = {};
-const mockSession = { getPage: vi.fn().mockReturnValue({ pageId: "page_001", page: mockPage }) };
+const mockSession = {
+  getPage: vi.fn().mockReturnValue({ pageId: "page_001", page: mockPage }),
+  getObserveCache: vi.fn().mockReturnValue(undefined),
+};
 const mockManager = { get: vi.fn().mockReturnValue(mockSession) };
 const ctx = { requestId: "req_test" };
 
@@ -18,7 +22,9 @@ describe("TypeHandler", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (resolveLocator as any).mockReturnValue(fakeLoc);
+    (resolveActionable as any).mockReturnValue({ act: fakeLoc, probe });
     mockSession.getPage.mockReturnValue({ pageId: "page_001", page: mockPage });
+    mockSession.getObserveCache.mockReturnValue(undefined);
     mockManager.get.mockReturnValue(mockSession);
   });
 

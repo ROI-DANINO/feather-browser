@@ -66,6 +66,7 @@ const TargetSchema = z.discriminatedUnion("by", [
   z.object({ by: z.literal("placeholder"), text: z.string().min(1), at: atField }),
   z.object({ by: z.literal("testid"), testId: z.string().min(1), at: atField }),
   z.object({ by: z.literal("css"), selector: z.string().min(1), at: atField }),
+  z.object({ by: z.literal("ref"), ref: z.string().min(1) }),
 ]);
 
 const ClickSchema = z.object({
@@ -138,6 +139,7 @@ const ERROR_STATUS: Record<string, number> = {
   ELEMENT_NOT_ACTIONABLE: 409,
   WAIT_TIMEOUT: 408,
   CANNOT_CLOSE_LAST_TAB: 409,
+  REF_EXPIRED: 409,
 };
 
 function errorStatus(code: string): number { return ERROR_STATUS[code] ?? 500; }

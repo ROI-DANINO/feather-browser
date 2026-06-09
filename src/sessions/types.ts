@@ -182,4 +182,7 @@ export interface ISession {
   toRecord(): Omit<SessionRecord, "pages">;
   addPage(page: Page): string;
   removePage(pageId: string): void;
+  getObserveCache(pageId: string): import("./session").ObserveCacheEntry | undefined;
+  setObserveCache(pageId: string, entry: import("./session").ObserveCacheEntry): void;
+  clearObserveCache(pageId: string): void;
 }

@@ -8,15 +8,14 @@ import {
 } from "../../../src/commands/input-errors";
 
 describe("withActionErrors", () => {
-  it("passes through the result on success", async () => {
-    const loc = { count: vi.fn() };
-    await expect(withActionErrors(loc as any, "click", async () => "ok")).resolves.toBe("ok");
-    expect(loc.count).not.toHaveBeenCalled();
+  it("passes through the result on success without calling the probe", async () => {
+    const probe = vi.fn().mockResolvedValue(0);
+    await expect(withActionErrors(probe, "click", async () => "ok")).resolves.toBe("ok");
+    expect(probe).not.toHaveBeenCalled();
   });
 
   it("maps TimeoutError + 0 matches to ElementNotFoundError (code ELEMENT_NOT_FOUND)", async () => {
-    const loc = { count: vi.fn().mockResolvedValue(0) };
-    const run = withActionErrors(loc as any, "click", async () => {
+    const run = withActionErrors(() => Promise.resolve(0), "click", async () => {
       throw new errors.TimeoutError("timeout");
     });
     await expect(run).rejects.toBeInstanceOf(ElementNotFoundError);
@@ -24,8 +23,7 @@ describe("withActionErrors", () => {
   });
 
   it("maps TimeoutError + >0 matches to ElementNotActionableError (code ELEMENT_NOT_ACTIONABLE)", async () => {
-    const loc = { count: vi.fn().mockResolvedValue(1) };
-    const run = withActionErrors(loc as any, "click", async () => {
+    const run = withActionErrors(() => Promise.resolve(1), "click", async () => {
       throw new errors.TimeoutError("timeout");
     });
     await expect(run).rejects.toBeInstanceOf(ElementNotActionableError);
@@ -33,9 +31,8 @@ describe("withActionErrors", () => {
   });
 
   it("rethrows non-timeout errors unchanged", async () => {
-    const loc = { count: vi.fn() };
     await expect(
-      withActionErrors(loc as any, "click", async () => {
+      withActionErrors(() => Promise.resolve(0), "click", async () => {
         throw new Error("boom");
       }),
     ).rejects.toThrow("boom");
