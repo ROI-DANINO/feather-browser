@@ -65,10 +65,55 @@ type TargetBy =
   | { by: "text"; text: string; exact?: boolean }
   | { by: "placeholder"; text: string }
   | { by: "testid"; testId: string }
-  | { by: "css"; selector: string };
+  | { by: "css"; selector: string }
+  | { by: "ref"; ref: string };
 
 /** How a command locates an element. `at` chooses which match when several match (default "first"). */
 export type Target = TargetBy & { at?: "first" | "last" | number };
+
+// --- Observe ---
+export type ActionState = "actionable" | "covered" | "disabled" | "offscreen";
+
+export interface ObserveAction {
+  ref: string;                 // e0, e1, … — valid only until the next observe on this page
+  role: string | null;
+  name: string;
+  tag: string;
+  box: { x: number; y: number; w: number; h: number };
+  state: ActionState;
+  occludedBy?: { kind: "overlay" | "iframe" | "element"; name?: string };
+}
+
+export interface Overlay {
+  ref: string | null;
+  kind: "modal" | "banner" | "iframe";
+  name: string;
+  coverPct: number;
+  blocking: boolean;
+}
+
+export interface ObserveDiffEntry { ref?: string; desc?: string; change?: string; was?: string; }
+export interface ObserveDiff {
+  added: ObserveDiffEntry[];
+  removed: ObserveDiffEntry[];
+  changed: ObserveDiffEntry[];
+}
+
+export interface ObserveInput {
+  sessionId: string; pageId?: string;
+  cap?: number; viewportOnly?: boolean; includeText?: boolean;
+}
+export interface ObserveResult {
+  pageId: string; url: string; title: string; observeId: string;
+  actions: ObserveAction[];
+  overlays: Overlay[];
+  diff: ObserveDiff | null;
+  text?: string;
+  stats: { totalInteractive: number; returned: number; elapsedMs: number };
+}
+
+export interface DismissInput { sessionId: string; pageId?: string; labels?: string[]; }
+export interface DismissOutput { pageId: string; dismissed: { ref: string; name: string }[]; }
 
 export interface ClickInput { sessionId: string; pageId?: string; target: Target; timeoutMs?: number; }
 export interface ClickOutput { pageId: string; clicked: true; }

@@ -16,6 +16,8 @@ function base(page: Page, t: Target): Locator {
       return page.getByTestId(t.testId);
     case "css":
       return page.locator(t.selector);
+    case "ref":
+      throw new Error("resolveLocator called with a ref target — use resolveActionable instead");
   }
 }
 

@@ -16,6 +16,11 @@ export class WaitTimeoutError extends Error {
   constructor(message: string) { super(message); this.name = "WaitTimeoutError"; }
 }
 
+export class RefExpiredError extends Error {
+  readonly code = "REF_EXPIRED";
+  constructor(message: string) { super(message); this.name = "RefExpiredError"; }
+}
+
 /** Run a Playwright action; convert TimeoutError into a precise coded error. */
 export async function withActionErrors<T>(loc: Locator, what: string, fn: () => Promise<T>): Promise<T> {
   try {
