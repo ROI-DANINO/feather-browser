@@ -33,8 +33,12 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 ## Key facts for next session
 
 - **Scratch profile** (`workspaceId: scratch`) — re-warmed 2026-06-09, holds `feather_test_roi` IG
-  (`Feather2026!test`) + warmed `roionly9@gmail.com` Google session. Grew to ~265MB from discovery browsing.
+  (`Feather2026!test`) + warmed `roionly9@gmail.com` Google session. Current filesystem check in this session:
+  `scratch` is the warmed profile (~150MB); `primary` is effectively fresh (~7MB).
   Handle carefully — this is the test identity.
+- **Daily-driver wrapper (uncommitted `/next` bridge):** `npm run daily` opens `primary`; `npm run daily:scratch`
+  opens `scratch`. Use scratch for the warmed cookies that exist today; warm `primary` manually if it should become
+  Roi's real daily-driver profile.
 - **Server lifecycle:** health route is `/health` (NOT `/v1/health`). Real endpoint at
   `/run/user/1000/feather/run/endpoint.json` (project-root `endpoint.json` was empty last session); token at
   `/run/user/1000/feather/run/control-token`. Start from a shell with `WAYLAND_DISPLAY`/`DISPLAY` for headed windows.

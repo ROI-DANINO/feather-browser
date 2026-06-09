@@ -3,11 +3,12 @@
 Checklist only. Front door → `feather.md`; version roadmaps → `docs/roadmap/{v1,v2,v3}.md`;
 execution index → `ROADMAP.md`; live pointer → `journal/context/active.md`.
 
-**Next action = OPEN (Roi to choose).** The perception/observation loop SHIPPED this session (see below). Two
-candidates for next: (a) run the new `observe → act-by-ref → diff` loop on a real showcase task to **measure** the
-speed/round-trip win vs the old guess-and-fail loop; (b) start **v2 Gate A** — the capability/safety gate (ADR-0010),
-first real Phase-5 work. Session record: `journal/ops/sessions/observe-perception-loop-shipped-20260609-2336.md`.
-Blog `0017-teaching-it-to-see.md`.
+**Next action = OPEN (Roi to choose).** The perception/observation loop SHIPPED this session (see below). Fresh
+bridge note in `journal/context/next.md`: daily-driver wrapper added uncommitted; `primary` is fresh, warmed cookies
+are in `scratch`. Two larger candidates remain: (a) run the new `observe → act-by-ref → diff` loop on a real showcase
+task to **measure** the speed/round-trip win vs the old guess-and-fail loop; (b) start **v2 Gate A** — the
+capability/safety gate (ADR-0010), first real Phase-5 work. Session record:
+`journal/ops/sessions/observe-perception-loop-shipped-20260609-2336.md`. Blog `0017-teaching-it-to-see.md`.
 
 ---
 
