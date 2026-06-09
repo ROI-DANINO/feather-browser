@@ -92,6 +92,7 @@ describe("DELETE /v1/sessions/:sessionId/tabs/:pageId", () => {
       profile: { kind: "persistent" },
       browserMode: "chromium-headless-shell",
     });
+    expect(launch.status).toBe(200);
     const sessionId = launch.body.data.sessionId as string;
     await api("POST", `/v1/sessions/${sessionId}/tabs`, {});
     await api("POST", `/v1/sessions/${sessionId}/tabs`, {});
