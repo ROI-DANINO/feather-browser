@@ -521,6 +521,10 @@ Expected: the operator reports the current Tel Aviv temperature and `PASS` (or a
 
 > The hard tier must run against dedicated throwaway accounts, not Roi's existing warmed profile.
 > This whole phase is the **first autonomous Feather operation** — and a real boundary test.
+>
+> **VPN/proxy update (Roi, 2026-06-09): deferred/optional.** The throwaway accounts aren't worth the
+> added friction. Run the setup on the normal connection by default; only reconsider a VPN/proxy if a
+> signup actually gets blocked at a wall. The `proxy` field below is optional — omit it unless Roi sets one.
 
 ### Task 3.1: Rebuild a fresh `scratch` profile (DESTRUCTIVE — Roi runs/approves)
 
@@ -549,7 +553,7 @@ Expected: the dir is gone; the next `workspaceId:"scratch"` launch creates a cle
 > Run inside Pi. Feather server must have a display (`WAYLAND_DISPLAY`/`DISPLAY`) for the headed window.
 > Roi watches and clears any SMS/CAPTCHA.
 
-- [ ] **Step 1: Decide the proxy/VPN.** Either start the box behind a VPN, or pass a proxy URL to the operator (it adds `"proxy":{"server":"<url>"}` to the session-create body). Give the operator the proxy URL (or "system VPN is on") in the task.
+- [ ] **Step 1: Proxy/VPN (optional — default off).** Per the 2026-06-09 decision, run on the normal connection. Only if a signup gets blocked: turn on a consumer VPN (Mullvad/Proton) or use a phone hotspot, then pass `"proxy":{"server":"<url>"}` to the operator. Otherwise skip this step.
 
 - [ ] **Step 2: Run the operator**
 
