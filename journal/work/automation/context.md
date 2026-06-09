@@ -84,3 +84,13 @@ assigns them and cuts tasks into work sessions.
   (4) OpenRouter **connection errors recur** and fallbacks don't always rescue in time.
 - **Thin operator-skill corrections (verified vs source):** `wait` always needs a `target` (even
   `until:"stable"`); close = `DELETE /v1/sessions/:id` with **no** `Content-Type` header (empty body → 400).
+- **All subagents run `fresh` (2026-06-09, `12b96a9`).** Forking was the chain's only fragile bit — a
+  forking step has no parent history to copy when fired into a cold/fresh session (`fork-context.ts:58`),
+  giving exit-143 / "forked session file does not exist". A `fresh` step still gets the prior output via
+  `{outputs.X}` injection, so nothing is lost. coder+operator pinned in agent files; planner via
+  `.pi/settings.json` override (builtin override honors `defaultContext`, `agents.ts:459`). Clean chain
+  proven: `af0cfcdc` + E1–E3 rerun, no recovery.
+- **Verify which model ran from `meta.json`, not prose/badge.** Each step writes
+  `subagent-artifacts/<run>_<agent>_<step>_meta.json` with the recorded `model` (+ `modelAttempts`). The
+  agent's prose self-ID **lies** (coder reported "Claude Sonnet 4" while running `glm-5.1`). This retires
+  the old "verify via UI badge" note above — `meta.json` is the authoritative source.

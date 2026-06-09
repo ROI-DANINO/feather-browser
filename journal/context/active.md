@@ -6,7 +6,18 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 
 ## Current pointer
 
-- **NOW (2026-06-09): pi_agency ⇄ Feather integration — Stage 2 PASS.** OpenRouter model lineup set per
+- **SIDE-TASK (2026-06-09 07:49, not pi): fb-stop blog backlog.** A skipped `/stop` blog is no longer
+  lost — step 4 of `skills/fb-stop/SKILL.md` now reads/writes `blog/_pending.md`, folds owed sessions into
+  the next blog write, then clears it. Commit `70bd825` (SKILL.md + `blog/_pending.md` only). Untested live.
+  Does **not** change the pi thread below — Stage 3 is still the real next action.
+- **NOW (2026-06-09 07:54): chain BUG FIXED + first showcase tier SHIPPED.** The pi-team chain bug is
+  solved — all subagents now run `fresh` (coder+operator agent files; planner via `.pi/settings.json`
+  override). The chain runs clean end-to-end (planner `minimax-m3` → coder `glm-5.1` → reviewer `opus-4.8`
+  → validator `kimi-k2.6`, all exit 0, **no exit-143, no parent recovery**). **E1–E3 easy tier built +
+  validated + committed** (`examples/showcase.sh`; rehearsal `af0cfcdc` + clean rerun, E1/E2/E3 all PASS
+  live). Commits `12b96a9` (fork→fresh) + `f05453d` (E1–E3), pushed. **Objective model check = read
+  `subagent-artifacts/<run>_<agent>_<step>_meta.json` `model` field — the prose self-ID lies.**
+- **PRIOR (2026-06-09): pi_agency ⇄ Feather integration — Stage 2 PASS.** OpenRouter model lineup set per
   role (committed `f873667`; orchestrator→`qwen3.7-max` tweak still uncommitted): parent `qwen3.7-max`,
   planner `minimax-m3`, coder `glm-5.1`, operator `glm-5-turbo`→`glm-5.1`, validator `kimi-k2.6`,
   reviewer `opus-4.8`. Trust accepted; project-scope team lists clean. **Operator golden loop PROVEN**
@@ -21,13 +32,14 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 - **Chain dry-run PASSED** (`/run-chain feather.showcase-run`): 4-step multi-model dispatch proven (planner
   minimax-m3 confirmed via UI → coder → reviewer → validator, 6m20s, no commits). Coder left a clean
   116-line `examples/showcase.sh` seed (kept). 4 caveats to fix → see closeout.
-- **STOPPED 2026-06-09 06:08. RECOMMEND NEXT:** fix this session's 4 stumbles before the suite —
-  (1) verify per-step models via UI badge (self-ID unreliable); (2) run the chain with TEMPLATE VARS not
-  inline tasks (output persistence broke); (3) ~6m/task is heavy; (4) OpenRouter connection-error
-  reliability. Then **re-run the small tests** (operator loop + chain dry-run) to fish for more bugs; when
-  clean, **resume to Stage 3** (fresh `scratch` + sacrificial Google/IG) → full suite (A–D) via the chain.
-  Deferred: task-intake format + `feather-journal` skill (both "later, not now").
-  Closeout: `journal/ops/sessions/pi-team-models-chain-proof-20260609-0608.md`.
+- **STOPPED 2026-06-09 07:54. NEXT = Stage 3.** The "4 stumbles" were mostly non-defects (models *were*
+  pinned; the chain *already* used template vars); the real bug was **forking in a cold/fresh session** →
+  fixed via **fork→fresh** for every subagent. Small tests now CLEAN (rehearsal `af0cfcdc` + clean E1–E3
+  rerun, no recovery). **NEXT = Stage 3:** rebuild fresh `scratch` + operator warms new sacrificial
+  Google+IG (VPN optional) → then medium/hard tiers + full suite (A–D) via the now-clean chain. Remaining
+  v1 gaps: act-human cadence + bot self-check (decide after Pass-1). Deferred: task-intake format +
+  `feather-journal` skill; E1–E3 blog beat parked in `blog/_pending.md`.
+  Closeout: `journal/ops/sessions/pi-chain-fork-fresh-showcase-e1e3-20260609-0754.md`.
 - **Current phase:** Phase 4a — framed for humans as **Feather v1** ("It runs errands for me").
 - **v1 Instagram test — DONE (2026-06-08, this session).** Account created (`feather_test_roi`),
   Gmail confirmation retrieved from spam, social errand complete (liked @shaked_golan1's latest post +
