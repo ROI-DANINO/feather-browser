@@ -32,6 +32,14 @@ export async function startHttpServer(
   // resume route is not rejected with 415. No other route consumes urlencoded.
   app.addContentTypeParser("application/x-www-form-urlencoded", { parseAs: "string" }, (_req, _body, done) => done(null, {}));
 
+  // Allow DELETE (and other verb) requests that include Content-Type: application/json but no body.
+  // Without this override Fastify rejects them with FST_ERR_CTP_EMPTY_JSON_BODY.
+  app.addContentTypeParser("application/json", { parseAs: "string" }, (_req, body, done) => {
+    if (!body || (body as string).trim() === "") { done(null, {}); return; }
+    try { done(null, JSON.parse(body as string)); }
+    catch (e) { done(e as Error, undefined); }
+  });
+
   await registerSsePlugin(app);
 
   registerRoutes(app, manager, paths, token);

@@ -12,6 +12,7 @@ import { ScreenshotHandler } from "../commands/screenshot";
 import { DebugBundleHandler } from "../commands/debug-bundle";
 import { CloseSessionHandler } from "../commands/close";
 import { OpenTabHandler } from "../commands/open-tab";
+import { CloseTabHandler } from "../commands/close-tab";
 import { ClickHandler } from "../commands/click";
 import { TypeHandler } from "../commands/type";
 import { PressHandler } from "../commands/press";
@@ -136,6 +137,7 @@ const ERROR_STATUS: Record<string, number> = {
   ELEMENT_NOT_FOUND: 404,
   ELEMENT_NOT_ACTIONABLE: 409,
   WAIT_TIMEOUT: 408,
+  CANNOT_CLOSE_LAST_TAB: 409,
 };
 
 function errorStatus(code: string): number { return ERROR_STATUS[code] ?? 500; }
@@ -170,6 +172,7 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
   const debugBundleHandler = new DebugBundleHandler(manager, paths);
   const closeHandler = new CloseSessionHandler(manager);
   const openTabHandler = new OpenTabHandler(manager);
+  const closeTabHandler = new CloseTabHandler(manager);
   const clickHandler = new ClickHandler(manager);
   const typeHandler = new TypeHandler(manager);
   const pressHandler = new PressHandler(manager);
@@ -222,6 +225,15 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
     try {
       const { sessionId } = request.params as { sessionId: string };
       const result = await openTabHandler.execute({ sessionId }, { requestId });
+      await reply.status(200).send(ok(requestId, result));
+    } catch (err) { await handleRouteError(err, request, reply); }
+  });
+
+  app.delete("/v1/sessions/:sessionId/tabs/:pageId", { preHandler: [tokenAuth] }, async (request: FastifyRequest, reply: FastifyReply) => {
+    const requestId = getRequestId(request);
+    try {
+      const { sessionId, pageId } = request.params as { sessionId: string; pageId: string };
+      const result = await closeTabHandler.execute({ sessionId, pageId }, { requestId });
       await reply.status(200).send(ok(requestId, result));
     } catch (err) { await handleRouteError(err, request, reply); }
   });
