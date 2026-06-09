@@ -14,6 +14,7 @@ import { CloseSessionHandler } from "../commands/close";
 import { OpenTabHandler } from "../commands/open-tab";
 import { CloseTabHandler } from "../commands/close-tab";
 import { ObserveHandler } from "../commands/observe";
+import { DismissHandler } from "../commands/dismiss";
 import { ClickHandler } from "../commands/click";
 import { TypeHandler } from "../commands/type";
 import { PressHandler } from "../commands/press";
@@ -57,6 +58,11 @@ const ObserveSchema = z.object({
   cap: z.number().int().positive().optional(),
   viewportOnly: z.boolean().optional(),
   includeText: z.boolean().optional(),
+});
+
+const DismissSchema = z.object({
+  pageId: z.string().optional(),
+  labels: z.array(z.string().min(1)).optional(),
 });
 
 const ExtractSchema = z.object({
@@ -184,6 +190,7 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
   const openTabHandler = new OpenTabHandler(manager);
   const closeTabHandler = new CloseTabHandler(manager);
   const observeHandler = new ObserveHandler(manager);
+  const dismissHandler = new DismissHandler(manager);
   const clickHandler = new ClickHandler(manager);
   const typeHandler = new TypeHandler(manager);
   const pressHandler = new PressHandler(manager);
@@ -265,6 +272,16 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
       const { sessionId } = request.params as { sessionId: string };
       const input = ObserveSchema.parse(request.body ?? {});
       const result = await observeHandler.execute({ sessionId, ...input }, { requestId });
+      await reply.status(200).send(ok(requestId, result));
+    } catch (err) { await handleRouteError(err, request, reply); }
+  });
+
+  app.post("/v1/sessions/:sessionId/dismiss", { preHandler: [tokenAuth] }, async (request: FastifyRequest, reply: FastifyReply) => {
+    const requestId = getRequestId(request);
+    try {
+      const { sessionId } = request.params as { sessionId: string };
+      const input = DismissSchema.parse(request.body ?? {});
+      const result = await dismissHandler.execute({ sessionId, ...input }, { requestId });
       await reply.status(200).send(ok(requestId, result));
     } catch (err) { await handleRouteError(err, request, reply); }
   });
