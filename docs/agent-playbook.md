@@ -164,6 +164,23 @@ POST /v1/sessions/:sessionId/await-human
   this call dangles until timeout. For login/redirect steps, use `resumeOn` to auto-detect the
   landed page instead, or split the flow.
 
+### Open a new tab (reuse the session, don't spin up a new one)
+```http
+POST /v1/sessions/:sessionId/tabs
+```
+Returns `{ pageId, url, title }`. The new tab shares the session's cookies and trust context —
+this is the Cookie Mine entry point. Pass the returned `pageId` in all subsequent page actions.
+
+### Close a tab when done
+```http
+DELETE /v1/sessions/:sessionId/tabs/:pageId
+```
+Returns `{ sessionId, closedPageId, pages }` — the `pages` array is the remaining tab list.
+**Reuse the session; don't leak tabs.** When you're done with a tab, close it with this route
+instead of opening endless new tabs or tearing down the whole session. The server refuses to close
+the last remaining tab (`CANNOT_CLOSE_LAST_TAB`) — use `DELETE /v1/sessions/:sessionId` to end
+the session.
+
 ### Clean up
 ```http
 DELETE /v1/sessions/:sessionId
@@ -185,6 +202,7 @@ instead of deleted.
 | `WAIT_TIMEOUT` | 408 | Condition never met | The expected state didn't happen — snapshot to see what actually rendered |
 | `PROFILE_LOCKED` | 409 | Persistent profile already in use | Close the other session or use a different profile |
 | `SESSION_NOT_RUNNING` | 409 | Session not in `running` state | Re-create the session |
+| `CANNOT_CLOSE_LAST_TAB` | 409 | Tried to close the only remaining tab | Use `DELETE /v1/sessions/:sessionId` to end the session instead |
 | `INTERNAL_ERROR` | 500 | Unexpected server error | Pull a `debug-bundle` and report the `requestId` |
 
 **Recovery principle:** `ELEMENT_NOT_FOUND` → your *selector* is wrong (re-snapshot, re-target).

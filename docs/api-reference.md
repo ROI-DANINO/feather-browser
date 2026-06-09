@@ -299,6 +299,64 @@ curl -s -X POST http://localhost:4000/v1/sessions/ses_abc123/navigate \
 
 ---
 
+#### `DELETE /v1/sessions/:sessionId/tabs/:pageId` — Close a tab
+
+Closes a single tab within an existing session without ending the session. Refuses to close the last remaining tab — use `DELETE /v1/sessions/:sessionId` to end the session instead.
+
+**Path parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sessionId` | string | Session identifier |
+| `pageId` | string | Page identifier of the tab to close |
+
+**Request body:** none
+
+**Response `data`:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `sessionId` | string | The session identifier |
+| `closedPageId` | string | The identifier of the tab that was closed |
+| `pages` | `PageInfo[]` | Remaining open tabs after the close |
+| `pages[].pageId` | string | Page identifier |
+| `pages[].url` | string | Current page URL |
+| `pages[].title` | string | Current page title |
+| `pages[].loadState` | string | Current page load state |
+
+**Error responses:**
+
+| Status | Code | When |
+|--------|------|------|
+| 404 | `PAGE_NOT_FOUND` | No tab with the given `pageId` exists in this session |
+| 404 | `SESSION_NOT_FOUND` | No session exists with the given `sessionId` |
+| 409 | `CANNOT_CLOSE_LAST_TAB` | The tab is the only remaining tab — close the session instead |
+| 500 | `INTERNAL_ERROR` | Unexpected server-side error |
+
+**Example:**
+
+```bash
+# Close a specific tab; inspect the remaining pages list
+curl -s -X DELETE http://localhost:4000/v1/sessions/ses_abc123/tabs/page_xyz789 \
+  -H "X-Feather-Token: $(cat /path/to/token)"
+```
+
+```json
+{
+  "ok": true,
+  "requestId": "req_a1b2c3d4",
+  "data": {
+    "sessionId": "ses_abc123",
+    "closedPageId": "page_xyz789",
+    "pages": [
+      { "pageId": "page_def456", "url": "https://example.com", "title": "Example", "loadState": "load" }
+    ]
+  }
+}
+```
+
+---
+
 ### Page Actions
 
 All page action endpoints accept an optional `pageId` field. If omitted, the session's first (default) page is used. When a session has multiple tabs (opened via `POST /v1/sessions/:sessionId/tabs`), always specify `pageId` explicitly to target the correct tab.
@@ -784,6 +842,7 @@ curl -s -X POST http://localhost:4000/v1/sessions/ses_abc123/debug-bundle \
 | `SESSION_NOT_FOUND` | 404 | No session exists with the requested `sessionId` |
 | `PROFILE_LOCKED` | 409 | A persistent profile directory is already locked by another active session |
 | `SESSION_NOT_RUNNING` | 409 | The session exists but is not in `running` state; cannot open a tab |
+| `CANNOT_CLOSE_LAST_TAB` | 409 | Refusing to close the only remaining tab; use `DELETE /v1/sessions/:sessionId` to end the session |
 | `PAGE_NOT_FOUND` | 404 | The requested `pageId` does not exist within the session |
 | `ELEMENT_NOT_FOUND` | 404 | No element matched the target locator |
 | `ELEMENT_NOT_ACTIONABLE` | 409 | Element matched but the action timed out (covered, disabled, or off-screen) |

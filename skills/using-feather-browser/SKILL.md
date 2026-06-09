@@ -84,6 +84,13 @@ POST /v1/sessions/:sessionId/wait    { "target": {"by":"text","text":"Welcome"},
 **Wait:** `POST .../wait { "target": {...}, "until": "visible|hidden|attached|detached|stable" }`
 (`stable` takes `quietMs`).
 
+**Open a tab:** `POST /v1/sessions/:sessionId/tabs` — returns `{ pageId, url, title }`. Pass the new
+`pageId` in all subsequent page actions to target that tab.
+
+**Close a tab:** `DELETE /v1/sessions/:sessionId/tabs/:pageId` — returns remaining tabs. Close a tab
+you're done with to keep a warmed session lean across errands; the last tab can't be closed this way
+(`CANNOT_CLOSE_LAST_TAB`) — end the session instead.
+
 **Clean up:** `DELETE /v1/sessions/:sessionId {}`.
 
 For multi-field forms → **feather-form-filling**. For scraping → **feather-data-extraction**. For
@@ -98,6 +105,7 @@ CAPTCHA/login handoff → **feather-human-handoff**.
 | `ELEMENT_NOT_ACTIONABLE` | Covered/disabled/off-screen | `wait` for `visible`/`stable`, scroll, dismiss overlay, retry |
 | `WAIT_TIMEOUT` | State never happened | Snapshot to see what actually rendered |
 | `SESSION_NOT_FOUND` / `SESSION_NOT_RUNNING` | Bad/dead session | Re-create the session |
+| `CANNOT_CLOSE_LAST_TAB` | Tried to close the only tab | Use `DELETE /v1/sessions/:sessionId` to end the session |
 | `PAGE_NOT_FOUND` | Bad `pageId` | Omit `pageId` or list tabs |
 | `PROFILE_LOCKED` | Persistent profile in use | Close other session / different profile |
 | `INTERNAL_ERROR` | Server fault | Pull `debug-bundle`, report `requestId` |
