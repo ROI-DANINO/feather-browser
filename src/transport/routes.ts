@@ -13,6 +13,7 @@ import { DebugBundleHandler } from "../commands/debug-bundle";
 import { CloseSessionHandler } from "../commands/close";
 import { OpenTabHandler } from "../commands/open-tab";
 import { CloseTabHandler } from "../commands/close-tab";
+import { ObserveHandler } from "../commands/observe";
 import { ClickHandler } from "../commands/click";
 import { TypeHandler } from "../commands/type";
 import { PressHandler } from "../commands/press";
@@ -49,6 +50,13 @@ const NavigateSchema = z.object({
 const SnapshotSchema = z.object({
   pageId: z.string().optional(),
   limits: z.object({ textChars: z.number().int().positive().optional(), links: z.number().int().positive().optional() }).optional(),
+});
+
+const ObserveSchema = z.object({
+  pageId: z.string().optional(),
+  cap: z.number().int().positive().optional(),
+  viewportOnly: z.boolean().optional(),
+  includeText: z.boolean().optional(),
 });
 
 const ExtractSchema = z.object({
@@ -175,6 +183,7 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
   const closeHandler = new CloseSessionHandler(manager);
   const openTabHandler = new OpenTabHandler(manager);
   const closeTabHandler = new CloseTabHandler(manager);
+  const observeHandler = new ObserveHandler(manager);
   const clickHandler = new ClickHandler(manager);
   const typeHandler = new TypeHandler(manager);
   const pressHandler = new PressHandler(manager);
@@ -246,6 +255,16 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
       const { sessionId } = request.params as { sessionId: string };
       const input = SnapshotSchema.parse(request.body);
       const result = await snapshotHandler.execute({ sessionId, ...input }, { requestId });
+      await reply.status(200).send(ok(requestId, result));
+    } catch (err) { await handleRouteError(err, request, reply); }
+  });
+
+  app.post("/v1/sessions/:sessionId/observe", { preHandler: [tokenAuth] }, async (request: FastifyRequest, reply: FastifyReply) => {
+    const requestId = getRequestId(request);
+    try {
+      const { sessionId } = request.params as { sessionId: string };
+      const input = ObserveSchema.parse(request.body ?? {});
+      const result = await observeHandler.execute({ sessionId, ...input }, { requestId });
       await reply.status(200).send(ok(requestId, result));
     } catch (err) { await handleRouteError(err, request, reply); }
   });
