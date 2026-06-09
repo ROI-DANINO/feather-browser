@@ -3,15 +3,13 @@
 Checklist only. Front door → `feather.md`; version roadmaps → `docs/roadmap/{v1,v2,v3}.md`;
 execution index → `ROADMAP.md`; live pointer → `journal/context/active.md`.
 
-**Next action = Stage 3: rebuild fresh `scratch` + operator warms new sacrificial Google+IG (VPN optional) →
-then medium/hard tiers + full suite (A–D) via the now-clean chain.** The chain bug is FIXED — all subagents
-run `fresh` (fork was the only fragile bit; fork→fresh committed `12b96a9`). Small tests CLEAN: rehearsal
-`af0cfcdc` + clean E1–E3 rerun ran end-to-end, no exit-143, no recovery. **E1–E3 easy tier SHIPPED**
-(`examples/showcase.sh`, committed `f05453d`; E1/E2/E3 all PASS live). The "4 stumbles" were mostly
-non-defects (models *were* pinned; chain *already* used template vars) — objective model check is the
-`meta.json` `model` field, not prose/badge. Closeout:
-`journal/ops/sessions/pi-chain-fork-fresh-showcase-e1e3-20260609-0754.md`.
-Remaining v1 gaps = act-human typing cadence + bot self-check (decide after Pass-1 verdict, plan Task B4).
+**Next action = NEW SESSION: brainstorm the PERCEPTION / OBSERVATION LOOP.** The real answer to "the agent
+works but it's slow and blind to banners" (Roi's flagged friction). Shape (not committed — that's the
+brainstorm): a cheap structured `observe` returning actionable elements + detected overlays/banners as text
+(no image); an auto-dismiss-known-interstitials helper; screenshot disk cleanup. Use the brainstorming skill.
+Grounds: this session's H1 screenshot 30s font-timeout + banners silently blocking clicks; `dismiss_got_it`
+in `examples/showcase.sh` is the crude precursor. Session record:
+`journal/ops/sessions/hard-tier-pass-close-tab-shipped-20260609-0849.md`. Blog `0016-ten-errands.md`.
 
 ---
 
@@ -19,96 +17,52 @@ Remaining v1 gaps = act-human typing cadence + bot self-check (decide after Pass
 
 - [x] **4a.1 — Core-first reorientation + quickstart**
 - [x] **4a.2 — Core input commands** (click/type/press/wait)
-- [x] **4a.3 — Hero demo workflow** (`npm run demo:hero`, first-try cold run)
+- [x] **4a.3 — Hero demo workflow** (`npm run demo:hero`)
 - [x] **4a.4 — Agent Browsing Stack specs** (Stealth, MFA, Identity — these are **v2**)
 - [x] **4a.5 — Open-source integration research**
 - [x] **4a.6 — Roadmap + task reconciliation**
 - [x] **4a.6b — Security & capability re-sequencing** (council review; ADR-0010; Phase 5 spine)
+- [x] **4a.8 — Markdown snapshot extraction**
 - [x] **4a.9 — LinkedIn debut recording** (`52b63fe`, pushed; in README)
 - [x] **4a.10 — Social-research triage** (inbox clear)
-- [x] **v1→v2→v3 restructure + open-source doctrine** (2026-06-08) — `feather.md`,
-      `docs/roadmap/{v1,v2,v3}.md`, `adr-0011`; ROADMAP banner; stale build-order line fixed.
+- [x] **v1→v2→v3 restructure + open-source doctrine** (2026-06-08)
 
 ### Open v1 work
 
-- [x] **Pause-for-human primitive** (2026-06-08, `dev` 5d7a9b8) — `await-human` blocks until human
-      clicks an on-page Resume banner / optional signal / timeout. Thin precursor to v2 MFA Handler.
-      Specs `docs/specs/2026-06-08-pause-for-human-*`. Folded into ROADMAP/tasks at this `/stop`.
-      - [x] **Live click test WITH Roi DONE** — headed, resumedBy human, no new tab, banner removed.
-            *Finding:* banner dies on page navigation (breaks login/MFA resume → core v2 MFA Handler input).
-      - [~] **Deferred fixes:**
-            (a) [x] Resume-confirmation linger ~1s — `6329ae9`;
-            (b) [x] Disposable headed-CDP `ENOTEMPTY` cleanup race (await child exit before rmdir) — `0e4bd33`;
-            (c) [ ] Navigation-survivable resume — re-inject banner on `framenavigated` while pause active (v2 core, OPEN).
+- [x] **THE v1 INSTAGRAM TEST — COMPLETE (2026-06-08):** signup + email verify + social errand. PASS.
+      Session `journal/ops/sessions/v1-instagram-test-complete-20260608-0345.md`; blog `0013`.
+- [x] **Pause-for-human primitive** (2026-06-08, `dev` 5d7a9b8) — `await-human` + on-page Resume banner.
+      - [ ] (c) **Navigation-survivable resume** — re-inject banner on `framenavigated` (v2 MFA core, OPEN).
 
-- [x] **THE v1 INSTAGRAM TEST — COMPLETE (2026-06-08):**
-      Session: `journal/ops/sessions/v1-instagram-test-complete-20260608-0345.md`
-      Blog: `blog/0013-the-test-that-passed.md`
-      - [x] Account created: `feather_test_roi` on scratch profile, confirmed via Gmail (code was in spam)
-      - [x] Agent drove Feather end-to-end: form fill, birthday comboboxes, username, Submit
-      - [x] Email verification: opened Gmail tab, found code in spam (814065), entered via Shift+Tab + keypress trick
-      - [x] Social errand: navigated to @shaked_golan1, liked latest post, read comments, posted comment
-      - **Verdict: PASS** — stealthy enough for signup. Friction = element-discovery + small gaps below.
+- [x] **Showcase / eval suite — COMPLETE end-to-end (2026-06-09).** Stress-and-learn instrument; spec
+      `docs/specs/2026-06-09-showcase-eval-suite-{design,plan}.md`; recipe log
+      `docs/specs/2026-06-09-showcase-pass1-recipes.md`. `examples/showcase.sh` drives all 10 tasks.
+      - [x] **Easy tier (E1–E3)** — built by the pi team via the fork-free chain (`f05453d`); all PASS.
+      - [x] **Medium tier (M1–M3)** — M1 PARTIAL (DDG CAPTCHA, expected) / M2 PASS / M3 PASS.
+      - [x] **Hard tier (H1–H4) — RUN 4/4 PASS (2026-06-09):** H1 Google Calendar write, H2 warmed-Google→
+            Wikipedia 20k chars, H3 IG like+comment as `feather_test_roi`, H4 multi-tab 3/3. **Cookie mine
+            proven beyond the IG test.** Committed `bfb4dbb`. Blemish: H1 screenshot 30s font-timeout (task
+            passed on snapshot check) — folds into the perception/screenshot rework.
 
-- [~] **Small gaps found in the IG test:**
-      - [x] `select-option` command added (native `<select>`) — `23fabd2`
-      - [x] `extract` multi-match — confirmed `.first()` already handles it; behavior test added — `54fcc67`
-      - [ ] IG confirmation input ignores `fill`/`type` — Shift+Tab + individual `press` workaround (not fixed)
+- [x] **Close-tab primitive — SHIPPED (2026-06-09, `4920759`..`bb3494e`).** `DELETE /tabs/:pageId`; refuses
+      last tab (409 `CANNOT_CLOSE_LAST_TAB`); removePage-before-close; **fixed latent initial-tab-listener
+      bug**; lenient empty-body JSON parser. Subagent-driven TDD, 6 tasks, two-stage review + final review =
+      READY TO MERGE. 61u + 2i green. Specs `docs/specs/2026-06-09-close-tab-primitive-{design,plan}.md`.
+      Pushed to `origin/dev`.
 
-- [x] **4a.8 — Markdown snapshot extraction** (DONE this session) — self-contained DOM walker in
-      `page.evaluate()`, zero deps, 20k cap, img alt + ordered-list numbering. `snapshot` now returns
-      `markdown`. Commits `43f46bd`/`817f3cb`. (ROADMAP.md ✅.)
+- [ ] **PERCEPTION / OBSERVATION LOOP — NEXT (brainstorm first).** Cheap structured `observe`
+      (actionable elements + overlays as text, no image) + auto-dismiss-known-interstitials + screenshot
+      disk cleanup. Roi-confirmed next focus. The agent-ergonomics answer to "too slow / blind to banners."
 
-- [x] **Agent can drive Feather end-to-end** smoothly enough to run an errand ← **PROVEN by IG test**
-- [ ] **Basic "act human"** (human typing cadence) + **"do I look like a bot?" self-check** — cheap v1 stealth.
-      *(Last real v1 feature gaps. Decide next session: ship in v1 or defer to v2 stealth work.)*
+- [ ] **`continuity.test.ts` — own ticket.** Fails consistently; proven PRE-EXISTING (fails at base `09bb3e5`;
+      tests `scripts/demo/continuity.ts` poll-login logic; untouched by any current feature). Not a blocker.
 
-- [~] **Showcase / eval suite** — spec APPROVED + revised into a stress-and-learn instrument
-      (`docs/specs/2026-06-09-showcase-eval-suite-design.md`, `8a040b5`); full implementation plan written
-      (`docs/specs/2026-06-09-showcase-eval-suite-plan.md`, Phases A–D, grounded in real API source).
-      **Execution delegated to pi_agency** (Pi-harness agent team), setup via **Codex** —
-      `docs/specs/2026-06-09-codex-handoff-pi-agency-runs-feather.md`. 10 tasks: 3 easy + 3 medium + 4 hard.
-      - [~] Set the ground = **Claude (not Codex)** does the grounding — see pi_agency integration below
-      - [~] pi team: run Phases A–D → `examples/showcase.sh` + recipe log + `results.md` + `wf-recorder` film
-            - [x] **Easy tier (E1–E3) BUILT + VALIDATED + SHIPPED** (2026-06-09, `f05453d`) — pi team via the
-                  fork-free chain; E1 HN top story / E2 wttr.in temp / E3 GitHub stars, all PASS live.
-            - [ ] Medium + hard tiers (need Stage 3 sacrificial accounts for the warmed-session tasks).
-      - [ ] Fix stale `api-reference.md` (add `chromium-headed-cdp`, plan Task D4)
+- [ ] **act-human typing cadence + bot self-check** — last v1 stealth gaps. **Decided: defer to v2**
+      (M1 PARTIAL is the lesson, not a blocker).
 
-- [~] **pi_agency ⇄ Feather thin integration** (this session) — Claude does the grounding so Roi's pi team can
-      drive Feather inside this repo only. Spec `docs/specs/2026-06-09-pi-agency-feather-integration-design.md`;
-      plan `docs/specs/2026-06-09-pi-agency-feather-integration-plan.md`. Heavy native/MCP integration → v2/v3 (5e).
-      - [x] Stage 1: `.pi/` config built + committed (`91754f6`) — 4 agents + chain + feather-operator skill,
-            `inheritSkills:false`, project-scoped.
-      - [x] **OpenRouter model lineup per role** (`f873667` + uncommitted orchestrator→qwen3.7-max): parent
-            qwen3.7-max, planner minimax-m3, coder glm-5.1, operator glm-5-turbo→glm-5.1, validator kimi-k2.6,
-            reviewer opus-4.8.
-      - [x] ~~Fix skills wall~~ **RESOLVED (not a defect):** subagents walled by `inheritSkills:false`+`skills:`
-            allowlist (Pi injects only those). "All global skills appear" = PARENT catalog, global by design,
-            no per-project subtract → cosmetic; never reaches the walled subagents.
-      - [x] Walked Roi through the `.pi/` configs + existence.
-      - [x] **Stage 2 PASS:** trust accepted; project-scope team lists clean; **operator golden loop PROVEN**
-            end-to-end (real 17.5KB screenshot). Finding: subagent dispatch is a parent CHOICE — solo tasks →
-            skill is enough; suite → use the chain. Thin-skill polished (wait needs target; DELETE close no CT).
-      - [x] **Chain dry-run PASSED:** 4-step chain ran (planner→coder→reviewer→validator, 6m20s, no commits,
-            clean blast radius). Planner (CONFIRMED minimax-m3 via UI) scoped 1 task + flagged/resolved a
-            browserMode discrepancy BEFORE coding; coder wrote a clean 116-line stub; opus-reviewer verified API
-            vs source + Testing Honesty (PROCEED); validator stayed read-only. CAVEATS: steps 2–4 model self-ID
-            says "Claude" — UNRELIABLE, verify via UI badge not prose; chain only persisted plan.md (inline task
-            overrides break {outputs.X} linkage — use TEMPLATE VARS for the real suite); ~6m/task is heavy;
-            OpenRouter connection errors recurred on the recovery re-run.
-      - [x] **Chain bug FIXED (2026-06-09, `12b96a9`):** the 4 "stumbles" were mostly non-defects (models
-            *were* pinned; chain *already* used template vars). Real bug = forking in a cold/fresh session
-            (`fork-context.ts:58`). Fix = **fork→fresh** for every subagent (coder+operator agent files;
-            planner via `.pi/settings.json`). Confirmed by rehearsal `af0cfcdc` + clean E1–E3 rerun (no
-            exit-143, no recovery). Objective model check = `subagent-artifacts/.../meta.json` `model` field.
-      - [ ] **(LATER, deferred) Task-intake format** — settle HOW Roi requests tasks (goal / scope / constraints /
-            success-criteria / human-gates template) to feed the planner; plain-English ad-hoc is loose. NOTE the
-            planner subagent already gives "plan before execute"; this is the separate intake contract.
-      - [ ] Stage 3: rebuild fresh `scratch` + operator creates/warms new sacrificial Google+IG (VPN optional).
-- [x] **Agent operator skills + playbook** (DONE this session) — `docs/agent-playbook.md` +
-      `skills/{using-feather-browser,feather-form-filling,feather-human-handoff,feather-data-extraction}`
-      + AGENTS.md pointer. Commit `0c0e7ee`, pushed to origin/dev.
+- [~] **pi_agency ⇄ Feather thin integration — PARKED.** `.pi/` config + chain proven (Stage 1/2 PASS,
+      chain dry-run PASS). Stage 3 = PARTIAL (operator beat the birthday dropdown honestly, hit Google's
+      phone wall; Testing Honesty held). Suite is now Claude-driven; resume pi only if Roi pulls it forward.
 
 ## Feather v2 — "It survives the scary sites, safely"  (`docs/roadmap/v2.md`)
 

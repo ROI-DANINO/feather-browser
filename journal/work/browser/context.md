@@ -4,6 +4,20 @@ Use this desk for browser engine research, shell architecture, extension compati
 
 ## Current Focus
 
+**Per-tab close + complete tab lifecycle (2026-06-09, `dev` `4920759`..`bb3494e`).** Feather Core now
+exposes `DELETE /v1/sessions/:sessionId/tabs/:pageId` — close ONE tab without ending the session (so a
+warmed session can be reused across errands without leaking tabs). Returns `{ sessionId, closedPageId,
+pages }`; **refuses to close the last tab** → `409 CANNOT_CLOSE_LAST_TAB` (the profile-lock lifecycle stays
+tied to session close, not tab close). `session.closeTab` calls `removePage` **before** `page.close()` (in a
+try/catch) so the page map stays consistent even if close() throws. Fixed a **latent bug**: per-page
+lifecycle listeners (`page.on(close)`→`removePage`+`tab.closed`; `framenavigated`→`tab.updated`) were only
+attached to tabs opened *after* launch via `context.on("page")` — the **initial** tab(s) added by
+`setContext` never got them, so closing the default tab would have leaked. Extracted `attachPageListeners`
+(`manager.ts`), now called for both initial and later pages. Also: `http.ts` got a lenient `application/json`
+parser (empty body → `{}`) consistent with the existing urlencoded override; Zod still validates bodies that
+require fields. `closeTab` is on both `ISession` and `ISessionManager`. The lingering perception gap (agent
+can't see the page cheaply / banners block actions) is the **next** brainstorm, not solved here. 61u + 2i green.
+
 **Core command surface: observe-only → ACT (2026-06-06, `dev` `cae8ef7`..`684396d`).** Feather Core
 now exposes page-interaction commands over HTTP: `POST /v1/sessions/:id/{click,type,press,wait}`.
 Architecture: one `*Handler` class per command (mirrors `navigate`/`extract`), a shared
