@@ -55,7 +55,7 @@ Convergent findings (Claude for Chrome, ChatGPT Agent, Perplexity Comet, Manus, 
 | `observe` vs `snapshot` | Two separate commands, complementary | `snapshot` = reading (text/markdown); `observe` = acting (refs/overlays/diff) |
 | Planning | Agent-side; Feather perceives only | Model-neutral; thin runtime |
 | Diff identity | **In-page structural signature** `frameId|role|name|domPath` (computed during the walk) | Refs refresh each observe; need a stable, zero-extra-round-trip cross-observe key |
-| Ref lifetime | Valid only until the next `observe` on that page (or navigation); old handles disposed | Enforces observe-before-act; bounds handle memory |
+| Ref lifetime + format | Refs are **observe-scoped**: format `<observeId>.e<i>` (e.g. `obs_a1b2.e0`). Valid only until the next `observe` on that page (or navigation); old handles disposed. A stale ref won't match a later observe's cache → `REF_EXPIRED` | Enforces observe-before-act; bounds handle memory; a stale in-range ref can never silently resolve to a *different* element |
 | Frames | Walk top frame + **same-origin** frames (depth-capped); **detect-and-report** cross-origin walls (don't enter) | Most blocking banners are same-origin (Google "Got it", IG, many CMPs); leaner + flat detectability; `await-human` is the fallback for cross-origin walls |
 | Auto-dismiss | Separate explicit **read-only-observe / side-effecting-dismiss** split | Keeps `observe` pure passive reads (detectability guarantee) |
 | Input-value privacy | `observe` **never returns `el.value`** (esp. `type=password`); names come from placeholder/aria-label/label/`name` only | Prevents leaking typed credentials/PII into observe output |

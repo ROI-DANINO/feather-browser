@@ -712,7 +712,7 @@ locator strategy; use `{ "by": "ref" }` when you have a ref from a recent `obser
 
 | `by` value | Extra fields | `at` allowed? | Notes |
 |-----------|--------------|---------------|-------|
-| `"ref"` | `ref: string` | No | Ref from the most recent `observe` on this page. Fastest + most robust. Expires on the next `observe` or navigation (`REF_EXPIRED`). |
+| `"ref"` | `ref: string` | No | Opaque observe-scoped token (format `<observeId>.e<i>`, e.g. `obs_a1b2.e0`) — copy it verbatim from the most recent `observe`. Fastest + most robust. Expires on the next `observe` or navigation (`REF_EXPIRED`); a stale ref never resolves to a different element. |
 | `"role"` | `role: string`, `name?: string`, `exact?: boolean` | Yes | ARIA role |
 | `"text"` | `text: string`, `exact?: boolean` | Yes | Visible text |
 | `"placeholder"` | `text: string` | Yes | Input placeholder |
