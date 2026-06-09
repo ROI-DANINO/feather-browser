@@ -218,6 +218,7 @@ export class SessionManager implements ISessionManager {
     });
     page.on("framenavigated", async (frame) => {
       if (frame !== page.mainFrame()) return;          // main frame only
+      session.clearObserveCache(pageId);               // perception is stale after a real navigation
       const target = page.url();                       // capture target URL
       try {
         await page.waitForLoadState("domcontentloaded");

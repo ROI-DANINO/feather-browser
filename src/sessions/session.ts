@@ -2,6 +2,7 @@ import type { BrowserContext, Page } from "playwright";
 import { randomUUID } from "crypto";
 import type { ChildProcess } from "child_process";
 import type { DebugCapture } from "../debug/capture";
+import type { DiffRow } from "../commands/perception/diff";
 import type {
   BrowserMode,
   ProfileKind,
@@ -11,6 +12,12 @@ import type {
   SessionRecord,
   ISession,
 } from "./types";
+
+export interface ObserveCacheEntry {
+  observeId: string;
+  rows: DiffRow[];
+  refs: Map<string, import("playwright").ElementHandle>;
+}
 
 const newId = (prefix: string): string =>
   `${prefix}_${randomUUID().replace(/-/g, "").slice(0, 10)}`;
@@ -61,6 +68,7 @@ export class FeatherSession implements ISession {
   private _context: BrowserContext | null;
   private _pages: Map<string, Page>;
   private _pageIds: Map<Page, string>;
+  private _observeCache: Map<string, ObserveCacheEntry> = new Map();
   private _childProcess: ChildProcess | null = null;
   private _debugCapture: DebugCapture | null = null;
 
@@ -178,9 +186,26 @@ export class FeatherSession implements ISession {
   }
 
   removePage(pageId: string): void {
+    this.clearObserveCache(pageId);
     const page = this._pages.get(pageId);
     if (page) this._pageIds.delete(page);
     this._pages.delete(pageId);
+  }
+
+  getObserveCache(pageId: string): ObserveCacheEntry | undefined {
+    return this._observeCache.get(pageId);
+  }
+
+  setObserveCache(pageId: string, entry: ObserveCacheEntry): void {
+    const prev = this._observeCache.get(pageId);
+    if (prev) for (const h of prev.refs.values()) void h.dispose().catch(() => {});
+    this._observeCache.set(pageId, entry);
+  }
+
+  clearObserveCache(pageId: string): void {
+    const prev = this._observeCache.get(pageId);
+    if (prev) for (const h of prev.refs.values()) void h.dispose().catch(() => {});
+    this._observeCache.delete(pageId);
   }
 
   setState(state: SessionState): void {
