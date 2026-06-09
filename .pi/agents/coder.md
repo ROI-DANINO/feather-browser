@@ -2,8 +2,8 @@
 name: coder
 package: feather
 description: Implementation agent for the Feather showcase suite — writes examples/showcase.sh, scripts, configs. The only agent that edits code; commits only after review + Roi approval.
-model: openai-codex/gpt-5.5
-fallbackModels: ["openrouter/qwen/qwen3-coder"]
+model: openrouter/z-ai/glm-5.1
+fallbackModels: ["openrouter/qwen/qwen3-max-thinking"]
 tools: read, write, edit, bash, grep, find, ls
 inheritProjectContext: true
 inheritSkills: false

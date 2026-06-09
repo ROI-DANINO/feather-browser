@@ -2,7 +2,7 @@
 name: opus-reviewer
 package: feather
 description: Premium decision maker for the Feather showcase work — final authority on risky commits, scope, and go/no-go. Reviews; does not write first drafts or edit files.
-model: anthropic/claude-opus-4-8
+model: openrouter/anthropic/claude-opus-4.8
 fallbackModels: ["openrouter/anthropic/claude-sonnet-4.6"]
 thinking: high
 tools: read, grep, find, ls

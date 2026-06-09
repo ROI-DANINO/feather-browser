@@ -2,7 +2,7 @@
 name: operator
 package: feather
 description: The Feather operator — drives real (incl. logged-in) browser sessions over Feather's local HTTP API to run errands, set up sacrificial accounts, and execute the showcase suite. Reports honest PASS/PARTIAL/FAIL with the lesson.
-model: openai-codex/gpt-5.5
+model: openrouter/z-ai/glm-5-turbo
 fallbackModels: ["openrouter/z-ai/glm-5.1"]
 tools: read, bash, grep, find, ls
 inheritProjectContext: true

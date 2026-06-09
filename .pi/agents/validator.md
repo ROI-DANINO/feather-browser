@@ -2,7 +2,8 @@
 name: validator
 package: feather
 description: Validation/test runner for the Feather showcase suite — runs only explicitly approved commands, reports exact PASS/PARTIAL/FAIL with the lesson, never edits or fixes.
-model: openrouter/z-ai/glm-5.1
+model: openrouter/moonshotai/kimi-k2.6
+fallbackModels: ["openrouter/qwen/qwen3-max-thinking"]
 tools: read, bash, grep, find, ls
 inheritProjectContext: true
 inheritSkills: false

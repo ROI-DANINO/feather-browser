@@ -1,5 +1,11 @@
 {
+  "defaultProvider": "openrouter",
+  "defaultModel": "qwen/qwen3-max-thinking",
   "subagents": {
-    "agentOverrides": {}
+    "agentOverrides": {
+      "planner": {
+        "model": "openrouter/minimax/minimax-m3"
+      }
+    }
   }
 }
