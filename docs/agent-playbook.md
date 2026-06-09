@@ -20,12 +20,15 @@ flailing through brittle guesswork.
 ## The Golden Loop
 
 ```
-snapshot  →  decide  →  act  →  verify  →  repeat
+observe  →  act by ref  →  observe (read diff)  →  repeat
 ```
 
-Never act blind. Every page interaction starts by *seeing* the page (snapshot), choosing a stable
-target, doing one action, and confirming it landed (wait). This single discipline eliminates most
-failures.
+Never act blind. Every page interaction starts by *seeing* the page (`observe`), acting on a
+numbered ref, and re-observing to confirm the change landed. The diff tells you exactly what moved.
+
+**`observe` vs `snapshot`:** `observe` is for *acting* — it returns numbered element refs, overlays,
+and a change-diff. `snapshot` is for *reading* — it returns text, links, and markdown when you need
+to understand page content rather than interact with it.
 
 ## Setup (once per task)
 
@@ -37,8 +40,8 @@ failures.
 
 ## The Five Rules
 
-1. **Snapshot before you touch.** Discover real elements; don't invent selectors from the URL or
-   your assumptions about the page.
+1. **Observe before you touch.** Get real element refs from `observe`; don't invent selectors from
+   the URL or your assumptions about the page. Use `snapshot` when you need to read content.
 2. **Target by meaning, not position.** Prefer `role`/`text`/`placeholder` over `css`. Index
    selectors (`at`) are a last resort and break on the next site redesign.
 3. **Verify each action.** Use `wait` (`visible`/`hidden`/`stable`) between steps. Never insert blind
@@ -55,11 +58,12 @@ brittle.
 
 | Preference | Target | When |
 |-----------|--------|------|
-| 1 (best) | `{ "by": "role", "role": "button", "name": "Submit" }` | Buttons, links, inputs with an accessible name |
-| 2 | `{ "by": "text", "text": "Log in" }` | Visible label, no clear role |
-| 3 | `{ "by": "placeholder", "text": "Email" }` | Form inputs with placeholder text |
-| 4 | `{ "by": "testid", "testId": "email-field" }` | App exposes `data-testid` |
-| 5 (last) | `{ "by": "css", "selector": "input" }` | Nothing semantic exists |
+| 1 (best) | `{ "by": "ref", "ref": "e3" }` | From the latest `observe`; most robust + fastest, no guessing. **Valid only until the next `observe` on this page** (else `REF_EXPIRED`). |
+| 2 | `{ "by": "role", "role": "button", "name": "Submit" }` | Buttons, links, inputs with an accessible name |
+| 3 | `{ "by": "text", "text": "Log in" }` | Visible label, no clear role |
+| 4 | `{ "by": "placeholder", "text": "Email" }` | Form inputs with placeholder text |
+| 5 | `{ "by": "testid", "testId": "email-field" }` | App exposes `data-testid` |
+| 6 (last) | `{ "by": "css", "selector": "input" }` | Nothing semantic exists |
 
 **Disambiguating multiple matches:** add `"at"` to any target — `"first"`, `"last"`, or a 0-based
 index. **Use the `at` field — do not write `>> nth=N` inside a css selector string.**
@@ -81,14 +85,60 @@ POST /v1/sessions
   when a human will watch/click).
 - Returns a `sessionId` and an initial `pageId`.
 
-### Discover the page (do this first, and after every navigation)
+### Observe the page and get actionable refs (do this before every action)
+```http
+POST /v1/sessions/:sessionId/observe
+{}
+```
+Returns numbered actionable elements (`e0`, `e1`, …), overlays (banners/modals/iframes), and a
+change-diff vs the previous observe. **Use the refs to act — no selector guessing.**
+
+Trimmed example response:
+```jsonc
+{
+  "pageId": "pg_1",
+  "url": "https://example.com/login",
+  "title": "Log in",
+  "observeId": "obs_a1b2",
+  "actions": [
+    { "ref": "e0", "role": "textbox", "name": "Email", "tag": "INPUT",
+      "box": { "x": 40, "y": 120, "w": 268, "h": 38 }, "state": "actionable" },
+    { "ref": "e1", "role": "button", "name": "Log in", "tag": "BUTTON",
+      "box": { "x": 40, "y": 180, "w": 268, "h": 44 }, "state": "actionable" }
+  ],
+  "overlays": [],
+  "diff": null,
+  "stats": { "totalInteractive": 5, "returned": 2, "elapsedMs": 42 }
+}
+```
+
+Optional fields: `cap` (default 80 elements), `viewportOnly` (skip off-screen elements),
+`includeText` (append page body text). `diff` is `null` on the first observe after navigation; on
+subsequent observes it lists `added`/`removed`/`changed` elements.
+
+### Discover page content (reading tasks)
 ```http
 POST /v1/sessions/:sessionId/snapshot
 {}
 ```
 Returns `{ url, title, text, links, meta.description, markdown }`. **Read `markdown`** — it's the
-cleaned page content (nav/ads stripped, capped at 20k chars). Use `links` to find anchors. This is
-how you learn what's actually on the page *before* targeting.
+cleaned page content (nav/ads stripped, capped at 20k chars). Use this when you need to *read*
+content; use `observe` when you need to *act*.
+
+### Dismiss an overlay / consent banner (opt-in)
+```http
+POST /v1/sessions/:sessionId/dismiss
+{}
+```
+Runs an internal `observe`, finds the first element whose name matches an affirmative-dismiss label
+(`Accept all`, `I agree`, `Allow all`, `Got it`, `Accept`, `Close`, `Continue`), and clicks it
+by ref. Only fires when the observe detects an overlay — safe to call speculatively.
+
+Returns `{ "pageId": string, "dismissed": [{ "ref": string, "name": string }] }`. Empty
+`dismissed` array means no matching overlay was found — not an error.
+
+Pass `"labels"` to override the default label list. Re-call if a second overlay appears after the
+first is dismissed.
 
 ### Navigate
 ```http
@@ -197,8 +247,9 @@ instead of deleted.
 | `UNAUTHORIZED` | 401 | Missing/wrong `X-Feather-Token` | Add the correct header |
 | `SESSION_NOT_FOUND` | 404 | Bad `sessionId` | Re-create the session |
 | `PAGE_NOT_FOUND` | 404 | Bad `pageId` | Omit `pageId` (uses active page) or list tabs |
-| `ELEMENT_NOT_FOUND` | 404 | Target matched nothing | **Snapshot again** — the page/selector is wrong, not the timing. Re-target. |
-| `ELEMENT_NOT_ACTIONABLE` | 409 | Found but covered/disabled/off-screen | `wait` for it to be `visible`/`stable`, scroll, or dismiss the overlay, then retry |
+| `ELEMENT_NOT_FOUND` | 404 | Target matched nothing | **Observe again** — the page/selector is wrong, not the timing. Re-target. |
+| `ELEMENT_NOT_ACTIONABLE` | 409 | Found but covered/disabled/off-screen | `wait` for it to be `visible`/`stable`, `dismiss` the overlay, or re-observe and use a fresh ref |
+| `REF_EXPIRED` | 409 | Ref is from a superseded observe (another `observe` was called, or the page navigated) | Re-observe, then use the fresh ref from the new response |
 | `WAIT_TIMEOUT` | 408 | Condition never met | The expected state didn't happen — snapshot to see what actually rendered |
 | `PROFILE_LOCKED` | 409 | Persistent profile already in use | Close the other session or use a different profile |
 | `SESSION_NOT_RUNNING` | 409 | Session not in `running` state | Re-create the session |

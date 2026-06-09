@@ -472,6 +472,171 @@ curl -s -X POST http://localhost:4000/v1/sessions/ses_abc123/snapshot \
 
 ---
 
+#### `POST /v1/sessions/:sessionId/observe` — Observe actionable elements
+
+Returns numbered, actionable elements on the current page, first-class overlay detection, and a
+change-diff vs the previous observe on this page. This is the primary perception primitive for
+acting — use refs from the response as `{ "by": "ref", "ref": "eN" }` targets in subsequent
+commands.
+
+**Path parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sessionId` | string | Session identifier |
+
+**Request body (optional — defaults to `{}`):**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `pageId` | string | No | Target page; defaults to the first page |
+| `cap` | integer (> 0) | No | Maximum number of elements to return (default 80). Elements are sorted actionable-first; excess elements are dropped and their handles disposed. |
+| `viewportOnly` | boolean | No | If `true`, offscreen elements are excluded before applying `cap` (default `false`) |
+| `includeText` | boolean | No | If `true`, appends the page's `document.body.innerText` (truncated to 4000 chars) as the `text` field (default `false`). Prefer `snapshot` for reading tasks. |
+
+**Response `data`:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `pageId` | string | The resolved page identifier |
+| `url` | string | Current page URL |
+| `title` | string | Current page title |
+| `observeId` | string | Identity token for this observe (e.g. `obs_a1b2`). Passed internally to compute the diff on the next observe; not needed by callers. |
+| `actions` | `ObserveAction[]` | Actionable elements, sorted: `actionable` → `covered` → `disabled` → `offscreen`, in-viewport first within each state |
+| `actions[].ref` | string | Short ref (`e0`, `e1`, …) — valid only until the next `observe` on this page or a navigation |
+| `actions[].role` | string \| null | ARIA role, or `null` if none |
+| `actions[].name` | string | Accessible name (from `aria-label` → `placeholder` → `<label>` → `name`/`title` → `innerText`). **Never `el.value`** — typed passwords are never leaked. |
+| `actions[].tag` | string | HTML tag name in uppercase (e.g. `"BUTTON"`, `"INPUT"`) |
+| `actions[].box` | object | Bounding box: `{ x, y, w, h }` in pixels |
+| `actions[].state` | `"actionable"` \| `"covered"` \| `"disabled"` \| `"offscreen"` | Interactability state |
+| `actions[].occludedBy` | object \| undefined | Present when `state` is `"covered"`: `{ kind: "overlay" \| "iframe" \| "element", name?: string }` |
+| `overlays` | `Overlay[]` | Viewport-covering fixed/absolute layers detected on the page |
+| `overlays[].ref` | string \| null | Ref if the overlay has an associated action; otherwise `null` |
+| `overlays[].kind` | `"modal"` \| `"banner"` \| `"iframe"` | Overlay type |
+| `overlays[].name` | string | Name / text content of the overlay (truncated to 60 chars) |
+| `overlays[].coverPct` | number | Percentage of the viewport covered (0–100) |
+| `overlays[].blocking` | boolean | `true` if `coverPct >= 60` |
+| `diff` | object \| null | Change-diff vs the previous observe on this page. `null` on the first observe after navigation or session start. |
+| `diff.added` | array | Elements present now but not before: `[{ ref, desc }]` |
+| `diff.removed` | array | Elements present before but gone now: `[{ desc }]` |
+| `diff.changed` | array | Same-signature elements whose state or name changed: `[{ ref, change, was }]` |
+| `text` | string | (Only present when `includeText: true`) First 4000 chars of `document.body.innerText` |
+| `stats` | object | `{ totalInteractive, returned, elapsedMs }` — total interactive elements found, how many were returned after capping, and elapsed time |
+
+**Notes:**
+- `observe` is **read-only** — it fires no events, mutates no DOM, and leaks no input values.
+- The per-page observe cache is cleared on navigation (`framenavigated`) and on tab close, so refs
+  are always scoped to the current page state.
+- A non-HTML page (`about:blank`, PDF) returns empty `actions`/`overlays` and `diff: null` — not an error.
+
+**Error responses:**
+
+| Status | Code | When |
+|--------|------|------|
+| 400 | `VALIDATION_ERROR` | Request body fails schema validation |
+| 404 | `SESSION_NOT_FOUND` | No session exists with the given `sessionId` |
+| 404 | `PAGE_NOT_FOUND` | No page found for the given `pageId` |
+| 500 | `INTERNAL_ERROR` | Unexpected server-side error |
+
+**Example:**
+
+```bash
+curl -s -X POST http://localhost:4000/v1/sessions/ses_abc123/observe \
+  -H "X-Feather-Token: $(cat /path/to/token)" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+```jsonc
+{
+  "ok": true,
+  "requestId": "req_a1b2c3d4",
+  "data": {
+    "pageId": "pg_1",
+    "url": "https://example.com/login",
+    "title": "Log in",
+    "observeId": "obs_a1b2",
+    "actions": [
+      { "ref": "e0", "role": "textbox", "name": "Email", "tag": "INPUT",
+        "box": { "x": 40, "y": 120, "w": 268, "h": 38 }, "state": "actionable" },
+      { "ref": "e1", "role": "button", "name": "Log in", "tag": "BUTTON",
+        "box": { "x": 40, "y": 180, "w": 268, "h": 44 }, "state": "actionable" }
+    ],
+    "overlays": [],
+    "diff": null,
+    "stats": { "totalInteractive": 5, "returned": 2, "elapsedMs": 42 }
+  }
+}
+```
+
+---
+
+#### `POST /v1/sessions/:sessionId/dismiss` — Dismiss an overlay (opt-in)
+
+Runs an internal `observe`, matches elements against an affirmative-dismiss label list, and clicks
+the best match by ref. Only acts when the internal observe detects an overlay — safe to call
+speculatively. Returns an empty `dismissed` array (not an error) when nothing matched.
+
+This is the successor to the hardcoded `dismiss_got_it` approach. It is opt-in and separate from
+`observe` so that `observe` stays strictly read-only.
+
+**Security scoping:** only considers elements that the internal observe flagged as overlay-related
+(inside or occluded by an overlay). It never clicks arbitrary page buttons. Affirmative labels only
+(`Accept all`, `I agree`, `Allow all`, `Got it`, `Accept`, `Close`, `Continue`) unless `labels` is
+overridden.
+
+**Path parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sessionId` | string | Session identifier |
+
+**Request body (optional — defaults to `{}`):**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `pageId` | string | No | Target page; defaults to the first page |
+| `labels` | string[] | No | Override the default affirmative-dismiss label list. Each entry is matched case-insensitively as an exact match or prefix of the element name. |
+
+**Response `data`:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `pageId` | string | The resolved page identifier |
+| `dismissed` | array | Elements that were clicked: `[{ ref: string, name: string }]`. Empty when no overlay or no matching label was found. |
+
+**Error responses:**
+
+| Status | Code | When |
+|--------|------|------|
+| 400 | `VALIDATION_ERROR` | Request body fails schema validation |
+| 404 | `SESSION_NOT_FOUND` | No session exists with the given `sessionId` |
+| 404 | `PAGE_NOT_FOUND` | No page found for the given `pageId` |
+| 500 | `INTERNAL_ERROR` | Unexpected server-side error |
+
+**Example:**
+
+```bash
+# Dismiss a cookie consent banner (no-op if no overlay present)
+curl -s -X POST http://localhost:4000/v1/sessions/ses_abc123/dismiss \
+  -H "X-Feather-Token: $(cat /path/to/token)" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+```json
+{
+  "ok": true,
+  "requestId": "req_a1b2c3d4",
+  "data": {
+    "pageId": "pg_1",
+    "dismissed": [{ "ref": "e0", "name": "Accept all" }]
+  }
+}
+```
+
+---
+
 #### `POST /v1/sessions/:sessionId/extract` — Extract structured data
 
 Runs a field-extraction recipe against the current page using CSS selectors. Each field either reads text content or an attribute from the first matching element.
@@ -540,18 +705,36 @@ curl -s -X POST http://localhost:4000/v1/sessions/ses_abc123/extract \
 
 ### Input (acting on a page)
 
-All four commands locate elements with a shared **Target** object:
+All input commands locate elements with a shared **Target** object. The `by` field selects the
+locator strategy; use `{ "by": "ref" }` when you have a ref from a recent `observe`.
+
+**Target union:**
+
+| `by` value | Extra fields | `at` allowed? | Notes |
+|-----------|--------------|---------------|-------|
+| `"ref"` | `ref: string` | No | Ref from the most recent `observe` on this page. Fastest + most robust. Expires on the next `observe` or navigation (`REF_EXPIRED`). |
+| `"role"` | `role: string`, `name?: string`, `exact?: boolean` | Yes | ARIA role |
+| `"text"` | `text: string`, `exact?: boolean` | Yes | Visible text |
+| `"placeholder"` | `text: string` | Yes | Input placeholder |
+| `"testid"` | `testId: string` | Yes | `data-testid` attribute |
+| `"css"` | `selector: string` | Yes | CSS selector |
+
+The `at` field (`"first"` \| `"last"` \| number) selects among multiple matches (default `"first"`).
+It is not valid with `by="ref"` (refs are already single elements).
+
+**Legacy field-by-field view** (for reference):
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `by` | `"role"` \| `"text"` \| `"placeholder"` \| `"testid"` \| `"css"` | Yes | Locator strategy |
+| `by` | `"ref"` \| `"role"` \| `"text"` \| `"placeholder"` \| `"testid"` \| `"css"` | Yes | Locator strategy |
+| `ref` | string | Yes (if `by="ref"`) | Element ref from the most recent `observe` response |
 | `role` | string | Yes (if `by="role"`) | ARIA role, e.g. `"button"` |
 | `name` | string | No (`by="role"`) | Accessible name to match |
 | `text` | string | Yes (if `by="text"` or `"placeholder"`) | Visible text / placeholder text |
 | `testId` | string | Yes (if `by="testid"`) | Value of the `data-testid` attribute |
 | `selector` | string | Yes (if `by="css"`) | CSS selector |
 | `exact` | boolean | No (`role`/`text`) | Exact (not substring) match |
-| `at` | `"first"` \| `"last"` \| number | No | Which match to use when several match (default `"first"`) |
+| `at` | `"first"` \| `"last"` \| number | No | Which match to use when several match (default `"first"`); not valid with `by="ref"` |
 
 #### `POST /v1/sessions/:sessionId/click` — Click an element
 
@@ -846,5 +1029,6 @@ curl -s -X POST http://localhost:4000/v1/sessions/ses_abc123/debug-bundle \
 | `PAGE_NOT_FOUND` | 404 | The requested `pageId` does not exist within the session |
 | `ELEMENT_NOT_FOUND` | 404 | No element matched the target locator |
 | `ELEMENT_NOT_ACTIONABLE` | 409 | Element matched but the action timed out (covered, disabled, or off-screen) |
+| `REF_EXPIRED` | 409 | A `{ "by": "ref" }` target refers to a ref from a superseded observe (another `observe` was called on this page, or the page navigated); re-observe and use a fresh ref |
 | `WAIT_TIMEOUT` | 408 | `wait` condition not met within the allotted timeout |
 | `INTERNAL_ERROR` | 500 | An unexpected server-side error occurred; check server logs with the `requestId` |
