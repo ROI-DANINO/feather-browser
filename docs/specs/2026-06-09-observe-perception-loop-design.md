@@ -49,13 +49,16 @@ Convergent findings (Claude for Chrome, ChatGPT Agent, Perplexity Comet, Manus, 
 
 | Decision | Choice | Why |
 |---|---|---|
-| Perception source | DOM-walk in a CDP **isolated world**; elements keyed by `backendNodeId` (**no DOM mutation**); occlusion via `elementFromPoint` ("between B and C") | Handles sparse-ARIA sites (spike: IG `DIV role=button` login caught); detects occluding banners; isolated world + no mutation = no new detectability risk |
+| Perception source | **Shadow-piercing DOM-walk** via Playwright `evaluateHandle` (read-only, no globals, **no DOM mutation**); occlusion via `elementFromPoint` ("between B and C") | Handles sparse-ARIA sites (spike: IG `DIV role=button` login caught); pierces shadow roots; detects occluding banners; reuses Playwright's proven input layer for acting; no mutation = no new detectability risk |
+| Execution context | v1: main-world read-only IIFE (no globals leaked). **v2 hardening:** move the identical walk fn into a CDP isolated world (evades page DOM-method traps) | Keeps v1's input-layer reuse + shadow safety; isolated-world stealth lives with the rest of stealth in v2 Phase 5d. The walk fn is unchanged across the swap. |
+| Element handle / ref | Playwright **`ElementHandle`** (from `evaluateHandle().getProperties()`); shadow-safe; reused by the existing action path | No DOM mutation, no selector fragility across shadow boundaries; `ElementHandle.click()/.fill()` get full Playwright actionability |
 | `observe` vs `snapshot` | Two separate commands, complementary | `snapshot` = reading (text/markdown); `observe` = acting (refs/overlays/diff) |
 | Planning | Agent-side; Feather perceives only | Model-neutral; thin runtime |
-| Diff identity | `backendNodeId` (persists for node lifetime) | Refs refresh each observe; need stable cross-observe key |
-| Ref lifetime | Valid only until the next `observe` on that page (or navigation) | Enforces observe-before-act; frees implementation to rebuild the isolated world per observe |
-| Frames | Walk top frame + **same-origin** frames; **detect-and-report** cross-origin walls (don't enter) | Most blocking banners are same-origin (Google "Got it", IG, many CMPs); leaner + flat detectability; `await-human` is the fallback for cross-origin walls |
+| Diff identity | **In-page structural signature** `frameId|role|name|domPath` (computed during the walk) | Refs refresh each observe; need a stable, zero-extra-round-trip cross-observe key |
+| Ref lifetime | Valid only until the next `observe` on that page (or navigation); old handles disposed | Enforces observe-before-act; bounds handle memory |
+| Frames | Walk top frame + **same-origin** frames (depth-capped); **detect-and-report** cross-origin walls (don't enter) | Most blocking banners are same-origin (Google "Got it", IG, many CMPs); leaner + flat detectability; `await-human` is the fallback for cross-origin walls |
 | Auto-dismiss | Separate explicit **read-only-observe / side-effecting-dismiss** split | Keeps `observe` pure passive reads (detectability guarantee) |
+| Input-value privacy | `observe` **never returns `el.value`** (esp. `type=password`); names come from placeholder/aria-label/label/`name` only | Prevents leaking typed credentials/PII into observe output |
 
 ## 5. The `observe` contract
 
@@ -103,17 +106,19 @@ Response `data`:
 **Agent loop becomes:** `observe → act by ref → observe (read diff) → repeat`.
 
 ### Efficiency contract
-One batched walk per `observe`. Element *metadata* (role/name/box/state/occlusion) is gathered in a **single** isolated-world evaluation. Element *identity* (`backendNodeId`) must be acquired in **batch**, not one sequential CDP `describeNode` per element — the spike's per-element loop was a probe artifact, not the production path. The plan resolves the exact batch mechanism (candidate: a single `DOMSnapshot.captureSnapshot`, which returns `backendNodeId`s + layout for the whole document in one call, mapped onto the walk's interactive set). Results are **capped** (default 80) and **viewport-first sorted**. One `observe` ≈ one fast read. Net effect: fewer total round-trips per task, because the guess→fail→re-snapshot loop disappears.
+Per frame, an `observe` is **~3 Playwright calls, independent of element count**: (1) `evaluateHandle(walkFn)` → an `Element[]` handle; (2) `.getProperties()` → the `ElementHandle`s (these become the refs); (3) one `arrayHandle.evaluate(els => els.map(metaFn))` → all metadata + structural signatures serialized in a single round-trip (plus the overlay scan folded into the same evaluate). No per-element round-trip — the spike's per-element loop was a probe artifact, not the production path. Results are **capped** (default 80) and **viewport-first sorted**. One `observe` ≈ one fast read. Net effect: fewer total round-trips per task, because the guess→fail→re-snapshot loop disappears.
 
 ## 6. Change-diff mechanism
 
-- Per-page cache stores the previous observe as `backendNodeId → { ref, name, role, state }`.
+- Each element carries an in-page **structural signature**: `frameId | role | name | domPath`, where `domPath` is a tag+`nth-of-type` chain from the document root (shadow boundaries marked with a `>>` segment). Computed during the walk — no extra round-trip.
+- Per-page cache stores the previous observe as `signature → { ref, name, role, state }`.
 - Each observe compares the **full interactive set** (not just the capped display list, so an element falling below the cap is not a false "removed"):
-  - **added** — node present now, absent before
+  - **added** — signature present now, absent before
   - **removed** — present before, gone now
-  - **changed** — same node, `state` flipped or name changed
+  - **changed** — same signature, `state` flipped or name changed
 - Entries carry the element's **current ref** where it still exists.
 - Cache invalidated on `framenavigated`; first observe after navigation returns `diff: null`.
+- The signature is *advisory* (helps the agent re-plan); it is not used for acting — acting uses the live `ElementHandle`.
 
 ## 7. Act-by-ref
 
@@ -121,22 +126,30 @@ New target type accepted by `click` / `type` / `press` / `select-option` / `wait
 ```jsonc
 { "by": "ref", "ref": "e2" }
 ```
-- Resolution extends the shared `resolveLocator(page, target)` in `src/browser/locators.ts`: ref → per-page observe cache → resolve to a Playwright `ElementHandle` (same `.click()`/`.fill()`/`.press()` API the commands already use via `withActionErrors`).
+- Resolution extends the shared `resolveLocator(page, target)` in `src/browser/locators.ts`: ref → per-page observe cache → the cached Playwright `ElementHandle` (same `.click()`/`.fill()`/`.press()` API the commands already use via `withActionErrors`; shadow-safe because the handle *is* the node).
+- Because `resolveLocator` returns a `Locator` today and refs resolve to an `ElementHandle`, `withActionErrors` and the input commands accept the common `{ click, fill, press, selectOption }` surface both types share (typed as a small `Actionable` interface).
 - Becomes targeting cheat-sheet **#1** (most robust *and* fastest — no guessing). Fully backward-compatible; `role`/`text`/`css` unchanged.
-- Stale/unknown ref → **`REF_EXPIRED` (409)**; recovery = re-observe.
+- Stale/unknown ref → **`REF_EXPIRED` (409)**; recovery = re-observe. A ref whose handle no longer resolves (DOM changed) → the action surfaces the existing `ELEMENT_NOT_FOUND`/`ELEMENT_NOT_ACTIONABLE` path.
 
 ## 8. Occlusion, overlays, iframes, noise
 
 - **Occlusion:** `elementFromPoint` at element center (plus sample points for large elements). Top element ≠ element and not ancestor/descendant → `covered`; record occluder.
 - **Overlays:** scan for `fixed`/`absolute`/`sticky` elements covering > ~25% of viewport with `pointer-events ≠ none`; **exclude `html`/`body`** (kills the scroll-lock false positive seen in the spike); classify `modal`/`banner`/`iframe`; dedupe against occluders.
-- **Frames:** walk top + **same-origin** frames (tag actions with `frameId`, merge). Cross-origin walls are reported as a blocking overlay; **not entered** in v1.
+- **Frames:** walk top + **same-origin** frames (tag actions with `frameId`, merge), capped at a recursion depth of 5 to avoid pathological nesting. Cross-origin walls are reported as a blocking overlay; **not entered** in v1.
+- **Shadow DOM:** the walk **recurses open shadow roots** (`element.shadowRoot`) — `querySelectorAll('*')` does not pierce them, so a plain walk would miss inputs/buttons inside web components. Closed shadow roots are inaccessible by design (out of scope).
 - **Noise filtering:** collapse SVG internals (`path`/`g`) to clickable ancestor; drop a child duplicating an interactive ancestor's text+box; drop nameless role-less non-inputs. Heuristics pinned to fixtures in tests.
+- **Input-value privacy:** the `name` for an element comes from `aria-label` → `placeholder` → associated `<label>` → `name`/`title` attribute → visible `innerText`. It **never** reads `el.value` (which would leak a typed password or PII). This is a security guarantee, not a heuristic.
 
 ## 9. Auto-dismiss helper
 
 `observe` stays **strictly read-only** (passive reads only — the detectability guarantee). Dismissal is separate:
 
-**`POST /v1/sessions/:sessionId/dismiss`** — matches just-observed overlay/action names against a small built-in affirmative-dismiss label list (`Accept all`, `I agree`, `Allow all`, `Got it`, `Accept`, `Close`, `Continue`), clicks the best match **by ref**, verifies via the next observe's diff. Returns `{ dismissed: [...] }` (empty = no-op, not an error). Never clicks `Reject`/`Manage` unless an explicit `labels` override is passed. Retires `dismiss_got_it`.
+**`POST /v1/sessions/:sessionId/dismiss`** — runs an internal `observe`, then matches names against a small built-in affirmative-dismiss label list (`Accept all`, `I agree`, `Allow all`, `Got it`, `Accept`, `Close`, `Continue`), clicks the best match **by ref**, verifies via the next observe's diff. Returns `{ dismissed: [...] }` (empty = no-op, not an error). Retires `dismiss_got_it`.
+
+**Security scoping (so it can't be steered into clicking a malicious "Accept"):**
+- Only considers elements that the internal `observe` flagged as an **overlay** or as **inside/occluded-by an overlay** — never arbitrary page buttons.
+- Affirmative-dismiss labels only; **never** `Reject`/`Manage`/`Settings` unless an explicit `labels` override is passed.
+- Opt-in (the agent calls it deliberately); it is not run automatically by `observe`.
 
 ## 10. Screenshot disk cleanup (rider)
 
@@ -153,6 +166,8 @@ Two fixes to `src/commands/screenshot.ts` (writes to `session.debugDir/screensho
 | `INTERNAL_ERROR` | 500 | walk failed | pull `debug-bundle`, quote `requestId` (existing) |
 
 `dismiss` matching nothing → `ok` with empty `dismissed`.
+
+`observe` on a non-HTML page (`about:blank`, a PDF, a raw image) → `ok` with empty `actions`/`overlays` and `diff: null` — never an error.
 
 ## 12. Testing strategy (Testing-Honesty bar)
 
@@ -180,9 +195,12 @@ Two fixes to `src/commands/screenshot.ts` (writes to `session.debugDir/screensho
 
 `observe` adds **no new detectability risk** beyond Feather's existing automation baseline:
 - **Passive reads only** — `elementFromPoint`, `getComputedStyle`, `getBoundingClientRect` fire no events, trip no mutation observers, leave no trace.
-- **No DOM mutation** — elements keyed by `backendNodeId`; we never inject `data-*` refs or highlight boxes (the detectable part of naive injected-DOM-walk approaches).
-- **Isolated world** — the walk runs in a separate JS context the page cannot read.
+- **No DOM mutation** — elements are tracked via live `ElementHandle`s and an in-page structural signature; we never inject `data-*` refs or highlight boxes (the detectable part of naive injected-DOM-walk approaches).
+- **No globals leaked** — the walk is a self-contained read-only IIFE; nothing persists on `window` after it returns.
+- **No input-value exfiltration** — `observe` never reads `el.value`, so typed credentials/PII don't leave the page (see §8).
 - The residual baseline (CDP/`Runtime` domain, `navigator.webdriver`, headless signals) is **pre-existing** and unchanged by `observe`; it is owned by v2 Phase 5d (Stealth Stack).
+
+**v2 stealth hardening (noted, not built here):** move the *identical* walk fn from the main world into a CDP **isolated world**. This evades any page-installed traps on DOM methods (`elementFromPoint`, `getComputedStyle`), because isolated worlds carry pristine builtins while sharing the DOM. It's a context swap only — no logic change — which is why it sequences cleanly into the v2 Stealth Stack rather than v1.
 
 ## 15. Spike evidence (2026-06-09)
 
@@ -190,7 +208,7 @@ Two fixes to `src/commands/screenshot.ts` (writes to `session.debugDir/screensho
 - **Controlled ground truth:** real button / input / link under a fixed overlay → all correctly `covered`; overlay button correctly not covered; overlay detected; **ref→act clicked the overlay button via `backendNodeId` with no DOM mutation.**
 - **Instagram login (sparse ARIA):** walk caught `email`, `pass`, and the `DIV role=button` "Log In" — where a pure a11y/tag reader would fumble.
 - **Guardian (real consent):** consent wall is a cross-origin iframe (`z=2147483647`); 43 top-frame elements correctly flagged `[COVERED by IFRAME]`.
-- **Refinements folded into this design:** noise filtering (SVG/duplicate children), same-origin-frame walk / cross-origin detect-only, overlay-scan `html`/`body` exclusion.
+- **Refinements folded into this design:** noise filtering (SVG/duplicate children), same-origin-frame walk / cross-origin detect-only, overlay-scan `html`/`body` exclusion. The spike proved feasibility via CDP isolated world + `backendNodeId` (incl. a non-mutating ref→act click); §4 refines the *production* mechanism to Playwright `evaluateHandle`/`ElementHandle` (reuses the input layer, shadow-safe), with isolated-world execution sequenced to v2 (§14).
 
 ## 16. Deferred / open
 
