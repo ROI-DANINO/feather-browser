@@ -1,6 +1,6 @@
 {
-  "defaultProvider": "openrouter",
-  "defaultModel": "qwen/qwen3.7-max",
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-5.5",
   "subagents": {
     "agentOverrides": {
       "planner": {

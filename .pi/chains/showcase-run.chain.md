@@ -24,7 +24,7 @@ Task: {task}
 
 Plan: {outputs.plan}
 
-## feather.opus-reviewer
+## feather.reviewer
 phase: Review
 label: Review the suite implementation
 as: review
