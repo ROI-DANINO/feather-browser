@@ -42,17 +42,17 @@ afterAll(async () => {
 
 describe("observe golden loop", () => {
   it("observe -> act-by-ref -> diff -> REF_EXPIRED", async () => {
-    // HTML page: clicking Go hides BOTH the input and itself (so obs2 has zero
-    // interactive elements and every ref from obs1 is expired), and appends a
-    // non-interactive paragraph so the diff's "removed" list is non-empty.
+    // Page: input + Go button. Clicking Go APPENDS a new "More" button (and sets a result);
+    // the input persists. So obs2 still contains the input — which lets us prove that reusing
+    // obs1's input ref fails with REF_EXPIRED because refs are observe-scoped, NOT because the
+    // element vanished.
     const html = encodeURIComponent(
       `<input id="q" placeholder="search" />` +
       `<button id="go">Go</button>` +
       `<div id="result"></div>` +
       `<script>` +
       `document.getElementById('go').addEventListener('click',function(){` +
-      `  document.getElementById('q').style.display='none';` +
-      `  document.getElementById('go').style.display='none';` +
+      `  var b=document.createElement('button');b.textContent='More';document.body.appendChild(b);` +
       `  document.getElementById('result').textContent='Done!';` +
       `});` +
       `</script>`
@@ -116,11 +116,14 @@ describe("observe golden loop", () => {
       removed: Array<{ desc?: string }>;
       changed: Array<{ ref?: string; change?: string; was?: string }>;
     };
-    // Both the input and the Go button were hidden, so they should appear as removed.
-    expect(diff.removed.length).toBeGreaterThan(0);
+    // Clicking Go appended a new "More" button → diff.added is non-empty.
+    expect(diff.added.length).toBeGreaterThan(0);
+    // The input STILL exists in obs2 (it was not removed) — so the REF_EXPIRED below is caused
+    // by observe-scoping of refs, not by the element disappearing.
+    expect(obs2.body.data.actions.some((a: { tag: string }) => a.tag === "INPUT")).toBe(true);
 
-    // 5. POST /click with the input ref from step 2 (superseded by the step-4 observe)
-    //    → expect 409 with error.code === "REF_EXPIRED".
+    // 5. Reuse the input ref from obs1 (input still present, but the ref is scoped to the
+    //    superseded obs1) → expect 409 with error.code === "REF_EXPIRED".
     const staleClick = await api("POST", `/v1/sessions/${sessionId}/click`, {
       target: { by: "ref", ref: inputRef },
     });

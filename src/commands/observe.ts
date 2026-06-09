@@ -37,8 +37,12 @@ export class ObserveHandler implements CommandHandler<ObserveInput, ObserveResul
 
     const refs = new Map<string, import("playwright").ElementHandle>();
     const rows: DiffRow[] = [];
+    const observeId = newObserveId();
     const actions: ObserveAction[] = kept.map((a: RawAction, i) => {
-      const ref = `e${i}`;
+      // Observe-scoped ref: a ref from a superseded observe won't match a later observe's
+      // cache (keyed by the new observeId), so reusing a stale ref → REF_EXPIRED rather than
+      // silently resolving to a different element that happens to share the index.
+      const ref = `${observeId}.e${i}`;
       refs.set(ref, a.handle);
       rows.push({ signature: a.meta.signature, ref, name: a.meta.name, role: a.meta.role, state: a.meta.state });
       return {
@@ -49,7 +53,6 @@ export class ObserveHandler implements CommandHandler<ObserveInput, ObserveResul
 
     const prev = session.getObserveCache(pageId);
     const diff = computeDiff(prev?.rows, rows);
-    const observeId = newObserveId();
     session.setObserveCache(pageId, { observeId, rows, refs });   // disposes prior handles
 
     const result: ObserveResult = {

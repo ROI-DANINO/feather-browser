@@ -29,7 +29,7 @@ describe("ObserveHandler", () => {
       <button>Real</button>
       <div style="position:fixed;inset:0;z-index:9999"><button>Accept all</button></div>`);
     const r = await handler.execute({ sessionId: "s" }, { requestId: "r" });
-    expect(r.actions[0].ref).toBe("e0");
+    expect(r.actions[0].ref).toBe(`${r.observeId}.e0`);   // refs are observe-scoped
     expect(r.actions.find((a) => a.name === "Accept all")).toBeTruthy();
     expect(r.overlays.length).toBeGreaterThan(0);
     expect(r.diff).toBeNull();
