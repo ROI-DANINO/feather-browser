@@ -133,6 +133,7 @@ export interface ISession {
   getPage(pageId?: string): { pageId: string; page: Page };
   getPageInfoList(): Promise<PageInfo[]>;
   openTab(): Promise<{ pageId: string; page: Page }>;
+  closeTab(pageId: string): Promise<void>;
   toRecord(): Omit<SessionRecord, "pages">;
   addPage(page: Page): string;
   removePage(pageId: string): void;

@@ -157,11 +157,15 @@ export class FeatherSession implements ISession {
     if (this._pages.size <= 1) {
       throw new CannotCloseLastTabError(this.sessionId);
     }
-    await page.close();
-    // Explicit removal so callers reading the page list immediately after
-    // see the correct state; the page "close" event also calls removePage
-    // (idempotent), and covers the initial tab once listeners are attached.
+    // Remove from the maps first so the page list is consistent for callers
+    // even if page.close() rejects (already-closed/crashed). The page "close"
+    // event listener also calls removePage — idempotent, so the double call is safe.
     this.removePage(pageId);
+    try {
+      await page.close();
+    } catch {
+      /* page may already be closed/crashed; maps are already clean */
+    }
   }
 
   addPage(page: Page): string {

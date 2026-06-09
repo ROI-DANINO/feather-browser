@@ -48,4 +48,30 @@ describe("FeatherSession.closeTab", () => {
     expect(() => session.getPage(a.pageId)).toThrow(PageNotFoundError);
     expect(session.getPage(b.pageId).pageId).toBe(b.pageId);
   });
+
+  it("removes the tab from the map even if page.close() rejects", async () => {
+    const session = new FeatherSession({
+      workspaceId: "ws_test",
+      profileKind: "persistent",
+      browserMode: "chromium-new-headless",
+      profilePath: "/tmp/test-profile",
+      debugDir: "/tmp/test-debug",
+      proxy: null,
+    });
+    const mockContext = {
+      pages: () => [],
+      newPage: async () => ({
+        url: () => "about:blank",
+        title: async () => "",
+        close: async () => { throw new Error("already closed"); },
+      }),
+      on: () => {},
+    } as any;
+    session.setContext(mockContext);
+    const a = await session.openTab();
+    const b = await session.openTab();
+    await expect(session.closeTab(a.pageId)).resolves.toBeUndefined();
+    expect(() => session.getPage(a.pageId)).toThrow(PageNotFoundError);
+    expect(session.getPage(b.pageId).pageId).toBe(b.pageId);
+  });
 });
