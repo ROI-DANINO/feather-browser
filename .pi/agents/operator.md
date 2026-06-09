@@ -8,7 +8,7 @@ tools: read, bash, grep, find, ls
 inheritProjectContext: true
 inheritSkills: false
 skills: feather-operator
-defaultContext: fork
+defaultContext: fresh
 systemPromptMode: replace
 ---
 
