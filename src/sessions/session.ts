@@ -39,6 +39,14 @@ export class SessionNotRunningError extends Error {
   }
 }
 
+export class CannotCloseLastTabError extends Error {
+  readonly code = "CANNOT_CLOSE_LAST_TAB";
+  constructor(sessionId: string) {
+    super(`Session '${sessionId}' cannot close its last tab. Close the session instead.`);
+    this.name = "CannotCloseLastTabError";
+  }
+}
+
 export class FeatherSession implements ISession {
   readonly sessionId: string;
   readonly workspaceId: string;
@@ -139,6 +147,21 @@ export class FeatherSession implements ISession {
     const page = await this._context!.newPage();
     const pageId = this.addPage(page);
     return { pageId, page };
+  }
+
+  async closeTab(pageId: string): Promise<void> {
+    const page = this._pages.get(pageId);
+    if (!page) {
+      throw new PageNotFoundError(pageId);
+    }
+    if (this._pages.size <= 1) {
+      throw new CannotCloseLastTabError(this.sessionId);
+    }
+    await page.close();
+    // Explicit removal so callers reading the page list immediately after
+    // see the correct state; the page "close" event also calls removePage
+    // (idempotent), and covers the initial tab once listeners are attached.
+    this.removePage(pageId);
   }
 
   addPage(page: Page): string {
