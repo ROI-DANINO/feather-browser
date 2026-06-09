@@ -54,12 +54,33 @@ assigns them and cuts tasks into work sessions.
 - **Stale doc:** `docs/api-reference.md`'s `browserMode` enum omits `chromium-headed-cdp` — the real enum
   (`src/transport/routes.ts:30`) has all three. (Fix queued as showcase plan Task D4.)
 
-## Showcase/eval suite — execution delegated to pi_agency (durable direction, 2026-06-09)
+## Showcase/eval suite — run by Roi's pi_agency team (durable direction, 2026-06-09)
 
 - The Feather v1 **showcase/eval suite** (spec `docs/specs/2026-06-09-showcase-eval-suite-design.md`, plan
-  `docs/specs/2026-06-09-showcase-eval-suite-plan.md`) is to be **run by Roi's pi_agency agent team** (Pi harness),
-  not by Claude Code. Setup ("set the ground") is done via **Codex**. Brief:
-  `docs/specs/2026-06-09-codex-handoff-pi-agency-runs-feather.md`.
-- pi agents have `bash` → drive Feather over the localhost API directly (no bridge). The suite is a
-  **stress-and-learn instrument**: `PARTIAL`+lesson is a first-class pass. Governing principle: root `AGENTS.md`
-  § "Testing Honesty — Objective, Not Flattering".
+  `...-plan.md`) is **run by Roi's pi_agency agent team** (Pi harness), not by Claude Code. The grounding
+  (project-local `.pi/`) was done by **Claude** (the Codex-setup framing is superseded). pi agents have
+  `bash` → drive Feather over the localhost API directly (no bridge). The suite is a **stress-and-learn
+  instrument**: `PARTIAL`+lesson is first-class. Governing principle: root `AGENTS.md` § "Testing Honesty".
+
+## Pi harness mechanics (durable; verified from source + bundled docs, 2026-06-09)
+
+- **Project context file = `AGENTS.md`** (then `CLAUDE.md`). There is **no `PI.md`.** Pi walks up from cwd
+  loading it (`pi dist/core/resource-loader.js:30`). Feather's root `AGENTS.md` already serves this.
+- **`.pi/settings.json` (project) overrides global `~/.pi/agent/settings.json`** — so the parent/orchestrator
+  model can be pinned **project-locally**, no blast radius to other projects (`pi docs/settings.md:3,272`).
+- **Subagent skills wall holds by design:** an agent with `inheritSkills:false` + `skills:<list>` resolves
+  **only** the listed skills (`pi-subagents skills.ts resolveSkills`). The "all global skills appear" Roi saw
+  is the **parent session's catalog** — global by design, **no per-project subtract** — cosmetic, never
+  reaches the walled subagents. (This retired the "wall not holding" worry.)
+- **Subagent dispatch is a parent CHOICE** (a tool call it can shortcut). **Solo "drive Feather" → use the
+  `feather-operator` SKILL** (parent drives inline; PROVEN). **The suite → use the `showcase-run` CHAIN**
+  (`/run-chain feather.showcase-run -- <task>`) which forces per-model planner→coder→reviewer→validator
+  dispatch. Both PROVEN 2026-06-09 (operator loop + 4-step chain).
+- **OpenRouter model lineup (per role):** parent qwen3.7-max · planner minimax-m3 · coder glm-5.1 ·
+  operator glm-5-turbo→glm-5.1 · validator kimi-k2.6 · reviewer opus-4.8. Each has an OpenRouter fallback.
+- **Gotchas (fix before the real suite):** (1) **model self-ID is unreliable** — verify which model ran via
+  the pi **UI badge**, not the agent's prose; (2) run the chain with **TEMPLATE VARS** (`{task}`/`{outputs.X}`),
+  not fully-custom inline step tasks, or intermediate outputs aren't persisted; (3) ~6m/task is heavy;
+  (4) OpenRouter **connection errors recur** and fallbacks don't always rescue in time.
+- **Thin operator-skill corrections (verified vs source):** `wait` always needs a `target` (even
+  `until:"stable"`); close = `DELETE /v1/sessions/:id` with **no** `Content-Type` header (empty body → 400).

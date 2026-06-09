@@ -1,6 +1,6 @@
 {
   "defaultProvider": "openrouter",
-  "defaultModel": "qwen/qwen3-max-thinking",
+  "defaultModel": "qwen/qwen3.7-max",
   "subagents": {
     "agentOverrides": {
       "planner": {

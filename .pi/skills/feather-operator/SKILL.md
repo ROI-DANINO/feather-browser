@@ -27,8 +27,11 @@ curl -s "$BASE/health" -H "X-Feather-Token: $TOK"
    Warmed+headed for logged-in work: `{"profile":{"kind":"persistent"},"workspaceId":"scratch","browserMode":"chromium-headed-cdp"}`.
 2. `navigate` → `snapshot` (use `markdown`) to see the page.
 3. Act: `click` / `type` / `press` / `select-option` with a Target object.
-4. `wait` (`until:"stable"`) for dynamic content; `screenshot` for proof.
-5. `close` the session.
+4. `wait` to confirm — **`wait` always needs a `target`**, even for `until:"stable"`:
+   `POST .../wait {"target":{"by":"css","selector":"h1"},"until":"stable","quietMs":500}`
+   (the bodyless `until:"stable"` shorthand fails schema validation). Then `screenshot` for proof.
+5. `close`: `DELETE /v1/sessions/:sessionId` with **no** `Content-Type` header — sending that header
+   with an empty body returns a Fastify 400 (`FST_ERR_CTP_EMPTY_JSON_BODY`).
 
 ## Targeting (Target object)
 `{ "by":"role|text|placeholder|testid|css", "role?","name?","text?","selector?","exact?","at?":"first|last|<n>" }`.

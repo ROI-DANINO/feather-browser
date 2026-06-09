@@ -6,6 +6,28 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 
 ## Current pointer
 
+- **NOW (2026-06-09): pi_agency ⇄ Feather integration — Stage 2 PASS.** OpenRouter model lineup set per
+  role (committed `f873667`; orchestrator→`qwen3.7-max` tweak still uncommitted): parent `qwen3.7-max`,
+  planner `minimax-m3`, coder `glm-5.1`, operator `glm-5-turbo`→`glm-5.1`, validator `kimi-k2.6`,
+  reviewer `opus-4.8`. Trust accepted; project-scope team lists clean. **Operator golden loop PROVEN**
+  end-to-end (health→session→navigate→snapshot(markdown)→wait→screenshot→close), real 17.5KB screenshot.
+  Feather runtime solid. `.pi/` model edits + thin-skill polish uncommitted.
+- **RESOLVED (was the headline): skills "wall".** Subagents ARE walled by `inheritSkills:false` + `skills:`
+  allowlist (Pi injects only those). The "all global skills appear" = the PARENT session's catalog, which is
+  global by design and unfixable per-project (no subtract) — cosmetic, never reaches the walled subagents.
+- **Subagent vs skill clarified:** dispatching a subagent is a parent CHOICE (a tool call it can shortcut).
+  Solo "drive Feather" tasks → the `feather-operator` SKILL is enough (parent drives inline; proven). The
+  showcase suite → the `showcase-run` CHAIN forces per-model coder/reviewer/validator dispatch (no shortcut).
+- **Chain dry-run PASSED** (`/run-chain feather.showcase-run`): 4-step multi-model dispatch proven (planner
+  minimax-m3 confirmed via UI → coder → reviewer → validator, 6m20s, no commits). Coder left a clean
+  116-line `examples/showcase.sh` seed (kept). 4 caveats to fix → see closeout.
+- **STOPPED 2026-06-09 06:08. RECOMMEND NEXT:** fix this session's 4 stumbles before the suite —
+  (1) verify per-step models via UI badge (self-ID unreliable); (2) run the chain with TEMPLATE VARS not
+  inline tasks (output persistence broke); (3) ~6m/task is heavy; (4) OpenRouter connection-error
+  reliability. Then **re-run the small tests** (operator loop + chain dry-run) to fish for more bugs; when
+  clean, **resume to Stage 3** (fresh `scratch` + sacrificial Google/IG) → full suite (A–D) via the chain.
+  Deferred: task-intake format + `feather-journal` skill (both "later, not now").
+  Closeout: `journal/ops/sessions/pi-team-models-chain-proof-20260609-0608.md`.
 - **Current phase:** Phase 4a — framed for humans as **Feather v1** ("It runs errands for me").
 - **v1 Instagram test — DONE (2026-06-08, this session).** Account created (`feather_test_roi`),
   Gmail confirmation retrieved from spam, social errand complete (liked @shaked_golan1's latest post +
