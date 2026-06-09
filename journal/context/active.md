@@ -6,23 +6,27 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 
 ## Current pointer
 
-- **NOW (2026-06-09 ~11:48, STOP): showcase suite COMPLETE (all 3 tiers green) + close-tab primitive SHIPPED.**
-  Hard tier ran 4/4 PASS (`./examples/showcase.sh hard`): H1 real Google Calendar write, H2 warmed-Google→Wikipedia
-  20k chars, H3 IG like+comment as `feather_test_roi`, H4 multi-tab 3/3. **Cookie mine proven beyond the IG test.**
-  Showcase suite committed `bfb4dbb` + recipe log. Then built the **close-tab primitive**
-  (`DELETE /v1/sessions/:sessionId/tabs/:pageId`) end-to-end via subagent-driven TDD: refuses last tab (409
-  `CANNOT_CLOSE_LAST_TAB`), removePage-before-close, **fixed latent initial-tab-listener bug**, lenient empty-body
-  JSON parser. 9 commits, 61 unit + 2 integration green, final review = READY TO MERGE. **`dev` pushed to
-  `origin/dev` (in sync, `fa38e36..bb3494e`).** Specs: `docs/specs/2026-06-09-close-tab-primitive-{design,plan}.md`.
-  Session record: `journal/ops/sessions/hard-tier-pass-close-tab-shipped-20260609-0849.md`. Blog `0016-ten-errands.md`.
-- **NEXT (Roi-confirmed) = brainstorm the PERCEPTION / OBSERVATION LOOP.** The real answer to "the agent is slow
-  and blind to banners": a cheap structured `observe` (actionable elements + detected overlays as text, no image);
-  an auto-dismiss-known-interstitials helper; screenshot disk cleanup. Use the brainstorming skill. Grounds: this
-  session's H1 screenshot 30s font-timeout + banners silently blocking clicks; `dismiss_got_it` in `showcase.sh`
-  is the crude precursor.
-- **Current phase:** Phase 4a — framed for humans as **Feather v1** ("It runs errands for me"). v1 is proven
-  end-to-end (IG test + full showcase). Remaining v1 stealth gaps (act-human cadence, bot self-check) stay deferred
-  to v2 — decided.
+- **NOW (2026-06-09 ~23:36, STOP): PERCEPTION / OBSERVATION LOOP — SHIPPED end to end.** Brainstorm → research (6
+  platforms) → spike → spec → plan → implementation, all this session. New **`POST /observe`**: action-shaped, text-only
+  perception — numbered **observe-scoped refs** (`<observeId>.e<i>`), first-class **overlays** (occlusion via
+  `elementFromPoint`), and a **change-diff** vs the last observe. Shadow-DOM-piercing; **never reads `el.value`**
+  (no credential leak); same-origin frames walked, cross-origin walls detected-but-not-entered. **Act-by-ref**
+  (`{by:"ref",ref}`) on click/type/press/wait/select-option → new cheat-sheet #1, no more selector guessing.
+  **`POST /dismiss`** (opt-in, overlay-scoped, affirmative-label-only) retires `dismiss_got_it`. Screenshot retention
+  (newest 20) + 8s timeout kills the H1 30s font-stall. Built via **subagent-driven parallel dispatch + TDD** (11
+  tasks, waves A–E). **Caught + fixed a real safety bug** (`3b82839`): refs are now observe-scoped so a stale ref
+  reliably `REF_EXPIRED`s instead of silently clicking a different element — found by the T10 e2e test (Testing
+  Honesty). Final: typecheck clean, unit 262 pass (+ known `continuity` flake), **integration 60/60**. **`dev` pushed
+  to `origin/dev` (`eee44f3..837435c`).** Spec/plan: `docs/specs/2026-06-09-observe-perception-loop-{design,plan}.md`.
+  Session record: `journal/ops/sessions/observe-perception-loop-shipped-20260609-2336.md`. Blog `0017-teaching-it-to-see.md`.
+- **NEXT = OPEN (Roi to choose).** Candidates: (a) run the new loop on a real showcase task to *measure* the
+  speed/round-trip win vs the old guess-and-fail loop; (b) start **v2 Gate A** (capability/safety gate, ADR-0010).
+- **Current phase:** Phase 4a — **Feather v1** ("It runs errands for me"). v1 proven end-to-end (IG test + full
+  showcase) and now markedly faster/sighted. Remaining v1 stealth gaps (act-human cadence, bot self-check) stay
+  deferred to v2 — decided.
+- **Deferred from this session (spec §16):** cross-origin iframe descent (`await-human` is the v1 fallback);
+  goal-aware LLM relevance filter (would add a model dependency — not built); **v2 stealth hardening = move the
+  identical walk fn into a CDP isolated world** (clean future swap, walk logic unchanged).
 - **pi_agency is PARKED.** Stage 3 returned PARTIAL (operator beat the birthday dropdown honestly, hit Google's
   phone wall; Testing Honesty held). Resume only if Roi pulls it forward; the suite is now Claude-driven.
 
@@ -34,9 +38,13 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 - **Server lifecycle:** health route is `/health` (NOT `/v1/health`). Real endpoint at
   `/run/user/1000/feather/run/endpoint.json` (project-root `endpoint.json` was empty last session); token at
   `/run/user/1000/feather/run/control-token`. Start from a shell with `WAYLAND_DISPLAY`/`DISPLAY` for headed windows.
-- **Tab API now:** `POST /tabs` opens a blank tab (then `/navigate`); **`DELETE /v1/sessions/:sessionId/tabs/:pageId`
-  closes one tab** (last tab refused → 409 `CANNOT_CLOSE_LAST_TAB`; end the session instead). Documented in
-  api-reference + agent-playbook + the using-feather-browser skill.
+- **Tab API:** `POST /tabs` opens a blank tab (then `/navigate`); **`DELETE /v1/sessions/:sessionId/tabs/:pageId`
+  closes one tab** (last tab refused → 409 `CANNOT_CLOSE_LAST_TAB`; end the session instead).
+- **Perception API now (NEW this session):** **`POST /observe`** = the action-shaped read (numbered refs + overlays
+  + change-diff; read-only). Drive with **act-by-ref** `{by:"ref",ref:"<observeId>.e<i>"}` on click/type/press/wait/
+  select-option — refs valid only until the next observe (else 409 `REF_EXPIRED`). **`POST /dismiss`** = opt-in,
+  overlay-scoped banner dismissal. New golden loop = `observe → act by ref → observe (read diff) → repeat`. `snapshot`
+  stays for *reading* tasks. All documented in api-reference + agent-playbook.
 - **IG input quirk:** confirmation code input ignores `fill`/`type` — use Shift+Tab + individual `press`.
 - **Spam first** for email confirmation codes.
 - **`continuity.test.ts` fails consistently** — proven PRE-EXISTING (fails at base `09bb3e5`; tests

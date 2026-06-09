@@ -4,6 +4,25 @@ Use this desk for browser engine research, shell architecture, extension compati
 
 ## Current Focus
 
+**Perception / observation loop — action-shaped sight (2026-06-09, `dev` `6118e8d`..`837435c`).** Feather Core
+now has an **action-shaped** perception primitive alongside `snapshot` (which stays for *reading*). **`POST
+/v1/sessions/:id/observe`** returns, as compact text: numbered **observe-scoped refs** (`<observeId>.e<i>`),
+first-class **overlays** (occlusion detected via `document.elementFromPoint` — what's physically covering the
+page), and a **change-diff** vs the previous observe (added/removed/changed by structural signature). The walk
+is a read-only Playwright `evaluateHandle` IIFE: **shadow-DOM-piercing**, **never reads `el.value`** (no
+credential/PII leak — names come from aria-label/placeholder/label/name/innerText), same-origin frames walked
+(depth-capped), cross-origin walls detected-but-not-entered. Implementation lives in
+`src/commands/observe.ts` + `src/commands/perception/{walk,diff}.ts`; per-page cache on `FeatherSession`
+(cleared on `framenavigated` + `removePage`). **Act-by-ref**: `{by:"ref",ref}` added to the shared
+`resolveActionable` (`locators.ts`) — resolves a ref → live `ElementHandle` and reuses the existing input layer;
+`withActionErrors` now takes an existence probe instead of a `Locator`. Refs expire on the next observe →
+`REF_EXPIRED`(409). **`POST /dismiss`** = opt-in, overlay-scoped, affirmative-label-only (retires the hardcoded
+`dismiss_got_it`). Screenshot handler got retention (newest 20) + an 8s timeout/animations-off (kills the H1
+30s web-font stall). **Durable design call:** mechanism is "between B and C" — Playwright handles for input-layer
+reuse + shadow safety now; moving the *identical* walk fn into a CDP **isolated world** (evades page DOM-method
+traps) is sequenced to **v2 stealth (Phase 5d)**, a clean swap. integration 60/60. Spec/plan
+`docs/specs/2026-06-09-observe-perception-loop-{design,plan}.md`.
+
 **Per-tab close + complete tab lifecycle (2026-06-09, `dev` `4920759`..`bb3494e`).** Feather Core now
 exposes `DELETE /v1/sessions/:sessionId/tabs/:pageId` — close ONE tab without ending the session (so a
 warmed session can be reused across errands without leaking tabs). Returns `{ sessionId, closedPageId,
