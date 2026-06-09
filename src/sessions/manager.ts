@@ -46,12 +46,19 @@ export interface LaunchSessionInput {
   debug?: { trace?: boolean; screenshots?: boolean };
 }
 
+export interface CloseTabResult {
+  sessionId: string;
+  closedPageId: string;
+  pages: PageInfo[];
+}
+
 export interface ISessionManager {
   launch(input: LaunchSessionInput): Promise<ISession>;
   get(sessionId: string): ISession;
   list(): ISession[];
   close(sessionId: string, opts?: { force?: boolean; quarantineDisposableProfile?: boolean }): Promise<void>;
   openTab(sessionId: string): Promise<PageInfo>;
+  closeTab(sessionId: string, pageId: string): Promise<CloseTabResult>;
 }
 
 export class SessionManager implements ISessionManager {
@@ -188,6 +195,14 @@ export class SessionManager implements ISessionManager {
     });
     const loadState = await page.evaluate(() => document.readyState);
     return { pageId, url: page.url(), title: await page.title(), loadState };
+  }
+
+  async closeTab(sessionId: string, pageId: string): Promise<CloseTabResult> {
+    const session = this.get(sessionId);
+    await session.closeTab(pageId);
+    // tab.closed is emitted by the page "close" listener (single source of truth).
+    const pages = await session.getPageInfoList();
+    return { sessionId, closedPageId: pageId, pages };
   }
 
   private attachPageListeners(session: FeatherSession, pageId: string, page: Page): void {
