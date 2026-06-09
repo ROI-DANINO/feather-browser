@@ -3,6 +3,17 @@ import * as fs from "fs";
 import { randomUUID } from "crypto";
 import type { CommandHandler, CommandContext } from "./handler";
 
+const MAX_SCREENSHOTS_PER_SESSION = 20;
+
+/** Keep only the newest `keep` PNGs in `dir`. Best-effort; never throws. */
+export async function pruneScreenshots(dir: string, keep = MAX_SCREENSHOTS_PER_SESSION): Promise<void> {
+  let names: string[];
+  try { names = await fs.promises.readdir(dir); } catch { return; }
+  const pngs = names.filter((n) => n.endsWith(".png")).sort(); // ISO timestamps sort chronologically
+  const stale = pngs.slice(0, Math.max(0, pngs.length - keep));
+  await Promise.all(stale.map((n) => fs.promises.unlink(path.join(dir, n)).catch(() => {})));
+}
+
 const newId = (prefix: string) => `${prefix}_${randomUUID().replace(/-/g, "").slice(0, 10)}`;
 
 interface IManager {
@@ -27,7 +38,13 @@ export class ScreenshotHandler implements CommandHandler<ScreenshotInput, Screen
     const timestamp = new Date().toISOString().replace(/[:.]/g, "");
     const filename = `page_${resolvedPageId}-${timestamp}.png`;
     const screenshotPath = path.join(screenshotsDir, filename);
-    await page.screenshot({ path: screenshotPath, fullPage: !!fullPage });
+    await page.screenshot({
+      path: screenshotPath,
+      fullPage: !!fullPage,
+      timeout: 8000,            // do not hang the loop on web-font loading (was the 30s H1 stall)
+      animations: "disabled",
+    });
+    await pruneScreenshots(screenshotsDir);
     return { artifactId: newId("art"), path: screenshotPath, mimeType: "image/png" };
   }
 }
