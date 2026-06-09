@@ -6,21 +6,22 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 
 ## Current pointer
 
-- **NOW (2026-06-09 ~23:36, STOP): PERCEPTION / OBSERVATION LOOP — SHIPPED end to end.** Brainstorm → research (6
-  platforms) → spike → spec → plan → implementation, all this session. New **`POST /observe`**: action-shaped, text-only
-  perception — numbered **observe-scoped refs** (`<observeId>.e<i>`), first-class **overlays** (occlusion via
-  `elementFromPoint`), and a **change-diff** vs the last observe. Shadow-DOM-piercing; **never reads `el.value`**
-  (no credential leak); same-origin frames walked, cross-origin walls detected-but-not-entered. **Act-by-ref**
-  (`{by:"ref",ref}`) on click/type/press/wait/select-option → new cheat-sheet #1, no more selector guessing.
-  **`POST /dismiss`** (opt-in, overlay-scoped, affirmative-label-only) retires `dismiss_got_it`. Screenshot retention
-  (newest 20) + 8s timeout kills the H1 30s font-stall. Built via **subagent-driven parallel dispatch + TDD** (11
-  tasks, waves A–E). **Caught + fixed a real safety bug** (`3b82839`): refs are now observe-scoped so a stale ref
-  reliably `REF_EXPIRED`s instead of silently clicking a different element — found by the T10 e2e test (Testing
-  Honesty). Final: typecheck clean, unit 262 pass (+ known `continuity` flake), **integration 60/60**. **`dev` pushed
-  to `origin/dev` (`eee44f3..837435c`).** Spec/plan: `docs/specs/2026-06-09-observe-perception-loop-{design,plan}.md`.
-  Session record: `journal/ops/sessions/observe-perception-loop-shipped-20260609-2336.md`. Blog `0017-teaching-it-to-see.md`.
-- **NEXT = OPEN (Roi to choose).** Candidates: (a) run the new loop on a real showcase task to *measure* the
-  speed/round-trip win vs the old guess-and-fail loop; (b) start **v2 Gate A** (capability/safety gate, ADR-0010).
+- **NOW (2026-06-10 ~01:42, STOP): DAILY-DRIVER BACKGROUND LAUNCH + `primary` RE-WARMED (real account).**
+  `npm run daily` [primary] / `daily:scratch` now launch the persistent profile **detached** (`nohup`+`disown` →
+  logfile under `$XDG_RUNTIME_DIR/feather/`, PID file, double-launch guard) so it frees the terminal; closing the
+  Chromium window saves + exits via `warm-session`'s child-exit hook. New **`npm run daily:stop`** = SIGTERM clean-save
+  escape hatch (`/proc/<pid>/cmdline` PID-reuse guard). Scripts `scripts/start-daily-driver.sh` + new
+  `scripts/stop-daily-driver.sh`; commit **`61fe677` pushed to `origin/dev`**. **Diagnosed the "cookieless primary"
+  mystery:** the warmed `primary` was deliberately deleted 2026-06-08 ("at Roi's request" before a demo re-record; no
+  backup) — that emptied it. **Roi re-warmed `primary` 2026-06-10 with his REAL personal Google** (438MB, 306 cookies,
+  full auth set). **Cookie Mine is now live on Roi's own identity** — he uses `primary` as his real daily-driver. No
+  cookies/secrets in the repo (profiles live outside the working tree). Session record:
+  `journal/ops/sessions/daily-driver-background-launch-primary-rewarmed-20260610-0142.md`.
+- **NEXT = OPEN (Roi to tackle next session, his call).** (a) run the observe → act-by-ref → diff loop on a real
+  showcase task to *measure* the speed/round-trip win vs the old guess-and-fail loop; (b) start **v2 Gate A**
+  (capability/safety gate, ADR-0010). Optional side-thread: analyze the new Claude-for-Chrome transcripts (see below)
+  for navigation patterns. Prior NOW: perception/observation loop SHIPPED (`eee44f3..837435c`, blog `0017`); session
+  record `journal/ops/sessions/observe-perception-loop-shipped-20260609-2336.md`.
 - **Current phase:** Phase 4a — **Feather v1** ("It runs errands for me"). v1 proven end-to-end (IG test + full
   showcase) and now markedly faster/sighted. Remaining v1 stealth gaps (act-human cadence, bot self-check) stay
   deferred to v2 — decided.
@@ -32,13 +33,17 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 
 ## Key facts for next session
 
-- **Scratch profile** (`workspaceId: scratch`) — re-warmed 2026-06-09, holds `feather_test_roi` IG
-  (`Feather2026!test`) + warmed `roionly9@gmail.com` Google session. Current filesystem check in this session:
-  `scratch` is the warmed profile (~150MB); `primary` is effectively fresh (~7MB).
-  Handle carefully — this is the test identity.
-- **Daily-driver wrapper (uncommitted `/next` bridge):** `npm run daily` opens `primary`; `npm run daily:scratch`
-  opens `scratch`. Use scratch for the warmed cookies that exist today; warm `primary` manually if it should become
-  Roi's real daily-driver profile.
+- **`primary` = Roi's REAL personal Google (re-warmed 2026-06-10).** 438MB, 306 cookies, full auth set across
+  google.com/.co.il/youtube. This is Roi's real daily-driver / Cookie-Mine identity now — handle with care.
+  History note: the warmed `primary` was deliberately deleted 2026-06-08 (at Roi's request, no backup); this is the
+  fresh re-warm.
+- **`scratch` (`workspaceId: scratch`) = the TEST identity** — holds `feather_test_roi` IG (`Feather2026!test`) +
+  warmed `roionly9@gmail.com` Google. ~150MB. Use for sacrificial/test work; never confuse with `primary`.
+- **Daily-driver (committed `61fe677`):** `npm run daily` → `primary` (detached/background); `npm run daily:scratch`
+  → `scratch`; `npm run daily:stop [-- <ws>]` → clean SIGTERM stop. Close the Chromium window = clean save + exit.
+- **Claude-for-Chrome research captures (untriaged):** `journal/raw/_inbox/claude_for_chrome_output/` — 2 convo
+  transcripts Roi records to reverse-engineer how Claude for Chrome navigates/uses the browser (direct Feather
+  inspiration). Keep for analysis; do not delete.
 - **Server lifecycle:** health route is `/health` (NOT `/v1/health`). Real endpoint at
   `/run/user/1000/feather/run/endpoint.json` (project-root `endpoint.json` was empty last session); token at
   `/run/user/1000/feather/run/control-token`. Start from a shell with `WAYLAND_DISPLAY`/`DISPLAY` for headed windows.

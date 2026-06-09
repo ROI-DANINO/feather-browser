@@ -57,6 +57,16 @@ read its reply → Gmail compose draft — via the new input commands (`scripts/
 verified working live). This is the Cookie-Mine model working as designed: warm once (human), agent
 piggybacks across sites. Warming a second site = same `warm-session` tool with `FEATHER_WARM_URL`.
 
+**Daily-driver = backgrounded `warm-session` (2026-06-10).** `npm run daily` [primary] / `npm run daily:scratch`
+launch the persistent profile **detached** (`nohup`+`disown` → logfile under `$XDG_RUNTIME_DIR/feather/`, PID file,
+double-launch guard) so it frees the terminal; closing the Chromium window saves + exits via `warm-session`'s own
+child-exit hook. `npm run daily:stop` is the force-stop escape hatch (SIGTERM → clean save, `/proc/<pid>/cmdline`
+guard against PID reuse). Scripts: `scripts/start-daily-driver.sh`, `scripts/stop-daily-driver.sh` (commit `61fe677`).
+**Important profile-history fact:** the warmed `primary` was deliberately deleted 2026-06-08 ("at Roi's request"
+before a demo re-record; no backup) — that emptied it. **Re-warmed 2026-06-10 with Roi's REAL personal Google
+account** (438MB, 306 cookies, full auth set across google.com/.co.il/youtube). Roi now uses `primary` as his real
+daily-driver browser to cookie-mine his own identity. `scratch` remains the TEST identity (`roionly9` / `feather_test_roi`).
+
 **Phase 4 Step 0 DONE (2026-06-04)** — answered by spikes, not specs. Cookie Mine proven
 end-to-end on a real site (agent acted in Roi's live ChatGPT).
 

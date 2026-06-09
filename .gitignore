@@ -35,3 +35,8 @@ coverage/
 examples/showcase-output/*
 !examples/showcase-output/.gitkeep
 !examples/showcase-output/results.sample.md
+
+# Inbox = transient capture/triage files that may hold personal data — never
+# commit them. Keep only the README that explains the dir.
+journal/raw/_inbox/*
+!journal/raw/_inbox/README.md
