@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { chromium, type BrowserContext } from "playwright";
+import { chromium, type BrowserContext, type Page } from "playwright";
 import { FeatherSession, SessionNotFoundError } from "./session";
 import { buildLaunchOptions, spawnAndConnect } from "../browser/modes";
 import { DebugCapture } from "../debug/capture";
@@ -190,7 +190,7 @@ export class SessionManager implements ISessionManager {
     return { pageId, url: page.url(), title: await page.title(), loadState };
   }
 
-  private attachPageListeners(session: FeatherSession, pageId: string, page: import("playwright").Page): void {
+  private attachPageListeners(session: FeatherSession, pageId: string, page: Page): void {
     page.on("close", () => {
       session.removePage(pageId);
       void this.logger.log({
