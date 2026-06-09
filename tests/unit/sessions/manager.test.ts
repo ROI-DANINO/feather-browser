@@ -8,7 +8,7 @@ vi.mock("playwright", () => ({
     executablePath: vi.fn().mockReturnValue("/bundled/chrome"),
     launchPersistentContext: vi.fn().mockResolvedValue({
       pages: () => [
-        { url: () => "about:blank", title: async () => "New Tab", evaluate: async () => "complete" },
+        { url: () => "about:blank", title: async () => "New Tab", evaluate: async () => "complete", on: vi.fn() },
       ],
       newPage: vi.fn().mockResolvedValue({
         url: () => "about:blank",

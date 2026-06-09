@@ -138,46 +138,15 @@ export class SessionManager implements ISessionManager {
         sessionId: session.sessionId,
         data: { pageId },
       });
-      page.on("close", () => {
-        session.removePage(pageId);
-        void this.logger.log({
-          ts: new Date().toISOString(),
-          level: "info",
-          event: EVENTS.TAB_CLOSED,
-          sessionId: session.sessionId,
-          data: { pageId },
-        });
-      });
-      page.on("framenavigated", async (frame) => {
-        if (frame !== page.mainFrame()) return;          // main frame only
-        const target = page.url();                       // capture target URL
-        try {
-          await page.waitForLoadState("domcontentloaded");
-        } catch {
-          /* best-effort: resolves instantly when already settled (SPA case) */
-        }
-        if (page.url() !== target) return;               // superseded by a newer navigation
-        let title = "";
-        let loadState = "unknown";
-        try {
-          title = await page.title();
-        } catch {
-          /* best-effort */
-        }
-        try {
-          loadState = await page.evaluate(() => document.readyState);
-        } catch {
-          /* best-effort */
-        }
-        void this.logger.log({
-          ts: new Date().toISOString(),
-          level: "info",
-          event: EVENTS.TAB_UPDATED,
-          sessionId: session.sessionId,
-          data: { pageId, url: redactUrl(page.url()), title, loadState },
-        });
-      });
+      this.attachPageListeners(session, pageId, page);
     });
+
+    // Initial page(s) present at launch are added by session.setContext()
+    // and never flow through context.on("page") — attach their lifecycle
+    // listeners here so closing the initial tab reaps it too.
+    for (const page of context.pages()) {
+      this.attachPageListeners(session, session.addPage(page), page);
+    }
 
     this.registry.set(session.sessionId, session);
 
@@ -219,6 +188,48 @@ export class SessionManager implements ISessionManager {
     });
     const loadState = await page.evaluate(() => document.readyState);
     return { pageId, url: page.url(), title: await page.title(), loadState };
+  }
+
+  private attachPageListeners(session: FeatherSession, pageId: string, page: import("playwright").Page): void {
+    page.on("close", () => {
+      session.removePage(pageId);
+      void this.logger.log({
+        ts: new Date().toISOString(),
+        level: "info",
+        event: EVENTS.TAB_CLOSED,
+        sessionId: session.sessionId,
+        data: { pageId },
+      });
+    });
+    page.on("framenavigated", async (frame) => {
+      if (frame !== page.mainFrame()) return;          // main frame only
+      const target = page.url();                       // capture target URL
+      try {
+        await page.waitForLoadState("domcontentloaded");
+      } catch {
+        /* best-effort: resolves instantly when already settled (SPA case) */
+      }
+      if (page.url() !== target) return;               // superseded by a newer navigation
+      let title = "";
+      let loadState = "unknown";
+      try {
+        title = await page.title();
+      } catch {
+        /* best-effort */
+      }
+      try {
+        loadState = await page.evaluate(() => document.readyState);
+      } catch {
+        /* best-effort */
+      }
+      void this.logger.log({
+        ts: new Date().toISOString(),
+        level: "info",
+        event: EVENTS.TAB_UPDATED,
+        sessionId: session.sessionId,
+        data: { pageId, url: redactUrl(page.url()), title, loadState },
+      });
+    });
   }
 
   async close(
