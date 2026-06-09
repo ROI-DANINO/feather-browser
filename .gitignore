@@ -30,3 +30,8 @@ coverage/
 
 # Screen recordings / demo captures (large binaries — keep out of the repo)
 *.mp4
+
+# Showcase suite live-run outputs (keep the dir + curated sample only)
+examples/showcase-output/*
+!examples/showcase-output/.gitkeep
+!examples/showcase-output/results.sample.md
