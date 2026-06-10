@@ -99,9 +99,15 @@ const WALK_SRC = (frameId: string) => `(() => {
     const W = innerWidth, H = innerHeight, area = W*H, out = [];
     for (const el of document.querySelectorAll("body *")){
       const cs = getComputedStyle(el);
-      if (!["fixed","absolute","sticky"].includes(cs.position)) continue;
+      const role = el.getAttribute("role");
+      const dialogish = role === "dialog" || role === "alertdialog" || el.getAttribute("aria-modal") === "true";
+      if (!dialogish && !["fixed","absolute","sticky"].includes(cs.position)) continue;
       if (cs.display === "none" || cs.visibility === "hidden" || parseFloat(cs.opacity) === 0) continue;
       if (cs.pointerEvents === "none") continue;
+      if (!dialogish && cs.position !== "fixed"){
+        const z = parseInt(cs.zIndex, 10);          // "auto" → NaN
+        if (!(z > 0)) continue;                     // absolute/sticky must explicitly float above content
+      }
       const r = el.getBoundingClientRect();
       const cover = Math.max(0, Math.min(r.right,W)-Math.max(r.left,0)) * Math.max(0, Math.min(r.bottom,H)-Math.max(r.top,0));
       const pct = Math.round(100*cover/area);

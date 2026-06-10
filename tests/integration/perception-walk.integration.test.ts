@@ -69,4 +69,28 @@ describe("walkAllFrames", () => {
     for (const a of actions) await a.handle.dispose();
     await page.context().close();
   });
+
+  it("does not report a large absolutely-positioned layout grid (no z-index) as an overlay", async () => {
+    const page = await pageWith(`<div style="position:absolute;top:0;left:0;width:100%;height:90%"><button>Cell</button></div>`);
+    const { actions, overlays } = await walkAllFrames(page);
+    expect(overlays).toEqual([]);          // the Calendar-grid false positive
+    for (const a of actions) await a.handle.dispose();
+    await page.context().close();
+  });
+
+  it("still reports absolutely-positioned overlays that carry an explicit z-index, and dialog-role elements", async () => {
+    const page = await pageWith(`
+      <div style="position:absolute;top:0;left:0;width:100%;height:70%;z-index:50"><button>Accept all</button></div>`);
+    const { actions, overlays } = await walkAllFrames(page);
+    expect(overlays.length).toBe(1);
+    for (const a of actions) await a.handle.dispose();
+    await page.context().close();
+
+    const page2 = await pageWith(`
+      <div role="dialog" style="position:absolute;top:0;left:0;width:100%;height:70%"><button>OK</button></div>`);
+    const r2 = await walkAllFrames(page2);
+    expect(r2.overlays.length).toBe(1);
+    for (const a of r2.actions) await a.handle.dispose();
+    await page2.context().close();
+  });
 });
