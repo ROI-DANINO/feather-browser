@@ -6,76 +6,67 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 
 ## Current pointer
 
-- **NOW (2026-06-10 ~09:50, STOP): NATIVE CAPABILITIES ROUTER PLACED → Session 5.0.1, after Gate A.**
-  Roi confirmed the placement: the router/Connector-Registry idea lands in **5.0.1 (MCP & tool-surface
-  reconciliation)** — NOT inside Gate A, NOT now, no spec yet. Inbox notes merged + promoted to
-  `research/2026-06-10-native-capabilities-router.md` (placement rationale at top); originals archived to
-  `journal/raw/archive/`; pointers added in `docs/sessions/5.0.1-mcp-tool-surface.md` + `ROADMAP.md` + `tasks.md`.
-  Standing notes: say **"Connector Registry"** (not "Capability Registry" — collides with ADR-0010 grants); the
-  "universal web execution layer" vision sentence = doctrine-change ADR question for the 5.0.1 joint call;
-  docs-import connector builder = v3/5e; deep API research checklist runs at build time. Bonus verified: the new
-  `CLAUDE.md → @AGENTS.md` import DOES auto-load in fresh sessions. First live use of the /stop blog gate: Roi said
-  no → owed line in `blog/_pending.md`. Session record:
-  `journal/ops/sessions/native-capabilities-placed-20260610-0950.md`.
-- **OBSERVE BUG FIXES BRAINSTORM — PAUSED MID-DESIGN (2026-06-10), THE NEXT THREAD (Roi's pick at this stop).**
-  Root causes explored in code; tentative approach decisions reached for all 3 bugs — Bug 1 dismiss under-report
-  (B: re-observe to verify popup gone), Bug 2 accname gap (A: descendant aria-label query), Bug 3 INTERNAL_ERROR
-  on nav-clicks (A: return `navigated:true`). Roi: "okay for now but i want to get back to it" — designs tentative,
-  not locked. **No spec written yet.** Bridge archived at
-  `journal/archive/next/2026-06-10/0652-stop-bundle-graphify-graduation.md` (observe-bug-fixes-brainstorm entry).
-- **Recommend next:** Resume observe-bug-fixes brainstorm — confirm approach choices, present full design sections,
-  write spec, user review, then invoke writing-plans. After that: operator-skills rewrite to the observe loop, suite
-  semantic assertions, then **v2 Gate A** (ADR-0010). Optional side: C4C transcripts analysis.
-- **Recent same-day context (details in session files + log):** command layer upgraded ~09:28 (`/blog` + `/notebook`
-  + /stop blog gate + CLAUDE.md fix, pushed thru `3cb86dc`); Graphify GRADUATED to `dev` ~06:52 (MCP query layer +
-  path-agnostic post-commit hook; rebuild verb = `graphify update .`, NEVER `extract`; session
-  `graphify-graduated-to-dev-20260610-0652.md`, blog `0018`); NotebookLM Project Brain v2 SHIPPED; daily-driver
-  background launch ~01:42 (`npm run daily`/`daily:scratch`/`daily:stop`, `61fe677`) + **`primary` re-warmed with
-  Roi's REAL Google** (Cookie Mine live on his own identity; session
-  `daily-driver-background-launch-primary-rewarmed-20260610-0142.md`).
-- **Current phase:** Phase 4a — **Feather v1** ("It runs errands for me"). v1 proven end-to-end (IG test + full
-  showcase) and now markedly faster/sighted. Remaining v1 stealth gaps (act-human cadence, bot self-check) stay
-  deferred to v2 — decided.
-- **Deferred from the observe-loop spec (§16):** cross-origin iframe descent (`await-human` is the v1 fallback);
-  goal-aware LLM relevance filter (would add a model dependency — not built); **v2 stealth hardening = move the
-  identical walk fn into a CDP isolated world** (clean future swap, walk logic unchanged).
-- **pi_agency is PARKED.** Stage 3 returned PARTIAL (operator beat the birthday dropdown honestly, hit Google's
-  phone wall; Testing Honesty held). Resume only if Roi pulls it forward; the suite is now Claude-driven.
+- **NOW (2026-06-10 ~12:03, STOP): OBSERVE BUG FIXES SHIPPED end-to-end — brainstorm resumed → spec →
+  plan → subagent-driven build (12 commits `09a6b6c..579b445`, pushed `origin/dev`).** All 3 pass-2 bugs
+  fixed: (1) `/dismiss` = verify-by-re-observe — new response `{dismissed (verified-gone only),
+  overlaysRemaining, observation (fresh refs)}`, containment-gated picking (`overlayIndex`, composed-tree
+  shadow-piercing), calendar-grid false positive killed (absolute/sticky need explicit z-index; dialog
+  roles always count), dead `Overlay.ref` dropped; (2) icon-only buttons named via descendant aria-label
+  peek (IG Like); (3) nav-clicks return `navigated: true` (hint-not-promise — re-observe) on
+  click/press/select-option instead of INTERNAL_ERROR. Docs (api-reference + playbook) updated +
+  verified against code; ref-format drift fixed. Gates: typecheck clean, 280/280 unit, 72/72
+  integration; final whole-implementation review = ready to merge. Spec
+  `docs/specs/2026-06-10-observe-bug-fixes-design.md`; plan `docs/plans/2026-06-10-observe-bug-fixes.md`;
+  session `journal/ops/sessions/observe-bug-fixes-shipped-20260610-1203.md`. Blog declined → owed line
+  in `blog/_pending.md` (2 owed now).
+- **Review-process note (worth remembering):** two-stage subagent reviews caught vacuous nav tests
+  (passed on the buggy parent — `data:` URL navigation is silently blocked by Chromium; reworked onto a
+  real local HTTP fixture), an unpinned H1 catch path, and a shadow-DOM containment gap. Parallel
+  dispatch works when file sets are disjoint; reviewers go git-only when the tree is shared.
+- **Recommend next:** operator-skills rewrite to the observe loop (the 4 `skills/` files still teach
+  snapshot-first; evidence `examples/showcase-output/pass2-observe/results.md`), then suite semantic
+  assertions, then **v2 Gate A** (ADR-0010) — the big next. Optional side: C4C transcripts analysis.
+- **Open follow-ups from review (recorded in tasks.md):** same-origin-iframe overlay dismiss gap
+  (`/dismiss` can't reach buttons in iframe overlays; fix idea = implicit overlayIndex for actions in a
+  detected overlay iframe; workaround documented in playbook); (kind,name) mutation watch-item (docs say
+  trust `overlaysRemaining`).
+- **Current phase:** Phase 4a — **Feather v1** ("It runs errands for me"). v1 proven end-to-end and
+  sighted; perception loop now hardened by the bug-fix pass. Remaining v1 stealth gaps stay deferred
+  to v2 — decided.
+- **pi_agency is PARKED.** Resume only if Roi pulls it forward.
 
 ## Key facts for next session
 
-- **`primary` = Roi's REAL personal Google (re-warmed 2026-06-10).** 438MB, 306 cookies, full auth set across
-  google.com/.co.il/youtube. This is Roi's real daily-driver / Cookie-Mine identity now — handle with care.
-  History note: the warmed `primary` was deliberately deleted 2026-06-08 (at Roi's request, no backup); this is the
-  fresh re-warm.
-- **`scratch` (`workspaceId: scratch`) = the TEST identity** — holds `feather_test_roi` IG (`Feather2026!test`) +
-  warmed `roionly9@gmail.com` Google. ~150MB. Use for sacrificial/test work; never confuse with `primary`.
-- **Daily-driver (committed `61fe677`):** `npm run daily` → `primary` (detached/background); `npm run daily:scratch`
-  → `scratch`; `npm run daily:stop [-- <ws>]` → clean SIGTERM stop. Close the Chromium window = clean save + exit.
-- **Claude-for-Chrome research captures (untriaged):** `journal/raw/_inbox/claude_for_chrome_output/` — 2 convo
-  transcripts Roi records to reverse-engineer how Claude for Chrome navigates/uses the browser (direct Feather
-  inspiration). Keep for analysis; do not delete.
-- **Server lifecycle:** health route is `/health` (NOT `/v1/health`). Real endpoint at
-  `/run/user/1000/feather/run/endpoint.json` (project-root `endpoint.json` was empty last session); token at
-  `/run/user/1000/feather/run/control-token`. Start from a shell with `WAYLAND_DISPLAY`/`DISPLAY` for headed windows.
-- **Tab API:** `POST /tabs` opens a blank tab (then `/navigate`); **`DELETE /v1/sessions/:sessionId/tabs/:pageId`
-  closes one tab** (last tab refused → 409 `CANNOT_CLOSE_LAST_TAB`; end the session instead).
-- **Perception API now (NEW this session):** **`POST /observe`** = the action-shaped read (numbered refs + overlays
-  + change-diff; read-only). Drive with **act-by-ref** `{by:"ref",ref:"<observeId>.e<i>"}` on click/type/press/wait/
-  select-option — refs valid only until the next observe (else 409 `REF_EXPIRED`). **`POST /dismiss`** = opt-in,
-  overlay-scoped banner dismissal. New golden loop = `observe → act by ref → observe (read diff) → repeat`. `snapshot`
-  stays for *reading* tasks. All documented in api-reference + agent-playbook.
-- **IG input quirk:** confirmation code input ignores `fill`/`type` — use Shift+Tab + individual `press`.
+- **`primary` = Roi's REAL personal Google (re-warmed 2026-06-10).** 438MB, 306 cookies. Handle with care.
+- **`scratch` (`workspaceId: scratch`) = the TEST identity** — `feather_test_roi` IG (`Feather2026!test`) +
+  warmed `roionly9@gmail.com` Google. Never confuse with `primary`.
+- **Daily-driver:** `npm run daily` → `primary`; `npm run daily:scratch`; `npm run daily:stop [-- <ws>]`.
+- **Server lifecycle:** health route `/health` (NOT `/v1/health`); endpoint at
+  `/run/user/1000/feather/run/endpoint.json`; token at `/run/user/1000/feather/run/control-token`.
+  Start from a shell with `WAYLAND_DISPLAY`/`DISPLAY` for headed windows.
+- **Tab API:** `POST /tabs` opens; `DELETE /v1/sessions/:sessionId/tabs/:pageId` closes one (last tab →
+  409 `CANNOT_CLOSE_LAST_TAB`).
+- **Perception API (updated 2026-06-10):** `POST /observe` (refs `obs_<id>.eN`, overlays, diff; actions
+  may carry `overlayIndex` = inside `overlays[i]`); act-by-ref on click/type/press/wait/select-option
+  (refs die on next observe → 409 `REF_EXPIRED`); click/press/select-option may return
+  `navigated: true` (hint — re-observe); **`POST /dismiss` returns
+  `{dismissed (verified), overlaysRemaining, observation}`** — act from `observation`'s refs, trust
+  `overlaysRemaining`; dismiss runs 2 observes internally (budget ~2× observe). `snapshot` stays for reads.
+- **IG input quirk:** confirmation code input ignores `fill`/`type` — Shift+Tab + individual `press`.
 - **Spam first** for email confirmation codes.
-- **`continuity.test.ts` fails consistently** — proven PRE-EXISTING (fails at base `09bb3e5`; tests
-  `scripts/demo/continuity.ts`, unrelated to any current feature). Deserves its own ticket; ignore in suite runs.
+- **`continuity.test.ts` PASSES now (3/3, `tests/unit/scripts/`).** The old "fails consistently,
+  pre-existing" note was stale — verified twice on 2026-06-10. No ticket needed.
+- **Claude-for-Chrome research captures (untriaged):** `journal/raw/_inbox/claude_for_chrome_output/` —
+  keep for analysis; do not delete.
 
 ## Recent completed context
 
-- **close-tab primitive (2026-06-09):** `DELETE /tabs/:pageId`; 9 commits `4920759..bb3494e`; READY TO MERGE.
-- **Showcase eval suite (2026-06-09):** all 10 tasks built + run; E 3/3 PASS, M1 PARTIAL (CAPTCHA)/M2/M3 PASS,
-  H 4/4 PASS. `examples/showcase.sh` (`bfb4dbb`), recipe log `docs/specs/2026-06-09-showcase-pass1-recipes.md`.
-- **v1 Instagram test DONE (2026-06-08):** full signup + email verify + social errand. PASS.
-- **Pause-for-human primitive DONE (2026-06-08, `dev` 5d7a9b8):** `await-human` + on-page Resume banner.
-  Finding: banner dies on page navigation → v2 MFA Handler must re-inject on `framenavigated`.
-- **v1→v2→v3 restructure + open-source doctrine (2026-06-08):** `feather.md`, `docs/roadmap/{v1,v2,v3}.md`, `adr-0011`.
+- **Observe bug fixes (2026-06-10):** this stop — see Current pointer.
+- **Native Capabilities Router PLACED (2026-06-10 ~09:50):** Session 5.0.1, after Gate A; say
+  "Connector Registry"; research `research/2026-06-10-native-capabilities-router.md`.
+- **Command layer (2026-06-10):** `/blog` + `/notebook` + /stop blog gate; CLAUDE.md → @AGENTS.md import.
+- **Graphify GRADUATED to `dev` (2026-06-10):** rebuild = `graphify update .`, NEVER `extract`.
+- **Daily-driver + `primary` re-warm (2026-06-10, `61fe677`).**
+- **Showcase eval suite complete (2026-06-09):** 10 tasks; pass-2 observe measurement found the 3 bugs
+  fixed this session.
+- **Perception loop shipped (2026-06-09):** `POST /observe` + act-by-ref + `/dismiss` (now upgraded).

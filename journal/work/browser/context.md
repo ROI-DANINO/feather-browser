@@ -4,6 +4,31 @@ Use this desk for browser engine research, shell architecture, extension compati
 
 ## Current Focus
 
+**Observe-loop bug fixes — perception hardened by field evidence (2026-06-10, `dev` `09a6b6c`..`579b445`).**
+The three pass-2 showcase bugs are fixed. **`/dismiss` is now verify-by-re-observe**: click the best
+in-popup button, observe again, report from reality — response is `{dismissed (verified-gone only),
+overlaysRemaining, observation}` where `observation` = the fresh post-click observe (agent acts from its
+refs; old refs are expired; `overlaysRemaining` is the ground truth for "am I clear"). Target picking is
+**containment-gated**: actions carry `overlayIndex` (computed in-page via `containsComposed` — composed-tree,
+hops shadow boundaries because the collector pierces shadow roots); the old bare-"actionable" escape hatch
+(could click the page's own "Continue") is gone; failures degrade conservatively (false negative → retry,
+never false success). Overlay detection refined: `absolute`/`sticky` elements need an explicit positive
+z-index (kills the Google-Calendar-grid false positive); `role=dialog`/`alertdialog`/`aria-modal` always
+count; `fixed` unchanged. The dead `Overlay.ref` field is removed (API contract change, docs updated).
+**`accName` peeks at a descendant `[aria-label]`** as last resort after empty innerText — icon-only buttons
+(IG Like) now named, diff-visible, targetable (deliberately NOT the W3C algorithm; upgrade on evidence).
+**Nav-teardown = success with a flag**: `isNavigationTeardown` (pattern list pinned by unit test —
+Playwright upgrades that change wording fail CI) makes click/press/select-option return `navigated: true`
+instead of INTERNAL_ERROR 500; hint-not-promise — agent re-observes (select-option echoes requested values,
+unverified). **Known gaps (recorded):** `/dismiss` can't reach buttons inside same-origin-iframe overlays
+(child-frame actions get no overlayIndex; fix idea = implicit overlayIndex for actions in a detected overlay
+iframe; workaround = direct click or await-human, documented); (kind,name) overlay identity is
+mutation-sensitive on multi-pane popups (docs: trust `overlaysRemaining`). **Testing lesson (durable):**
+Chromium silently blocks content-initiated top-frame navigation to `data:` URLs — nav fixtures must use a
+real local HTTP server, and a test isn't proven non-vacuous until it FAILS on the pre-fix commit.
+**Stale-fact correction:** `continuity.test.ts` passes (3/3); the old "fails consistently" note is dead.
+Spec/plan `docs/{specs,plans}/2026-06-10-observe-bug-fixes*`.
+
 **Perception / observation loop — action-shaped sight (2026-06-09, `dev` `6118e8d`..`837435c`).** Feather Core
 now has an **action-shaped** perception primitive alongside `snapshot` (which stays for *reading*). **`POST
 /v1/sessions/:id/observe`** returns, as compact text: numbered **observe-scoped refs** (`<observeId>.e<i>`),
