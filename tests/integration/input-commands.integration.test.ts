@@ -1,8 +1,10 @@
 // tests/integration/input-commands.integration.test.ts
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import * as fs from "fs";
+import * as http from "http";
 import * as os from "os";
 import * as path from "path";
+import type { AddressInfo } from "net";
 import { FeatherPaths, ensureDirs } from "../../src/fs-layout";
 import { ProfileLock } from "../../src/profiles/lock";
 import { WorkspaceMetadata } from "../../src/profiles/workspace";
@@ -14,6 +16,16 @@ let token: string;
 let manager: SessionManager;
 let tmpDir: string;
 let sessionId: string;
+let fixtureServer: http.Server;
+let fixtureBase: string;
+
+// Local HTTP fixtures: Chromium blocks content-initiated top-frame navigation to data:
+// URLs, so navigation tests must ride real http:// pages to actually navigate.
+const FIXTURE_PAGES: Record<string, string> = {
+  "/link-page": `<!DOCTYPE html><html><body><a id="go" href="/page2" onmousedown="window.location.href='/page2'">Go</a></body></html>`,
+  "/form-page": `<!DOCTYPE html><html><body><form action="/page2"><input id="q" name="q"></form></body></html>`,
+  "/page2": `<!DOCTYPE html><html><body><h1>arrived</h1></body></html>`,
+};
 
 async function api(method: string, p: string, body?: object) {
   const res = await fetch(`${baseUrl}${p}`, {
@@ -36,6 +48,14 @@ beforeAll(async () => {
   const { port, token: t } = await startHttpServer("127.0.0.1", 0, manager, paths);
   token = t;
   baseUrl = `http://127.0.0.1:${port}`;
+  fixtureServer = http.createServer((req, res) => {
+    const html = FIXTURE_PAGES[(req.url ?? "").split("?")[0]];
+    if (!html) { res.writeHead(404); res.end(); return; }
+    res.writeHead(200, { "Content-Type": "text/html" });
+    res.end(html);
+  });
+  await new Promise<void>((resolve) => fixtureServer.listen(0, "127.0.0.1", resolve));
+  fixtureBase = `http://127.0.0.1:${(fixtureServer.address() as AddressInfo).port}`;
   const launched = await api("POST", "/v1/sessions", {
     workspaceId: "input-ws",
     profile: { kind: "disposable" },
@@ -46,8 +66,24 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await Promise.allSettled(manager.list().map((s) => manager.close(s.sessionId, { force: true })));
+  await new Promise<void>((resolve) => fixtureServer.close(() => resolve()));
   await fs.promises.rm(tmpDir, { recursive: true, force: true });
 });
+
+/** Poll the session's snapshot until the current url satisfies `predicate` (or time out). */
+async function waitForUrl(predicate: (url: string) => boolean, timeoutMs = 10000): Promise<string> {
+  const deadline = Date.now() + timeoutMs;
+  let lastUrl = "";
+  while (Date.now() < deadline) {
+    const { status, body } = await api("POST", `/v1/sessions/${sessionId}/snapshot`, {});
+    if (status === 200) {
+      lastUrl = body.data.url as string;
+      if (predicate(lastUrl)) return lastUrl;
+    }
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  return lastUrl;
+}
 
 async function goto(html: string) {
   const { status } = await api("POST", `/v1/sessions/${sessionId}/navigate`, { url: dataUrl(html) });
@@ -132,24 +168,25 @@ describe("Input commands (real Chromium)", () => {
     expect(body.error.code).toBe("ELEMENT_NOT_FOUND");
   });
 
-  it("click that triggers navigation returns 200, never INTERNAL_ERROR", async () => {
-    const page2 = encodeURIComponent(`<!DOCTYPE html><html><body><h1>arrived</h1></body></html>`);
-    const page1 = encodeURIComponent(
-      `<!DOCTYPE html><html><body><a id="go" href="data:text/html,${page2}">Go</a></body></html>`);
-    await api("POST", `/v1/sessions/${sessionId}/navigate`, { url: `data:text/html,${page1}`, waitUntil: "domcontentloaded" });
+  it("click that triggers a real navigation returns 200, never INTERNAL_ERROR", async () => {
+    // The link also navigates on mousedown, which often tears down the execution context
+    // mid-click. The teardown race is not deterministic, so `navigated: true` is NOT
+    // required here (the classifier is deterministically covered by unit tests) — the
+    // contract under test is: nav-triggering click ⇒ 200 + the page really moved.
+    await api("POST", `/v1/sessions/${sessionId}/navigate`, { url: `${fixtureBase}/link-page`, waitUntil: "domcontentloaded" });
     const res = await api("POST", `/v1/sessions/${sessionId}/click`, { target: { by: "css", selector: "#go" } });
-    expect(res.status).toBe(200);             // the contract under test: success, with or without the flag
-    expect(res.body.data.clicked).toBe(true); // navigated may or may not appear — Playwright often survives clean link clicks
+    expect(res.status).toBe(200);
+    expect(res.body.data.clicked).toBe(true);
+    const url = await waitForUrl((u) => u.endsWith("/page2"));
+    expect(url).toBe(`${fixtureBase}/page2`); // kills vacuity: fails if no navigation happened
   }, 60000);
 
-  it("press Enter on a focused link that navigates returns 200, never INTERNAL_ERROR", async () => {
-    // data: form actions are blocked by Chromium; use a focused link + Enter instead
-    const page2 = encodeURIComponent(`<!DOCTYPE html><html><body><h1>arrived</h1></body></html>`);
-    const page1 = encodeURIComponent(
-      `<!DOCTYPE html><html><body><a id="go" href="data:text/html,${page2}">Go</a></body></html>`);
-    await api("POST", `/v1/sessions/${sessionId}/navigate`, { url: `data:text/html,${page1}`, waitUntil: "domcontentloaded" });
-    const res = await api("POST", `/v1/sessions/${sessionId}/press`, { target: { by: "css", selector: "#go" }, key: "Enter" });
+  it("press Enter in a form that submits to a real page returns 200, never INTERNAL_ERROR", async () => {
+    await api("POST", `/v1/sessions/${sessionId}/navigate`, { url: `${fixtureBase}/form-page`, waitUntil: "domcontentloaded" });
+    const res = await api("POST", `/v1/sessions/${sessionId}/press`, { target: { by: "css", selector: "#q" }, key: "Enter" });
     expect(res.status).toBe(200);
     expect(res.body.data.pressed).toBe("Enter");
+    const url = await waitForUrl((u) => u.includes("/page2"));
+    expect(url).toContain(`${fixtureBase}/page2`); // form GET appends ?q=; the page must have moved
   }, 60000);
 });
