@@ -34,7 +34,14 @@ function makeMockManager(): SessionManager {
     list: () => [{ sessionId: MOCK_SESSION.sessionId, toRecord: () => ({ ...MOCK_SESSION }), getPageInfoList: async () => [] } as any],
     get: (sessionId: string) => {
       if (sessionId === MOCK_SESSION.sessionId) {
-        return { sessionId: MOCK_SESSION.sessionId, toRecord: () => ({ ...MOCK_SESSION }), getPageInfoList: async () => [] } as any;
+        return {
+          sessionId: MOCK_SESSION.sessionId,
+          toRecord: () => ({ ...MOCK_SESSION }),
+          getPageInfoList: async () => [],
+          getState: () => "running",
+          getPageCount: () => 1,
+          getPage: () => ({ pageId: "page_01", page: { title: async () => "Mock" } }),
+        } as any;
       }
       const err = new Error(`Session not found: ${sessionId}`);
       (err as any).code = "SESSION_NOT_FOUND";
@@ -147,5 +154,48 @@ describe("Authenticated routes", () => {
     const body = await res.json() as any;
     expect(body.ok).toBe(false);
     expect(body.error.code).toBe("VALIDATION_ERROR");
+  });
+});
+
+describe("GET /v1/sessions/:sessionId/health", () => {
+  it("returns state, page count, and alive=true when the page answers", async () => {
+    const res = await fetch(`${baseUrl}/v1/sessions/${MOCK_SESSION.sessionId}/health`, {
+      headers: { "X-Feather-Token": testToken },
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json() as any;
+    expect(body.ok).toBe(true);
+    expect(body.data).toEqual({ sessionId: MOCK_SESSION.sessionId, state: "running", pages: 1, alive: true });
+  });
+});
+
+describe("per-action session log", () => {
+  it("logs action.completed (name + status only, no body) for POST action routes", async () => {
+    const res = await fetch(`${baseUrl}/v1/sessions/${MOCK_SESSION.sessionId}/navigate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Feather-Token": testToken },
+      body: JSON.stringify({ url: "https://example.com/SECRET-MARKER", pageId: "page_01" }),
+    });
+    expect([200, 400, 500]).toContain(res.status); // mock manager may not implement navigate; the hook logs regardless
+
+    // onResponse hooks run after the response is sent — poll briefly for the line.
+    const logPath = paths.sessionLog(MOCK_SESSION.sessionId);
+    let lines: string[] = [];
+    for (let i = 0; i < 20; i++) {
+      try {
+        const raw = await fs.promises.readFile(logPath, "utf8");
+        lines = raw.trim().split("\n").filter((l) => l.includes('"action.completed"'));
+        if (lines.length > 0) break;
+      } catch { /* not written yet */ }
+      await new Promise((r) => setTimeout(r, 100));
+    }
+    expect(lines.length).toBeGreaterThan(0);
+    const entry = JSON.parse(lines[lines.length - 1]);
+    expect(entry.event).toBe("action.completed");
+    expect(entry.sessionId).toBe(MOCK_SESSION.sessionId);
+    expect(entry.data.action).toBe("navigate");
+    expect(typeof entry.data.statusCode).toBe("number");
+    // The hook must never log request bodies.
+    expect(JSON.stringify(entry)).not.toContain("SECRET-MARKER");
   });
 });

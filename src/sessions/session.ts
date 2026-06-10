@@ -189,6 +189,10 @@ export class FeatherSession implements ISession {
     return this._pageIds.get(page);
   }
 
+  getPageCount(): number {
+    return this._pages.size;
+  }
+
   removePage(pageId: string): void {
     this.clearObserveCache(pageId);
     const page = this._pages.get(pageId);

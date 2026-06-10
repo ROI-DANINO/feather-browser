@@ -22,6 +22,7 @@ export const EVENTS = {
   TAB_CREATED: "tab.created",
   TAB_UPDATED: "tab.updated",
   TAB_CLOSED: "tab.closed",
+  ACTION_COMPLETED: "action.completed",
   HUMAN_PAUSE_REQUESTED: "human.pause.requested",
   HUMAN_PAUSE_RESOLVED: "human.pause.resolved",
 } as const;

@@ -184,6 +184,8 @@ export interface ISession {
   readonly debugDir: string;
   getPage(pageId?: string): { pageId: string; page: Page };
   getPageInfoList(): Promise<PageInfo[]>;
+  getState(): SessionState;
+  getPageCount(): number;
   openTab(): Promise<{ pageId: string; page: Page }>;
   closeTab(pageId: string): Promise<void>;
   toRecord(): Omit<SessionRecord, "pages">;

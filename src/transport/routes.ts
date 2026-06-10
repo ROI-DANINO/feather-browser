@@ -14,6 +14,9 @@ import { CloseSessionHandler } from "../commands/close";
 import { OpenTabHandler } from "../commands/open-tab";
 import { CloseTabHandler } from "../commands/close-tab";
 import { ListTabsHandler } from "../commands/list-tabs";
+import { HealthHandler } from "../commands/health";
+import { FeatherLogger } from "../logs/logger";
+import { EVENTS } from "../logs/events";
 import { ObserveHandler } from "../commands/observe";
 import { DismissHandler } from "../commands/dismiss";
 import { ClickHandler } from "../commands/click";
@@ -225,6 +228,27 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
   const waitHandler = new WaitHandler(manager);
   const awaitHumanHandler = new AwaitHumanHandler(manager);
   const selectOptionHandler = new SelectOptionHandler(manager);
+  const healthHandler = new HealthHandler(manager);
+
+  // Per-action trace in the session JSONL: the H3 forensics took an investigation because 7.5
+  // minutes of observe/click/type left no per-action record. Action name + status code ONLY —
+  // never request bodies (type payloads carry user-typed text; redaction discipline stays intact).
+  const actionLogger = new FeatherLogger(paths);
+  app.addHook("onResponse", async (request, reply) => {
+    if (request.method !== "POST") return;
+    const m = request.url.match(/^\/v1\/sessions\/([^/]+)\/([a-z-]+)$/);
+    if (!m) return;
+    const [, sessionId, action] = m;
+    if (action === "resume") return; // unauthenticated human route — keep its surface untouched
+    await actionLogger.log({
+      ts: new Date().toISOString(),
+      level: "info",
+      event: EVENTS.ACTION_COMPLETED,
+      sessionId,
+      requestId: getRequestId(request),
+      data: { action, statusCode: reply.statusCode },
+    });
+  });
 
   app.get("/health", async (_req: FastifyRequest, reply: FastifyReply) => {
     await reply.status(200).send({ ok: true, data: { status: "ok" } });
@@ -271,6 +295,15 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
     try {
       const { sessionId } = request.params as { sessionId: string };
       const result = await openTabHandler.execute({ sessionId }, { requestId });
+      await reply.status(200).send(ok(requestId, result));
+    } catch (err) { await handleRouteError(err, request, reply); }
+  });
+
+  app.get("/v1/sessions/:sessionId/health", { preHandler: [tokenAuth] }, async (request: FastifyRequest, reply: FastifyReply) => {
+    const requestId = getRequestId(request);
+    try {
+      const { sessionId } = request.params as { sessionId: string };
+      const result = await healthHandler.execute({ sessionId }, { requestId });
       await reply.status(200).send(ok(requestId, result));
     } catch (err) { await handleRouteError(err, request, reply); }
   });
