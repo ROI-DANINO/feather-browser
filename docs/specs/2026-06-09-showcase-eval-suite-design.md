@@ -168,6 +168,25 @@ Folded in during the spec review:
 - **E3:** noted GitHub star count renders as `65.2k`-style text — assertion must normalize the suffix.
 - Fixed stray `H6` reference (→ `H4`).
 
+### 2026-06-10 — semantic-assertion layer (post pass-2 audit)
+Roi's semantic audit of pass 2 (wrong-date H1 event, junk calendar entries) raised the PASS bar:
+**PASS must mean the errand was done right, not that an action returned 200.** Applied to the script:
+- **H1** (done earlier on 2026-06-10): event must carry the holiday's *name* on its *actual date*
+  (all-day), verified by re-opening the day view.
+- **H3:** like verified by the button flipping to "Unlike" (state assert); comment must be
+  **content-aware** — parsed from the post's own caption via snapshot text ("author / stats /
+  author / caption / more" structure; CSS probes fail — first `span[dir=auto]` is the username and
+  video posts have no content `img`) — and verified visible as the full `Love this — <snippet>`
+  string (snippet alone would false-positive against the caption itself). Generic fallback or
+  unverified leg → `PARTIAL`.
+- **M3:** the *target fact* (elevation `8,848.x`) must be present — a non-empty infobox cell is not
+  a pass (spec criterion was already "target fact string present"; the script was below it).
+- **H4:** per-fact semantic checks — title text, a real temperature pattern, a star count numeric
+  after `k`/`m` normalization.
+- **E1:** title **and** point count (the spec's own criterion said "titles + point counts").
+All four verified live 2026-06-10: E1/M3/H4/H3 PASS under the new bar (H3 first ran honest
+`PARTIAL` on the generic-comment fallback, which is what prompted the live markup probe).
+
 ### Resolved
 - **Recording tool:** `wf-recorder` (Wayland) — installed on Roi's box. Use it to film the headed tier.
 - **Approval:** approved by Roi 2026-06-09 after the review pass. Next step = `writing-plans`.

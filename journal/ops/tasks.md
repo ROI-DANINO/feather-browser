@@ -3,7 +3,7 @@
 Checklist only. Front door → `feather.md`; version roadmaps → `docs/roadmap/{v1,v2,v3}.md`;
 execution index → `ROADMAP.md`; live pointer → `journal/context/active.md`.
 
-**Next action = suite semantic assertions, then v2 Gate A.**
+**Next action = v2 Gate A (Session 5.0.0, ADR-0010).**
 Latest (2026-06-10 ~12:03 STOP): **OBSERVE BUG FIXES SHIPPED** — all 3 pass-2 bugs fixed end-to-end
 (brainstorm→spec→plan→subagent build, 12 commits `09a6b6c..579b445` pushed; gates 280u/72i/typecheck
 clean; final review = ready to merge). Earlier same day: Native Capabilities Router placed at 5.0.1;
@@ -37,8 +37,12 @@ command layer (`/blog`+`/notebook`+blog gate); Graphify graduated; NotebookLM pa
       `REF_EXPIRED` recovery row, typed wall-detection signal in human-handoff. Also retired the
       stale "rewrite queued" caveat in AGENTS.md and fixed the bare-`eN` ref drift in
       `docs/api-reference.md` observe intro.
-- [ ] **Suite semantic-assertion layer** ← NEXT — PASS must mean the errand was done right (date
-      asserts; content-aware H3 comment).
+- [x] **Suite semantic-assertion layer — DONE (2026-06-10).** PASS now means the errand was done
+      right: H3 = like verified via "Unlike" state + content-aware comment (parsed from the post's
+      caption via snapshot text — CSS probes fail on IG feed; probed live) verified visible; M3 =
+      the actual elevation figure; H4 = per-fact pattern checks; E1 = title + point count. H1 was
+      already semantic. All 4 changed tasks verified live (E1/M3/H4/H3 PASS; H3's first run was an
+      honest PARTIAL that exposed the markup reality). Spec revision log updated.
 - [ ] **Dismiss follow-up (from review): same-origin-iframe overlay gap.** `/dismiss` can't reach
       buttons inside iframe overlays; fix idea = implicit `overlayIndex` for actions whose frame is a
       detected overlay iframe. Workaround documented (direct click / await-human). Not urgent.

@@ -165,13 +165,17 @@ dismiss_got_it() {
 
 # ============================ TASKS ============================
 
-run_e1() { # HN top posts (headless)
+run_e1() { # HN top posts (headless) — semantic assert: title AND point count (spec criterion)
   local sid pid t0; read -r sid pid < <(open_headless); t0="$(now_ms)"
   api POST "/v1/sessions/$sid/navigate" '{"url":"https://news.ycombinator.com","waitUntil":"domcontentloaded","timeoutMs":20000}' >/dev/null
   local title; title="$(api POST "/v1/sessions/$sid/extract" '{"recipe":{"fields":{"top1":{"selector":".athing .titleline a","type":"text"}}}}' | field top1)"
+  local score; score="$(api POST "/v1/sessions/$sid/extract" '{"recipe":{"fields":{"pts":{"selector":".subtext .score","type":"text"}}}}' | field pts 2>/dev/null || true)"
   local md; md="$(api POST "/v1/sessions/$sid/snapshot" '{}' | field markdown)"
   local art; art="$(save_text E1 "$md")"
-  if [ -n "$title" ]; then record E1 PASS "$(fmt_elapsed "$t0")" "top story: ${title:0:50} → $art"
+  if [ -n "$title" ] && printf '%s' "$score" | grep -qE '[0-9]+ point'; then
+    record E1 PASS "$(fmt_elapsed "$t0")" "top story: ${title:0:50} ($score) → $art"
+  elif [ -n "$title" ]; then
+    record E1 PARTIAL "$(fmt_elapsed "$t0")" "title ok but no point count (.subtext .score drift; got '$score') → $art"
   else record E1 PARTIAL "$(fmt_elapsed "$t0")" "no title via .athing .titleline a — selector drift; md saved → $art"; fi
   close_session "$sid"
 }
@@ -237,12 +241,17 @@ run_m2() { # httpbin form submit (headless)
   close_session "$sid"
 }
 
-run_m3() { # Wikipedia fact extraction (headless)
+run_m3() { # Wikipedia fact extraction (headless) — semantic assert: the TARGET fact, not "some cell"
+  # The errand is Everest's elevation; spec criterion = "target fact string present". A non-empty
+  # .infobox-data cell could be any row — assert the elevation figure itself (8,848 m and change).
   local sid pid t0; read -r sid pid < <(open_headless); t0="$(now_ms)"
   api POST "/v1/sessions/$sid/navigate" '{"url":"https://en.wikipedia.org/wiki/Mount_Everest","waitUntil":"domcontentloaded","timeoutMs":20000}' >/dev/null
   local fact; fact="$(api POST "/v1/sessions/$sid/extract" '{"recipe":{"fields":{"elev":{"selector":".infobox-data","type":"text"}}}}' | field elev)"
-  local art; art="$(save_text M3 "infobox: $fact")"
-  if [ -n "$fact" ]; then record M3 PASS "$(fmt_elapsed "$t0")" "elevation: ${fact:0:40} → $art"
+  local md; md="$(api POST "/v1/sessions/$sid/snapshot" '{}' | field markdown 2>/dev/null || true)"
+  local elev; elev="$(printf '%s\n%s' "$fact" "$md" | grep -oE '8,?848(\.[0-9]+)?' | head -1 || true)"
+  local art; art="$(save_text M3 "infobox: $fact | elevation-match: ${elev:-none}")"
+  if [ -n "$elev" ]; then record M3 PASS "$(fmt_elapsed "$t0")" "elevation: $elev m (infobox: ${fact:0:30}) → $art"
+  elif [ -n "$fact" ]; then record M3 PARTIAL "$(fmt_elapsed "$t0")" "infobox cell extracted but no elevation figure — wrong row / content drift → $art"
   else record M3 PARTIAL "$(fmt_elapsed "$t0")" ".infobox-data empty — selector drift → $art"; fi
   close_session "$sid"
 }
@@ -345,7 +354,12 @@ run_h2() { # Google search → article → extract content (warmed Google)
   close_session "$sid"
 }
 
-run_h3() { # IG home feed → like + comment (warmed feather_test_roi)
+run_h3() { # IG home feed → verified like + content-aware comment (warmed feather_test_roi)
+  # Semantic bar (2026-06-10 follow-up): PASS must mean the errand was done RIGHT —
+  # (a) the like is VERIFIED by the button flipping to "Unlike" (state assert, not click-200);
+  # (b) the comment is CONTENT-AWARE — built from the post's own alt/caption text — and
+  #     VERIFIED visible on the page after posting.
+  # Generic-fallback comment or unverified like/comment → PARTIAL with the precise reason.
   local sid pid t0; read -r sid pid < <(open_warmed_scratch); t0="$(now_ms)"
   api POST "/v1/sessions/$sid/navigate" \
     '{"url":"https://www.instagram.com/","waitUntil":"domcontentloaded","timeoutMs":25000}' >/dev/null
@@ -353,26 +367,60 @@ run_h3() { # IG home feed → like + comment (warmed feather_test_roi)
   # Dismiss notifications popup if present
   api POST "/v1/sessions/$sid/click" '{"target":{"by":"text","text":"Not Now"}}' >/dev/null 2>&1 || true
   sleep 0.5
-  # Like first post
-  local like_ok; like_ok="$(api POST "/v1/sessions/$sid/click" \
-    '{"target":{"by":"css","selector":"svg[aria-label=\"Like\"]"}}' \
-    | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const o=JSON.parse(s);process.stdout.write(o.ok?"1":"0")})')"
-  # Open comments
+  # Read the post BEFORE acting. CSS probes fail here (first span[dir=auto] = username, no h1,
+  # first img = avatar, videos have no content img at all — probed live 2026-06-10). The snapshot
+  # TEXT is self-describing instead: "author / stats / author repeated / CAPTION / more" — parse
+  # that; it works for photo and video posts alike and survives IG class churn.
+  local ctx; ctx="$(api POST "/v1/sessions/$sid/snapshot" '{}' | field text 2>/dev/null | node -e '
+    let s=""; process.stdin.on("data",d=>s+=d).on("end",()=>{
+      const lines=s.split("\n").map(l=>l.trim()).filter(Boolean);
+      const author=lines[0]||"";
+      for(let i=1;i<lines.length;i++){
+        if(lines[i]===author && i+1<lines.length){ process.stdout.write(lines[i+1]); return; }
+      }
+    });' || true)"
+  # Build the comment from the post's caption (~5 sanitized words); generic fallback = not content-aware
+  local snippet comment content_aware=1
+  snippet="$(node -e '
+    let t=(process.argv[1]||"");
+    t=t.replace(/[^\p{L}\p{N} ,-]/gu," ").replace(/\s+/g," ").trim();
+    process.stdout.write(t.split(" ").slice(0,5).join(" "));' "$ctx")"
+  if [ -n "$snippet" ]; then comment="Love this — $snippet 🙌"
+  else comment="Great shot 🌌"; content_aware=0; fi
+  # Like first post (absent Like button + present Unlike = already liked from a prior run)
+  api POST "/v1/sessions/$sid/click" \
+    '{"target":{"by":"css","selector":"svg[aria-label=\"Like\"]"}}' >/dev/null 2>&1 || true
+  sleep 1
+  # VERIFY the like: the first post's button must now read "Unlike"
+  local like_state; like_state="$(api POST "/v1/sessions/$sid/extract" \
+    '{"recipe":{"fields":{"u":{"selector":"svg[aria-label=\"Unlike\"]","type":"attribute","attribute":"aria-label"}}}}' \
+    | field u 2>/dev/null || true)"
+  # Open comments, type the content-aware comment, post with Enter
   api POST "/v1/sessions/$sid/click" \
     '{"target":{"by":"css","selector":"svg[aria-label=\"Comment\"]"}}' >/dev/null 2>&1 || true
   sleep 0.5
-  # Type comment
   api POST "/v1/sessions/$sid/type" \
-    '{"target":{"by":"css","selector":"[placeholder=\"Add a comment…\"]"},"text":"Great shot 🌌","mode":"sequential"}' >/dev/null 2>&1 || true
+    "$(node -e 'process.stdout.write(JSON.stringify({target:{by:"css",selector:"[placeholder=\"Add a comment…\"]"},text:process.argv[1],mode:"sequential"}))' "$comment")" \
+    >/dev/null 2>&1 || true
   sleep 0.5
-  # Post with Enter
   api POST "/v1/sessions/$sid/press" '{"key":"Enter"}' >/dev/null 2>&1 || true
   sleep 2
+  # VERIFY the comment landed: the full "Love this — <snippet>" string must be visible.
+  # (The snippet alone would false-positive — it is quoted FROM the caption on the same page.)
+  local page_text; page_text="$(api POST "/v1/sessions/$sid/snapshot" '{}' | field text 2>/dev/null || true)"
+  local comment_visible=0
+  local probe="Love this — ${snippet}"
+  [ "$content_aware" = "0" ] && probe="Great shot"
+  if printf '%s' "$page_text" | grep -qF "$probe"; then comment_visible=1; fi
   local shot; shot="$(save_shot "$sid" H3)"
-  if [ "$like_ok" = "1" ]; then
-    record H3 PASS "$(fmt_elapsed "$t0")" "liked + commented on first feed post (warmed IG session) → $shot"
+  if [ "$like_state" = "Unlike" ] && [ "$comment_visible" = "1" ] && [ "$content_aware" = "1" ]; then
+    record H3 PASS "$(fmt_elapsed "$t0")" "like verified (Unlike state) + content-aware comment visible ('${comment:0:40}') → $shot"
   else
-    record H3 PARTIAL "$(fmt_elapsed "$t0")" "like failed (svg[aria-label=Like] not found — IG markup drift?) → $shot"
+    local why=""
+    [ "$like_state" != "Unlike" ] && why="like not verified (no Unlike state); "
+    [ "$comment_visible" != "1" ] && why="${why}comment not seen on page; "
+    [ "$content_aware" != "1" ] && why="${why}no post content extracted — generic comment fallback; "
+    record H3 PARTIAL "$(fmt_elapsed "$t0")" "${why}comment='${comment:0:30}' → $shot"
   fi
   close_session "$sid"
 }
@@ -402,13 +450,16 @@ run_h4() { # multi-tab research: 3 tabs, 3 facts (warmed headed)
     "$(node -e 'process.stdout.write(JSON.stringify({pageId:process.argv[1],recipe:{fields:{x:{selector:"#repo-stars-counter-star",type:"text"}}}}))' "$p3")" \
     | field x 2>/dev/null || true)"
   local shot; shot="$(save_shot "$sid" H4 "$p3")"
-  local art; art="$(save_text H4 "HN=${f1:0:60} | weather=${f2:0:30} | stars=$f3")"
+  # Semantic asserts per fact (not just non-empty): title text, a real temperature, a real count
+  local temp; temp="$(printf '%s' "$f2" | grep -oE '[+-][0-9]+°?C' | head -1 || true)"
+  local n3; n3="$(node -e 'const t=(process.argv[1]||"").trim().toLowerCase();const m=t.match(/([0-9.]+)\s*([km]?)/);if(!m){process.stdout.write("0");process.exit()}let v=parseFloat(m[1]);if(m[2]==="k")v*=1e3;if(m[2]==="m")v*=1e6;process.stdout.write(String(Math.round(v)))' "$f3")"
+  local art; art="$(save_text H4 "HN=${f1:0:60} | weather=${temp:-none (raw: ${f2:0:30})} | stars=$f3 (~$n3)")"
   local got=0
   [ -n "$f1" ] && got=$((got+1))
-  [ -n "$f2" ] && got=$((got+1))
-  [ -n "$f3" ] && got=$((got+1))
-  if [ "$got" -eq 3 ]; then record H4 PASS "$(fmt_elapsed "$t0")" "3/3 facts: HN=${f1:0:30}… | weather=${f2:0:20} | stars=$f3 → $art"
-  else record H4 PARTIAL "$(fmt_elapsed "$t0")" "$got/3 facts extracted across 3 live tabs → $art"; fi
+  [ -n "$temp" ] && got=$((got+1))
+  [ "$n3" -gt 0 ] 2>/dev/null && got=$((got+1))
+  if [ "$got" -eq 3 ]; then record H4 PASS "$(fmt_elapsed "$t0")" "3/3 facts verified: HN=${f1:0:30}… | $temp | stars=$f3 → $art"
+  else record H4 PARTIAL "$(fmt_elapsed "$t0")" "$got/3 facts passed semantic check across 3 live tabs (title='${f1:0:20}' temp='$temp' stars='$f3') → $art"; fi
   close_session "$sid"
 }
 
