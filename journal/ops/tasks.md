@@ -3,14 +3,13 @@
 Checklist only. Front door → `feather.md`; version roadmaps → `docs/roadmap/{v1,v2,v3}.md`;
 execution index → `ROADMAP.md`; live pointer → `journal/context/active.md`.
 
-**Next action = OPEN (Roi tackles next session, his call).** Latest: daily-driver background launch shipped +
-`primary` re-warmed with Roi's REAL Google — Cookie Mine now live on his own identity (commit `61fe677`, pushed;
-session `journal/ops/sessions/daily-driver-background-launch-primary-rewarmed-20260610-0142.md`). Two larger
-candidates remain: (a) run the `observe → act-by-ref → diff` loop on a real showcase task to **measure** the
-speed/round-trip win vs the old guess-and-fail loop; (b) start **v2 Gate A** — the capability/safety gate (ADR-0010),
-first real Phase-5 work. Optional side-thread: analyze the new Claude-for-Chrome transcripts
-(`journal/raw/_inbox/claude_for_chrome_output/`) for navigation patterns. Perception loop SHIPPED prior session
-(session record `…observe-perception-loop-shipped-20260609-2336.md`; blog `0017-teaching-it-to-see.md`).
+**Next action = NotebookLM Project Brain v2 side-task (fresh chat):** implement
+`docs/plans/2026-06-10-notebooklm-project-brain-v2.md` using subagent-driven development. Design spec:
+`docs/specs/2026-06-10-notebooklm-project-brain-v2-design.md`. Main Feather candidates remain open after that:
+(a) run the `observe → act-by-ref → diff` loop on a real showcase task to **measure** the speed/round-trip win vs
+the old guess-and-fail loop; (b) start **v2 Gate A** — the capability/safety gate (ADR-0010), first real Phase-5
+work. Optional side-thread: analyze Claude-for-Chrome transcripts
+(`journal/raw/_inbox/claude_for_chrome_output/`) for navigation patterns.
 
 ---
 
@@ -27,6 +26,10 @@ first real Phase-5 work. Optional side-thread: analyze the new Claude-for-Chrome
 - [x] **4a.9 — LinkedIn debut recording** (`52b63fe`, pushed; in README)
 - [x] **4a.10 — Social-research triage** (inbox clear)
 - [x] **v1→v2→v3 restructure + open-source doctrine** (2026-06-08)
+- [x] **NotebookLM Project Brain v2 — SHIPPED (2026-06-10, `graphify-test` worktree).**
+      Rewrite `docs/feather_notebooklm_pack/` as a coherent project brain with RAG-specific
+      boilerplate, human-only helper files, and curated topology. Design/Plan
+      `docs/specs/2026-06-10-notebooklm-project-brain-v2-{design,plan}.md`.
 
 ### Open v1 work
 

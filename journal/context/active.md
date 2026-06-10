@@ -6,6 +6,21 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 
 ## Current pointer
 
+- **`graphify-test` worktree (side task, 2026-06-10 06:15): NotebookLM Project Brain v2 SHIPPED (2026-06-10).**
+  Rewrite `docs/feather_notebooklm_pack/` as a coherent project brain for Roi + technical collaborators:
+  files `01`-`11` are uploadable RAG sources with Feather-specific boilerplate; `README`, `12`, and `13` are human-only;
+  curated codebase topology (v1 topology SHIPPED); glossary uses `### Term`. Verified against RAG packaging
+  rules + safety claims. Design/Plan `docs/specs/2026-06-10-notebooklm-project-brain-v2-{design,plan}.md`.
+  **Next:** Roi decides on Graphify keep/discard; if discarded, worktree closes; if kept, graduate
+  topology to `master`.
+
+- **`graphify-test` worktree only (side-experiment, OFF critical path, 2026-06-10 04:06):** Graphify wired
+  as a standalone read-only MCP server here — no installer/CLAUDE.md/skill pollution; `.graphifyignore`
+  fences all docs+markdown+custom skills; worktree-scoped post-commit auto-sync + graph.json hot-reload;
+  blast radius proven via CLI + MCP; baseline `401b176`. **Next:** open a fresh CC session in this worktree
+  to confirm `mcp__graphify__*` tools surface to the agent; then Roi decides keep/discard. Bridge →
+  `journal/context/next.md`. (Does not change the main v1/v2 thread below.)
+
 - **NOW (2026-06-10 ~01:42, STOP): DAILY-DRIVER BACKGROUND LAUNCH + `primary` RE-WARMED (real account).**
   `npm run daily` [primary] / `daily:scratch` now launch the persistent profile **detached** (`nohup`+`disown` →
   logfile under `$XDG_RUNTIME_DIR/feather/`, PID file, double-launch guard) so it frees the terminal; closing the
