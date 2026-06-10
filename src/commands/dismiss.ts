@@ -1,5 +1,5 @@
 import type { CommandHandler, CommandContext } from "./handler";
-import type { DismissInput, DismissOutput, ObserveResult, ObserveAction } from "../sessions/types";
+import type { DismissInput, DismissOutput, ObserveResult, ObserveAction, Overlay } from "../sessions/types";
 import { ObserveHandler } from "./observe";
 import { ClickHandler } from "./click";
 
@@ -10,13 +10,25 @@ export function pickDismissTargets(obs: ObserveResult, labels: string[]): Observ
   if (obs.overlays.length === 0) return [];                      // only act when an overlay exists
   const wanted = labels.map((l) => l.toLowerCase());
   return obs.actions.filter((a) => {
-    const overlayRelated = a.state === "covered" || a.occludedBy != null;
-    // The dismiss button itself usually sits *on top* (actionable) inside the overlay; allow actionable
-    // elements too, but still gate on an overlay being present (checked above).
+    // Tight gate: the button must demonstrably belong to a popup — inside an overlay element,
+    // covered by one, or occluded. The old bare-"actionable" escape hatch could click a page's
+    // own legitimate "Continue" button.
+    const overlayRelated = a.overlayIndex != null || a.state === "covered" || a.occludedBy != null;
     const name = a.name.trim().toLowerCase();
     const labelHit = wanted.some((w) => name === w || name.startsWith(w));
-    return labelHit && (overlayRelated || a.state === "actionable");
+    return labelHit && overlayRelated;
   });
+}
+
+/** Verified-dismiss rule (spec §3.1): linked pick ⇒ the (kind,name) overlay count decreased;
+ * unlinked pick (covered/occluded) ⇒ total overlay count decreased. */
+export function overlayGone(before: Overlay[], after: Overlay[], overlayIndex?: number): boolean {
+  if (overlayIndex != null && before[overlayIndex]) {
+    const t = before[overlayIndex];
+    const count = (list: Overlay[]) => list.filter((o) => o.kind === t.kind && o.name === t.name).length;
+    return count(after) < count(before);
+  }
+  return after.length < before.length;
 }
 
 interface IManager { get(sessionId: string): { getPage(pageId?: string): { pageId: string } }; }
