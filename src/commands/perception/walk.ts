@@ -133,10 +133,10 @@ const WALK_SRC = (frameId: string) => `(() => {
     const k = ov.els.findIndex((o) => containsComposed(o, els[i]));   // containsComposed matches self on its first iteration (n === o): an interactive overlay self-links, which is correct
     if (k >= 0) m.overlayIndex = k;
   });
-  return { elements: els, metas, overlays: ov.metas, total: els.length };
+  return { elements: els, metas, overlays: ov.metas, overlayEls: ov.els, total: els.length };
 })()`;
 
-async function walkFrame(frame: Frame, frameId: string): Promise<{ actions: RawAction[]; overlays: RawOverlay[] }> {
+async function walkFrame(frame: Frame, frameId: string): Promise<{ actions: RawAction[]; overlays: RawOverlay[]; overlayEls: ElementHandle[] }> {
   const resHandle = await frame.evaluateHandle(WALK_SRC(frameId));
   try {
     const props = await resHandle.getProperties();
@@ -144,13 +144,42 @@ async function walkFrame(frame: Frame, frameId: string): Promise<{ actions: RawA
     const elProps = await elementsHandle.getProperties();
     const handles: ElementHandle[] = [];
     for (const p of elProps.values()) { const el = p.asElement(); if (el) handles.push(el as ElementHandle); else await p.dispose(); }
+    const overlayElsHandle = props.get("overlayEls")!;
+    const ovProps = await overlayElsHandle.getProperties();
+    const overlayEls: ElementHandle[] = [];
+    for (const p of ovProps.values()) { const el = p.asElement(); if (el) overlayEls.push(el as ElementHandle); else await p.dispose(); }
     const data = (await resHandle.evaluate((r: any) => ({ metas: r.metas, overlays: r.overlays }))) as
       { metas: WalkMeta[]; overlays: RawOverlay[] };
     await elementsHandle.dispose();
+    await overlayElsHandle.dispose();
     const actions = handles.map((handle, i) => ({ handle, frameId, meta: data.metas[i] }));
-    return { actions, overlays: data.overlays };
+    return { actions, overlays: data.overlays, overlayEls };
   } finally {
     await resHandle.dispose();
+  }
+}
+
+/** Index of the top-frame overlay that (composed-tree) contains this child frame's <iframe>
+ * element, or undefined. Both handles live in the top frame's context, so handle-identity
+ * comparison inside one evaluate is sound. */
+async function overlayIndexOfFrame(top: Frame, child: Frame, overlayEls: ElementHandle[]): Promise<number | undefined> {
+  const fe = await child.frameElement().catch(() => null);
+  if (!fe) return undefined;
+  try {
+    const idx = await top.evaluate(
+      ({ els, fe }: { els: Element[]; fe: Element }) =>
+        els.findIndex((o) => {
+          let n: any = fe;
+          while (n) { if (n === o) return true; n = n.parentNode || (n.getRootNode && (n.getRootNode() as any).host); }
+          return false;
+        }),
+      { els: overlayEls, fe } as any,
+    );
+    return idx >= 0 ? idx : undefined;
+  } catch {
+    return undefined;
+  } finally {
+    await fe.dispose().catch(() => {});
   }
 }
 
@@ -160,21 +189,42 @@ export async function walkAllFrames(page: Page): Promise<{ actions: RawAction[];
   const topOrigin = safeOrigin(top.url());
   const actions: RawAction[] = [];
   const overlays: RawOverlay[] = [];
+  let topOverlayEls: ElementHandle[] = [];
 
-  async function visit(frame: Frame, depth: number) {
+  async function visit(frame: Frame, depth: number, inheritedIdx?: number) {
     const fid = `f${depth}_${actions.length}`;
     try {
       const res = await walkFrame(frame, frame === top ? "top" : fid);
-      if (frame !== top) for (const a of res.actions) delete a.meta.overlayIndex;  // overlays are top-frame only; child indices would dangle
+      if (frame !== top) {
+        // A child frame's own overlayIndex points into its own (discarded) overlay list and
+        // would dangle. Replace it with the top-frame index inherited from the overlay that
+        // contains this frame's <iframe> element — that is what lets /dismiss reach buttons
+        // inside same-origin iframe overlays.
+        for (const a of res.actions) {
+          if (inheritedIdx != null) a.meta.overlayIndex = inheritedIdx;
+          else delete a.meta.overlayIndex;
+        }
+        for (const h of res.overlayEls) h.dispose().catch(() => {});
+      } else {
+        topOverlayEls = res.overlayEls;
+        overlays.push(...res.overlays);
+      }
       actions.push(...res.actions);
-      if (frame === top) overlays.push(...res.overlays);
     } catch { /* frame may be detached/blank; skip */ }
     if (depth >= MAX_FRAME_DEPTH) return;
     for (const child of frame.childFrames()) {
-      if (safeOrigin(child.url()) === topOrigin) await visit(child, depth + 1); // same-origin only
+      if (safeOrigin(child.url()) !== topOrigin) continue; // same-origin only
+      // Deeper frames inherit their parent's link; only top-frame children can be matched
+      // directly (their <iframe> element lives in the top frame, where the overlay handles are).
+      let idx = inheritedIdx;
+      if (frame === top && topOverlayEls.length > 0) {
+        idx = (await overlayIndexOfFrame(top, child, topOverlayEls)) ?? inheritedIdx;
+      }
+      await visit(child, depth + 1, idx);
     }
   }
   await visit(top, 0);
+  for (const h of topOverlayEls) h.dispose().catch(() => {});
   return { actions, overlays };
 }
 

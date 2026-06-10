@@ -91,8 +91,9 @@ override with `labels`). Returns `{ dismissed, overlaysRemaining, observation }`
   `> 0` = another wall is up; call dismiss again (one wall per call).
 - `observation` is a fresh full observe — **act from its refs**; all pre-dismiss refs are expired.
   No follow-up observe needed.
-- Costs ~2× an observe internally. Can't reach buttons inside **iframe overlays** — click those
-  directly or use feather-human-handoff.
+- Costs ~2× an observe internally. Reaches buttons inside **same-origin** iframe overlays;
+  **cross-origin** iframe overlays (third-party CAPTCHA frames) are out of reach — use
+  feather-human-handoff for those.
 
 **Navigate:** `POST .../navigate { "url": "https://...", "waitUntil": "domcontentloaded" }` — then
 observe; the page changed and all refs died.

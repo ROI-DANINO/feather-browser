@@ -14,8 +14,9 @@ A CAPTCHA/consent wall is a *typed signal*, not a mystery: the `observe` respons
 overlay (`blocking: true`, high `coverPct`), page elements turn `state: "covered"` with `occludedBy`
 set, and the only `actionable` entries carry an `overlayIndex` (they belong to the overlay). When you
 see that pattern: stop, don't flail — try `dismiss` once if it's a consent banner, else hand off.
-Note: `dismiss` **cannot reach buttons inside iframe overlays** (common for CAPTCHAs and consent
-iframes) — those are exactly the handoff case.
+Note: `dismiss` handles same-origin iframe overlays, but **cannot reach buttons inside
+cross-origin iframes** — and third-party CAPTCHA frames are exactly that. Those are the handoff
+case.
 
 ## Requirements
 

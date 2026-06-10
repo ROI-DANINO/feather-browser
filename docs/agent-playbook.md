@@ -178,8 +178,10 @@ Returns:
 - `observation` is a full, fresh `ObserveResult`. Any refs from before the dismiss call are
   expired — act from `observation`'s refs directly. No need to call `observe` again after dismiss.
 - When nothing was clicked, `dismissed` is `[]` and `observation` is the baseline observe.
-- **`/dismiss` cannot reach buttons inside iframe overlays** (e.g. same-origin iframe consent
-  dialogs). For those, click the button directly by ref/selector or use `await-human`.
+- **Same-origin iframe overlays are dismissable** (2026-06-10): buttons inside a same-origin
+  consent iframe inherit the iframe overlay's `overlayIndex` in observe, so `/dismiss` reaches
+  them. **Cross-origin iframe overlays remain out of reach** (their documents are never walked —
+  e.g. third-party CAPTCHA frames): use `await-human` for those.
 
 Pass `"labels"` to override the default label list. Re-call if a second overlay appears (`overlaysRemaining > 0`).
 - **Cost:** dismiss runs up to two full observes internally (baseline + verify), so it costs ~2× an observe on dense pages — budget accordingly.

@@ -510,7 +510,7 @@ subsequent commands.
 | `actions[].box` | object | Bounding box: `{ x, y, w, h }` in pixels |
 | `actions[].state` | `"actionable"` \| `"covered"` \| `"disabled"` \| `"offscreen"` | Interactability state |
 | `actions[].occludedBy` | object \| undefined | Present when `state` is `"covered"`: `{ kind: "overlay" \| "iframe" \| "element", name?: string }` |
-| `actions[].overlayIndex` | number \| undefined | When present, this element is contained inside `overlays[overlayIndex]` — it is part of that popup |
+| `actions[].overlayIndex` | number \| undefined | When present, this element is contained inside `overlays[overlayIndex]` — it is part of that popup. Elements inside a **same-origin iframe** whose `<iframe>` element is (or sits inside) a detected overlay inherit that overlay's index, so `dismiss` can reach them. |
 | `overlays` | `Overlay[]` | Viewport-covering fixed/absolute layers detected on the page |
 | `overlays[].kind` | `"modal"` \| `"banner"` \| `"iframe"` | Overlay type |
 | `overlays[].name` | string | Name / text content of the overlay (truncated to 60 chars) |

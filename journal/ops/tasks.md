@@ -43,9 +43,13 @@ command layer (`/blog`+`/notebook`+blog gate); Graphify graduated; NotebookLM pa
       the actual elevation figure; H4 = per-fact pattern checks; E1 = title + point count. H1 was
       already semantic. All 4 changed tasks verified live (E1/M3/H4/H3 PASS; H3's first run was an
       honest PARTIAL that exposed the markup reality). Spec revision log updated.
-- [ ] **Dismiss follow-up (from review): same-origin-iframe overlay gap.** `/dismiss` can't reach
-      buttons inside iframe overlays; fix idea = implicit `overlayIndex` for actions whose frame is a
-      detected overlay iframe. Workaround documented (direct click / await-human). Not urgent.
+- [x] **Same-origin-iframe overlay dismiss gap — FIXED (2026-06-10).** Child-frame actions now
+      inherit the top-frame overlay's `overlayIndex` when their `<iframe>` element is (or sits
+      inside) a detected overlay (composed-containment match via frameElement handle identity;
+      deeper frames inherit downward). TDD: red integration test on a real local-HTTP iframe
+      fixture (`data:` iframes are opaque-origin), then the walk.ts fix; 280u/73i/typecheck green.
+      Cross-origin iframe overlays (third-party CAPTCHA frames) remain await-human territory —
+      playbook/skills/api-reference updated to say exactly that.
 - [ ] **(kind,name) overlay-identity mutation watch-item** — multi-pane popups may misjudge
       `dismissed`; docs already say trust `overlaysRemaining`. Code change only on real-world failure.
 - [ ] **Navigation-survivable resume banner** — re-inject on `framenavigated` (v2 MFA core, OPEN).
