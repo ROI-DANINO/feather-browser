@@ -16,7 +16,19 @@ Pause and write a handoff.
    - Is that right — anything to add or correct?
    - What should the next session focus on?
    - Anything specific to flag?
-4. **Blog check:** did a phase complete, or did a significant decision land this session? If yes, write or update a `blog/NNNN-slug.md` entry (first-person, hero's-journey, ends with a LinkedIn cut) and update `blog/README.md` index. If no, skip.
+4. **Blog gate (always ask, never decide alone):**
+   - Summarize in 1-2 lines what this session might be blog-worthy for, or say "nothing obvious".
+   - If `blog/_pending.md` has owed lines, mention the count.
+   - Ask Roi directly: **write a blog entry this session — yes or no?**
+     - **Yes** → write/update `blog/NNNN-slug.md` about *this session* per the style guardrails in
+       `blog/README.md` (first-person, hero's-journey, ends with a LinkedIn cut). Fold in any owed
+       `blog/_pending.md` moments that fit the narrative and remove those consumed lines. Update
+       the `blog/README.md` index table.
+     - **No** → append one line to `blog/_pending.md` under `## Owed`:
+       `- journal/ops/sessions/<nickname>-<timestamp>.md — <one-line hook> — <YYYY-MM-DD>`
+       (use the session filename step 5 is about to write; capture the hook while it's fresh).
+
+   Nothing is ever written to `blog/` without an explicit yes.
 5. Write `journal/ops/sessions/<nickname>-<timestamp>.md`.
 6. Update `journal/context/active.md`.
 7. **Reconcile desk context.** Identify which desk(s) this session advanced (`browser` / `product` / `automation` / `general`). For those desks only, if a durable desk-level fact changed (architecture decision, spike result, corrected fact), update `journal/work/<desk>/context.md`. Skip untouched desks; do not copy volatile next-action state (that lives in `journal/context/active.md`).
