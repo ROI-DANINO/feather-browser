@@ -6,14 +6,18 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 
 ## Current pointer
 
-- **GRAPHIFY GRADUATED TO `dev` (2026-06-10, side-thread RESOLVED = KEEP).** Roi merged `graphify-test` into
+- **NOW (2026-06-10 ~06:52, STOP): GRAPHIFY GRADUATED TO `dev` (side-thread RESOLVED = KEEP).** Roi merged `graphify-test` into
   `dev` (PoC baseline `401b176` + NotebookLM Project Brain v2 `d3eb790` + journal `f1cb360`). The keep/discard
   gate is closed: Graphify lives in the MAIN repo now as a standalone read-only MCP query layer (no installer,
   no skill/hook pollution). `.graphifyignore` fences all markdown/docs/journal/skills; `.githooks/post-commit`
   made **path-agnostic** and ENABLED in the main repo (`core.hooksPath .githooks`) — incremental no-LLM graph
   refresh on every commit; graph extracted into main `graphify-out/` (gitignored); `~/.claude.json` MCP
   registration repointed to the main repo's `graph.json`. Worktree `../feather-browser-graphify-test` + branch
-  `graphify-test` REMOVED.
+  `graphify-test` REMOVED. **Pushed `c0a3c0a..e3de005` to `origin/dev` (5 commits); tree clean.** Session record:
+  `journal/ops/sessions/graphify-graduated-to-dev-20260610-0652.md`; blog `0018-hired-on-probation.md`.
+  **Verb gotcha:** rebuild the graph with `graphify update .` (no-LLM, code-only) — `graphify extract .` fails here
+  (sweeps 22 doc files into LLM semantic extraction, no backend installed). Stale-MCP note: sessions started before
+  the repoint still aim at the deleted worktree path; fresh sessions are fine.
 - **NotebookLM Project Brain v2 SHIPPED (2026-06-10, now on `dev`).** Full rewrite of
   `docs/feather_notebooklm_pack/`: files `01`-`11` are uploadable RAG sources with Feather-specific boilerplate;
   `README`, `12`, and `13` are human-only; curated codebase topology; glossary uses `### Term`. Verified against
@@ -23,10 +27,12 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
   in code; tentative approach decisions reached for all 3 bugs — Bug 1 dismiss under-report (B: re-observe to verify
   popup gone), Bug 2 accname gap (A: descendant aria-label query), Bug 3 INTERNAL_ERROR on nav-clicks (A: return
   `navigated:true`). Roi: "okay for now but i want to get back to it" — designs tentative, not locked. **No spec
-  written yet.** Bridge: `journal/context/next.md` (2026-06-10 observe-bug-fixes-brainstorm).
+  written yet.** Bridge (archived at the 06:52 stop):
+  `journal/archive/next/2026-06-10/0652-stop-bundle-graphify-graduation.md` (observe-bug-fixes-brainstorm entry).
   (`docs/agent-playbook.md` + `examples/showcase.sh` now COMMITTED — `23061ac`.)
 - **Recommend next:** Resume brainstorm — confirm approach choices, present full design sections, write spec,
-  user review, then invoke writing-plans.
+  user review, then invoke writing-plans. Also open (Roi raised at /stop): should `AGENTS.md` be refreshed for the
+  new-age Feather reality (observe loop, Graphify, daily-driver)? Assess next session.
 - **Prior NOW (2026-06-10 ~01:42, STOP): DAILY-DRIVER BACKGROUND LAUNCH + `primary` RE-WARMED (real account).**
   `npm run daily` [primary] / `daily:scratch` now launch the persistent profile **detached** (`nohup`+`disown` →
   logfile under `$XDG_RUNTIME_DIR/feather/`, PID file, double-launch guard) so it frees the terminal; closing the

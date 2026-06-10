@@ -2,6 +2,17 @@
 
 Use this desk for Playwright integration, agent control, permission boundaries, replay/debug tooling, and profile isolation.
 
+## Graphify code-wiring map (durable, 2026-06-10 — graduated to `dev`)
+
+Standalone read-only **MCP query layer** over a deterministic code graph (`graphify-out/graph.json`,
+gitignored; 719n/1592e at graduation). Agents answer "what breaks if I touch X?" via `graphify affected`
+(CLI) or `mcp__graphify__*` tools — file:line answers, never raw source. **Installer-free by decision**
+(its skill + PreToolUse hook would hijack the custom skill pipeline): `.graphifyignore` fences ALL
+markdown/docs/journal/skills out of the graph (intent layer stays ours); `.githooks/post-commit`
+(path-agnostic, enabled via `core.hooksPath .githooks`) auto-refreshes per commit (~2s, no LLM, detached).
+**Rebuild verb = `graphify update .`** — `graphify extract .` fails (LLM semantic pass on docs, no backend).
+MCP registration = local scope in `~/.claude.json`, NOT committed.
+
 ## Agent Browsing Stack (Phase 5 input — design facts)
 
 Three composable features, build order **Stealth → MFA → Identity**. Specs in `docs/specs/2026-06-07-*`.
