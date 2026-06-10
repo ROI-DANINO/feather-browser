@@ -116,7 +116,7 @@ export interface ObserveResult {
 export interface DismissInput { sessionId: string; pageId?: string; labels?: string[]; }
 export interface DismissOutput {
   pageId: string;
-  dismissed: { ref: string; name: string }[];   // verified-gone only
+  dismissed: { ref: string; name: string }[];   // verified-gone only; ref is already expired (the verify observe rolled the cache) — identifier only, do not act on it
   overlaysRemaining: number;                    // >0 ⇒ another wall is up: call again or adjust labels
   observation: ObserveResult;                   // the latest internal observe — fresh refs + diff, saves a round-trip
 }

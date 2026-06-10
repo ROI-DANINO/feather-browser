@@ -130,7 +130,7 @@ const WALK_SRC = (frameId: string) => `(() => {
     return false;
   }
   metas.forEach((m, i) => {
-    const k = ov.els.findIndex((o) => containsComposed(o, els[i]));   // contains() includes self: an interactive overlay self-links, which is correct
+    const k = ov.els.findIndex((o) => containsComposed(o, els[i]));   // containsComposed matches self on its first iteration (n === o): an interactive overlay self-links, which is correct
     if (k >= 0) m.overlayIndex = k;
   });
   return { elements: els, metas, overlays: ov.metas, total: els.length };

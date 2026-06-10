@@ -84,7 +84,7 @@ describe("POST /v1/sessions/:sessionId/dismiss", () => {
     await api("DELETE", `/v1/sessions/${sessionId}`, { force: false });
   }, 60000);
 
-  it("reports dismissed even when the dismiss button detaches itself mid-click (H1 under-report)", async () => {
+  it("verifies dismissal from reality even when the button self-destructs mid-click", async () => {
     const launch = await api("POST", "/v1/sessions", {
       workspaceId: "dismiss-h1-ws",
       profile: { kind: "persistent" },

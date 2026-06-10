@@ -49,7 +49,12 @@ export class DismissHandler implements CommandHandler<DismissInput, DismissOutpu
     }
     try {
       await this.click.execute({ sessionId: input.sessionId, pageId: baseline.pageId, target: { by: "ref", ref: pick.ref } }, ctx);
-    } catch { /* verification decides — a successful dismiss often kills its own button mid-click */ }
+    } catch {
+      // Verification decides — a successful dismiss often kills its own button mid-click.
+      // The error is intentionally unobserved: input handlers emit no events and there is
+      // no handler-level logging convention to attach it to; the verify observe below is
+      // the single source of truth for what the click achieved.
+    }
     const verify = await this.observe.execute({ sessionId: input.sessionId, pageId: baseline.pageId }, ctx);
     const gone = overlayGone(baseline.overlays, verify.overlays, pick.overlayIndex);
     return {
