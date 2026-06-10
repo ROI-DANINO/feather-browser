@@ -122,7 +122,7 @@ export interface DismissOutput {
 }
 
 export interface ClickInput { sessionId: string; pageId?: string; target: Target; timeoutMs?: number; }
-export interface ClickOutput { pageId: string; clicked: true; navigated?: true; }
+export interface ClickOutput { pageId: string; clicked: true; navigated?: true; newPageId?: string; }
 
 export interface SelectOptionInput {
   sessionId: string;
@@ -188,6 +188,7 @@ export interface ISession {
   closeTab(pageId: string): Promise<void>;
   toRecord(): Omit<SessionRecord, "pages">;
   addPage(page: Page): string;
+  getPageIdFor(page: Page): string | undefined;
   removePage(pageId: string): void;
   getObserveCache(pageId: string): import("./session").ObserveCacheEntry | undefined;
   setObserveCache(pageId: string, entry: import("./session").ObserveCacheEntry): void;

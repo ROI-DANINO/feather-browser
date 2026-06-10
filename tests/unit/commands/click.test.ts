@@ -6,10 +6,18 @@ vi.mock("../../../src/browser/locators", () => ({ resolveActionable: vi.fn(), re
 
 const fakeAct = { click: vi.fn().mockResolvedValue(undefined) };
 const probe = vi.fn().mockResolvedValue(1);
-const mockPage = {};
+let capturedPageCb: ((p: unknown) => void) | undefined;
+const mockContext = {
+  on: vi.fn((event: string, cb: (p: unknown) => void) => {
+    if (event === "page") capturedPageCb = cb;
+  }),
+  off: vi.fn(),
+};
+const mockPage = { context: () => mockContext };
 const mockSession = {
   getPage: vi.fn().mockReturnValue({ pageId: "page_001", page: mockPage }),
   getObserveCache: vi.fn().mockReturnValue(undefined),
+  getPageIdFor: vi.fn().mockReturnValue(undefined),
 };
 const mockManager = { get: vi.fn().mockReturnValue(mockSession) };
 const ctx = { requestId: "req_test" };
@@ -17,9 +25,14 @@ const ctx = { requestId: "req_test" };
 describe("ClickHandler", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    capturedPageCb = undefined;
+    mockContext.on.mockImplementation((event: string, cb: (p: unknown) => void) => {
+      if (event === "page") capturedPageCb = cb;
+    });
     (resolveActionable as any).mockReturnValue({ act: fakeAct, probe });
     mockSession.getPage.mockReturnValue({ pageId: "page_001", page: mockPage });
     mockSession.getObserveCache.mockReturnValue(undefined);
+    mockSession.getPageIdFor.mockReturnValue(undefined);
     mockManager.get.mockReturnValue(mockSession);
   });
 
@@ -49,5 +62,30 @@ describe("ClickHandler", () => {
     fakeAct.click.mockRejectedValueOnce(new Error("boom"));
     await expect(new ClickHandler(mockManager as any).execute(
       { sessionId: "ses", target: { by: "css", selector: "a" } }, ctx)).rejects.toThrow("boom");
+  });
+
+  it("reports newPageId when the click spawns a new page", async () => {
+    const newPage = { fake: "popup" };
+    fakeAct.click.mockImplementationOnce(async () => { capturedPageCb?.(newPage); });
+    mockSession.getPageIdFor.mockReturnValue("page_002");
+    const result = await new ClickHandler(mockManager as any).execute(
+      { sessionId: "ses", target: { by: "css", selector: "a" } }, ctx);
+    expect(result).toEqual({ pageId: "page_001", clicked: true, newPageId: "page_002" });
+    expect(mockSession.getPageIdFor).toHaveBeenCalledWith(newPage);
+    expect(mockContext.off).toHaveBeenCalledWith("page", expect.any(Function)); // listener detached
+  });
+
+  it("omits newPageId when no new page appeared", async () => {
+    const result = await new ClickHandler(mockManager as any).execute(
+      { sessionId: "ses", target: { by: "css", selector: "a" } }, ctx);
+    expect(result).toEqual({ pageId: "page_001", clicked: true });
+    expect(mockContext.off).toHaveBeenCalledWith("page", expect.any(Function));
+  });
+
+  it("detaches the listener even when the click throws", async () => {
+    fakeAct.click.mockRejectedValueOnce(new Error("boom"));
+    await expect(new ClickHandler(mockManager as any).execute(
+      { sessionId: "ses", target: { by: "css", selector: "a" } }, ctx)).rejects.toThrow("boom");
+    expect(mockContext.off).toHaveBeenCalledWith("page", expect.any(Function));
   });
 });
