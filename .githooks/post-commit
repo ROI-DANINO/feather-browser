@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# ─────────────────────────────────────────────────────────────────────────
+# Graphify auto-sync — worktree-local post-commit hook.
+#
+# Keeps graphify-out/graph.json in sync after every commit with ZERO friction:
+#   • `graphify update` = incremental AST re-extract, NO LLM, ~2s on this repo
+#   • runs detached in the background so it NEVER blocks your commit
+#   • scoped to THIS worktree only (core.hooksPath set via --worktree config),
+#     so your main feather-browser repo is never touched
+#
+# Installed manually (NOT via `graphify install`) to keep your skills/CLAUDE.md
+# pipeline clean. To disable: `git config --worktree --unset core.hooksPath`.
+# ─────────────────────────────────────────────────────────────────────────
+set -u
+
+WT="/home/roking/Desktop/Projects/feather-browser-graphify-test"
+GRAPHIFY="/home/roking/.local/bin/graphify"
+LOG="$WT/graphify-out/.post-commit.log"
+
+# Only act inside this worktree (defensive: ignore if somehow invoked elsewhere).
+[ "$(git rev-parse --show-toplevel 2>/dev/null)" = "$WT" ] || exit 0
+
+cd "$WT" || exit 0
+
+# Fire-and-forget: incremental, no-LLM graph refresh in the background.
+{
+  echo "── $(date -Is) post-commit refresh for $(git rev-parse --short HEAD) ──"
+  "$GRAPHIFY" update .
+} >>"$LOG" 2>&1 &
+disown 2>/dev/null || true
+
+exit 0
