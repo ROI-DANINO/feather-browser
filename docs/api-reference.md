@@ -99,11 +99,11 @@ Launches a new headless Chromium browser session.
 | `profile` | object | Yes | Profile configuration (see below) |
 | `profile.kind` | `"persistent"` \| `"disposable"` | Yes | Whether to use a persisted profile directory or a temporary one deleted on close |
 | `workspaceId` | string | No | Caller-supplied workspace identifier attached to the session record |
-| `browserMode` | `"chromium-new-headless"` \| `"chromium-headless-shell"` | No | Which Chromium binary/mode to use |
-| `viewport` | object | No | Initial viewport size |
+| `browserMode` | `"chromium-new-headless"` \| `"chromium-headless-shell"` \| `"chromium-headed-cdp"` | No | Which Chromium binary/mode to use |
+| `viewport` | object | No | Initial viewport size. In `chromium-headed-cdp` mode this sets the real OS **window** size via `--window-size` (content viewport ≈ window minus browser chrome) — Playwright viewport emulation is deliberately not used there, to keep the headed fingerprint faithful. Defaults to 1280×800 in all modes. |
 | `viewport.width` | number | Yes (if `viewport` present) | Viewport width in pixels |
 | `viewport.height` | number | Yes (if `viewport` present) | Viewport height in pixels |
-| `proxy` | object \| `null` | No | Proxy configuration; pass `null` to explicitly disable |
+| `proxy` | object \| `null` | No | Proxy configuration; pass `null` to explicitly disable. **Not applied in `chromium-headed-cdp` mode** — supplying one there logs a `session.option.ignored` warning instead of silently dropping it |
 | `proxy.server` | string | Yes (if `proxy` present) | Proxy server URL (e.g. `"http://proxy.example.com:8080"`) |
 | `proxy.username` | string | No | Proxy authentication username |
 | `proxy.password` | string | No | Proxy authentication password |
@@ -119,7 +119,7 @@ Launches a new headless Chromium browser session.
 | `sessionId` | string | Unique session identifier |
 | `workspaceId` | string | Workspace identifier (defaults to a generated value if not supplied) |
 | `profileKind` | `"persistent"` \| `"disposable"` | Profile kind used |
-| `browserMode` | `"chromium-new-headless"` \| `"chromium-headless-shell"` | Browser mode in use |
+| `browserMode` | `"chromium-new-headless"` \| `"chromium-headless-shell"` \| `"chromium-headed-cdp"` | Browser mode in use |
 | `state` | `"launching"` \| `"running"` \| `"closing"` \| `"closed"` \| `"failed"` | Current session lifecycle state |
 | `profilePath` | string | Absolute path to the browser profile directory |
 | `debugDir` | string | Absolute path to the session debug artifact directory |
@@ -295,6 +295,81 @@ curl -s -X POST http://localhost:4000/v1/sessions/ses_abc123/navigate \
   -H "X-Feather-Token: $(cat /path/to/token)" \
   -H "Content-Type: application/json" \
   -d '{"pageId": "page_xyz789", "url": "https://example.com"}'
+```
+
+---
+
+#### `GET /v1/sessions/:sessionId/tabs` — List open tabs
+
+Enumerates every open tab in the session, including tabs spawned by page-side actions (a
+`target="_blank"` link click, `window.open`). This is the **ground truth for tab discovery**: a
+click that opens a new tab returns `clicked: true` (plus a best-effort `newPageId` when the event
+lands in the click window) without navigating the active page — list the tabs to find the new page.
+
+**Path parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sessionId` | string | Session identifier |
+
+**Response `data`:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `sessionId` | string | The session identifier |
+| `pages` | `PageInfo[]` | All open tabs |
+| `pages[].pageId` | string | Page identifier |
+| `pages[].url` | string | Current page URL |
+| `pages[].title` | string | Current page title |
+| `pages[].loadState` | string | Current page load state |
+
+**Error responses:**
+
+| Status | Code | When |
+|--------|------|------|
+| 404 | `SESSION_NOT_FOUND` | No session exists with the given `sessionId` |
+
+**Example:**
+
+```bash
+curl -s http://localhost:4000/v1/sessions/ses_abc123/tabs \
+  -H "X-Feather-Token: $(cat /path/to/token)"
+```
+
+---
+
+#### `GET /v1/sessions/:sessionId/health` — Session health probe
+
+Answers "is the browser actually alive?" in one call, so a coordinator can distinguish *my agent
+died* from *the browser died* after a failure. `alive: true` means the session's default page
+answered a `title()` round-trip within ~2 s.
+
+**Path parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sessionId` | string | Session identifier |
+
+**Response `data`:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `sessionId` | string | The session identifier |
+| `state` | string | Session lifecycle state (`running`, `closing`, …) |
+| `pages` | number | Count of open tabs |
+| `alive` | boolean | Whether the browser answered the probe (always `false` when not `running`) |
+
+**Error responses:**
+
+| Status | Code | When |
+|--------|------|------|
+| 404 | `SESSION_NOT_FOUND` | No session exists with the given `sessionId` |
+
+**Example:**
+
+```bash
+curl -s http://localhost:4000/v1/sessions/ses_abc123/health \
+  -H "X-Feather-Token: $(cat /path/to/token)"
 ```
 
 ---
@@ -654,7 +729,7 @@ curl -s -X POST http://localhost:4000/v1/sessions/ses_abc123/dismiss \
 
 #### `POST /v1/sessions/:sessionId/extract` — Extract structured data
 
-Runs a field-extraction recipe against the current page using CSS selectors. Each field either reads text content or an attribute from the first matching element.
+Runs a field-extraction recipe against the current page using CSS selectors. Each field reads text content, an element attribute, or an input's current value from the first matching element.
 
 **Path parameters:**
 
@@ -667,11 +742,11 @@ Runs a field-extraction recipe against the current page using CSS selectors. Eac
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `pageId` | string | No | Target page; defaults to the first page |
-| `recipe` | object | Yes | Extraction recipe |
+| `recipe` | object | Yes* | Extraction recipe. *Ergonomic fallback: a body with `fields` at the top level (no `recipe` wrapper) is accepted and wrapped automatically |
 | `recipe.fields` | object | Yes | Map of field name → field descriptor |
 | `recipe.fields.<name>.selector` | string | Yes | CSS selector for the target element |
-| `recipe.fields.<name>.type` | `"text"` \| `"attribute"` | Yes | Whether to extract text content or an element attribute |
-| `recipe.fields.<name>.attribute` | string | No (required when `type` is `"attribute"`) | Attribute name to read (e.g. `"href"`, `"src"`) |
+| `recipe.fields.<name>.type` | `"text"` \| `"attribute"` \| `"value"` | No | What to extract. Defaults to `"text"`; inferred as `"attribute"` when an `attribute` name is present. `"value"` reads an input/textarea/select's **current value** (invisible to text reads) — yields `null` on non-input elements |
+| `recipe.fields.<name>.attribute` | string | No (required when `type` is explicitly `"attribute"`) | Attribute name to read (e.g. `"href"`, `"src"`) |
 | `recipe.limits` | object | No | Output limits |
 | `recipe.limits.items` | integer (> 0) | No | Reserved for future multi-result extraction; currently ignored (the first matching element is always used) |
 | `recipe.limits.textChars` | integer (> 0) | No | Truncates extracted text values to this many characters |
@@ -774,6 +849,7 @@ It is not valid with `by="ref"` (refs are already single elements).
 | `pageId` | string | The resolved page identifier |
 | `clicked` | `true` | Always `true` on success |
 | `navigated` | `true` \| undefined | Present when the click triggered a page navigation and the element/context was torn down before Playwright could confirm completion. This is a hint, never a promise — re-observe and verify the screen before continuing. Previously these cases surfaced as `INTERNAL_ERROR` 500. |
+| `newPageId` | string \| undefined | Present when the click spawned a new tab (e.g. a `target="_blank"` link) **and** the new-page event landed inside the click window. **Strictly best-effort** — the event usually arrives after the click response, so absence proves nothing. `GET /v1/sessions/:sessionId/tabs` is the ground truth for tab discovery (same signal-vs-ground-truth pattern as `/dismiss`). |
 
 **Error responses:**
 
@@ -969,6 +1045,11 @@ matching pause, and renders a confirmation. Idempotent: a reused/expired token r
 #### `POST /v1/sessions/:sessionId/screenshot` — Take a screenshot
 
 Captures a PNG screenshot of the current page and saves it to the session's debug directory.
+
+> **The response is an artifact descriptor (JSON), not image bytes.** Read the PNG from the
+> returned `path` (e.g. with your file-read tool) — don't `curl -o image.png` this endpoint.
+> Screenshot-then-read is the sanctioned **vision fallback** when structured reads (`snapshot` /
+> `observe`) overflow or the answer is inherently visual.
 
 **Path parameters:**
 

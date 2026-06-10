@@ -81,6 +81,10 @@ POST /v1/sessions/:sessionId/observe   {}
 If click/press/select-option returns `navigated: true`, the action tore down the page mid-flight —
 a **hint, not a promise**. Re-observe and verify the landed screen; don't assume failure.
 
+If a click opened a **new tab** (`target="_blank"` link), the active page stays put. The response
+*may* include `newPageId` (best-effort signal); the ground truth is `GET .../tabs` — the spawned
+tab appears there moments later. Act on it via its `pageId`.
+
 **Dismiss an overlay (consent banner, popup):**
 ```http
 POST /v1/sessions/:sessionId/dismiss   {}
@@ -109,6 +113,13 @@ observe; the page changed and all refs died.
 
 **Open a tab:** `POST /v1/sessions/:sessionId/tabs` — returns `{ pageId, url, title }`. Pass the new
 `pageId` in all subsequent page actions. Refs and diffs are per-page.
+
+**List tabs:** `GET /v1/sessions/:sessionId/tabs` — all open tabs `{ pageId, url, title, loadState }`.
+The discovery tool after a click spawned a tab or when you've lost track of `pageId`s.
+
+**Health probe:** `GET /v1/sessions/:sessionId/health` — `{ state, pages, alive }`. After a failure
+on *your* side, this tells you in one call whether the browser died too (`alive: false`) or is
+still fine and you can resume on the same session.
 
 **Close a tab:** `DELETE /v1/sessions/:sessionId/tabs/:pageId` — returns remaining tabs. Close tabs
 you're done with; the last tab can't be closed this way (`CANNOT_CLOSE_LAST_TAB`) — end the session

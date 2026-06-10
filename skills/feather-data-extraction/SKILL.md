@@ -39,7 +39,11 @@ POST /v1/sessions/:sessionId/extract
     "image": { "selector": "img.hero", "type": "attribute", "attribute": "src" }
 } } }
 ```
-- `type: "text"` grabs the element's text; `type: "attribute"` grabs the named `attribute`.
+- `type: "text"` grabs the element's text; `type: "attribute"` grabs the named `attribute`;
+  `type: "value"` grabs an **input/textarea/select's current value** — what's typed in the box,
+  which text reads can't see. Use it to verify a form before submitting (no screenshot detour).
+- `type` is optional: defaults to `"text"`, inferred as `"attribute"` when `attribute` is present.
+  A flat `{ "fields": { … } }` body without the `recipe` wrapper is also accepted.
 - **Each field selector resolves to its FIRST match.** This is intentional (no strict-mode crash on
   multiple matches) — but it means you can't collect a whole list with one top-level selector.
 

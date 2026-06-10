@@ -226,6 +226,11 @@ If the response contains `"navigated": true`, the click fired and the page navig
 is a hint, not a promise. Re-observe and verify the screen before continuing; don't assume the
 click failed.
 
+If the click opened a **new tab** (a `target="_blank"` link), the active page won't navigate. The
+response *may* carry `"newPageId"` (best-effort — the popup event usually lands after the click
+returns), but the reliable move is `GET /v1/sessions/:sessionId/tabs`: the spawned tab appears
+there moments later. Act on it by passing its `pageId`.
+
 ### Press a key
 ```http
 POST /v1/sessions/:sessionId/press
@@ -253,6 +258,15 @@ POST /v1/sessions/:sessionId/extract
 Each field selector resolves to its **first match**. To collect repeating rows, scope selectors to
 the row container.
 
+Ergonomics: `type` is optional — it defaults to `"text"`, and is inferred as `"attribute"` when an
+`attribute` name is present. A flat body without the `recipe` wrapper (`{ "fields": { … } }`) is
+also accepted. To read what's currently typed in an **input/textarea/select** (invisible to text
+reads — e.g. verifying a form before submitting), use `"type": "value"`:
+```http
+POST /v1/sessions/:sessionId/extract
+{ "fields": { "title": { "selector": "#event-title", "type": "value" } } }
+```
+
 ### Hand off a step to a human (CAPTCHA, consent click)
 ```http
 POST /v1/sessions/:sessionId/await-human
@@ -272,6 +286,33 @@ POST /v1/sessions/:sessionId/tabs
 ```
 Returns `{ pageId, url, title }`. The new tab shares the session's cookies and trust context —
 this is the Cookie Mine entry point. Pass the returned `pageId` in all subsequent page actions.
+
+### List open tabs (find a tab a click spawned)
+```http
+GET /v1/sessions/:sessionId/tabs
+```
+Returns `{ sessionId, pages: [{ pageId, url, title, loadState }] }` — the ground truth for tab
+discovery. Use it after a click on a link that opens in a new tab, or any time you've lost track
+of `pageId`s.
+
+### Check the browser is alive (after a failure on your side)
+```http
+GET /v1/sessions/:sessionId/health
+```
+Returns `{ sessionId, state, pages, alive }`. `alive: true` = the browser answered a probe within
+~2s. Use it to tell "my connection/agent died" from "the browser died" before tearing anything
+down. Every `POST` action you make is also traced in the session log as `action.completed`
+(action name + status code only).
+
+### Read the page visually (screenshot fallback)
+```http
+POST /v1/sessions/:sessionId/screenshot
+{ "fullPage": false }
+```
+Returns an **artifact descriptor** `{ artifactId, path, mimeType }`, *not* image bytes — read the
+PNG from `path` with your file-read tool. This is the sanctioned vision fallback when `snapshot`/
+`observe` overflow on heavy pages or the answer is inherently visual (charts, image content,
+layout state).
 
 ### Close a tab when done
 ```http
