@@ -849,7 +849,7 @@ It is not valid with `by="ref"` (refs are already single elements).
 | `pageId` | string | The resolved page identifier |
 | `clicked` | `true` | Always `true` on success |
 | `navigated` | `true` \| undefined | Present when the click triggered a page navigation and the element/context was torn down before Playwright could confirm completion. This is a hint, never a promise — re-observe and verify the screen before continuing. Previously these cases surfaced as `INTERNAL_ERROR` 500. |
-| `newPageId` | string \| undefined | Present when the click spawned a new tab (e.g. a `target="_blank"` link) **and** the new-page event landed inside the click window. **Strictly best-effort** — the event usually arrives after the click response, so absence proves nothing. `GET /v1/sessions/:sessionId/tabs` is the ground truth for tab discovery (same signal-vs-ground-truth pattern as `/dismiss`). |
+| `newPageId` | string \| undefined | Present when the click spawned a new tab (e.g. a `target="_blank"` link) **and** the new-page event landed inside the click window. **Strictly best-effort** — the event usually arrives after the click response, so absence proves nothing, and concurrent clicks on the same session can attribute each other's popups. `GET /v1/sessions/:sessionId/tabs` is the ground truth for tab discovery (same signal-vs-ground-truth pattern as `/dismiss`). |
 
 **Error responses:**
 

@@ -198,4 +198,36 @@ describe("per-action session log", () => {
     // The hook must never log request bodies.
     expect(JSON.stringify(entry)).not.toContain("SECRET-MARKER");
   });
+
+  it("does NOT create log files for unauthenticated or unknown-session requests", async () => {
+    // Unauthenticated request (401 from tokenAuth) on an attacker-chosen sessionId.
+    const unauth = await fetch(`${baseUrl}/v1/sessions/attacker-evil/click`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ target: { by: "css", selector: "a" } }),
+    });
+    expect(unauth.status).toBe(401);
+
+    // Authenticated request against a session that does not exist (404 SESSION_NOT_FOUND).
+    const ghost = await fetch(`${baseUrl}/v1/sessions/ses_ghost_404/click`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Feather-Token": testToken },
+      body: JSON.stringify({ target: { by: "css", selector: "a" } }),
+    });
+    expect(ghost.status).toBe(404);
+
+    // Unknown route under the sessions prefix (framework 404, no preHandler at all).
+    const bogusRoute = await fetch(`${baseUrl}/v1/sessions/spamspam/notarealaction`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{}",
+    });
+    expect(bogusRoute.status).toBe(404);
+
+    // None of these may have created a session log file.
+    await new Promise((r) => setTimeout(r, 300)); // give a buggy async hook time to misbehave
+    for (const bad of ["attacker-evil", "ses_ghost_404", "spamspam"]) {
+      await expect(fs.promises.access(paths.sessionLog(bad))).rejects.toThrow();
+    }
+  });
 });

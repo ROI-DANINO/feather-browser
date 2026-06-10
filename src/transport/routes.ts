@@ -240,6 +240,12 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
     if (!m) return;
     const [, sessionId, action] = m;
     if (action === "resume") return; // unauthenticated human route — keep its surface untouched
+    // onResponse fires for EVERY response, including 401s short-circuited in tokenAuth and the
+    // framework 404 handler — neither passed the auth boundary. Logging there would let a
+    // tokenless client create arbitrary-named session log files (review finding). Only real,
+    // registered sessions get log lines, and never off an auth failure.
+    if (reply.statusCode === 401) return;
+    try { manager.get(sessionId); } catch { return; }
     await actionLogger.log({
       ts: new Date().toISOString(),
       level: "info",

@@ -343,7 +343,17 @@ export class SessionManager implements ISessionManager {
         await fs.promises.mkdir(path.dirname(quarantineDir), { recursive: true });
         try {
           await fs.promises.rename(session.profilePath, quarantineDir);
-        } catch { /* profile may not exist */ }
+        } catch (err) {
+          // Same discipline as the rm branch: a failed quarantine loses the forensic profile —
+          // that must leave a trace, not vanish. (Missing profile dir lands here too; benign.)
+          await this.logger.log({
+            ts: new Date().toISOString(),
+            level: "warn",
+            event: EVENTS.PROFILE_CLEANUP_FAILED,
+            sessionId: session.sessionId,
+            data: { error: (err as any)?.message ?? "unknown", dir: session.profilePath, op: "quarantine-rename" },
+          });
+        }
       } else {
         // Chromium can still be flushing profile files as we delete (the 3s exit-wait above is
         // best-effort and Playwright-managed modes have no child handle at all) — Node's built-in
