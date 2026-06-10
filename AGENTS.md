@@ -4,7 +4,7 @@ This file is a constraint and guide for all contributors and AI sessions working
 
 ## Project Identity
 
-Feather Browser is a minimalist, stability-first browser project. The current goal is a reliable headless browser core with a clean HTTP API. It is not an agent platform, a desktop application, or a production service yet.
+Feather Browser is a minimalist, stability-first browser project. Its current shape is **Feather v1 — "It runs errands for me"**: an agent-drivable browser runtime with a local HTTP API and an action-shaped perception loop (`observe → act by ref → re-observe`), riding warmed human sessions (the Cookie Mine). The front door is `feather.md`; version roadmaps live in `docs/roadmap/{v1,v2,v3}.md`. It is not a desktop application or a production service yet.
 
 Long-term vision: a Hybrid Browser — a hyper-lightweight Chromium-compatible daily driver with a Zen-inspired shell, and a "Cookie Mine" where human browsing builds a shared persistent trust context that local AI agents piggyback on via the Fastify MCP-compatible hub. The human browser (Phase 4) is the trust foundation that Phase 5+ agent automation depends on.
 
@@ -38,12 +38,15 @@ This is the same spirit as the research-driven rule below (ground calls in evide
 
 ## Current Phase
 
-**Phase 4 — Visual Desktop Shell.** Phases 0–3 are complete (Phase 3 merged to `master`); the
-Stabilization & Linux-Readiness bridge (S1 + S2 + S3) is closed. Feather targets **Linux (Fedora)**;
-runtime is **host-primary** (ADR-0004).
+**Phase 4a — Feather v1 ("It runs errands for me").** Phases 0–3 are complete (Phase 3 merged to
+`master`); the Stabilization & Linux-Readiness bridge (S1 + S2 + S3) is closed. Phase 4 was split:
+**4a = Feather Core / v1 (current)**, **4b = visual desktop shell (deferred)**. v1 is proven
+end-to-end (Instagram test + 10-task showcase suite) and sighted via the observe loop. Feather
+targets **Linux (Fedora)**; runtime is **host-primary** (ADR-0004).
 
 This file does not narrate live state (that drifts). Read the owners instead:
 
+- **Front door / product shape:** `feather.md`
 - **Current state + next action:** `journal/context/active.md` *(the single owner)*
 - Machine phase pointer: `journal/ops/phase.md`
 - Full roadmap + exit criteria: `ROADMAP.md`
@@ -92,7 +95,7 @@ Rules:
 When a fresh session receives a project goal:
 
 1. Read this file.
-2. Read `journal/context/active.md` (the state owner) and `ROADMAP.md` to understand current state.
+2. Read `journal/context/active.md` (the state owner) and `ROADMAP.md` to understand current state; `feather.md` is the product front door if you need the shape of the whole.
 3. Run `/init` or `/start` if available.
 4. Only after orientation, begin research or planning work.
 
@@ -113,7 +116,26 @@ When you need to *operate* Feather (drive a site through the HTTP API — e.g. t
 - **`feather-form-filling`** / **`feather-human-handoff`** / **`feather-data-extraction`** — focused workflow skills that auto-trigger on their own keywords (forms/signup, CAPTCHA/MFA, scrape/read).
 - **`docs/agent-playbook.md`** — the full reference behind the skills (every endpoint, profiles, modes, gotchas). The skills point here for depth.
 
+> The canonical operating loop is now **`observe → act by ref → re-observe (diff)`** (see
+> `docs/agent-playbook.md`); the skills' snapshot-first framing predates it and a rewrite is queued.
+> Where they conflict, the playbook wins.
+
 These are operator-facing (how to *use* Feather). The rest of this file is contributor-facing (how to *build* Feather).
+
+## Code-Wiring Map (Graphify)
+
+The repo carries a deterministic code graph (`graphify-out/graph.json`, gitignored, auto-refreshed by
+the `.githooks/post-commit` hook on every commit — ~2s, no LLM). Use it before changing code:
+
+- **Before refactoring or touching a shared symbol, check the blast radius:** `graphify affected "<Symbol>"`
+  (CLI) or the `mcp__graphify__*` tools (`query_graph`, `get_neighbors`, …). Answers are metadata +
+  `file:line`, never raw source.
+- **Rebuild verb is `graphify update .`** — do NOT use `graphify extract .` (it sweeps docs into an LLM
+  semantic pass that has no backend here and fails).
+- The graph maps **code wiring only**: `.graphifyignore` deliberately fences out all markdown, `docs/`,
+  `journal/`, `blog/`, and `skills/` — intent lives in markdown and stays out of the graph. Keep it that way.
+- Never run `graphify install` (its skill + PreToolUse hook collide with this repo's skill pipeline).
+  The MCP registration is local-scope in `~/.claude.json`, not committed.
 
 ## Session Memory Rules
 
@@ -139,7 +161,7 @@ Every proposed change must be classified before implementation:
 - **Core browser stability** — fix correctness, reliability, or safety issues in existing behavior
 - **UI readiness** — infrastructure for a future UI (event stream, stable API contracts)
 - **Future agent layer** — deferred; do not implement without explicit approval
-- **Do not implement yet** — out of scope for Phase 3
+- **Do not implement yet** — out of scope for the current phase
 
 When in doubt: write a doc, ask for approval. Do not add code, dependencies, or new top-level modules without explicit classification.
 

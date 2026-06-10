@@ -31,8 +31,8 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
   `journal/archive/next/2026-06-10/0652-stop-bundle-graphify-graduation.md` (observe-bug-fixes-brainstorm entry).
   (`docs/agent-playbook.md` + `examples/showcase.sh` now COMMITTED — `23061ac`.)
 - **Recommend next:** Resume brainstorm — confirm approach choices, present full design sections, write spec,
-  user review, then invoke writing-plans. Also open (Roi raised at /stop): should `AGENTS.md` be refreshed for the
-  new-age Feather reality (observe loop, Graphify, daily-driver)? Assess next session.
+  user review, then invoke writing-plans. (AGENTS.md new-age refresh: DONE post-stop 2026-06-10 — phase 4a/v1
+  identity, feather.md front door, Graphify contributor section, observe-loop note, Phase-3 leftover fixed.)
 - **Prior NOW (2026-06-10 ~01:42, STOP): DAILY-DRIVER BACKGROUND LAUNCH + `primary` RE-WARMED (real account).**
   `npm run daily` [primary] / `daily:scratch` now launch the persistent profile **detached** (`nohup`+`disown` →
   logfile under `$XDG_RUNTIME_DIR/feather/`, PID file, double-launch guard) so it frees the terminal; closing the
