@@ -1,0 +1,38 @@
+# ── Graphify scope: CODE WIRING ONLY ──────────────────────────────────────
+# Separation of concerns: your INTENT (markdown, specs, journal, custom skills)
+# stays out of the graph. Graphify indexes only code structure — the AST wiring
+# (imports, call graphs, classes, functions). gitignore syntax; ! negation works.
+# NOTE: when a .graphifyignore is present, graphify uses it instead of falling
+# back to .gitignore, so we re-declare deps/build/artifacts here explicitly.
+
+# ── Intent & documentation (the markdown-based pipeline) ───────────────────
+*.md
+*.mdx
+docs/
+journal/
+blog/
+research/
+inbox/
+skills/        # custom Claude skills — intent, not wiring
+.claude/
+.remember/
+.pi/
+.github/
+
+# ── Dependencies, build output, generated ─────────────────────────────────
+node_modules/
+dist/
+build/
+coverage/
+graphify-out/
+package-lock.json
+
+# ── Binaries & media (never useful to the graph) ──────────────────────────
+*.mp4
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.pdf
+*.webm
+*.zip

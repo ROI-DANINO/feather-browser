@@ -6,20 +6,27 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 
 ## Current pointer
 
-- **SIDE-THREAD (2026-06-10 ~03:41, /next): Graphify trial fenced in isolated worktree.** Analyzed
-  `safishamsi/graphify` (verdict: MCP-query-layer ONLY, NO `graphify install` — its skill+PreToolUse hook collide
-  with our custom skill pipeline). Created worktree **`graphify-test`** (`../feather-browser-graphify-test`, branch
-  off `dev` @ c0a3c0a). Task "Implement Graphify MCP server integration" is **worktree-scoped** — see bridge in
-  `journal/context/next.md` (2026-06-10 03:41). **Guard: if `git branch --show-current` != `graphify-test`, ignore that
-  task — keep graphify deps/artifacts out of `dev`.** Main Feather thread below is UNAFFECTED.
+- **GRAPHIFY GRADUATED TO `dev` (2026-06-10, side-thread RESOLVED = KEEP).** Roi merged `graphify-test` into
+  `dev` (PoC baseline `401b176` + NotebookLM Project Brain v2 `d3eb790` + journal `f1cb360`). The keep/discard
+  gate is closed: Graphify lives in the MAIN repo now as a standalone read-only MCP query layer (no installer,
+  no skill/hook pollution). `.graphifyignore` fences all markdown/docs/journal/skills; `.githooks/post-commit`
+  made **path-agnostic** and ENABLED in the main repo (`core.hooksPath .githooks`) — incremental no-LLM graph
+  refresh on every commit; graph extracted into main `graphify-out/` (gitignored); `~/.claude.json` MCP
+  registration repointed to the main repo's `graph.json`. Worktree `../feather-browser-graphify-test` + branch
+  `graphify-test` REMOVED.
+- **NotebookLM Project Brain v2 SHIPPED (2026-06-10, now on `dev`).** Full rewrite of
+  `docs/feather_notebooklm_pack/`: files `01`-`11` are uploadable RAG sources with Feather-specific boilerplate;
+  `README`, `12`, and `13` are human-only; curated codebase topology; glossary uses `### Term`. Verified against
+  RAG packaging rules + safety claims. Design `docs/specs/2026-06-10-notebooklm-project-brain-v2-design.md`,
+  plan `docs/plans/2026-06-10-notebooklm-project-brain-v2.md`.
 - **NOW (2026-06-10, /next): OBSERVE BUG FIXES BRAINSTORM IN PROGRESS (mid-session pause).** Root causes explored
   in code; tentative approach decisions reached for all 3 bugs — Bug 1 dismiss under-report (B: re-observe to verify
   popup gone), Bug 2 accname gap (A: descendant aria-label query), Bug 3 INTERNAL_ERROR on nav-clicks (A: return
   `navigated:true`). Roi: "okay for now but i want to get back to it" — designs tentative, not locked. **No spec
   written yet.** Bridge: `journal/context/next.md` (2026-06-10 observe-bug-fixes-brainstorm).
-  **UNCOMMITTED: `docs/agent-playbook.md` + `examples/showcase.sh`.**
-- **Recommend next:** Resume brainstorm — confirm approach choices, present full design sections, write spec to
-  `docs/superpowers/specs/`, user review, then invoke writing-plans. Commit uncommitted files before or alongside.
+  (`docs/agent-playbook.md` + `examples/showcase.sh` now COMMITTED — `23061ac`.)
+- **Recommend next:** Resume brainstorm — confirm approach choices, present full design sections, write spec,
+  user review, then invoke writing-plans.
 - **Prior NOW (2026-06-10 ~01:42, STOP): DAILY-DRIVER BACKGROUND LAUNCH + `primary` RE-WARMED (real account).**
   `npm run daily` [primary] / `daily:scratch` now launch the persistent profile **detached** (`nohup`+`disown` →
   logfile under `$XDG_RUNTIME_DIR/feather/`, PID file, double-launch guard) so it frees the terminal; closing the

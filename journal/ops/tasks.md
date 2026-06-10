@@ -3,15 +3,15 @@
 Checklist only. Front door → `feather.md`; version roadmaps → `docs/roadmap/{v1,v2,v3}.md`;
 execution index → `ROADMAP.md`; live pointer → `journal/context/active.md`.
 
-**Next action = commit + measurement follow-ups (bridge in `journal/context/next.md`), then v2 Gate A.**
-Latest (2026-06-10 ~03:17, /next): **(a) DONE — observe-loop measured on the FULL suite**: 9 PASS + M1 PARTIAL,
-104 API calls **zero ELEMENT_NOT_FOUND**, H2 beat the scripted baseline; 3 product bugs found (`/dismiss`
-under-report, accname gap on svg labels, INTERNAL_ERROR on successful nav-clicks). Roi's semantic audit → Google-first
-research doctrine in `docs/agent-playbook.md` + H1 rewritten semantic (next national holiday, all-day on correct
-date; live PASS). Report: `examples/showcase-output/pass2-observe/results.md`. **Uncommitted:** playbook +
-showcase.sh. Follow-ups queued: operator-skills rewrite to observe loop, the 3 observe bug fixes, suite
-semantic-assertion layer. (b) **v2 Gate A** (ADR-0010) remains the big next. Optional: C4C transcripts; headless-warm
-spike (v2). Prior: perception loop shipped (blog `0017`); daily-driver + primary re-warm (`61fe677`).
+**Next action = resume observe-bug-fixes brainstorm (spec → plan → impl), then v2 Gate A.**
+Latest (2026-06-10): pass-2 observe-loop measurement DONE on the FULL suite (9 PASS + M1 PARTIAL, 104 API calls
+**zero ELEMENT_NOT_FOUND**, H2 beat the scripted baseline; report
+`examples/showcase-output/pass2-observe/results.md`) — playbook + showcase.sh now committed (`23061ac`).
+**NotebookLM Project Brain v2 SHIPPED** and **Graphify GRADUATED to `dev`** via the `graphify-test` merge
+(worktree closed; MCP query layer + post-commit graph auto-sync live in the main repo). Open follow-ups, in order:
+the 3 observe bug fixes (brainstorm paused mid-design — resume it), operator-skills rewrite to the observe loop,
+suite semantic-assertion layer; then **v2 Gate A** (ADR-0010), the big next. Optional: C4C transcripts;
+headless-warm spike (v2). Prior: perception loop shipped (blog `0017`); daily-driver + primary re-warm (`61fe677`).
 
 ---
 
@@ -28,6 +28,10 @@ spike (v2). Prior: perception loop shipped (blog `0017`); daily-driver + primary
 - [x] **4a.9 — LinkedIn debut recording** (`52b63fe`, pushed; in README)
 - [x] **4a.10 — Social-research triage** (inbox clear)
 - [x] **v1→v2→v3 restructure + open-source doctrine** (2026-06-08)
+- [x] **NotebookLM Project Brain v2 — SHIPPED (2026-06-10, `graphify-test` worktree).**
+      Rewrite `docs/feather_notebooklm_pack/` as a coherent project brain with RAG-specific
+      boilerplate, human-only helper files, and curated topology. Design/Plan
+      `docs/specs/2026-06-10-notebooklm-project-brain-v2-{design,plan}.md`.
 
 ### Open v1 work
 

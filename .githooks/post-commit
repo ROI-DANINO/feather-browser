@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# ─────────────────────────────────────────────────────────────────────────
+# Graphify auto-sync — post-commit hook (path-agnostic).
+#
+# Keeps graphify-out/graph.json in sync after every commit with ZERO friction:
+#   • `graphify update` = incremental AST re-extract, NO LLM, ~2s on this repo
+#   • runs detached in the background so it NEVER blocks your commit
+#   • resolves the repo root dynamically (`git rev-parse --show-toplevel`),
+#     so the same hook works in the main repo and in any worktree
+#   • silently no-ops if graphify isn't installed or the graph was never
+#     extracted in this checkout (run `graphify extract .` once to opt in)
+#
+# Installed manually (NOT via `graphify install`) to keep the skills/CLAUDE.md
+# pipeline clean. Enable: `git config core.hooksPath .githooks`.
+# Disable: `git config --unset core.hooksPath`.
+# ─────────────────────────────────────────────────────────────────────────
+set -u
+
+WT="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
+[ -n "$WT" ] || exit 0
+
+GRAPHIFY="$(command -v graphify || true)"
+[ -n "$GRAPHIFY" ] || GRAPHIFY="$HOME/.local/bin/graphify"
+[ -x "$GRAPHIFY" ] || exit 0
+
+# Only refresh checkouts that opted in (graph already extracted).
+[ -f "$WT/graphify-out/graph.json" ] || exit 0
+
+LOG="$WT/graphify-out/.post-commit.log"
+
+cd "$WT" || exit 0
+
+# Fire-and-forget: incremental, no-LLM graph refresh in the background.
+{
+  echo "── $(date -Is) post-commit refresh for $(git rev-parse --short HEAD) ──"
+  "$GRAPHIFY" update .
+} >>"$LOG" 2>&1 &
+disown 2>/dev/null || true
+
+exit 0
