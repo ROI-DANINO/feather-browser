@@ -58,7 +58,7 @@ brittle.
 
 | Preference | Target | When |
 |-----------|--------|------|
-| 1 (best) | `{ "by": "ref", "ref": "e3" }` | From the latest `observe`; most robust + fastest, no guessing. **Valid only until the next `observe` on this page** (else `REF_EXPIRED`). |
+| 1 (best) | `{ "by": "ref", "ref": "obs_a1b2.e3" }` | From the latest `observe`; most robust + fastest, no guessing. Refs are **observe-scoped** (`<observeId>.e<i>`) — always copy the `ref` field verbatim, never hand-construct one. **Valid only until the next `observe` on this page** (else `REF_EXPIRED`). |
 | 2 | `{ "by": "role", "role": "button", "name": "Submit" }` | Buttons, links, inputs with an accessible name |
 | 3 | `{ "by": "text", "text": "Log in" }` | Visible label, no clear role |
 | 4 | `{ "by": "placeholder", "text": "Email" }` | Form inputs with placeholder text |
@@ -71,6 +71,30 @@ index. **Use the `at` field — do not write `>> nth=N` inside a css selector st
 ```json
 { "by": "css", "selector": "input", "at": 2 }
 ```
+
+## Research doctrine: Google-first on a warmed profile
+
+When a task needs *information* (a fact, a date, an address, "find X"), **search Google on a
+warmed profile** — don't guess a topical website and don't reach for weaker engines.
+
+- **Why Google:** highest-quality results, AI Overview, and the warmed session renders it
+  cleanly. Cold/headless disposable profiles hit bot walls on every major engine (measured:
+  DDG serves CAPTCHA to headless Chromium on both its endpoints) — search is a **warmed-profile
+  capability** until headless-warm is proven (v2).
+- **Source page is the answer; AI Overview is a hint.** Use the SERP (including the AI
+  Overview) to *find and rank* sources, then navigate to a result and extract the fact from
+  the source page. Don't quote the AI Overview as the verified answer — it isn't citable and
+  isn't always present.
+- **SERPs are self-describing in `observe`:** each organic result is one action entry with
+  title + source + URL breadcrumb in its `name`. Pick by meaning, click by ref. (No need to
+  extract hrefs and navigate manually; if the click reports `INTERNAL_ERROR`, see the error
+  table — it usually navigated fine.)
+- **Respect the profile's locale.** Warmed profiles may render Google in the human's language
+  (e.g. Hebrew UI). Don't force `hl=en` — operate as the human would; the organic results
+  remain identifiable by name/URL.
+- **Mind temporal meaning.** "Next holiday" means *after today* — resolve relative dates
+  against the current date before acting on extracted facts, and verify the final artifact
+  (calendar date, form value) semantically, not just that a write happened.
 
 ## Recipes
 
@@ -101,9 +125,9 @@ Trimmed example response:
   "title": "Log in",
   "observeId": "obs_a1b2",
   "actions": [
-    { "ref": "e0", "role": "textbox", "name": "Email", "tag": "INPUT",
+    { "ref": "obs_a1b2.e0", "role": "textbox", "name": "Email", "tag": "INPUT",
       "box": { "x": 40, "y": 120, "w": 268, "h": 38 }, "state": "actionable" },
-    { "ref": "e1", "role": "button", "name": "Log in", "tag": "BUTTON",
+    { "ref": "obs_a1b2.e1", "role": "button", "name": "Log in", "tag": "BUTTON",
       "box": { "x": 40, "y": 180, "w": 268, "h": 44 }, "state": "actionable" }
   ],
   "overlays": [],
@@ -254,7 +278,7 @@ instead of deleted.
 | `PROFILE_LOCKED` | 409 | Persistent profile already in use | Close the other session or use a different profile |
 | `SESSION_NOT_RUNNING` | 409 | Session not in `running` state | Re-create the session |
 | `CANNOT_CLOSE_LAST_TAB` | 409 | Tried to close the only remaining tab | Use `DELETE /v1/sessions/:sessionId` to end the session instead |
-| `INTERNAL_ERROR` | 500 | Unexpected server error | Pull a `debug-bundle` and report the `requestId` |
+| `INTERNAL_ERROR` | 500 | Unexpected server error | **On a click/type/press: re-observe before concluding failure.** A click that triggers navigation (or a framework re-render) can kill its element handle mid-action and report `INTERNAL_ERROR` *after the action succeeded* ("Target page... closed" / "Element is not attached"). Re-observe, check url/title/state; retry with a fresh ref only if the action truly didn't land. Otherwise pull a `debug-bundle` and report the `requestId` |
 
 **Recovery principle:** `ELEMENT_NOT_FOUND` → your *selector* is wrong (re-snapshot, re-target).
 `ELEMENT_NOT_ACTIONABLE` / `WAIT_TIMEOUT` → your *timing/state* is wrong (wait, then retry). Don't

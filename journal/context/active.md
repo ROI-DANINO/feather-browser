@@ -6,7 +6,21 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 
 ## Current pointer
 
-- **NOW (2026-06-10 ~01:42, STOP): DAILY-DRIVER BACKGROUND LAUNCH + `primary` RE-WARMED (real account).**
+- **SIDE-THREAD (2026-06-10 ~03:41, /next): Graphify trial fenced in isolated worktree.** Analyzed
+  `safishamsi/graphify` (verdict: MCP-query-layer ONLY, NO `graphify install` — its skill+PreToolUse hook collide
+  with our custom skill pipeline). Created worktree **`graphify-test`** (`../feather-browser-graphify-test`, branch
+  off `dev` @ c0a3c0a). Task "Implement Graphify MCP server integration" is **worktree-scoped** — see bridge in
+  `journal/context/next.md` (2026-06-10 03:41). **Guard: if `git branch --show-current` != `graphify-test`, ignore that
+  task — keep graphify deps/artifacts out of `dev`.** Main Feather thread below is UNAFFECTED.
+- **NOW (2026-06-10, /next): OBSERVE BUG FIXES BRAINSTORM IN PROGRESS (mid-session pause).** Root causes explored
+  in code; tentative approach decisions reached for all 3 bugs — Bug 1 dismiss under-report (B: re-observe to verify
+  popup gone), Bug 2 accname gap (A: descendant aria-label query), Bug 3 INTERNAL_ERROR on nav-clicks (A: return
+  `navigated:true`). Roi: "okay for now but i want to get back to it" — designs tentative, not locked. **No spec
+  written yet.** Bridge: `journal/context/next.md` (2026-06-10 observe-bug-fixes-brainstorm).
+  **UNCOMMITTED: `docs/agent-playbook.md` + `examples/showcase.sh`.**
+- **Recommend next:** Resume brainstorm — confirm approach choices, present full design sections, write spec to
+  `docs/superpowers/specs/`, user review, then invoke writing-plans. Commit uncommitted files before or alongside.
+- **Prior NOW (2026-06-10 ~01:42, STOP): DAILY-DRIVER BACKGROUND LAUNCH + `primary` RE-WARMED (real account).**
   `npm run daily` [primary] / `daily:scratch` now launch the persistent profile **detached** (`nohup`+`disown` →
   logfile under `$XDG_RUNTIME_DIR/feather/`, PID file, double-launch guard) so it frees the terminal; closing the
   Chromium window saves + exits via `warm-session`'s child-exit hook. New **`npm run daily:stop`** = SIGTERM clean-save

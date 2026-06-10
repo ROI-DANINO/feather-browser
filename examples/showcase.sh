@@ -247,40 +247,72 @@ run_m3() { # Wikipedia fact extraction (headless)
   close_session "$sid"
 }
 
-run_h1() { # Israeli holiday → Google Calendar write (warmed headed; write fragile on purpose)
+run_h1() { # NEXT upcoming Israeli holiday via Google-first research → all-day Calendar event (semantic assert)
+  # Doctrine (agent-playbook "Research doctrine"): search Google on the warmed profile, use the
+  # SERP to find a source, extract the fact from the SOURCE page (AI Overview = hint only).
+  # Semantic bar: the event must carry the holiday's NAME on the holiday's actual DATE (all-day),
+  # not just "an event got saved".
   local sid pid t0; read -r sid pid < <(open_warmed_scratch); t0="$(now_ms)"
-  # Step 1: extract holiday name from timeanddate
-  api POST "/v1/sessions/$sid/navigate" '{"url":"https://www.timeanddate.com/holidays/israel/2026","waitUntil":"domcontentloaded","timeoutMs":25000}' >/dev/null
-  local holiday; holiday="$(api POST "/v1/sessions/$sid/extract" '{"recipe":{"fields":{"h":{"selector":"td a[href*=\"/holidays/israel/\"]","type":"text"}}}}' | field h)"
-  local shot_baseline; shot_baseline="$(save_shot "$sid" H1)"
-  if [ -z "$holiday" ]; then
-    record H1 FAIL "$(fmt_elapsed "$t0")" "holiday selector empty — timeanddate markup changed → $shot_baseline"
+  # Step 1: Google-first research (warmed profile; natural locale — do not force hl=en)
+  api POST "/v1/sessions/$sid/navigate" '{"url":"https://www.google.com/search?q=israel+public+holidays+2026","waitUntil":"domcontentloaded","timeoutMs":25000}' >/dev/null
+  sleep 1
+  local href; href="$(api POST "/v1/sessions/$sid/extract" '{"recipe":{"fields":{"link":{"selector":"a[jsname=\"UWckNb\"]","type":"attribute","attribute":"href"}}}}' | field link 2>/dev/null || true)"
+  local via="google→${href:0:60}"
+  if [ -z "$href" ]; then
+    href="https://www.timeanddate.com/holidays/israel/2026"; via="google-link-extract-empty→direct-fallback"
+  fi
+  # Step 2: extract NEXT upcoming holiday (date > today) from the source page's markdown
+  api POST "/v1/sessions/$sid/navigate" "$(node -e 'process.stdout.write(JSON.stringify({url:process.argv[1],waitUntil:"domcontentloaded",timeoutMs:25000}))' "$href")" >/dev/null
+  local md; md="$(api POST "/v1/sessions/$sid/snapshot" '{}' | field markdown)"
+  # Parse timeanddate holiday-table entries. The whole table arrives as ONE markdown line of
+  # "<Mon> <D><Weekday>[<Name>](/holidays/israel/...)<Type>" — so anchor on the
+  # /holidays/israel/ href (news blurbs with dates, e.g. DST articles, can never match).
+  # Prefer "National Holiday" entries (= public holidays); fall back to any table entry.
+  # Emits "YYYYMMDD|YYYYMMDD(+1)|name|human-date" for the first date after today.
+  local pick; pick="$(printf '%s\n' "$md" | node -e '
+    const M={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+    const Y=2026, today=new Date(); today.setHours(0,0,0,0);
+    let s=""; process.stdin.on("data",d=>s+=d).on("end",()=>{
+      const re=/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s*(\d{1,2})\s*(?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day\[([^\]]+)\]\(\/holidays\/israel\/[^)]*\)([A-Za-z ,\u0027\u2019-]*?)(?=(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s*\d|\n|$)/g;
+      const all=[]; let m;
+      while((m=re.exec(s))!==null){
+        const d=new Date(Y, M[m[1].toLowerCase().slice(0,3)], parseInt(m[2],10));
+        if(d>today) all.push({d, name:m[3].trim(), type:m[4].trim()});
+      }
+      const nat=all.filter(x=>/National Holiday/i.test(x.type));
+      const pool=nat.length?nat:all;
+      if(!pool.length){process.exit(0)}
+      pool.sort((a,b)=>a.d-b.d);
+      const p=pool[0], pad=n=>String(n).padStart(2,"0");
+      const ymd=x=>`${x.getFullYear()}${pad(x.getMonth()+1)}${pad(x.getDate())}`;
+      const end=new Date(p.d); end.setDate(end.getDate()+1);
+      process.stdout.write([ymd(p.d), ymd(end), p.name, p.d.toDateString()].join("|"));
+    });')"
+  if [ -z "$pick" ]; then
+    local shot_p; shot_p="$(save_shot "$sid" H1)"
+    record H1 PARTIAL "$(fmt_elapsed "$t0")" "no upcoming-holiday parse from source ($via) — markup/markdown drift → $shot_p"
     close_session "$sid"; return
   fi
-  # Step 2: navigate to Google Calendar and create event
-  api POST "/v1/sessions/$sid/navigate" '{"url":"https://calendar.google.com/calendar/r","waitUntil":"domcontentloaded","timeoutMs":25000}' >/dev/null
-  sleep 1
-  dismiss_got_it "$sid"  # dismiss welcome + dark-mode onboarding banners
-  # Open create dialog
-  api POST "/v1/sessions/$sid/click" '{"target":{"by":"role","role":"button","name":"Create"}}' >/dev/null || true
-  sleep 0.5
-  api POST "/v1/sessions/$sid/click" '{"target":{"by":"role","role":"menuitem","name":"Event"}}' >/dev/null || true
-  sleep 1
-  # Fill title and save
-  local type_ok; type_ok="$(api POST "/v1/sessions/$sid/type" \
-    "{\"target\":{\"by\":\"role\",\"role\":\"textbox\",\"name\":\"Add title\"},\"text\":\"$holiday (Israeli Holiday)\",\"mode\":\"fill\"}" \
-    | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const o=JSON.parse(s);process.stdout.write(o.ok?"1":"0")})')"
-  if [ "$type_ok" = "1" ]; then
-    api POST "/v1/sessions/$sid/click" '{"target":{"by":"role","role":"button","name":"Save"}}' >/dev/null || true
-    sleep 2
-  fi
-  local shot; shot="$(save_shot "$sid" H1)"
-  # Check for "Event saved" confirmation in snapshot
+  local d_start d_end holiday human_date
+  IFS='|' read -r d_start d_end holiday human_date <<< "$pick"
+  # Step 3: create an ALL-DAY event on the holiday's real date (eventedit deep link is the
+  # deterministic scripted route; the UI quick-create path is exercised by agent-driven runs)
+  local create_url; create_url="$(node -e 'const [n,s,e]=process.argv.slice(1);process.stdout.write("https://calendar.google.com/calendar/r/eventedit?text="+encodeURIComponent(n+" (Israeli Holiday)")+"&dates="+s+"/"+e)' "$holiday" "$d_start" "$d_end")"
+  api POST "/v1/sessions/$sid/navigate" "$(node -e 'process.stdout.write(JSON.stringify({url:process.argv[1],waitUntil:"domcontentloaded",timeoutMs:25000}))' "$create_url")" >/dev/null
+  sleep 1.5
+  api POST "/v1/sessions/$sid/click" '{"target":{"by":"role","role":"button","name":"Save"}}' >/dev/null \
+    || api POST "/v1/sessions/$sid/click" '{"target":{"by":"role","role":"button","name":"שמירה"}}' >/dev/null || true
+  sleep 2
+  # Step 4: SEMANTIC verify — open the day view of the holiday's date; the event name must be there
+  local day_url="https://calendar.google.com/calendar/r/day/${d_start:0:4}/${d_start:4:2}/${d_start:6:2}"
+  api POST "/v1/sessions/$sid/navigate" "$(node -e 'process.stdout.write(JSON.stringify({url:process.argv[1],waitUntil:"domcontentloaded",timeoutMs:25000}))' "$day_url")" >/dev/null
+  api POST "/v1/sessions/$sid/wait" '{"target":{"by":"css","selector":"body"},"until":"stable","quietMs":1000,"timeoutMs":15000}' >/dev/null || true
   local snap; snap="$(api POST "/v1/sessions/$sid/snapshot" '{}' | field text 2>/dev/null || true)"
-  if printf '%s' "$snap" | grep -qi "event saved\|$holiday"; then
-    record H1 PASS "$(fmt_elapsed "$t0")" "holiday=$holiday; calendar event created + saved → $shot"
+  local shot; shot="$(save_shot "$sid" H1)"
+  if printf '%s' "$snap" | grep -qiF "$holiday"; then
+    record H1 PASS "$(fmt_elapsed "$t0")" "NEXT holiday=$holiday on $human_date via $via; all-day event verified on its date → $shot"
   else
-    record H1 PARTIAL "$(fmt_elapsed "$t0")" "holiday=$holiday extracted (baseline PASS); calendar-write outcome unclear → $shot"
+    record H1 PARTIAL "$(fmt_elapsed "$t0")" "holiday=$holiday ($human_date) researched via $via; event not seen on $day_url day view → $shot"
   fi
   close_session "$sid"
 }
@@ -383,7 +415,12 @@ run_h4() { # multi-tab research: 3 tabs, 3 facts (warmed headed)
 # ============================ RUNNER ============================
 
 # Debug hook: ./examples/showcase.sh __run run_m1
-if [ "${1:-}" = "__run" ] && [ -n "${2:-}" ]; then "$2"; render_table; exit $?; fi
+# NB: the `||` guard matches run_group — without it, errexit kills the script on the
+# benign nonzero status of `read < <(printf ...)` (no trailing newline) inside tasks.
+if [ "${1:-}" = "__run" ] && [ -n "${2:-}" ]; then
+  "$2" || record "${2#run_}" FAIL "0.0s" "function errored (see stderr)"
+  render_table; exit $?
+fi
 
 EASY=(run_e1 run_e2 run_e3)
 MEDIUM=(run_m1 run_m2 run_m3)

@@ -3,14 +3,15 @@
 Checklist only. Front door → `feather.md`; version roadmaps → `docs/roadmap/{v1,v2,v3}.md`;
 execution index → `ROADMAP.md`; live pointer → `journal/context/active.md`.
 
-**Next action = OPEN (Roi tackles next session, his call).** Latest: daily-driver background launch shipped +
-`primary` re-warmed with Roi's REAL Google — Cookie Mine now live on his own identity (commit `61fe677`, pushed;
-session `journal/ops/sessions/daily-driver-background-launch-primary-rewarmed-20260610-0142.md`). Two larger
-candidates remain: (a) run the `observe → act-by-ref → diff` loop on a real showcase task to **measure** the
-speed/round-trip win vs the old guess-and-fail loop; (b) start **v2 Gate A** — the capability/safety gate (ADR-0010),
-first real Phase-5 work. Optional side-thread: analyze the new Claude-for-Chrome transcripts
-(`journal/raw/_inbox/claude_for_chrome_output/`) for navigation patterns. Perception loop SHIPPED prior session
-(session record `…observe-perception-loop-shipped-20260609-2336.md`; blog `0017-teaching-it-to-see.md`).
+**Next action = commit + measurement follow-ups (bridge in `journal/context/next.md`), then v2 Gate A.**
+Latest (2026-06-10 ~03:17, /next): **(a) DONE — observe-loop measured on the FULL suite**: 9 PASS + M1 PARTIAL,
+104 API calls **zero ELEMENT_NOT_FOUND**, H2 beat the scripted baseline; 3 product bugs found (`/dismiss`
+under-report, accname gap on svg labels, INTERNAL_ERROR on successful nav-clicks). Roi's semantic audit → Google-first
+research doctrine in `docs/agent-playbook.md` + H1 rewritten semantic (next national holiday, all-day on correct
+date; live PASS). Report: `examples/showcase-output/pass2-observe/results.md`. **Uncommitted:** playbook +
+showcase.sh. Follow-ups queued: operator-skills rewrite to observe loop, the 3 observe bug fixes, suite
+semantic-assertion layer. (b) **v2 Gate A** (ADR-0010) remains the big next. Optional: C4C transcripts; headless-warm
+spike (v2). Prior: perception loop shipped (blog `0017`); daily-driver + primary re-warm (`61fe677`).
 
 ---
 
