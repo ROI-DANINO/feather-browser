@@ -37,6 +37,13 @@ This is a build-in-public journal and a decision history. It's the *why* behind 
 
 ## When a new entry gets written
 
-At the end of every phase (part of the "leave the docs true" exit ritual), and any time a significant decision lands. The blog should never silently fall behind the work.
+Entries are written in two places, both gated on Roi's explicit yes — never automatically:
+
+- **At `/stop`:** the blog gate asks every session. A "no" records the moment as one owed line in
+  [`_pending.md`](_pending.md) so it isn't lost.
+- **Via `/blog`:** scans `_pending.md` and recent session files for unwritten moments, then asks
+  what to write.
+
+The blog should never silently fall behind the work — `_pending.md` is the catch-net.
 
 Design spec: `docs/specs/2026-06-03-blog-system-design.md`

@@ -1,8 +1,9 @@
 # Blog Backlog
 
 Sessions that had blog-worthy material but were **not** written up at `/stop` time
-(you chose "no blog"). The next time a blog entry IS written, `fb-stop` folds these
-in so the narrative covers them — then clears this buffer back to empty.
+(you chose "no blog" at the blog gate — `/stop` appends one line per declined session).
+The next entry that IS written — at `/stop` after a yes, or via `/blog` — folds in the
+owed moments that fit, then removes the consumed lines.
 
 If this list is empty, nothing is owed.
 
