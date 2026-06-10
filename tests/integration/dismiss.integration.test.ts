@@ -72,11 +72,70 @@ describe("POST /v1/sessions/:sessionId/dismiss", () => {
     expect(res.status).toBe(200);
     expect(res.body.data.dismissed.length).toBeGreaterThan(0);
     expect(res.body.data.dismissed[0].name).toBe("Accept all");
+    expect(res.body.data.overlaysRemaining).toBe(0);
+    expect(res.body.data.observation.observeId).toBeTruthy();   // fresh observation returned, refs usable
+    expect(res.body.data.observation.overlays.length).toBe(0);
 
     // Observe again — overlay removed from DOM => overlays.length === 0
     const after = await api("POST", `/v1/sessions/${sessionId}/observe`, {});
     expect(after.status).toBe(200);
     expect(after.body.data.overlays.length).toBe(0);
+
+    await api("DELETE", `/v1/sessions/${sessionId}`, { force: false });
+  }, 60000);
+
+  it("reports dismissed even when the dismiss button detaches itself mid-click (H1 under-report)", async () => {
+    const launch = await api("POST", "/v1/sessions", {
+      workspaceId: "dismiss-h1-ws",
+      profile: { kind: "persistent" },
+      browserMode: "chromium-headless-shell",
+    });
+    expect(launch.status).toBe(200);
+    const sessionId = launch.body.data.sessionId as string;
+
+    // The button removes the overlay (and itself with it) synchronously on mousedown —
+    // the historically swallowed teardown; verification must still report it dismissed.
+    const html = `<!DOCTYPE html><html><body><p>content</p>
+<div id="ov" style="position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;display:flex;align-items:center;justify-content:center">
+  <button onmousedown="document.getElementById('ov').remove()">Got it</button>
+</div></body></html>`;
+    const encoded = encodeURIComponent(html);
+    await api("POST", `/v1/sessions/${sessionId}/navigate`, {
+      url: `data:text/html,${encoded}`,
+      waitUntil: "domcontentloaded",
+    });
+
+    const res = await api("POST", `/v1/sessions/${sessionId}/dismiss`, {});
+    expect(res.status).toBe(200);
+    expect(res.body.data.dismissed.map((d: any) => d.name)).toEqual(["Got it"]);
+    expect(res.body.data.overlaysRemaining).toBe(0);
+
+    await api("DELETE", `/v1/sessions/${sessionId}`, { force: false });
+  }, 60000);
+
+  it("does NOT report dismissed when the click lands but the overlay stays", async () => {
+    const launch = await api("POST", "/v1/sessions", {
+      workspaceId: "dismiss-stays-ws",
+      profile: { kind: "persistent" },
+      browserMode: "chromium-headless-shell",
+    });
+    expect(launch.status).toBe(200);
+    const sessionId = launch.body.data.sessionId as string;
+
+    const html = `<!DOCTYPE html><html><body><p>content</p>
+<div style="position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;display:flex;align-items:center;justify-content:center">
+  <button onclick="void 0">Got it</button>
+</div></body></html>`;
+    const encoded = encodeURIComponent(html);
+    await api("POST", `/v1/sessions/${sessionId}/navigate`, {
+      url: `data:text/html,${encoded}`,
+      waitUntil: "domcontentloaded",
+    });
+
+    const res = await api("POST", `/v1/sessions/${sessionId}/dismiss`, {});
+    expect(res.status).toBe(200);
+    expect(res.body.data.dismissed).toEqual([]);              // no more silent false success
+    expect(res.body.data.overlaysRemaining).toBe(1);
 
     await api("DELETE", `/v1/sessions/${sessionId}`, { force: false });
   }, 60000);

@@ -42,15 +42,21 @@ export class DismissHandler implements CommandHandler<DismissInput, DismissOutpu
   }
   async execute(input: DismissInput, ctx: CommandContext): Promise<DismissOutput> {
     const labels = input.labels ?? DEFAULT_DISMISS_LABELS;
-    const obs = await this.observe.execute({ sessionId: input.sessionId, pageId: input.pageId }, ctx);
-    const picks = pickDismissTargets(obs, labels);
-    const dismissed: { ref: string; name: string }[] = [];
-    for (const p of picks.slice(0, 1)) {   // dismiss one per call; agent re-calls if another wall appears
-      try {
-        await this.click.execute({ sessionId: input.sessionId, pageId: obs.pageId, target: { by: "ref", ref: p.ref } }, ctx);
-        dismissed.push({ ref: p.ref, name: p.name });
-      } catch { /* ref may have expired mid-dismiss; report what we did */ }
+    const baseline = await this.observe.execute({ sessionId: input.sessionId, pageId: input.pageId }, ctx);
+    const pick = pickDismissTargets(baseline, labels)[0];   // one wall per call; agent re-calls
+    if (!pick) {
+      return { pageId: baseline.pageId, dismissed: [], overlaysRemaining: baseline.overlays.length, observation: baseline };
     }
-    return { pageId: obs.pageId, dismissed };
+    try {
+      await this.click.execute({ sessionId: input.sessionId, pageId: baseline.pageId, target: { by: "ref", ref: pick.ref } }, ctx);
+    } catch { /* verification decides — a successful dismiss often kills its own button mid-click */ }
+    const verify = await this.observe.execute({ sessionId: input.sessionId, pageId: baseline.pageId }, ctx);
+    const gone = overlayGone(baseline.overlays, verify.overlays, pick.overlayIndex);
+    return {
+      pageId: verify.pageId,
+      dismissed: gone ? [{ ref: pick.ref, name: pick.name }] : [],
+      overlaysRemaining: verify.overlays.length,
+      observation: verify,
+    };
   }
 }

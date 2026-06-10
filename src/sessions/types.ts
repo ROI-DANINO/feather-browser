@@ -114,7 +114,12 @@ export interface ObserveResult {
 }
 
 export interface DismissInput { sessionId: string; pageId?: string; labels?: string[]; }
-export interface DismissOutput { pageId: string; dismissed: { ref: string; name: string }[]; }
+export interface DismissOutput {
+  pageId: string;
+  dismissed: { ref: string; name: string }[];   // verified-gone only
+  overlaysRemaining: number;                    // >0 ⇒ another wall is up: call again or adjust labels
+  observation: ObserveResult;                   // the latest internal observe — fresh refs + diff, saves a round-trip
+}
 
 export interface ClickInput { sessionId: string; pageId?: string; target: Target; timeoutMs?: number; }
 export interface ClickOutput { pageId: string; clicked: true; navigated?: true; }
