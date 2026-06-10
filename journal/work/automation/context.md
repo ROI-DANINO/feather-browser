@@ -54,6 +54,24 @@ assigns them and cuts tasks into work sessions.
 - **Core driving works end-to-end.** Form fill → email verify → social interaction (like, comment) all
   passed on a real site. Friction is tooling, not the core architecture.
 
+## Perception/operator durable facts (2026-06-10)
+
+- **Operator skills teach the observe loop** (`observe → act by ref → re-observe`), rewritten
+  2026-06-10; `docs/agent-playbook.md` stays the deeper reference and wins on conflict.
+- **Dismiss reaches same-origin iframe overlays** (child-frame actions inherit the containing
+  top-frame overlay's `overlayIndex`, walk.ts). **Cross-origin iframe overlays = `await-human` by
+  design** — their documents are never walked (third-party CAPTCHA frames are exactly this).
+- **IG feed caption is CSS-unreachable** (first `span[dir=auto]` = username, first `img` = avatar,
+  no `h1`, videos have no content img — probed live). Durable recipe: parse snapshot TEXT structure
+  `author / stats / author-repeated / caption / more`. Works for photo and video posts; survives
+  IG class churn.
+- **`data:`-URL iframes are opaque-origin** (cross-origin to their parent) — same-origin iframe
+  tests must ride real local-HTTP fixtures. Same family as Chromium's silent data:-URL nav block;
+  both traps now pinned in integration tests.
+- **Showcase suite asserts semantically** (2026-06-10): PASS = errand done right (H1 date+name on
+  day view; H3 "Unlike" state flip + content-aware comment visible; M3 target fact; H4 per-fact
+  patterns). PARTIAL stays the honest first-class outcome.
+
 ## Session-launch recipes (durable; verified against source 2026-06-09)
 
 - **Disposable headless:** `POST /v1/sessions` `{"profile":{"kind":"disposable"},"browserMode":"chromium-new-headless","viewport":{...}}`.

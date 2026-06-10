@@ -3,70 +3,42 @@
 Checklist only. Front door → `feather.md`; version roadmaps → `docs/roadmap/{v1,v2,v3}.md`;
 execution index → `ROADMAP.md`; live pointer → `journal/context/active.md`.
 
-**Next action = v2 Gate A (Session 5.0.0, ADR-0010).**
-Latest (2026-06-10 ~12:03 STOP): **OBSERVE BUG FIXES SHIPPED** — all 3 pass-2 bugs fixed end-to-end
-(brainstorm→spec→plan→subagent build, 12 commits `09a6b6c..579b445` pushed; gates 280u/72i/typecheck
-clean; final review = ready to merge). Earlier same day: Native Capabilities Router placed at 5.0.1;
-command layer (`/blog`+`/notebook`+blog gate); Graphify graduated; NotebookLM pack v2; daily-driver +
-`primary` re-warm. Prior-day history → `journal/ops/archive/tasks-20260610-1203.md`.
+**Next action = v2 Gate A planning/reconciliation pass (Session 5.0.0, ADR-0010) in a fresh session.**
+Latest (2026-06-10 ~12:43 STOP): **ALL V1 FOLLOW-UPS CLOSED** — operator-skills rewrite to the
+observe loop (`91fcd2b`), suite semantic-assertion layer verified live (`553216a`), same-origin
+iframe-overlay dismiss gap fixed TDD red→green (`6263bd6`); gates 280u/73i/typecheck clean, pushed.
+Same-day history → `journal/ops/archive/tasks-20260610-1243.md` + `tasks-20260610-1203.md`.
 
 ---
 
 ## Feather v1 — "It runs errands for me" (Phase 4a)
 
-- [x] **4a.1–4a.10, restructure, NotebookLM v2, Graphify graduation, Native-Capabilities placement,
-      command layer** — all done; detail in `journal/ops/archive/tasks-20260610-1203.md`.
-- [x] **v1 Instagram test (2026-06-08)** + **Showcase eval suite all 3 tiers (2026-06-09)** +
-      **pass-2 observe measurement (2026-06-10)** — cookie mine + observe loop proven.
-- [x] **Perception/observation loop SHIPPED (2026-06-09)** — `POST /observe`, act-by-ref, `/dismiss`.
-- [x] **Close-tab primitive (2026-06-09)**; **daily-driver background launch + `primary` re-warm (2026-06-10)**.
-- [x] **OBSERVE BUG FIXES — SHIPPED (2026-06-10, `09a6b6c..579b445`, pushed).**
-      (1) `/dismiss` verify-by-re-observe — `{dismissed (verified), overlaysRemaining, observation}`,
-      containment-gated picking (`overlayIndex`, composed-tree shadow-piercing), z-index/dialog overlay
-      refinement (calendar false positive dead), `Overlay.ref` dropped; (2) accname descendant
-      aria-label peek (IG Like named); (3) `navigated: true` on click/press/select-option nav-teardown
-      (pattern list test-pinned) instead of 500. Docs updated + code-verified. Spec/plan
-      `docs/{specs,plans}/2026-06-10-observe-bug-fixes*`; session
-      `journal/ops/sessions/observe-bug-fixes-shipped-20260610-1203.md`.
+- [x] **v1 BUILT AND PROVEN** — 4a.1–4a.10 + restructure + perception loop + observe bug fixes +
+      Instagram test + showcase suite (3 tiers) + pass-2 observe measurement + daily-driver +
+      `primary` re-warm + Graphify + command layer + NotebookLM v2 + Native-Capabilities placement.
+      Detail: `journal/ops/archive/tasks-20260610-{1203,1243}.md`.
+- [x] **V1 FOLLOW-UPS CLOSED (2026-06-10 ~12:43):** operator skills teach the observe loop; showcase
+      PASS = errand done right (H3 Unlike-state + content-aware comment, M3 target fact, H4 per-fact,
+      E1 title+points; live-verified, H3's honest PARTIAL → probe → PASS); dismiss reaches
+      same-origin iframe overlays (inherited `overlayIndex`; cross-origin = await-human by design).
 
-### Open v1 work
+### Open v1 leftovers (small / optional)
 
-- [x] **Operator-skills rewrite to the observe loop — DONE (2026-06-10).** All 4 `skills/` files now
-      teach `observe → act by ref → re-observe`: ref-first targeting, new dismiss shape
-      (`overlaysRemaining` ground truth, act from `observation` refs), `navigated: true` recovery,
-      `REF_EXPIRED` recovery row, typed wall-detection signal in human-handoff. Also retired the
-      stale "rewrite queued" caveat in AGENTS.md and fixed the bare-`eN` ref drift in
-      `docs/api-reference.md` observe intro.
-- [x] **Suite semantic-assertion layer — DONE (2026-06-10).** PASS now means the errand was done
-      right: H3 = like verified via "Unlike" state + content-aware comment (parsed from the post's
-      caption via snapshot text — CSS probes fail on IG feed; probed live) verified visible; M3 =
-      the actual elevation figure; H4 = per-fact pattern checks; E1 = title + point count. H1 was
-      already semantic. All 4 changed tasks verified live (E1/M3/H4/H3 PASS; H3's first run was an
-      honest PARTIAL that exposed the markup reality). Spec revision log updated.
-- [x] **Same-origin-iframe overlay dismiss gap — FIXED (2026-06-10).** Child-frame actions now
-      inherit the top-frame overlay's `overlayIndex` when their `<iframe>` element is (or sits
-      inside) a detected overlay (composed-containment match via frameElement handle identity;
-      deeper frames inherit downward). TDD: red integration test on a real local-HTTP iframe
-      fixture (`data:` iframes are opaque-origin), then the walk.ts fix; 280u/73i/typecheck green.
-      Cross-origin iframe overlays (third-party CAPTCHA frames) remain await-human territory —
-      playbook/skills/api-reference updated to say exactly that.
 - [ ] **(kind,name) overlay-identity mutation watch-item** — multi-pane popups may misjudge
-      `dismissed`; docs already say trust `overlaysRemaining`. Code change only on real-world failure.
+      `dismissed`; docs say trust `overlaysRemaining`. Code change only on real-world failure.
 - [ ] **Navigation-survivable resume banner** — re-inject on `framenavigated` (v2 MFA core, OPEN).
 - [ ] **Analyze Claude-for-Chrome transcripts (optional research).**
       `journal/raw/_inbox/claude_for_chrome_output/` — keep, don't delete.
 - [ ] **act-human typing cadence + bot self-check** — deferred to v2 (decided).
 - [~] **pi_agency ⇄ Feather thin integration — PARKED.** Resume only if Roi pulls it forward.
 
-~~`continuity.test.ts` own ticket~~ — **CLOSED 2026-06-10: it passes (3/3).** The "fails
-consistently, pre-existing" note was stale; verified twice (Task 9 + final review).
-
 ## Feather v2 — "It survives the scary sites, safely"  (`docs/roadmap/v2.md`)
 
 Security-first spine: `gate → Identity → MFA → warmed attach → Stealth last`. Do not start before Gate A.
 
-- [ ] **5.0.0 — Capability/safety gate** (implements ADR-0010) — Gate A — **the big next after the
-      two v1 follow-ups above**
+- [ ] **5.0.0 — Capability/safety gate** (implements ADR-0010) — Gate A — **THE NEXT WORK.**
+      Phase boundary: planning/reconciliation pass first (fresh session), then build.
+      Body: `docs/sessions/5.0.0-capability-gate.md`.
 - [ ] **5.0.1 — MCP & tool-surface reconciliation** — owns the **Connector Registry** decision
       (input `research/2026-06-10-native-capabilities-router.md`; say "Connector Registry" not
       "Capability Registry"; docs-import builder = v3/5e)
