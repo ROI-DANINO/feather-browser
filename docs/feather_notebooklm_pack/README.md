@@ -1,16 +1,35 @@
-# Feather Browser — NotebookLM Source Pack
+# Feather NotebookLM Project Brain
 
-Upload these files to NotebookLM as sources.
+This README is for humans. Do not upload this README to NotebookLM as a source.
 
-Recommended order:
-1. 01_feather_overview.md
-2. 02_architecture_map.md
-3. 03_user_flow_and_examples.md
-4. 04_capabilities_and_limits.md
-5. 05_roadmap_v1_v2_v3.md
-6. 06_safety_security_model.md
-7. 07_infographic_brief.md
+## What This Pack Is
+This pack is a coherent "Feather Project Brain" for NotebookLM. It represents the current truth as of 2026-06-10, includes future plans, serves technical collaborators, and supports both product explanation and technical architecture questions.
 
-Purpose:
-This pack is designed to help NotebookLM generate a clear infographic about Feather Browser:
-what it is, how it works, what it can do today, what its limits are, and where it is going.
+## Upload These Files as NotebookLM Sources
+- 01_current_truth.md
+- 02_product_model.md
+- 03_architecture_overview.md
+- 04_api_and_operating_loop.md
+- 05_session_profile_lifecycle.md
+- 06_codebase_topology.md
+- 07_safety_security_model.md
+- 08_roadmap_v1_v2_v3.md
+- 09_evidence_and_test_history.md
+- 10_limits_open_questions.md
+- 11_glossary.md
+
+## Do Not Upload These Files
+- README.md
+- 12_notebooklm_system_instructions.md
+- 13_notebooklm_studio_prompts.md
+
+## Optional Separate Source
+- `graphify-out/GRAPH_REPORT.md` (Raw Graphify report may be uploaded for broad graph metadata).
+
+## Manual NotebookLM Setup
+1. Upload the allowed source files.
+2. Copy the contents of `12_notebooklm_system_instructions.md` into NotebookLM's system/custom instructions field.
+3. Use `13_notebooklm_studio_prompts.md` as a personal Studio prompt cheat-sheet.
+
+## Maintenance Rule
+When updating this pack, maintain the per-file boilerplate for uploaded sources and do not blur current state with future plans.
