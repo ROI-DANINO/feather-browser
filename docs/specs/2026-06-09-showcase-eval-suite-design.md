@@ -187,6 +187,22 @@ Roi's semantic audit of pass 2 (wrong-date H1 event, junk calendar entries) rais
 All four verified live 2026-06-10: E1/M3/H4/H3 PASS under the new bar (H3 first ran honest
 `PARTIAL` on the generic-comment fallback, which is what prompted the live markup probe).
 
+### 2026-06-10 — M1 Google-first + H3 deliberate-post redesign (Roi)
+- **M1 is now GOOGLE-FIRST** ("i think we shoul use google on defalt why use DuckDuckGo?"): aligns
+  the suite with the agent-playbook research doctrine. DDG (originally the deliberate bot-wall
+  stress case, chosen before the doctrine existed) demotes to fallback. Tested live: **both Google
+  and DDG-html wall a cold headless disposable** — honest PARTIAL whose lesson now reads
+  "cold-profile search = warmed capability (v2 headless-warm)".
+- **H3 v3 — deliberate post + multi-source comment:** don't act on whatever tops the feed. Collect
+  `/p/` permalinks from the feed, open the first NON-sponsored one, and weave the comment from the
+  post's own context — image (IG auto-alt = the script's "eyes"; videos honestly have none),
+  caption, and top-3 comments (parsed from the permalink snapshot text:
+  `author/[audio]/Follow/author/age/CAPTION…` then `author/age/text/N-likes/Reply` blocks — probed
+  live). Like targets the **24px** action-bar icon (`svg[aria-label="Like"][height="24"]`) — plain
+  first-match would hit a 16px *comment* like; verify = 24px Unlike flip. PASS = verified like +
+  comment from ≥2 sources verified visible. **H3 v3 not yet run end-to-end** — its first live
+  exercise is the next full-suite run (by design).
+
 ### Resolved
 - **Recording tool:** `wf-recorder` (Wayland) — installed on Roi's box. Use it to film the headed tier.
 - **Approval:** approved by Roi 2026-06-09 after the review pass. Next step = `writing-plans`.

@@ -202,21 +202,25 @@ run_e3() { # GitHub stars (headless)
   close_session "$sid"
 }
 
-run_m1() { # search, hard-path-first: normal DDG → html fallback (headless)
+run_m1() { # search "Feather Browser" — GOOGLE-FIRST (doctrine), DDG-html fallback (headless)
+  # Google-first doctrine (agent-playbook "Research doctrine", suite re-pointed 2026-06-10 per Roi):
+  # Google is the default engine everywhere; DDG demotes to fallback. On a COLD headless disposable
+  # profile a Google consent/bot wall is a live possibility — that IS the stress test now: try
+  # Google, record reality, fall back, keep the lesson.
   local sid pid t0; read -r sid pid < <(open_headless); t0="$(now_ms)"
-  api POST "/v1/sessions/$sid/navigate" '{"url":"https://duckduckgo.com/?q=Feather+Browser","waitUntil":"domcontentloaded","timeoutMs":20000}' >/dev/null
-  local first; first="$(api POST "/v1/sessions/$sid/extract" '{"recipe":{"fields":{"r1":{"selector":"a[data-testid=result-title-a]","type":"text"}}}}' | field r1 2>/dev/null || true)"
+  api POST "/v1/sessions/$sid/navigate" '{"url":"https://www.google.com/search?q=Feather+Browser","waitUntil":"domcontentloaded","timeoutMs":20000}' >/dev/null
+  local first; first="$(api POST "/v1/sessions/$sid/extract" '{"recipe":{"fields":{"r1":{"selector":"#search h3","type":"text"}}}}' | field r1 2>/dev/null || true)"
   if [ -n "$first" ]; then
-    local art; art="$(save_text M1 "normal-ddg: $first")"
-    record M1 PASS "$(fmt_elapsed "$t0")" "normal DDG: ${first:0:50} → $art"
+    local art; art="$(save_text M1 "google: $first")"
+    record M1 PASS "$(fmt_elapsed "$t0")" "Google (cold headless!): ${first:0:50} → $art"
   else
     api POST "/v1/sessions/$sid/navigate" '{"url":"https://html.duckduckgo.com/html/?q=Feather+Browser","waitUntil":"domcontentloaded","timeoutMs":20000}' >/dev/null
     first="$(api POST "/v1/sessions/$sid/extract" '{"recipe":{"fields":{"r1":{"selector":".result__a","type":"text"}}}}' | field r1 2>/dev/null || true)"
-    local art; art="$(save_text M1 "html-fallback: $first")"
+    local art; art="$(save_text M1 "ddg-html-fallback: $first")"
     if [ -n "$first" ]; then
-      record M1 PARTIAL "$(fmt_elapsed "$t0")" "normal DDG blocked → html worked: ${first:0:40} → $art"
+      record M1 PARTIAL "$(fmt_elapsed "$t0")" "Google walled headless → DDG-html worked: ${first:0:40} → $art"
     else
-      record M1 PARTIAL "$(fmt_elapsed "$t0")" "both DDG endpoints CAPTCHA-blocked headless (act-human cadence = v2 gap) → $art"
+      record M1 PARTIAL "$(fmt_elapsed "$t0")" "Google AND DDG-html walled headless (cold-profile search = warmed capability; v2) → $art"
     fi
   fi
   close_session "$sid"
@@ -354,73 +358,129 @@ run_h2() { # Google search → article → extract content (warmed Google)
   close_session "$sid"
 }
 
-run_h3() { # IG home feed → verified like + content-aware comment (warmed feather_test_roi)
-  # Semantic bar (2026-06-10 follow-up): PASS must mean the errand was done RIGHT —
-  # (a) the like is VERIFIED by the button flipping to "Unlike" (state assert, not click-200);
-  # (b) the comment is CONTENT-AWARE — built from the post's own alt/caption text — and
-  #     VERIFIED visible on the page after posting.
-  # Generic-fallback comment or unverified like/comment → PARTIAL with the precise reason.
+run_h3() { # IG: pick a REAL post (non-sponsored permalink) → comment from image+caption+top-comments + verified like
+  # Semantic bar v3 (Roi 2026-06-10): don't act on whatever tops the feed. Collect /p/ permalinks
+  # from the feed, open the first NON-SPONSORED one, and build the comment from the post's own
+  # context: the image (via IG's auto-alt — the script's "eyes"; photo posts only), the caption,
+  # and the top comments. PASS = post-level like VERIFIED (24px Unlike flip — comment likes are
+  # 16px, plain first-match would hit those) + a comment woven from >=2 context sources, verified
+  # visible. One-source comment or any unverified leg -> PARTIAL with the reason.
   local sid pid t0; read -r sid pid < <(open_warmed_scratch); t0="$(now_ms)"
   api POST "/v1/sessions/$sid/navigate" \
     '{"url":"https://www.instagram.com/","waitUntil":"domcontentloaded","timeoutMs":25000}' >/dev/null
   sleep 2
-  # Dismiss notifications popup if present
   api POST "/v1/sessions/$sid/click" '{"target":{"by":"text","text":"Not Now"}}' >/dev/null 2>&1 || true
   sleep 0.5
-  # Read the post BEFORE acting. CSS probes fail here (first span[dir=auto] = username, no h1,
-  # first img = avatar, videos have no content img at all — probed live 2026-06-10). The snapshot
-  # TEXT is self-describing instead: "author / stats / author repeated / CAPTION / more" — parse
-  # that; it works for photo and video posts alike and survives IG class churn.
-  local ctx; ctx="$(api POST "/v1/sessions/$sid/snapshot" '{}' | field text 2>/dev/null | node -e '
+  # Step 1: collect post permalinks (/p/...) from the feed — these are real posts, chosen, not "whatever is first"
+  local links; links="$(api POST "/v1/sessions/$sid/snapshot" '{}' | node -e '
     let s=""; process.stdin.on("data",d=>s+=d).on("end",()=>{
+      const o=JSON.parse(s); const L=(o.data&&o.data.links)||[];
+      const seen=new Set(); const out=[];
+      for(const l of L){ const m=(l.href||"").match(/^https:\/\/www\.instagram\.com\/p\/[A-Za-z0-9_-]+\/?$/);
+        if(m && !seen.has(l.href)){ seen.add(l.href); out.push(l.href); } }
+      process.stdout.write(out.slice(0,4).join(" "));
+    });' || true)"
+  if [ -z "$links" ]; then
+    local shot0; shot0="$(save_shot "$sid" H3)"
+    record H3 PARTIAL "$(fmt_elapsed "$t0")" "no /p/ permalinks in feed (reels-only feed?) — nothing deliberate to pick → $shot0"
+    close_session "$sid"; return
+  fi
+  # Step 2: open the first NON-SPONSORED permalink and read its context from the snapshot text
+  # (permalink text shape, probed live: author / [audio] / Follow / author / age / CAPTION... /
+  #  then comment blocks of "author / age / text / N likes / Reply")
+  local post_url="" ctx=""
+  local u; for u in $links; do
+    api POST "/v1/sessions/$sid/navigate" "$(node -e 'process.stdout.write(JSON.stringify({url:process.argv[1],waitUntil:"domcontentloaded",timeoutMs:25000}))' "$u")" >/dev/null
+    sleep 2
+    ctx="$(api POST "/v1/sessions/$sid/snapshot" '{}' | field text 2>/dev/null || true)"
+    if printf '%s' "$ctx" | head -40 | grep -qx "Sponsored"; then ctx=""; continue; fi
+    post_url="$u"; break
+  done
+  if [ -z "$post_url" ]; then
+    local shot1; shot1="$(save_shot "$sid" H3)"
+    record H3 PARTIAL "$(fmt_elapsed "$t0")" "all candidate permalinks sponsored — no organic post found → $shot1"
+    close_session "$sid"; return
+  fi
+  # Step 3: parse caption + top-3 comments from the permalink text
+  local parsed; parsed="$(printf '%s\n' "$ctx" | node -e '
+    let s=""; process.stdin.on("data",d=>s+=d).on("end",()=>{
+      const clean=(t)=>t.replace(/[^\p{L}\p{N} ,.!?-]/gu," ").replace(/\s+/g," ").trim();
+      const AGE=/^\d+\s?[smhdwy]$/;
+      const NOISE=/^(\d[\d,.]*\s?(likes?|like))$|^Reply$|^View all\b|^more$|^See translation$|^Edited$|^Follow$|^Verified$/i;
       const lines=s.split("\n").map(l=>l.trim()).filter(Boolean);
       const author=lines[0]||"";
-      for(let i=1;i<lines.length;i++){
-        if(lines[i]===author && i+1<lines.length){ process.stdout.write(lines[i+1]); return; }
+      let i=1; while(i<lines.length && lines[i]!==author) i++;     // 2nd author occurrence
+      i++; if(AGE.test(lines[i]||"")) i++;                          // skip the post age
+      const capLines=[];
+      while(i<lines.length){
+        if(AGE.test(lines[i+1]||"") && !NOISE.test(lines[i])) break;  // next block = first comment (author then age)
+        if(!NOISE.test(lines[i])) capLines.push(lines[i]);
+        i++;
       }
+      const comments=[];
+      while(i<lines.length && comments.length<3){
+        if(AGE.test(lines[i+1]||"")){                                // comment block: author / age / text
+          const text=lines[i+2]||"";
+          if(text && !NOISE.test(text) && !AGE.test(text)) comments.push(clean(text));
+          i+=3;
+        } else i++;
+      }
+      const capSnip=clean(capLines.join(" ")).split(" ").slice(0,5).join(" ");
+      const echo=(comments[0]||"").split(" ").slice(0,4).join(" ");
+      process.stdout.write([capSnip, echo, String(comments.length)].join("|"));
     });' || true)"
-  # Build the comment from the post's caption (~5 sanitized words); generic fallback = not content-aware
-  local snippet comment content_aware=1
-  snippet="$(node -e '
-    let t=(process.argv[1]||"");
-    t=t.replace(/[^\p{L}\p{N} ,-]/gu," ").replace(/\s+/g," ").trim();
-    process.stdout.write(t.split(" ").slice(0,5).join(" "));' "$ctx")"
-  if [ -n "$snippet" ]; then comment="Love this — $snippet 🙌"
-  else comment="Great shot 🌌"; content_aware=0; fi
-  # Like first post (absent Like button + present Unlike = already liked from a prior run)
+  local cap_snip echo_snip n_comments
+  IFS='|' read -r cap_snip echo_snip n_comments <<< "$parsed"
+  # Step 4: the image signal — IG auto-alt of the content image (videos have none; that is honest)
+  local alt subject; alt="$(api POST "/v1/sessions/$sid/extract" \
+    '{"recipe":{"fields":{"x":{"selector":"article img[alt]:not([alt*=\"profile picture\"])","type":"attribute","attribute":"alt"}}}}' \
+    | field x 2>/dev/null || true)"
+  subject="$(node -e '
+    const t=(process.argv[1]||"");
+    const m=t.match(/May be (?:an image|a graphic|art|a cartoon|a meme) of ([^.]+)/i);
+    let out=m?m[1]:"";
+    out=out.replace(/[^\p{L}\p{N} ,-]/gu," ").replace(/\s+/g," ").trim();
+    process.stdout.write(out.split(" ").slice(0,6).join(" "));' "$alt")"
+  # Step 5: weave the comment from the available sources; count them
+  local sources=0 comment=""
+  [ -n "$cap_snip" ] && sources=$((sources+1))
+  [ -n "$subject" ] && sources=$((sources+1))
+  [ -n "$echo_snip" ] && sources=$((sources+1))
+  comment="$(node -e '
+    const [cap,subj,echo]=process.argv.slice(1);
+    const parts=[];
+    if(cap) parts.push("Love this — \u201C"+cap+"\u201D");
+    if(subj) parts.push("beautiful "+subj);
+    if(echo) parts.push("and the comments are right about \u201C"+echo+"\u2026\u201D");
+    process.stdout.write((parts.length?parts.join(", "):"Great post")+" \uD83D\uDE4C");' \
+    "$cap_snip" "$subject" "$echo_snip")"
+  # Step 6: like the POST (24px action-bar icon; not a 16px comment like), then VERIFY the flip
   api POST "/v1/sessions/$sid/click" \
-    '{"target":{"by":"css","selector":"svg[aria-label=\"Like\"]"}}' >/dev/null 2>&1 || true
+    '{"target":{"by":"css","selector":"svg[aria-label=\"Like\"][height=\"24\"]"}}' >/dev/null 2>&1 || true
   sleep 1
-  # VERIFY the like: the first post's button must now read "Unlike"
   local like_state; like_state="$(api POST "/v1/sessions/$sid/extract" \
-    '{"recipe":{"fields":{"u":{"selector":"svg[aria-label=\"Unlike\"]","type":"attribute","attribute":"aria-label"}}}}' \
+    '{"recipe":{"fields":{"u":{"selector":"svg[aria-label=\"Unlike\"][height=\"24\"]","type":"attribute","attribute":"aria-label"}}}}' \
     | field u 2>/dev/null || true)"
-  # Open comments, type the content-aware comment, post with Enter
-  api POST "/v1/sessions/$sid/click" \
-    '{"target":{"by":"css","selector":"svg[aria-label=\"Comment\"]"}}' >/dev/null 2>&1 || true
-  sleep 0.5
+  # Step 7: post the comment, then VERIFY it is visible (probe = the distinctive leading segment)
   api POST "/v1/sessions/$sid/type" \
     "$(node -e 'process.stdout.write(JSON.stringify({target:{by:"css",selector:"[placeholder=\"Add a comment…\"]"},text:process.argv[1],mode:"sequential"}))' "$comment")" \
     >/dev/null 2>&1 || true
   sleep 0.5
   api POST "/v1/sessions/$sid/press" '{"key":"Enter"}' >/dev/null 2>&1 || true
   sleep 2
-  # VERIFY the comment landed: the full "Love this — <snippet>" string must be visible.
-  # (The snippet alone would false-positive — it is quoted FROM the caption on the same page.)
-  local page_text; page_text="$(api POST "/v1/sessions/$sid/snapshot" '{}' | field text 2>/dev/null || true)"
-  local comment_visible=0
-  local probe="Love this — ${snippet}"
-  [ "$content_aware" = "0" ] && probe="Great shot"
-  if printf '%s' "$page_text" | grep -qF "$probe"; then comment_visible=1; fi
+  local page_text probe comment_visible=0
+  page_text="$(api POST "/v1/sessions/$sid/snapshot" '{}' | field text 2>/dev/null || true)"
+  probe="$(node -e 'process.stdout.write((process.argv[1]||"").split(",")[0])' "$comment")"
+  if [ -n "$probe" ] && printf '%s' "$page_text" | grep -qF "$probe"; then comment_visible=1; fi
   local shot; shot="$(save_shot "$sid" H3)"
-  if [ "$like_state" = "Unlike" ] && [ "$comment_visible" = "1" ] && [ "$content_aware" = "1" ]; then
-    record H3 PASS "$(fmt_elapsed "$t0")" "like verified (Unlike state) + content-aware comment visible ('${comment:0:40}') → $shot"
+  if [ "$like_state" = "Unlike" ] && [ "$comment_visible" = "1" ] && [ "$sources" -ge 2 ]; then
+    record H3 PASS "$(fmt_elapsed "$t0")" "picked $post_url; like verified (24px Unlike); comment from $sources/3 sources (cap+img+comments) visible: '${comment:0:60}' → $shot"
   else
     local why=""
-    [ "$like_state" != "Unlike" ] && why="like not verified (no Unlike state); "
+    [ "$like_state" != "Unlike" ] && why="post-like not verified; "
     [ "$comment_visible" != "1" ] && why="${why}comment not seen on page; "
-    [ "$content_aware" != "1" ] && why="${why}no post content extracted — generic comment fallback; "
-    record H3 PARTIAL "$(fmt_elapsed "$t0")" "${why}comment='${comment:0:30}' → $shot"
+    [ "$sources" -lt 2 ] && why="${why}only $sources/3 context sources available (video post has no alt; $n_comments comments parsed); "
+    record H3 PARTIAL "$(fmt_elapsed "$t0")" "${why}post=$post_url comment='${comment:0:40}' → $shot"
   fi
   close_session "$sid"
 }
