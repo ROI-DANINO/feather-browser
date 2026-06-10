@@ -1,7 +1,7 @@
 import type { CommandHandler, CommandContext } from "./handler";
 import type { ClickInput, ClickOutput } from "../sessions/types";
 import { resolveActionable } from "../browser/locators";
-import { withActionErrors } from "./input-errors";
+import { withActionErrors, isNavigationTeardown } from "./input-errors";
 
 interface IManager {
   get(sessionId: string): {
@@ -19,7 +19,12 @@ export class ClickHandler implements CommandHandler<ClickInput, ClickOutput> {
     const { pageId: resolvedPageId, page } = session.getPage(pageId);
     const refLookup = (r: string) => session.getObserveCache(resolvedPageId)?.refs.get(r);
     const { act, probe } = resolveActionable(page, target, refLookup);
-    await withActionErrors(probe, "click", () => act.click({ timeout: timeoutMs ?? 15000 }));
-    return { pageId: resolvedPageId, clicked: true };
+    try {
+      await withActionErrors(probe, "click", () => act.click({ timeout: timeoutMs ?? 15000 }));
+      return { pageId: resolvedPageId, clicked: true };
+    } catch (err) {
+      if (isNavigationTeardown(err)) return { pageId: resolvedPageId, clicked: true, navigated: true };
+      throw err;
+    }
   }
 }

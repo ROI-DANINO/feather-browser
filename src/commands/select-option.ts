@@ -1,7 +1,7 @@
 import type { CommandHandler, CommandContext } from "./handler";
 import type { SelectOptionInput, SelectOptionOutput } from "../sessions/types";
 import { resolveActionable } from "../browser/locators";
-import { withActionErrors } from "./input-errors";
+import { withActionErrors, isNavigationTeardown } from "./input-errors";
 
 interface IManager {
   get(sessionId: string): {
@@ -19,9 +19,16 @@ export class SelectOptionHandler implements CommandHandler<SelectOptionInput, Se
     const { pageId: resolvedPageId, page } = session.getPage(pageId);
     const refLookup = (r: string) => session.getObserveCache(resolvedPageId)?.refs.get(r);
     const { act, probe } = resolveActionable(page, target, refLookup);
-    const selected = await withActionErrors(probe, "select-option", () =>
-      act.selectOption(values, { timeout: timeoutMs ?? 15000 })
-    );
-    return { pageId: resolvedPageId, selected };
+    try {
+      const selected = await withActionErrors(probe, "select-option", () =>
+        act.selectOption(values, { timeout: timeoutMs ?? 15000 })
+      );
+      return { pageId: resolvedPageId, selected };
+    } catch (err) {
+      if (isNavigationTeardown(err)) {
+        return { pageId: resolvedPageId, selected: Array.isArray(values) ? values : [values], navigated: true };
+      }
+      throw err;
+    }
   }
 }

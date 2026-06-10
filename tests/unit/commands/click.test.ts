@@ -37,4 +37,17 @@ describe("ClickHandler", () => {
     expect(mockSession.getPage).toHaveBeenCalledWith("page_002");
     expect(fakeAct.click).toHaveBeenCalledWith({ timeout: 3000 });
   });
+
+  it("returns clicked+navigated when the click dies to navigation teardown", async () => {
+    fakeAct.click.mockRejectedValueOnce(new Error("Execution context was destroyed, most likely because of a navigation"));
+    const result = await new ClickHandler(mockManager as any).execute(
+      { sessionId: "ses", target: { by: "css", selector: "a" } }, ctx);
+    expect(result).toEqual({ pageId: "page_001", clicked: true, navigated: true });
+  });
+
+  it("still rethrows non-navigation errors", async () => {
+    fakeAct.click.mockRejectedValueOnce(new Error("boom"));
+    await expect(new ClickHandler(mockManager as any).execute(
+      { sessionId: "ses", target: { by: "css", selector: "a" } }, ctx)).rejects.toThrow("boom");
+  });
 });

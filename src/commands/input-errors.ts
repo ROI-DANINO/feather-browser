@@ -44,7 +44,7 @@ export const NAVIGATION_TEARDOWN_PATTERNS = [
   "Execution context was destroyed",
   "Element is not attached",
   "Target page, context or browser has been closed",
-];
+] as const;
 
 export function isNavigationTeardown(err: unknown): boolean {
   const msg = err instanceof Error ? err.message : "";

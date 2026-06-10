@@ -45,4 +45,17 @@ describe("SelectOptionHandler", () => {
       { sessionId: "ses", pageId: "page_002", target: { by: "css", selector: "select" }, values: "X" }, ctx);
     expect(mockSession.getPage).toHaveBeenCalledWith("page_002");
   });
+
+  it("returns selected+navigated when the select dies to navigation teardown", async () => {
+    fakeAct.selectOption.mockRejectedValueOnce(new Error("Execution context was destroyed, most likely because of a navigation"));
+    const result = await new SelectOptionHandler(mockManager as any).execute(
+      { sessionId: "ses", target: { by: "css", selector: "select" }, values: "b" }, ctx);
+    expect(result).toEqual({ pageId: "page_001", selected: ["b"], navigated: true });
+  });
+
+  it("still rethrows non-navigation errors", async () => {
+    fakeAct.selectOption.mockRejectedValueOnce(new Error("boom"));
+    await expect(new SelectOptionHandler(mockManager as any).execute(
+      { sessionId: "ses", target: { by: "css", selector: "select" }, values: "b" }, ctx)).rejects.toThrow("boom");
+  });
 });

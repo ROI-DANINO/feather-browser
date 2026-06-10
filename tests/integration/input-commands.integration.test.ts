@@ -131,4 +131,25 @@ describe("Input commands (real Chromium)", () => {
     expect(status).toBe(404);
     expect(body.error.code).toBe("ELEMENT_NOT_FOUND");
   });
+
+  it("click that triggers navigation returns 200, never INTERNAL_ERROR", async () => {
+    const page2 = encodeURIComponent(`<!DOCTYPE html><html><body><h1>arrived</h1></body></html>`);
+    const page1 = encodeURIComponent(
+      `<!DOCTYPE html><html><body><a id="go" href="data:text/html,${page2}">Go</a></body></html>`);
+    await api("POST", `/v1/sessions/${sessionId}/navigate`, { url: `data:text/html,${page1}`, waitUntil: "domcontentloaded" });
+    const res = await api("POST", `/v1/sessions/${sessionId}/click`, { target: { by: "css", selector: "#go" } });
+    expect(res.status).toBe(200);             // the contract under test: success, with or without the flag
+    expect(res.body.data.clicked).toBe(true); // navigated may or may not appear — Playwright often survives clean link clicks
+  }, 60000);
+
+  it("press Enter on a focused link that navigates returns 200, never INTERNAL_ERROR", async () => {
+    // data: form actions are blocked by Chromium; use a focused link + Enter instead
+    const page2 = encodeURIComponent(`<!DOCTYPE html><html><body><h1>arrived</h1></body></html>`);
+    const page1 = encodeURIComponent(
+      `<!DOCTYPE html><html><body><a id="go" href="data:text/html,${page2}">Go</a></body></html>`);
+    await api("POST", `/v1/sessions/${sessionId}/navigate`, { url: `data:text/html,${page1}`, waitUntil: "domcontentloaded" });
+    const res = await api("POST", `/v1/sessions/${sessionId}/press`, { target: { by: "css", selector: "#go" }, key: "Enter" });
+    expect(res.status).toBe(200);
+    expect(res.body.data.pressed).toBe("Enter");
+  }, 60000);
 });

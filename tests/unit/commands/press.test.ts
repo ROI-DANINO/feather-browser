@@ -37,4 +37,17 @@ describe("PressHandler", () => {
     expect(keyboard.press).toHaveBeenCalledWith("Enter");
     expect(fakeAct.press).not.toHaveBeenCalled();
   });
+
+  it("returns pressed+navigated when the press dies to navigation teardown", async () => {
+    fakeAct.press.mockRejectedValueOnce(new Error("Execution context was destroyed, most likely because of a navigation"));
+    const result = await new PressHandler(mockManager as any).execute(
+      { sessionId: "ses", target: { by: "css", selector: "#q" }, key: "Enter" }, ctx);
+    expect(result).toEqual({ pageId: "page_001", pressed: "Enter", navigated: true });
+  });
+
+  it("still rethrows non-navigation errors", async () => {
+    fakeAct.press.mockRejectedValueOnce(new Error("boom"));
+    await expect(new PressHandler(mockManager as any).execute(
+      { sessionId: "ses", target: { by: "css", selector: "#q" }, key: "Enter" }, ctx)).rejects.toThrow("boom");
+  });
 });

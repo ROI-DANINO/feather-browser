@@ -116,7 +116,7 @@ export interface DismissInput { sessionId: string; pageId?: string; labels?: str
 export interface DismissOutput { pageId: string; dismissed: { ref: string; name: string }[]; }
 
 export interface ClickInput { sessionId: string; pageId?: string; target: Target; timeoutMs?: number; }
-export interface ClickOutput { pageId: string; clicked: true; }
+export interface ClickOutput { pageId: string; clicked: true; navigated?: true; }
 
 export interface SelectOptionInput {
   sessionId: string;
@@ -128,6 +128,7 @@ export interface SelectOptionInput {
 export interface SelectOptionOutput {
   pageId: string;
   selected: string[];
+  navigated?: true;
 }
 
 export interface TypeInput {
@@ -137,7 +138,7 @@ export interface TypeInput {
 export interface TypeOutput { pageId: string; typed: true; }
 
 export interface PressInput { sessionId: string; pageId?: string; target?: Target; key: string; timeoutMs?: number; }
-export interface PressOutput { pageId: string; pressed: string; }
+export interface PressOutput { pageId: string; pressed: string; navigated?: true; }
 
 export type WaitInput =
   | { sessionId: string; pageId?: string; target: Target; until: "visible" | "hidden" | "attached" | "detached"; timeoutMs?: number }
