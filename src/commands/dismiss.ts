@@ -10,9 +10,10 @@ export function pickDismissTargets(obs: ObserveResult, labels: string[]): Observ
   if (obs.overlays.length === 0) return [];                      // only act when an overlay exists
   const wanted = labels.map((l) => l.toLowerCase());
   return obs.actions.filter((a) => {
-    // Tight gate: the button must demonstrably belong to a popup — inside an overlay element,
-    // covered by one, or occluded. The old bare-"actionable" escape hatch could click a page's
-    // own legitimate "Continue" button.
+    // Tight gate: the button must demonstrably belong to a popup or be pinned under one
+    // (the verify observe backstops the covered case). A covered/occluded button is pinned under
+    // a popup, not necessarily part of it — but the gate still holds. The old bare-"actionable"
+    // escape hatch could click a page's own legitimate "Continue" button.
     const overlayRelated = a.overlayIndex != null || a.state === "covered" || a.occludedBy != null;
     const name = a.name.trim().toLowerCase();
     const labelHit = wanted.some((w) => name === w || name.startsWith(w));

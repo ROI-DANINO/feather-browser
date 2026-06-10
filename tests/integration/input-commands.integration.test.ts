@@ -66,7 +66,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await Promise.allSettled(manager.list().map((s) => manager.close(s.sessionId, { force: true })));
-  await new Promise<void>((resolve) => fixtureServer.close(() => resolve()));
+  if (fixtureServer) await new Promise<void>((resolve) => fixtureServer.close(() => resolve()));
   await fs.promises.rm(tmpDir, { recursive: true, force: true });
 });
 

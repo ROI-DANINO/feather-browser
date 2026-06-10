@@ -17,11 +17,11 @@ export class PressHandler implements CommandHandler<PressInput, PressOutput> {
     const { sessionId, pageId, target, key, timeoutMs } = input;
     const session = this.manager.get(sessionId);
     const { pageId: resolvedPageId, page } = session.getPage(pageId);
+    const refLookup = (r: string) => session.getObserveCache(resolvedPageId)?.refs.get(r);
+    const resolved = target ? resolveActionable(page, target, refLookup) : null;
     try {
-      if (target) {
-        const refLookup = (r: string) => session.getObserveCache(resolvedPageId)?.refs.get(r);
-        const { act, probe } = resolveActionable(page, target, refLookup);
-        await withActionErrors(probe, "press", () => act.press(key, { timeout: timeoutMs ?? 15000 }));
+      if (resolved) {
+        await withActionErrors(resolved.probe, "press", () => resolved.act.press(key, { timeout: timeoutMs ?? 15000 }));
       } else {
         await page.keyboard.press(key);
       }

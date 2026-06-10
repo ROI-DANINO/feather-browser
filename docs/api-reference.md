@@ -585,6 +585,8 @@ This is the successor to the hardcoded `dismiss_got_it` approach. It is opt-in a
 (`Accept all`, `I agree`, `Allow all`, `Got it`, `Accept`, `Close`, `Continue`) unless `labels` is
 overridden.
 
+**Cost:** dismiss runs up to two full observes internally (baseline + verify), so it costs ~2× an observe on dense pages — budget accordingly.
+
 **Path parameters:**
 
 | Parameter | Type | Description |
@@ -604,7 +606,7 @@ overridden.
 |-------|------|-------------|
 | `pageId` | string | The resolved page identifier |
 | `dismissed` | array | Overlays verified gone after the click: `[{ ref: string, name: string }]`. Empty when no matching overlay/label was found. Only overlays confirmed absent in the post-click re-observe appear here — a click that fails but the overlay vanishes still counts. |
-| `overlaysRemaining` | number | Count of overlays still present in the post-click re-observe. `> 0` means another wall is up — call dismiss again (one wall per call) or pass different `labels`. This is the ground truth for "am I clear"; trust it over `dismissed.length` alone (on multi-pane popups whose label text changes between panes, `dismissed` can misjudge). |
+| `overlaysRemaining` | number | Count of overlays still present in the post-click re-observe (or the baseline count when nothing was clicked). `> 0` means another wall is up — call dismiss again (one wall per call) or pass different `labels`. This is the ground truth for "am I clear"; trust it over `dismissed.length` alone (on multi-pane popups whose label text changes between panes, `dismissed` can misjudge). |
 | `observation` | object | Full, fresh `ObserveResult` from the internal post-click re-observe. Any refs from before the dismiss call are expired; act from `observation`'s refs — no need to call `observe` again after dismiss. When nothing was clicked, `observation` is the baseline observe. |
 
 **Error responses:**
@@ -632,13 +634,13 @@ curl -s -X POST http://localhost:4000/v1/sessions/ses_abc123/dismiss \
   "requestId": "req_a1b2c3d4",
   "data": {
     "pageId": "pg_1",
-    "dismissed": [{ "ref": "obs_x1y2.e3", "name": "Accept all" }],
+    "dismissed": [{ "ref": "obs_a1b2.e3", "name": "Accept all" }],
     "overlaysRemaining": 0,
     "observation": {
       "pageId": "pg_1",
       "url": "https://example.com/",
       "title": "Example",
-      "observeId": "obs_x1y2",
+      "observeId": "obs_c3d4",
       "actions": [],
       "overlays": [],
       "diff": { "added": [], "removed": [{ "desc": "Accept all" }], "changed": [] },

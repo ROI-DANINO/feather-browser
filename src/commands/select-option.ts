@@ -26,6 +26,7 @@ export class SelectOptionHandler implements CommandHandler<SelectOptionInput, Se
       return { pageId: resolvedPageId, selected };
     } catch (err) {
       if (isNavigationTeardown(err)) {
+        // Selection can't be read back after teardown; `navigated: true` flags the echo as unverified.
         return { pageId: resolvedPageId, selected: Array.isArray(values) ? values : [values], navigated: true };
       }
       throw err;

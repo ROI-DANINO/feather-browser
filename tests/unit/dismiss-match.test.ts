@@ -57,4 +57,8 @@ describe("overlayGone", () => {
     expect(overlayGone([ov("modal", "a")], [], undefined)).toBe(true);
     expect(overlayGone([ov("modal", "a")], [ov("banner", "b")], undefined)).toBe(false);
   });
+  it("invalid overlayIndex degrades to total-count rule", () => {
+    expect(overlayGone([], [], 0)).toBe(false);
+    expect(overlayGone([ov("modal", "a")], [ov("modal", "a")], 5)).toBe(false);
+  });
 });

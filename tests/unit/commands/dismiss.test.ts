@@ -3,18 +3,18 @@
 // (Playwright's actionability checks pass before dispatch; teardown errors are classified
 // as navigated:true by ClickHandler), so the catch path is pinned here with stubs.
 import { vi, describe, it, expect, beforeEach } from "vitest";
-import { DismissHandler } from "../../src/commands/dismiss";
-import { ElementNotActionableError } from "../../src/commands/input-errors";
-import type { ObserveResult, ObserveAction, Overlay } from "../../src/sessions/types";
+import { DismissHandler } from "../../../src/commands/dismiss";
+import { ElementNotActionableError } from "../../../src/commands/input-errors";
+import type { ObserveResult, ObserveAction, Overlay } from "../../../src/sessions/types";
 
 const { observeExecute, clickExecute } = vi.hoisted(() => ({
   observeExecute: vi.fn(),
   clickExecute: vi.fn(),
 }));
-vi.mock("../../src/commands/observe", () => ({
+vi.mock("../../../src/commands/observe", () => ({
   ObserveHandler: class { execute = observeExecute; },
 }));
-vi.mock("../../src/commands/click", () => ({
+vi.mock("../../../src/commands/click", () => ({
   ClickHandler: class { execute = clickExecute; },
 }));
 

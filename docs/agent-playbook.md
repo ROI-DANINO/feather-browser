@@ -162,8 +162,8 @@ Returns:
 ```jsonc
 {
   "pageId": "pg_1",
-  "dismissed": [{ "ref": "obs_x1y2.e3", "name": "Accept all" }],  // verified-gone only
-  "overlaysRemaining": 0,       // from the post-click re-observe
+  "dismissed": [{ "ref": "obs_a1b2.e3", "name": "Accept all" }],  // verified-gone only; ref is from baseline observe
+  "overlaysRemaining": 0,       // from the post-click re-observe (or baseline count when nothing was clicked)
   "observation": { /* full ObserveResult — use these refs; your old refs are expired */ }
 }
 ```
@@ -182,6 +182,7 @@ Returns:
   dialogs). For those, click the button directly by ref/selector or use `await-human`.
 
 Pass `"labels"` to override the default label list. Re-call if a second overlay appears (`overlaysRemaining > 0`).
+- **Cost:** dismiss runs up to two full observes internally (baseline + verify), so it costs ~2× an observe on dense pages — budget accordingly.
 
 ### Navigate
 ```http
