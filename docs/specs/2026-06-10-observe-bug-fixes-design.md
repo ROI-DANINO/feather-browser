@@ -66,8 +66,10 @@ A dismiss is recorded iff the overlay the button belonged to is **absent from th
 observe**, matched by **kind + name** (refs die between observes; kind+name is the stable
 identity we have). Precisely: dismissed iff the count of overlays sharing the target
 overlay's (kind, name) pair **decreased** between baseline and verify — this stays correct
-when several overlays share a name or the name is empty. The popup vanishing mid-click —
-today's swallowed failure — becomes the proof of success.
+when several overlays share a name or the name is empty. When the picked button has no linked
+overlay (it was chosen via `covered`/`occludedBy`), the fallback rule is: dismissed iff the
+**total overlay count decreased**. The popup vanishing mid-click — today's swallowed failure —
+becomes the proof of success.
 
 - No picks found → no click, no second observe; return the baseline observation.
 - Click threw but overlay gone → **dismissed** (this is the H1 case).
@@ -81,11 +83,13 @@ containment is computed in-page: for each collected interactive element, record 
 the overlay element that contains it (`overlayEl.contains(el)`), if any, as
 `WalkMeta.overlayIndex?: number` (top frame only — overlays are top-frame only today).
 
-- `ObserveAction` gains optional **`inOverlay: true`** (set when `overlayIndex != null`) —
-  agent-visible signal that a button is part of a popup.
-- `pickDismissTargets` gate tightens to: label hit **and** (`inOverlay` **or** `state ===
-  "covered"` **or** `occludedBy != null`). The bare `state === "actionable"` escape hatch is
-  removed — that is what could click a page's own "Continue."
+- `ObserveAction` gains optional **`overlayIndex?: number`** (index into the response's
+  `overlays` array) — agent-visible signal that a button is part of popup #i, and the linkage
+  the dismiss verification needs to know *which* overlay to check for. (Refined from the
+  earlier `inOverlay: true` sketch: a bare boolean can't tell the verifier which overlay.)
+- `pickDismissTargets` gate tightens to: label hit **and** (`overlayIndex != null` **or**
+  `state === "covered"` **or** `occludedBy != null`). The bare `state === "actionable"` escape
+  hatch is removed — that is what could click a page's own "Continue."
 - The always-null `ref` field on overlay output entries is **dropped** (its only consumer was
   the dead check). `ObserveOverlay` type and api-reference updated.
 
@@ -172,7 +176,7 @@ non-timeout remainder; anything unclassified still escapes as today.
 ## 6. Contract & docs changes
 
 - `docs/api-reference.md`: dismiss response shape; overlays lose `ref`; actions gain optional
-  `inOverlay`; click/press/select-option outputs gain optional `navigated`.
+  `overlayIndex`; click/press/select-option outputs gain optional `navigated`.
 - `docs/agent-playbook.md`: recovery section for nav-clicks rewritten to "re-observe and
   verify the screen" (replaces the "pull a debug-bundle" advice); `navigated: true` documented
   as hint-not-promise; dismiss loop section updated for `overlaysRemaining` + `observation`.
