@@ -476,8 +476,8 @@ curl -s -X POST http://localhost:4000/v1/sessions/ses_abc123/snapshot \
 
 Returns numbered, actionable elements on the current page, first-class overlay detection, and a
 change-diff vs the previous observe on this page. This is the primary perception primitive for
-acting — use refs from the response as `{ "by": "ref", "ref": "eN" }` targets in subsequent
-commands.
+acting — use refs from the response as `{ "by": "ref", "ref": "obs_a1b2.e0" }` targets in
+subsequent commands.
 
 **Path parameters:**
 

@@ -8,6 +8,15 @@ description: Use when a Feather Browser task needs a human to step in — solvin
 Builds on **using-feather-browser**. When the agent hits a wall only a human can clear, pause cleanly
 with `await-human` instead of failing or guessing.
 
+## Spotting the wall in observe
+
+A CAPTCHA/consent wall is a *typed signal*, not a mystery: the `observe` response shows a blocking
+overlay (`blocking: true`, high `coverPct`), page elements turn `state: "covered"` with `occludedBy`
+set, and the only `actionable` entries carry an `overlayIndex` (they belong to the overlay). When you
+see that pattern: stop, don't flail — try `dismiss` once if it's a consent banner, else hand off.
+Note: `dismiss` **cannot reach buttons inside iframe overlays** (common for CAPTCHAs and consent
+iframes) — those are exactly the handoff case.
+
 ## Requirements
 
 - **Use a headed session** so the human can see and act: create with
@@ -62,15 +71,16 @@ return, then `navigate`/`wait` for the post-login page yourself in a separate st
 POST /v1/sessions/:sessionId/await-human
 { "reason": "Please solve the CAPTCHA shown, then click Resume ▸", "timeoutMs": 120000 }
 ```
-Then check `resumedBy === "human"` before continuing. After resume, **snapshot** — the page may have
-changed.
+Then check `resumedBy === "human"` before continuing. After resume, **re-observe** — the page
+changed under you while you weren't looking; pre-pause refs are stale at best, and if the human's
+action navigated they are expired (`REF_EXPIRED`). Act only on fresh refs.
 
 ## Checklist
 
 - [ ] Headed session (`chromium-headed-cdp`)?
 - [ ] Will the human's action navigate? → use `resumeOn`, not the bare banner.
 - [ ] Branched on `resumedBy` (handled `timeout`)?
-- [ ] Snapshotted after resume before the next action?
+- [ ] Re-observed after resume, acting on fresh refs?
 
 (Design background — why the banner is DOM-injected, and the v2 MFA Handler direction — is in
 `docs/agent-playbook.md` → "The await-human navigation gotcha".)

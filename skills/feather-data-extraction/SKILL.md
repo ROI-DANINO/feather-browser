@@ -5,8 +5,10 @@ description: Use when reading or scraping content from a web page through Feathe
 
 # Feather: Data Extraction
 
-Builds on **using-feather-browser**. Two tools, two jobs: **snapshot** to *read* a page, **extract**
-to pull *structured* fields.
+Builds on **using-feather-browser**. This is the *reading* side of the loop: `observe` is for
+acting (refs, overlays, diff); **snapshot** is for reading a page, **extract** for pulling
+structured fields. Don't use `observe { includeText: true }` for reading — it caps at 4k chars;
+snapshot is the read tool.
 
 ## Reading a page → snapshot
 
@@ -61,6 +63,7 @@ per-row with scoped selectors.
 | "Get all the links" | `snapshot` → `links` |
 | "Get these specific named fields" | `extract` with a recipe |
 | "Get a list of items" | `snapshot` (markdown/links) first; `extract` per-row if structured |
+| "Find then click a result" (e.g. a Google SERP) | `observe` — results are self-describing action entries (title + source + URL in `name`); click by ref, no href-extraction detour |
 
 ## Gotchas
 
@@ -68,3 +71,7 @@ per-row with scoped selectors.
 - **markdown is capped at 20k** — for very long pages, target the section you need or use `extract`.
 - **Snapshot after navigation/interaction** — stale reads come from reading before the page settled;
   pair with `wait { until: "stable" }` if content loads async.
+- **A consent wall in the way?** `dismiss` first (see using-feather-browser), then snapshot — the
+  overlay's text pollutes reads.
+- **Verify extracted facts semantically** — "next holiday" means after *today*; resolve relative
+  dates against the current date before writing them anywhere.

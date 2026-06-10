@@ -116,9 +116,9 @@ When you need to *operate* Feather (drive a site through the HTTP API — e.g. t
 - **`feather-form-filling`** / **`feather-human-handoff`** / **`feather-data-extraction`** — focused workflow skills that auto-trigger on their own keywords (forms/signup, CAPTCHA/MFA, scrape/read).
 - **`docs/agent-playbook.md`** — the full reference behind the skills (every endpoint, profiles, modes, gotchas). The skills point here for depth.
 
-> The canonical operating loop is now **`observe → act by ref → re-observe (diff)`** (see
-> `docs/agent-playbook.md`); the skills' snapshot-first framing predates it and a rewrite is queued.
-> Where they conflict, the playbook wins.
+> The skills teach the canonical operating loop, **`observe → act by ref → re-observe (diff)`**
+> (rewritten 2026-06-10). The playbook remains the deeper reference; if a conflict ever appears,
+> the playbook wins.
 
 These are operator-facing (how to *use* Feather). The rest of this file is contributor-facing (how to *build* Feather).
 

@@ -3,7 +3,7 @@
 Checklist only. Front door → `feather.md`; version roadmaps → `docs/roadmap/{v1,v2,v3}.md`;
 execution index → `ROADMAP.md`; live pointer → `journal/context/active.md`.
 
-**Next action = operator-skills rewrite to the observe loop, then suite semantic assertions, then v2 Gate A.**
+**Next action = suite semantic assertions, then v2 Gate A.**
 Latest (2026-06-10 ~12:03 STOP): **OBSERVE BUG FIXES SHIPPED** — all 3 pass-2 bugs fixed end-to-end
 (brainstorm→spec→plan→subagent build, 12 commits `09a6b6c..579b445` pushed; gates 280u/72i/typecheck
 clean; final review = ready to merge). Earlier same day: Native Capabilities Router placed at 5.0.1;
@@ -31,12 +31,14 @@ command layer (`/blog`+`/notebook`+blog gate); Graphify graduated; NotebookLM pa
 
 ### Open v1 work
 
-- [ ] **Operator-skills rewrite to the observe loop** ← NEXT. The 4 `skills/` files still teach
-      snapshot-first; rewrite to `observe → act by ref → re-observe`, fold in the new dismiss shape
-      (`overlaysRemaining` ground truth, act from `observation` refs) + `navigated: true` recovery.
-      Evidence: `examples/showcase-output/pass2-observe/results.md`.
-- [ ] **Suite semantic-assertion layer** — PASS must mean the errand was done right (date asserts;
-      content-aware H3 comment).
+- [x] **Operator-skills rewrite to the observe loop — DONE (2026-06-10).** All 4 `skills/` files now
+      teach `observe → act by ref → re-observe`: ref-first targeting, new dismiss shape
+      (`overlaysRemaining` ground truth, act from `observation` refs), `navigated: true` recovery,
+      `REF_EXPIRED` recovery row, typed wall-detection signal in human-handoff. Also retired the
+      stale "rewrite queued" caveat in AGENTS.md and fixed the bare-`eN` ref drift in
+      `docs/api-reference.md` observe intro.
+- [ ] **Suite semantic-assertion layer** ← NEXT — PASS must mean the errand was done right (date
+      asserts; content-aware H3 comment).
 - [ ] **Dismiss follow-up (from review): same-origin-iframe overlay gap.** `/dismiss` can't reach
       buttons inside iframe overlays; fix idea = implicit `overlayIndex` for actions whose frame is a
       detected overlay iframe. Workaround documented (direct click / await-human). Not urgent.

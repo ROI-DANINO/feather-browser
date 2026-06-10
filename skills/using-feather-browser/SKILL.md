@@ -12,11 +12,14 @@ reference: `docs/agent-playbook.md`.
 ## The Golden Loop
 
 ```
-snapshot  →  decide  →  act  →  verify  →  repeat
+observe  →  act by ref  →  re-observe (read the diff)  →  repeat
 ```
 
-Never act blind. See the page (snapshot), choose a stable target, do one action, confirm it landed
-(wait). This one habit prevents most failures.
+Never act blind. See the page (`observe`), act on a numbered ref, re-observe to confirm the change
+landed — the diff tells you exactly what moved.
+
+**`observe` vs `snapshot`:** `observe` is for *acting* — numbered element refs, overlays, change-diff.
+`snapshot` is for *reading* — text, links, cleaned markdown. See feather-data-extraction.
 
 ## Setup
 
@@ -35,10 +38,10 @@ POST /v1/sessions
 
 ## The Five Rules
 
-1. **Snapshot before you touch.** Discover real elements; never invent selectors.
-2. **Target by meaning, not position.** `role`/`text`/`placeholder` beat `css`. `at` (index) is a
-   last resort — it breaks on the next redesign.
-3. **Verify each action** with `wait`. Never insert blind client-side sleeps.
+1. **Observe before you touch.** Get real refs from `observe`; never invent selectors.
+2. **Act by ref; fall back by meaning.** A ref from the latest observe beats everything — no
+   guessing. Without one, `role`/`text`/`placeholder` beat `css`; `at` (index) is a last resort.
+3. **Verify each action** by re-observing (read the diff) or `wait`. Never insert blind sleeps.
 4. **Read the error `code`, recover deterministically** (table below). Don't blind-retry.
 5. **Pause for a human only on in-place steps** (CAPTCHA) — `await-human` dies on navigation. See
    feather-human-handoff.
@@ -47,71 +50,91 @@ POST /v1/sessions
 
 | # | Target | Use |
 |---|--------|-----|
-| 1 | `{"by":"role","role":"button","name":"Submit"}` | Has an accessible name |
-| 2 | `{"by":"text","text":"Log in"}` | Visible label |
-| 3 | `{"by":"placeholder","text":"Email"}` | Input placeholder |
-| 4 | `{"by":"testid","testId":"email"}` | App has `data-testid` |
-| 5 | `{"by":"css","selector":"input"}` | Nothing semantic |
+| 1 | `{"by":"ref","ref":"obs_a1b2.e3"}` | From the latest `observe`. Copy verbatim — never hand-construct. Expires on the next observe or navigation (`REF_EXPIRED`); a stale ref never hits a different element. |
+| 2 | `{"by":"role","role":"button","name":"Submit"}` | Has an accessible name |
+| 3 | `{"by":"text","text":"Log in"}` | Visible label |
+| 4 | `{"by":"placeholder","text":"Email"}` | Input placeholder |
+| 5 | `{"by":"testid","testId":"email"}` | App has `data-testid` |
+| 6 | `{"by":"css","selector":"input"}` | Nothing semantic |
 
 Disambiguate with `"at": "first" | "last" | <0-based index>`. **Use the `at` field — never `>> nth=`
 inside a css string.**
 
 ## Core recipes
 
-**Discover (first, and after every navigation):**
+**Observe (first, and before every action):**
 ```http
-POST /v1/sessions/:sessionId/snapshot   {}
+POST /v1/sessions/:sessionId/observe   {}
 ```
-Returns `{ url, title, text, links, meta.description, markdown }`. Read `markdown` — cleaned page
-content (capped 20k). Use it to learn the page before targeting.
+Returns `actions` — numbered elements `{ ref, role, name, tag, box, state, overlayIndex? }`
+(`overlayIndex` = the element lives inside `overlays[i]`) — plus `overlays`
+(`{ kind, name, coverPct, blocking }`) and `diff` vs the previous observe. `diff: null` = no
+baseline (first observe after navigation); empty `added/removed/changed` = nothing structural moved
+(typed text does NOT show in the diff — verify outcomes, not keystrokes). Options: `cap` (default
+80 — raise on dense pages or elements fall past it and vanish from the diff), `viewportOnly`.
 
-**Navigate:**
+**Act by ref, then re-observe:**
 ```http
-POST /v1/sessions/:sessionId/navigate   { "url": "https://...", "waitUntil": "domcontentloaded" }
+POST /v1/sessions/:sessionId/click     { "target": {"by":"ref","ref":"obs_a1b2.e1"} }
+POST /v1/sessions/:sessionId/observe   {}
 ```
+If click/press/select-option returns `navigated: true`, the action tore down the page mid-flight —
+a **hint, not a promise**. Re-observe and verify the landed screen; don't assume failure.
 
-**Click, then confirm:**
+**Dismiss an overlay (consent banner, popup):**
 ```http
-POST /v1/sessions/:sessionId/click   { "target": {"by":"role","role":"button","name":"Continue"} }
-POST /v1/sessions/:sessionId/wait    { "target": {"by":"text","text":"Welcome"}, "until":"visible" }
+POST /v1/sessions/:sessionId/dismiss   {}
 ```
+Safe to call speculatively (acts only when an overlay is detected; affirmative labels only —
+override with `labels`). Returns `{ dismissed, overlaysRemaining, observation }`:
+- **`overlaysRemaining` is the ground truth for "am I clear"** — trust it over `dismissed.length`.
+  `> 0` = another wall is up; call dismiss again (one wall per call).
+- `observation` is a fresh full observe — **act from its refs**; all pre-dismiss refs are expired.
+  No follow-up observe needed.
+- Costs ~2× an observe internally. Can't reach buttons inside **iframe overlays** — click those
+  directly or use feather-human-handoff.
+
+**Navigate:** `POST .../navigate { "url": "https://...", "waitUntil": "domcontentloaded" }` — then
+observe; the page changed and all refs died.
 
 **Type:** `POST .../type { "target": {...}, "text": "..." }` — `mode`: `fill` (default) or
 `sequential` (key-by-key, `delayMs`).
 
-**Press:** `POST .../press { "key": "Enter", "target": {...}? }` (target optional).
+**Press:** `POST .../press { "key": "Enter", "target": {...}? }` (target optional; may return
+`navigated: true`).
 
 **Wait:** `POST .../wait { "target": {...}, "until": "visible|hidden|attached|detached|stable" }`
 (`stable` takes `quietMs`).
 
 **Open a tab:** `POST /v1/sessions/:sessionId/tabs` — returns `{ pageId, url, title }`. Pass the new
-`pageId` in all subsequent page actions to target that tab.
+`pageId` in all subsequent page actions. Refs and diffs are per-page.
 
-**Close a tab:** `DELETE /v1/sessions/:sessionId/tabs/:pageId` — returns remaining tabs. Close a tab
-you're done with to keep a warmed session lean across errands; the last tab can't be closed this way
-(`CANNOT_CLOSE_LAST_TAB`) — end the session instead.
+**Close a tab:** `DELETE /v1/sessions/:sessionId/tabs/:pageId` — returns remaining tabs. Close tabs
+you're done with; the last tab can't be closed this way (`CANNOT_CLOSE_LAST_TAB`) — end the session
+instead.
 
 **Clean up:** `DELETE /v1/sessions/:sessionId {}`.
 
-For multi-field forms → **feather-form-filling**. For scraping → **feather-data-extraction**. For
-CAPTCHA/login handoff → **feather-human-handoff**.
+For multi-field forms → **feather-form-filling**. For reading/scraping → **feather-data-extraction**.
+For CAPTCHA/login handoff → **feather-human-handoff**.
 
 ## Error → recovery
 
 | `code` | Meaning | Recovery |
 |--------|---------|----------|
 | `VALIDATION_ERROR` | Bad body | Fix it; `error.details` lists the issues |
-| `ELEMENT_NOT_FOUND` | Selector matched nothing | **Re-snapshot, re-target** (selector is wrong) |
-| `ELEMENT_NOT_ACTIONABLE` | Covered/disabled/off-screen | `wait` for `visible`/`stable`, scroll, dismiss overlay, retry |
-| `WAIT_TIMEOUT` | State never happened | Snapshot to see what actually rendered |
+| `ELEMENT_NOT_FOUND` | Target matched nothing | **Re-observe, re-target** (selector is wrong, not timing) |
+| `REF_EXPIRED` | Ref from a superseded observe | Re-observe, use the fresh ref |
+| `ELEMENT_NOT_ACTIONABLE` | Covered/disabled/off-screen | `wait` for `visible`/`stable`, `dismiss` the overlay, or re-observe for a fresh ref |
+| `WAIT_TIMEOUT` | State never happened | Observe/snapshot to see what actually rendered |
 | `SESSION_NOT_FOUND` / `SESSION_NOT_RUNNING` | Bad/dead session | Re-create the session |
 | `CANNOT_CLOSE_LAST_TAB` | Tried to close the only tab | Use `DELETE /v1/sessions/:sessionId` to end the session |
 | `PAGE_NOT_FOUND` | Bad `pageId` | Omit `pageId` or list tabs |
 | `PROFILE_LOCKED` | Persistent profile in use | Close other session / different profile |
-| `INTERNAL_ERROR` | Server fault | Pull `debug-bundle`, report `requestId` |
+| `INTERNAL_ERROR` | Server fault (nav-teardown on click/press/select-option returns `navigated: true` now, not 500) | Re-observe, retry once with a fresh ref, then pull `debug-bundle` + report `requestId` |
 
-**Principle:** `ELEMENT_NOT_FOUND` = wrong *selector* (re-target). `ELEMENT_NOT_ACTIONABLE` /
-`WAIT_TIMEOUT` = wrong *timing/state* (wait, retry). Don't confuse them.
+**Principle:** `ELEMENT_NOT_FOUND` / `REF_EXPIRED` = wrong *target* (re-observe, re-target).
+`ELEMENT_NOT_ACTIONABLE` / `WAIT_TIMEOUT` = wrong *timing/state* (wait, retry). Don't confuse them.
 
 ## Response envelope
 
