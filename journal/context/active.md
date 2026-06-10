@@ -6,61 +6,37 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 
 ## Current pointer
 
-- **NOW (2026-06-10 ~06:52, STOP): GRAPHIFY GRADUATED TO `dev` (side-thread RESOLVED = KEEP).** Roi merged `graphify-test` into
-  `dev` (PoC baseline `401b176` + NotebookLM Project Brain v2 `d3eb790` + journal `f1cb360`). The keep/discard
-  gate is closed: Graphify lives in the MAIN repo now as a standalone read-only MCP query layer (no installer,
-  no skill/hook pollution). `.graphifyignore` fences all markdown/docs/journal/skills; `.githooks/post-commit`
-  made **path-agnostic** and ENABLED in the main repo (`core.hooksPath .githooks`) — incremental no-LLM graph
-  refresh on every commit; graph extracted into main `graphify-out/` (gitignored); `~/.claude.json` MCP
-  registration repointed to the main repo's `graph.json`. Worktree `../feather-browser-graphify-test` + branch
-  `graphify-test` REMOVED. **Pushed `c0a3c0a..e3de005` to `origin/dev` (5 commits); tree clean.** Session record:
-  `journal/ops/sessions/graphify-graduated-to-dev-20260610-0652.md`; blog `0018-hired-on-probation.md`.
-  **Verb gotcha:** rebuild the graph with `graphify update .` (no-LLM, code-only) — `graphify extract .` fails here
-  (sweeps 22 doc files into LLM semantic extraction, no backend installed). Stale-MCP note: sessions started before
-  the repoint still aim at the deleted worktree path; fresh sessions are fine.
-- **NotebookLM Project Brain v2 SHIPPED (2026-06-10, now on `dev`).** Full rewrite of
-  `docs/feather_notebooklm_pack/`: files `01`-`11` are uploadable RAG sources with Feather-specific boilerplate;
-  `README`, `12`, and `13` are human-only; curated codebase topology; glossary uses `### Term`. Verified against
-  RAG packaging rules + safety claims. Design `docs/specs/2026-06-10-notebooklm-project-brain-v2-design.md`,
-  plan `docs/plans/2026-06-10-notebooklm-project-brain-v2.md`.
-- **NOW (2026-06-10, /next): OBSERVE BUG FIXES BRAINSTORM IN PROGRESS (mid-session pause).** Root causes explored
-  in code; tentative approach decisions reached for all 3 bugs — Bug 1 dismiss under-report (B: re-observe to verify
-  popup gone), Bug 2 accname gap (A: descendant aria-label query), Bug 3 INTERNAL_ERROR on nav-clicks (A: return
-  `navigated:true`). Roi: "okay for now but i want to get back to it" — designs tentative, not locked. **No spec
-  written yet.** Bridge (archived at the 06:52 stop):
+- **NOW (2026-06-10 ~09:50, STOP): NATIVE CAPABILITIES ROUTER PLACED → Session 5.0.1, after Gate A.**
+  Roi confirmed the placement: the router/Connector-Registry idea lands in **5.0.1 (MCP & tool-surface
+  reconciliation)** — NOT inside Gate A, NOT now, no spec yet. Inbox notes merged + promoted to
+  `research/2026-06-10-native-capabilities-router.md` (placement rationale at top); originals archived to
+  `journal/raw/archive/`; pointers added in `docs/sessions/5.0.1-mcp-tool-surface.md` + `ROADMAP.md` + `tasks.md`.
+  Standing notes: say **"Connector Registry"** (not "Capability Registry" — collides with ADR-0010 grants); the
+  "universal web execution layer" vision sentence = doctrine-change ADR question for the 5.0.1 joint call;
+  docs-import connector builder = v3/5e; deep API research checklist runs at build time. Bonus verified: the new
+  `CLAUDE.md → @AGENTS.md` import DOES auto-load in fresh sessions. First live use of the /stop blog gate: Roi said
+  no → owed line in `blog/_pending.md`. Session record:
+  `journal/ops/sessions/native-capabilities-placed-20260610-0950.md`.
+- **OBSERVE BUG FIXES BRAINSTORM — PAUSED MID-DESIGN (2026-06-10), THE NEXT THREAD (Roi's pick at this stop).**
+  Root causes explored in code; tentative approach decisions reached for all 3 bugs — Bug 1 dismiss under-report
+  (B: re-observe to verify popup gone), Bug 2 accname gap (A: descendant aria-label query), Bug 3 INTERNAL_ERROR
+  on nav-clicks (A: return `navigated:true`). Roi: "okay for now but i want to get back to it" — designs tentative,
+  not locked. **No spec written yet.** Bridge archived at
   `journal/archive/next/2026-06-10/0652-stop-bundle-graphify-graduation.md` (observe-bug-fixes-brainstorm entry).
-  (`docs/agent-playbook.md` + `examples/showcase.sh` now COMMITTED — `23061ac`.)
-- **NEW SIDE-THREAD BRIDGE (2026-06-10 ~08:20): Native Capabilities Router research.** Roi raised a product idea:
-  Feather should route across native APIs/MCP/generated connectors/browser/human-handoff, not stay browser-only.
-  Raw notes: `journal/raw/_inbox/2026-06-10-native-capabilities-router.md` +
-  `journal/raw/_inbox/2026-06-10-native-capabilities-research-map.md`. Bridge written to `journal/context/next.md`.
-  **Do not implement yet.** Next chat should decide roadmap placement and whether this belongs inside v2 Gate A /
-  ADR-0010 capability-safety work or later.
 - **Recommend next:** Resume observe-bug-fixes brainstorm — confirm approach choices, present full design sections,
-  write spec, user review, then invoke writing-plans. If Roi pulls the side-thread forward first, read the two native
-  capability inbox notes and decide placement before writing any implementation plan. (AGENTS.md new-age refresh: DONE
-  post-stop 2026-06-10 — phase 4a/v1 identity, feather.md front door, Graphify contributor section, observe-loop note,
-  Phase-3 leftover fixed.)
-- **Prior NOW (2026-06-10 ~01:42, STOP): DAILY-DRIVER BACKGROUND LAUNCH + `primary` RE-WARMED (real account).**
-  `npm run daily` [primary] / `daily:scratch` now launch the persistent profile **detached** (`nohup`+`disown` →
-  logfile under `$XDG_RUNTIME_DIR/feather/`, PID file, double-launch guard) so it frees the terminal; closing the
-  Chromium window saves + exits via `warm-session`'s child-exit hook. New **`npm run daily:stop`** = SIGTERM clean-save
-  escape hatch (`/proc/<pid>/cmdline` PID-reuse guard). Scripts `scripts/start-daily-driver.sh` + new
-  `scripts/stop-daily-driver.sh`; commit **`61fe677` pushed to `origin/dev`**. **Diagnosed the "cookieless primary"
-  mystery:** the warmed `primary` was deliberately deleted 2026-06-08 ("at Roi's request" before a demo re-record; no
-  backup) — that emptied it. **Roi re-warmed `primary` 2026-06-10 with his REAL personal Google** (438MB, 306 cookies,
-  full auth set). **Cookie Mine is now live on Roi's own identity** — he uses `primary` as his real daily-driver. No
-  cookies/secrets in the repo (profiles live outside the working tree). Session record:
-  `journal/ops/sessions/daily-driver-background-launch-primary-rewarmed-20260610-0142.md`.
-- **NEXT = OPEN (Roi to tackle next session, his call).** (a) run the observe → act-by-ref → diff loop on a real
-  showcase task to *measure* the speed/round-trip win vs the old guess-and-fail loop; (b) start **v2 Gate A**
-  (capability/safety gate, ADR-0010). Optional side-thread: analyze the new Claude-for-Chrome transcripts (see below)
-  for navigation patterns. Prior NOW: perception/observation loop SHIPPED (`eee44f3..837435c`, blog `0017`); session
-  record `journal/ops/sessions/observe-perception-loop-shipped-20260609-2336.md`.
+  write spec, user review, then invoke writing-plans. After that: operator-skills rewrite to the observe loop, suite
+  semantic assertions, then **v2 Gate A** (ADR-0010). Optional side: C4C transcripts analysis.
+- **Recent same-day context (details in session files + log):** command layer upgraded ~09:28 (`/blog` + `/notebook`
+  + /stop blog gate + CLAUDE.md fix, pushed thru `3cb86dc`); Graphify GRADUATED to `dev` ~06:52 (MCP query layer +
+  path-agnostic post-commit hook; rebuild verb = `graphify update .`, NEVER `extract`; session
+  `graphify-graduated-to-dev-20260610-0652.md`, blog `0018`); NotebookLM Project Brain v2 SHIPPED; daily-driver
+  background launch ~01:42 (`npm run daily`/`daily:scratch`/`daily:stop`, `61fe677`) + **`primary` re-warmed with
+  Roi's REAL Google** (Cookie Mine live on his own identity; session
+  `daily-driver-background-launch-primary-rewarmed-20260610-0142.md`).
 - **Current phase:** Phase 4a — **Feather v1** ("It runs errands for me"). v1 proven end-to-end (IG test + full
   showcase) and now markedly faster/sighted. Remaining v1 stealth gaps (act-human cadence, bot self-check) stay
   deferred to v2 — decided.
-- **Deferred from this session (spec §16):** cross-origin iframe descent (`await-human` is the v1 fallback);
+- **Deferred from the observe-loop spec (§16):** cross-origin iframe descent (`await-human` is the v1 fallback);
   goal-aware LLM relevance filter (would add a model dependency — not built); **v2 stealth hardening = move the
   identical walk fn into a CDP isolated world** (clean future swap, walk logic unchanged).
 - **pi_agency is PARKED.** Stage 3 returned PARTIAL (operator beat the birthday dropdown honestly, hit Google's

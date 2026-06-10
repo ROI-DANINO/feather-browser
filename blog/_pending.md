@@ -13,3 +13,4 @@ If this list is empty, nothing is owed.
 - `journal/ops/sessions/<nickname>-<timestamp>.md` — <one-line hook> — <YYYY-MM-DD>
 -->
 <!-- Cleared 2026-06-09: the owed E1–E3 fork→fresh beat was folded into blog/0016-ten-errands.md. Nothing owed. -->
+- `journal/ops/sessions/native-capabilities-placed-20260610-0950.md` — The idea that wanted to eat the roadmap: placing the native-capabilities router *behind* the safety gate instead of chasing it, plus catching the "Capability Registry" naming collision — 2026-06-10

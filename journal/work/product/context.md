@@ -29,6 +29,14 @@ Current focus: preserve the original intent while narrowing the first buildable 
   split, shipped live to the default branch (`dev`). The README's structure (what it is / who it's
   for / see it work / honest "what it doesn't do yet" / built-in-the-open) is the canonical public
   framing; reuse it. Phase 4 splits **4a (Core, done) → 4b (Shell, next)**.
+- **Native Capabilities Router / Connector Registry — placed at 5.0.1, after Gate A** (2026-06-10,
+  Roi confirmed; input `research/2026-06-10-native-capabilities-router.md`). Feather as an execution
+  router (native API / MCP / generated connector / browser observe-act / human handoff, browser =
+  universal fallback) is a **5.0.1 decision**, not a build task — connectors widen the blast radius,
+  so Gate A's deny-by-default machinery must exist first. Naming: **"Connector Registry"**, never
+  "Capability Registry" (collides with ADR-0010 capability grants). The "universal web execution
+  layer" vision sentence is broader than the recorded "sharper, not broader" positioning — adopting
+  it is a doctrine-change ADR question at the 5.0.1 joint call. Docs-import connector builder = v3/5e.
 - **ADR-0006 — agent-facing interface neutrality** (on `dev`). Three layers stay separate:
   orchestrator (Hermes leading / OpenClaw challenger), agent client (Claude Code + Codex as
   required targets), model provider (neutral) — unified by a standard MCP-compatible seam.

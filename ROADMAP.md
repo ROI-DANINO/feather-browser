@@ -145,7 +145,7 @@ Bodies live in the ADRs — there is no separate session file set yet.
 | Session | Status | Body |
 |---|---|---|
 | 5.0.0 — Local control-plane & capability gate | first Phase 5 work | [`docs/sessions/5.0.0-capability-gate.md`](docs/sessions/5.0.0-capability-gate.md) — implements [[adr-0010-local-control-plane-capability-model]] |
-| 5.0.1 — MCP & tool-surface reconciliation | future | [`docs/sessions/5.0.1-mcp-tool-surface.md`](docs/sessions/5.0.1-mcp-tool-surface.md) |
+| 5.0.1 — MCP & tool-surface reconciliation | future | [`docs/sessions/5.0.1-mcp-tool-surface.md`](docs/sessions/5.0.1-mcp-tool-surface.md) — now also owns the **Native Capabilities Router / Connector Registry** placement (2026-06-10; input: `research/2026-06-10-native-capabilities-router.md`) |
 | 5.0.2 — First-agent safety gate | future | [`docs/sessions/5.0.2-first-agent-safety-gate.md`](docs/sessions/5.0.2-first-agent-safety-gate.md) |
 
 ### 🔴 Phase 5a — Identity Model  *(was 5c; now first feature, self-contained)*
