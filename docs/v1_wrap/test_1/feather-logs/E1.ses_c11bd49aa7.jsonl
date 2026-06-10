@@ -1,0 +1,6 @@
+{"ts":"2026-06-10T13:55:46.882Z","level":"info","event":"session.launch.requested","sessionId":"ses_c11bd49aa7","data":{"workspaceId":"default","profileKind":"disposable","browserMode":"chromium-headed-cdp","proxy":null}}
+{"ts":"2026-06-10T13:55:47.591Z","level":"info","event":"session.launch.completed","sessionId":"ses_c11bd49aa7","data":{"workspaceId":"default","profileKind":"disposable","browserMode":"chromium-headed-cdp","proxy":null}}
+{"ts":"2026-06-10T13:55:53.301Z","level":"info","event":"tab.updated","sessionId":"ses_c11bd49aa7","data":{"pageId":"page_d79c3986c9","url":"https://news.ycombinator.com/","title":"Hacker News","loadState":"interactive"}}
+{"ts":"2026-06-10T13:56:20.998Z","level":"info","event":"session.close.requested","sessionId":"ses_c11bd49aa7"}
+{"ts":"2026-06-10T13:56:21.046Z","level":"info","event":"tab.closed","sessionId":"ses_c11bd49aa7","data":{"pageId":"page_d79c3986c9"}}
+{"ts":"2026-06-10T13:56:21.061Z","level":"info","event":"session.close.completed","sessionId":"ses_c11bd49aa7"}

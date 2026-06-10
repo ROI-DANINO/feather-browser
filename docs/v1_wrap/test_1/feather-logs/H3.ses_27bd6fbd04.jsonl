@@ -1,0 +1,8 @@
+{"ts":"2026-06-10T14:11:37.077Z","level":"info","event":"session.launch.requested","sessionId":"ses_27bd6fbd04","data":{"workspaceId":"scratch","profileKind":"persistent","browserMode":"chromium-headed-cdp","proxy":null}}
+{"ts":"2026-06-10T14:11:38.003Z","level":"info","event":"session.launch.completed","sessionId":"ses_27bd6fbd04","data":{"workspaceId":"scratch","profileKind":"persistent","browserMode":"chromium-headed-cdp","proxy":null}}
+{"ts":"2026-06-10T14:11:48.411Z","level":"info","event":"tab.updated","sessionId":"ses_27bd6fbd04","data":{"pageId":"page_14e77669b6","url":"https://www.instagram.com/","title":"Instagram","loadState":"interactive"}}
+{"ts":"2026-06-10T14:11:49.911Z","level":"info","event":"tab.updated","sessionId":"ses_27bd6fbd04","data":{"pageId":"page_14e77669b6","url":"https://www.instagram.com/","title":"Instagram","loadState":"interactive"}}
+{"ts":"2026-06-10T14:19:13.907Z","level":"info","event":"session.close.requested","sessionId":"ses_27bd6fbd04"}
+{"ts":"2026-06-10T14:19:13.960Z","level":"info","event":"tab.closed","sessionId":"ses_27bd6fbd04","data":{"pageId":"page_14e77669b6"}}
+{"ts":"2026-06-10T14:19:13.960Z","level":"info","event":"tab.closed","sessionId":"ses_27bd6fbd04","data":{"pageId":"page_4a5065e99c"}}
+{"ts":"2026-06-10T14:19:13.974Z","level":"info","event":"session.close.completed","sessionId":"ses_27bd6fbd04"}

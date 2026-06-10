@@ -1,0 +1,72 @@
+# chrome-extension://fcoeoabgfenejglbffodgkkbkcdhcgfn/sidepanel.html?tabId=1155857596
+# captured 2026-06-10T16:06:08.119Z
+
+Opus 4.8
+
+You are testing your own ability to complete a real web errand in the browser, end to end, using the
+
+Chrome you control. You get ONLY the errand below — no hints, no answer key. Figure out the rest
+
+yourself. Optimize for TRUTH, not a green checkmark: if you cannot complete it, a clean PARTIAL/FAIL
+
+with the reason and what you learned is a SUCCESS — never fake or assume success; verify what actually
+
+happened on the page.
+
+ERRAND: Find the elevation (height above sea level) of Mount Everest using Wikipedia. Report the
+
+figure in meters and feet. Be careful to report the ELEVATION specifically — not prominence,
+
+isolation, or any other number on the page.
+
+When done, report back exactly these lines:
+
+VERDICT: PASS / PARTIAL / FAIL
+
+RESULT: the elevation figure
+
+EVIDENCE: how you verified it is the elevation from the page
+
+LESSON: what broke / what you'd do differently / "clean run"
+
+13 steps
+13 steps
+
+I'll plan this out before executing.
+
+Created a plan
+Navigate to https://en.wikipedia.org/wiki/...
+Find: "Elevation field in the infobox"
+
+The page may still be loading. Let me take a screenshot and read the page.
+
+Batch — 2/2 actions
+Navigate to https://en.wikipedia.org/wiki/...
+Take screenshot
+Tool: browser_batch
+
+The page loaded and I can see the infobox. There's an "Elevation" field at the bottom showing "8,848.86 m (29,031.7 ft)". Let me find that element to verify it precisely.
+
+Find: "Elevation row value in the inf..."
+
+Let me zoom into the elevation row to read it precisely.
+
+Scroll down
+
+Now I can clearly see the infobox under "Highest point" with distinct rows. Let me zoom in to confirm the exact figures and that the Elevation row is correctly distinguished from Prominence and Isolation.
+
+Zoom
+
+The zoom confirms it clearly. The infobox row explicitly labeled "Elevation" shows 8,848.86 m (29,031.7 ft), distinct from the "Prominence" row (which just says "Ranked 1st / Special definition for Everest") and the "Isolation" row (which says "n/a").
+
+Done
+VERDICT: PASS
+RESULT: Elevation of Mount Everest = 8,848.86 meters (29,031.7 feet)
+EVIDENCE: On the Mount Everest Wikipedia article (en.wikipedia.org/wiki/Mount_Everest), the infobox under the "Highest point" section has a row explicitly labeled "Elevation" showing "8,848.86 m (29,031.7 ft)". I zoomed in to confirm the label-to-value pairing and verified it is distinct from the adjacent "Prominence" row (which only states "Ranked 1st / Special definition for Everest") and the "Isolation" row (which states "n/a"). So the figure is specifically the elevation, not prominence or isolation.
+LESSON: Clean run. The only minor friction was that the find tool failed because the full page DOM exceeded the token limit, but a screenshot plus a targeted zoom on the infobox was a faster and more reliable way to read and verify the specific labeled field anyway. Note: the "8,848.86 m" figure is the 2020 China–Nepal joint re-survey value reflected on the page; the older commonly cited figure was 8,848 m (29,029 ft).
+
+
+
+
+Ask before acting
+Claude is AI and can make mistakes. Please double-check responses.

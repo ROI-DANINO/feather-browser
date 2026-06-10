@@ -1,0 +1,6 @@
+{"ts":"2026-06-10T13:56:20.748Z","level":"info","event":"session.launch.requested","sessionId":"ses_d0ef9cfd93","data":{"workspaceId":"default","profileKind":"disposable","browserMode":"chromium-headed-cdp","proxy":null}}
+{"ts":"2026-06-10T13:56:21.242Z","level":"info","event":"session.launch.completed","sessionId":"ses_d0ef9cfd93","data":{"workspaceId":"default","profileKind":"disposable","browserMode":"chromium-headed-cdp","proxy":null}}
+{"ts":"2026-06-10T13:56:26.823Z","level":"info","event":"tab.updated","sessionId":"ses_d0ef9cfd93","data":{"pageId":"page_dc78061fef","url":"https://en.wikipedia.org/wiki/Mount_Everest","title":"Mount Everest - Wikipedia","loadState":"interactive"}}
+{"ts":"2026-06-10T13:56:43.641Z","level":"info","event":"session.close.requested","sessionId":"ses_d0ef9cfd93"}
+{"ts":"2026-06-10T13:56:43.645Z","level":"info","event":"tab.closed","sessionId":"ses_d0ef9cfd93","data":{"pageId":"page_dc78061fef"}}
+{"ts":"2026-06-10T13:56:43.646Z","level":"info","event":"session.close.completed","sessionId":"ses_d0ef9cfd93"}

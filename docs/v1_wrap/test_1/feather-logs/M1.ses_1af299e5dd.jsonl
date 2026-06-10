@@ -1,0 +1,9 @@
+{"ts":"2026-06-10T13:56:10.246Z","level":"info","event":"session.launch.requested","sessionId":"ses_1af299e5dd","data":{"workspaceId":"default","profileKind":"disposable","browserMode":"chromium-headed-cdp","proxy":null}}
+{"ts":"2026-06-10T13:56:10.691Z","level":"info","event":"session.launch.completed","sessionId":"ses_1af299e5dd","data":{"workspaceId":"default","profileKind":"disposable","browserMode":"chromium-headed-cdp","proxy":null}}
+{"ts":"2026-06-10T13:56:16.414Z","level":"info","event":"tab.updated","sessionId":"ses_1af299e5dd","data":{"pageId":"page_0451a77d7c","url":"https://www.google.com/search","title":"Feather Browser - חיפוש ב-Google","loadState":"interactive"}}
+{"ts":"2026-06-10T13:56:16.414Z","level":"info","event":"tab.updated","sessionId":"ses_1af299e5dd","data":{"pageId":"page_0451a77d7c","url":"https://www.google.com/search","title":"Feather Browser - חיפוש ב-Google","loadState":"interactive"}}
+{"ts":"2026-06-10T13:56:17.056Z","level":"info","event":"tab.updated","sessionId":"ses_1af299e5dd","data":{"pageId":"page_0451a77d7c","url":"https://www.google.com/search","title":"Feather Browser - חיפוש ב-Google","loadState":"interactive"}}
+{"ts":"2026-06-10T13:56:18.682Z","level":"info","event":"tab.updated","sessionId":"ses_1af299e5dd","data":{"pageId":"page_0451a77d7c","url":"https://www.google.com/search","title":"Feather Browser - חיפוש ב-Google","loadState":"complete"}}
+{"ts":"2026-06-10T13:57:04.976Z","level":"info","event":"session.close.requested","sessionId":"ses_1af299e5dd"}
+{"ts":"2026-06-10T13:57:05.018Z","level":"info","event":"tab.closed","sessionId":"ses_1af299e5dd","data":{"pageId":"page_0451a77d7c"}}
+{"ts":"2026-06-10T13:57:05.026Z","level":"info","event":"session.close.completed","sessionId":"ses_1af299e5dd"}

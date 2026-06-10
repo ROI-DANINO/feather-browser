@@ -1,0 +1,10 @@
+{"ts":"2026-06-10T13:55:54.153Z","level":"info","event":"session.launch.requested","sessionId":"ses_cd6f6c88f2","data":{"workspaceId":"default","profileKind":"disposable","browserMode":"chromium-headed-cdp","proxy":null}}
+{"ts":"2026-06-10T13:55:54.586Z","level":"info","event":"session.launch.completed","sessionId":"ses_cd6f6c88f2","data":{"workspaceId":"default","profileKind":"disposable","browserMode":"chromium-headed-cdp","proxy":null}}
+{"ts":"2026-06-10T13:56:02.121Z","level":"info","event":"tab.updated","sessionId":"ses_cd6f6c88f2","data":{"pageId":"page_d93d3bccfe","url":"https://www.google.com/search","title":"weather Tel Aviv Israel - Google Search","loadState":"interactive"}}
+{"ts":"2026-06-10T13:56:02.122Z","level":"info","event":"tab.updated","sessionId":"ses_cd6f6c88f2","data":{"pageId":"page_d93d3bccfe","url":"https://www.google.com/search","title":"weather Tel Aviv Israel - Google Search","loadState":"interactive"}}
+{"ts":"2026-06-10T13:56:02.415Z","level":"info","event":"tab.updated","sessionId":"ses_cd6f6c88f2","data":{"pageId":"page_d93d3bccfe","url":"https://www.google.com/search","title":"weather Tel Aviv Israel - Google Search","loadState":"interactive"}}
+{"ts":"2026-06-10T13:56:29.121Z","level":"info","event":"session.close.requested","sessionId":"ses_cd6f6c88f2"}
+{"ts":"2026-06-10T13:56:29.125Z","level":"info","event":"tab.closed","sessionId":"ses_cd6f6c88f2","data":{"pageId":"page_d93d3bccfe"}}
+{"ts":"2026-06-10T13:56:29.126Z","level":"info","event":"session.close.completed","sessionId":"ses_cd6f6c88f2"}
+{"ts":"2026-06-10T13:56:42.989Z","level":"info","event":"session.close.requested","sessionId":"ses_cd6f6c88f2"}
+{"ts":"2026-06-10T13:56:42.989Z","level":"info","event":"session.close.completed","sessionId":"ses_cd6f6c88f2"}

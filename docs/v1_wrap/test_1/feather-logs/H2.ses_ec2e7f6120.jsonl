@@ -1,0 +1,12 @@
+{"ts":"2026-06-10T14:08:56.121Z","level":"info","event":"session.launch.requested","sessionId":"ses_ec2e7f6120","data":{"workspaceId":"scratch","profileKind":"persistent","browserMode":"chromium-headed-cdp","proxy":null}}
+{"ts":"2026-06-10T14:08:57.339Z","level":"info","event":"session.launch.completed","sessionId":"ses_ec2e7f6120","data":{"workspaceId":"scratch","profileKind":"persistent","browserMode":"chromium-headed-cdp","proxy":null}}
+{"ts":"2026-06-10T14:09:09.915Z","level":"info","event":"tab.updated","sessionId":"ses_ec2e7f6120","data":{"pageId":"page_21c347443b","url":"https://www.google.com/search","title":"history of the internet - חיפוש ב-Google","loadState":"interactive"}}
+{"ts":"2026-06-10T14:09:09.916Z","level":"info","event":"tab.updated","sessionId":"ses_ec2e7f6120","data":{"pageId":"page_21c347443b","url":"https://www.google.com/search","title":"history of the internet - חיפוש ב-Google","loadState":"interactive"}}
+{"ts":"2026-06-10T14:09:10.818Z","level":"info","event":"tab.updated","sessionId":"ses_ec2e7f6120","data":{"pageId":"page_21c347443b","url":"https://www.google.com/search","title":"history of the internet - חיפוש ב-Google","loadState":"interactive"}}
+{"ts":"2026-06-10T14:09:13.054Z","level":"info","event":"tab.updated","sessionId":"ses_ec2e7f6120","data":{"pageId":"page_21c347443b","url":"https://www.google.com/search","title":"history of the internet - חיפוש ב-Google","loadState":"complete"}}
+{"ts":"2026-06-10T14:09:30.646Z","level":"info","event":"tab.created","sessionId":"ses_ec2e7f6120","data":{"pageId":"page_d082b77b85"}}
+{"ts":"2026-06-10T14:10:02.093Z","level":"info","event":"tab.updated","sessionId":"ses_ec2e7f6120","data":{"pageId":"page_21c347443b","url":"https://en.wikipedia.org/wiki/History_of_the_Internet","title":"History of the Internet - Wikipedia","loadState":"interactive"}}
+{"ts":"2026-06-10T14:10:33.260Z","level":"info","event":"session.close.requested","sessionId":"ses_ec2e7f6120"}
+{"ts":"2026-06-10T14:10:33.265Z","level":"info","event":"tab.closed","sessionId":"ses_ec2e7f6120","data":{"pageId":"page_21c347443b"}}
+{"ts":"2026-06-10T14:10:33.266Z","level":"info","event":"tab.closed","sessionId":"ses_ec2e7f6120","data":{"pageId":"page_d082b77b85"}}
+{"ts":"2026-06-10T14:10:33.266Z","level":"info","event":"session.close.completed","sessionId":"ses_ec2e7f6120"}

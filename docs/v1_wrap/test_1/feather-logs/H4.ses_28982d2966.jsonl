@@ -1,0 +1,19 @@
+{"ts":"2026-06-10T13:56:39.898Z","level":"info","event":"session.launch.requested","sessionId":"ses_28982d2966","data":{"workspaceId":"default","profileKind":"disposable","browserMode":"chromium-headed-cdp","proxy":null}}
+{"ts":"2026-06-10T13:56:40.447Z","level":"info","event":"session.launch.completed","sessionId":"ses_28982d2966","data":{"workspaceId":"default","profileKind":"disposable","browserMode":"chromium-headed-cdp","proxy":null}}
+{"ts":"2026-06-10T13:56:48.167Z","level":"info","event":"tab.created","sessionId":"ses_28982d2966","data":{"pageId":"page_4e28b67107"}}
+{"ts":"2026-06-10T13:56:48.167Z","level":"info","event":"tab.opened","sessionId":"ses_28982d2966","data":{"pageId":"page_4e28b67107"}}
+{"ts":"2026-06-10T13:56:48.168Z","level":"info","event":"tab.updated","sessionId":"ses_28982d2966","data":{"pageId":"page_0643a68adb","url":"https://news.ycombinator.com/","title":"Hacker News","loadState":"interactive"}}
+{"ts":"2026-06-10T13:56:48.216Z","level":"info","event":"tab.created","sessionId":"ses_28982d2966","data":{"pageId":"page_7faed3184a"}}
+{"ts":"2026-06-10T13:56:48.216Z","level":"info","event":"tab.opened","sessionId":"ses_28982d2966","data":{"pageId":"page_7faed3184a"}}
+{"ts":"2026-06-10T13:56:55.731Z","level":"info","event":"tab.updated","sessionId":"ses_28982d2966","data":{"pageId":"page_4e28b67107","url":"https://wttr.in/Tel_Aviv","title":"wttr.in — Weather Report","loadState":"interactive"}}
+{"ts":"2026-06-10T13:56:58.171Z","level":"info","event":"tab.updated","sessionId":"ses_28982d2966","data":{"pageId":"page_7faed3184a","url":"https://github.com/microsoft/playwright","title":"GitHub - microsoft/playwright: Playwright is a framework for Web Testing and Automation. It allows testing Chromium, Firefox and WebKit with a single API. · GitHub","loadState":"interactive"}}
+{"ts":"2026-06-10T13:56:58.171Z","level":"info","event":"tab.updated","sessionId":"ses_28982d2966","data":{"pageId":"page_7faed3184a","url":"https://github.com/microsoft/playwright","title":"GitHub - microsoft/playwright: Playwright is a framework for Web Testing and Automation. It allows testing Chromium, Firefox and WebKit with a single API. · GitHub","loadState":"interactive"}}
+{"ts":"2026-06-10T13:56:58.172Z","level":"info","event":"tab.updated","sessionId":"ses_28982d2966","data":{"pageId":"page_7faed3184a","url":"https://github.com/microsoft/playwright","title":"GitHub - microsoft/playwright: Playwright is a framework for Web Testing and Automation. It allows testing Chromium, Firefox and WebKit with a single API. · GitHub","loadState":"interactive"}}
+{"ts":"2026-06-10T13:56:58.172Z","level":"info","event":"tab.updated","sessionId":"ses_28982d2966","data":{"pageId":"page_7faed3184a","url":"https://github.com/microsoft/playwright","title":"GitHub - microsoft/playwright: Playwright is a framework for Web Testing and Automation. It allows testing Chromium, Firefox and WebKit with a single API. · GitHub","loadState":"interactive"}}
+{"ts":"2026-06-10T13:57:54.042Z","level":"info","event":"session.close.requested","sessionId":"ses_28982d2966"}
+{"ts":"2026-06-10T13:57:54.047Z","level":"info","event":"tab.closed","sessionId":"ses_28982d2966","data":{"pageId":"page_0643a68adb"}}
+{"ts":"2026-06-10T13:57:54.047Z","level":"info","event":"tab.closed","sessionId":"ses_28982d2966","data":{"pageId":"page_4e28b67107"}}
+{"ts":"2026-06-10T13:57:54.047Z","level":"info","event":"tab.closed","sessionId":"ses_28982d2966","data":{"pageId":"page_7faed3184a"}}
+{"ts":"2026-06-10T13:57:54.048Z","level":"info","event":"session.close.completed","sessionId":"ses_28982d2966"}
+{"ts":"2026-06-10T13:58:11.869Z","level":"info","event":"session.close.requested","sessionId":"ses_28982d2966"}
+{"ts":"2026-06-10T13:58:11.870Z","level":"info","event":"session.close.completed","sessionId":"ses_28982d2966"}

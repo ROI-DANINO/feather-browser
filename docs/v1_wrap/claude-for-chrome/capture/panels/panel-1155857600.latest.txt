@@ -1,0 +1,117 @@
+# chrome-extension://fcoeoabgfenejglbffodgkkbkcdhcgfn/sidepanel.html?tabId=1155857600
+# captured 2026-06-10T16:07:35.320Z
+
+Opus 4.8
+
+You are testing your own ability to complete a real web errand in the browser, end to end, using the
+
+Chrome you control (which is logged into Instagram). You get ONLY the errand below — no hints, no
+
+answer key. Figure out the rest yourself. This takes REAL PUBLIC ACTIONS on a real account — keep the
+
+comment kind, genuine, and appropriate. Optimize for TRUTH, not a green checkmark: never fake or
+
+assume a like/comment landed — re-check the page and confirm. If the post is a video with no readable
+
+image, or comments are sparse, say so — a comment grounded in fewer sources, or a clean PARTIAL
+
+explaining what you couldn't verify, is an honest SUCCESS.
+
+ERRAND: On Instagram, look at the home feed and pick ONE real, NON-SPONSORED post (not an ad/
+
+"Sponsored", and don't just blindly act on whatever is literally first). Then:
+
+LIKE that post (the post's main like control — not a comment's like button).
+
+Write and post a thoughtful, genuine COMMENT on it, based on the post's actual content: what's in
+
+the image/photo, what the caption says, and what the top commenters are saying. Make it specific
+
+to THIS post, not generic.
+
+Finally, VERIFY both: that your like registered (the like control flipped to the liked / "Unlike"
+
+state) and that your comment is actually visible on the post.
+
+When done, report back exactly these lines:
+
+VERDICT: PASS / PARTIAL / FAIL
+
+RESULT: which post (author/URL if available), the exact comment you posted, and whether you liked it
+
+EVIDENCE: how you confirmed the like flipped AND the comment is visible; which content sources (image/caption/comments) you grounded the comment in
+
+LESSON: what broke / what you'd do differently / "clean run"
+
+8 steps
+8 steps
+
+I'll create a plan for this Instagram errand.
+
+Created a plan
+
+I'll start by navigating to Instagram and taking a screenshot to see the feed.
+
+Batch — 3/3 actions
+Navigate to https://www.instagram.com
+Wait 3 seconds
+Take screenshot
+Tool: browser_batch
+
+The page shows a login screen. The task says the Chrome I control is logged into Instagram, but it appears I'm seeing a login page. Let me wait a moment and reload — sometimes Instagram shows this briefly before the session loads.
+
+Batch — 3/3 actions
+Navigate to https://www.instagram.com/
+Wait 4 seconds
+Take screenshot
+Tool: browser_batch
+
+The browser is showing a login page, which means the Instagram session is not actually logged in. The errand stated the Chrome should be logged into Instagram, but it isn't.
+
+I cannot log in on your behalf — entering account passwords is something only you can do for security reasons. Let me check whether there's any existing session by trying the direct feed URL, in case the homepage is just rendering the logged-out view.
+
+Batch — 3/3 actions
+Navigate to https://www.instagram.com/?flo...
+Wait 4 seconds
+Take screenshot
+Tool: browser_batch
+Done
+
+The browser consistently shows the logged-out login page — there's no active Instagram session in this Chrome. I've confirmed this across three attempts (the homepage, a reload, and the feed-flow URL), and each time it lands on "Log into Instagram" with empty username/password fields.
+
+I can't proceed because I'm blocked at authentication, and I'm not able to log in for you. Entering account credentials (username and especially the password) is something only you can do — I won't type passwords into login forms on your behalf, for your account security. I also can't use "Log in with Facebook" or any SSO flow without your explicit involvement.
+
+Here's my honest report:
+
+VERDICT: FAIL
+RESULT: No post was selected, liked, or commented on. The errand could not be started because the home feed was never reachable — Instagram is logged out in this browser.
+EVIDENCE: Navigating to instagram.com (and reloading, and trying the feed-flow URL ?flo=true) all rendered the logged-out "Log into Instagram" screen with empty Mobile number/username and Password fields, plus "Log in," "Forgot password?," "Log in with Facebook," and "Create new account" buttons. No home feed, posts, like controls, or comment boxes were ever present, so there was nothing to ground a comment in or to verify.
+LESSON: The errand assumed an authenticated Instagram session, but this Chrome's session is not logged in (it may have expired or never been established). I deliberately did not attempt to enter credentials, since logging into an account on your behalf — especially typing a password — is outside what I'll do for safety reasons. To make this runnable, please log into Instagram yourself in this Chrome (complete any 2FA), then tell me you're in and I'll redo the errand from the home feed. If the session looked logged in but kept bouncing to this page, a checkpoint/verification challenge would also be something you'd need to clear directly.
+
+Would you like to log in yourself and then have me retry?
+
+
+
+
+Ask before acting
+Claude is AI and can make mistakes. Please double-check responses.
+Claude's plan
+
+Allow actions on these sites
+
+instagram.com
+
+Approach to follow
+
+1
+Navigate to Instagram home feed and review posts to find a genuine, non-sponsored post
+2
+Examine the chosen post's image, caption, and top comments to understand its content
+3
+Like the post using the main like control
+4
+Write and post a specific, genuine comment grounded in the post's actual content
+5
+Re-check the page to verify the like flipped to 'Unlike' state and the comment is visible
+6
+Report VERDICT, RESULT, EVIDENCE, and LESSON

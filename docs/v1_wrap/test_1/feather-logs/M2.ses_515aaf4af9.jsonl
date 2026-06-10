@@ -1,0 +1,9 @@
+{"ts":"2026-06-10T13:56:21.640Z","level":"info","event":"session.launch.requested","sessionId":"ses_515aaf4af9","data":{"workspaceId":"default","profileKind":"disposable","browserMode":"chromium-headed-cdp","proxy":null}}
+{"ts":"2026-06-10T13:56:22.242Z","level":"info","event":"session.launch.completed","sessionId":"ses_515aaf4af9","data":{"workspaceId":"default","profileKind":"disposable","browserMode":"chromium-headed-cdp","proxy":null}}
+{"ts":"2026-06-10T13:56:35.736Z","level":"info","event":"tab.updated","sessionId":"ses_515aaf4af9","data":{"pageId":"page_b4f3e8490f","url":"https://httpbin.org/forms/post","title":"503 Service Temporarily Unavailable","loadState":"complete"}}
+{"ts":"2026-06-10T13:56:58.151Z","level":"info","event":"tab.updated","sessionId":"ses_515aaf4af9","data":{"pageId":"page_b4f3e8490f","url":"https://httpbin.org/forms/post","title":"503 Service Temporarily Unavailable","loadState":"complete"}}
+{"ts":"2026-06-10T13:57:02.778Z","level":"info","event":"tab.updated","sessionId":"ses_515aaf4af9","data":{"pageId":"page_b4f3e8490f","url":"https://httpbin.org/forms/post","title":"503 Service Temporarily Unavailable","loadState":"complete"}}
+{"ts":"2026-06-10T13:57:26.967Z","level":"info","event":"tab.updated","sessionId":"ses_515aaf4af9","data":{"pageId":"page_b4f3e8490f","url":"https://httpbin.org/forms/post","title":"503 Service Temporarily Unavailable","loadState":"complete"}}
+{"ts":"2026-06-10T13:58:19.781Z","level":"info","event":"session.close.requested","sessionId":"ses_515aaf4af9"}
+{"ts":"2026-06-10T13:58:19.786Z","level":"info","event":"tab.closed","sessionId":"ses_515aaf4af9","data":{"pageId":"page_b4f3e8490f"}}
+{"ts":"2026-06-10T13:58:19.787Z","level":"info","event":"session.close.completed","sessionId":"ses_515aaf4af9"}
