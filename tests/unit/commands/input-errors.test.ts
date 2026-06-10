@@ -5,6 +5,8 @@ import {
   ElementNotFoundError,
   ElementNotActionableError,
   WaitTimeoutError,
+  isNavigationTeardown,
+  NAVIGATION_TEARDOWN_PATTERNS,
 } from "../../../src/commands/input-errors";
 
 describe("withActionErrors", () => {
@@ -44,5 +46,24 @@ describe("error classes", () => {
     const e = new WaitTimeoutError("x");
     expect(e.code).toBe("WAIT_TIMEOUT");
     expect(e.name).toBe("WaitTimeoutError");
+  });
+});
+
+describe("isNavigationTeardown", () => {
+  it("classifies the three Playwright teardown error families", () => {
+    expect(isNavigationTeardown(new Error("Execution context was destroyed, most likely because of a navigation"))).toBe(true);
+    expect(isNavigationTeardown(new Error("Element is not attached to the DOM"))).toBe(true);
+    expect(isNavigationTeardown(new Error("Target page, context or browser has been closed"))).toBe(true);
+  });
+  it("does not classify ordinary errors or timeouts", () => {
+    expect(isNavigationTeardown(new Error("boom"))).toBe(false);
+    expect(isNavigationTeardown("not even an error")).toBe(false);
+  });
+  it("pins the pattern list so a Playwright upgrade that changes wording screams here", () => {
+    expect(NAVIGATION_TEARDOWN_PATTERNS).toEqual([
+      "Execution context was destroyed",
+      "Element is not attached",
+      "Target page, context or browser has been closed",
+    ]);
   });
 });

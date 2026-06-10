@@ -36,3 +36,17 @@ export async function withActionErrors<T>(probe: () => Promise<number>, what: st
     throw err;
   }
 }
+
+/** Playwright error families meaning "the action fired and then the page moved on".
+ * Message-substring matching is brittle across Playwright upgrades by nature — this list is
+ * pinned by a unit test so a wording change fails CI instead of silently regressing. */
+export const NAVIGATION_TEARDOWN_PATTERNS = [
+  "Execution context was destroyed",
+  "Element is not attached",
+  "Target page, context or browser has been closed",
+];
+
+export function isNavigationTeardown(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : "";
+  return NAVIGATION_TEARDOWN_PATTERNS.some((p) => msg.includes(p));
+}
