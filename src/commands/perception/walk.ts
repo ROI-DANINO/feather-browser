@@ -124,8 +124,13 @@ const WALK_SRC = (frameId: string) => `(() => {
   collect(document, els);
   const ov = overlays();
   const metas = els.map(meta);
+  // composed-tree containment: hops shadow boundaries (collect() pierces them, so containment must too)
+  function containsComposed(o, n){
+    while (n){ if (n === o) return true; n = n.parentNode || (n.getRootNode && n.getRootNode().host); }
+    return false;
+  }
   metas.forEach((m, i) => {
-    const k = ov.els.findIndex((o) => o.contains(els[i]));   // contains() includes self: an interactive overlay self-links, which is correct
+    const k = ov.els.findIndex((o) => containsComposed(o, els[i]));   // contains() includes self: an interactive overlay self-links, which is correct
     if (k >= 0) m.overlayIndex = k;
   });
   return { elements: els, metas, overlays: ov.metas, total: els.length };
@@ -160,7 +165,7 @@ export async function walkAllFrames(page: Page): Promise<{ actions: RawAction[];
     const fid = `f${depth}_${actions.length}`;
     try {
       const res = await walkFrame(frame, frame === top ? "top" : fid);
-      if (frame !== top) for (const a of res.actions) delete a.meta.overlayIndex;
+      if (frame !== top) for (const a of res.actions) delete a.meta.overlayIndex;  // overlays are top-frame only; child indices would dangle
       actions.push(...res.actions);
       if (frame === top) overlays.push(...res.overlays);
     } catch { /* frame may be detached/blank; skip */ }

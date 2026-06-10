@@ -82,6 +82,7 @@ export interface ObserveAction {
   box: { x: number; y: number; w: number; h: number };
   state: ActionState;
   occludedBy?: { kind: "overlay" | "iframe" | "element"; name?: string };
+  /** This element sits inside overlays[overlayIndex] — part of that popup. */
   overlayIndex?: number;
 }
 

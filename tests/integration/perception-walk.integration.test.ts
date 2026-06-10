@@ -113,8 +113,24 @@ describe("walkAllFrames", () => {
       </div>`);
     const { actions, overlays } = await walkAllFrames(page);
     expect(overlays.length).toBe(1);
-    expect(actions.find((a) => a.meta.name === "Accept all")!.meta.overlayIndex).toBe(0);
-    expect(actions.find((a) => a.meta.name === "Continue")!.meta.overlayIndex).toBeUndefined();
+    expect(actions.find((a) => a.meta.name === "Accept all")?.meta.overlayIndex).toBe(0);
+    expect(actions.find((a) => a.meta.name === "Continue")?.meta.overlayIndex).toBeUndefined();
+    for (const a of actions) await a.handle.dispose();
+    await page.context().close();
+  });
+
+  it("links shadow-DOM buttons inside an overlay via overlayIndex (composed containment)", async () => {
+    const page = await pageWith(`
+      <div id="ov" style="position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999"><div id="host"></div></div>
+      <script>
+        const r = document.getElementById("host").attachShadow({ mode: "open" });
+        const b = document.createElement("button");
+        b.textContent = "Got it";
+        r.appendChild(b);
+      </script>`);
+    const { actions, overlays } = await walkAllFrames(page);
+    expect(overlays.length).toBe(1);
+    expect(actions.find((a) => a.meta.name === "Got it")?.meta.overlayIndex).toBe(0);
     for (const a of actions) await a.handle.dispose();
     await page.context().close();
   });
