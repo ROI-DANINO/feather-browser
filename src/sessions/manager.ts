@@ -59,6 +59,7 @@ export interface ISessionManager {
   close(sessionId: string, opts?: { force?: boolean; quarantineDisposableProfile?: boolean }): Promise<void>;
   openTab(sessionId: string): Promise<PageInfo>;
   closeTab(sessionId: string, pageId: string): Promise<CloseTabResult>;
+  listTabs(sessionId: string): Promise<{ sessionId: string; pages: PageInfo[] }>;
 }
 
 export class SessionManager implements ISessionManager {
@@ -205,6 +206,11 @@ export class SessionManager implements ISessionManager {
     });
     const loadState = await page.evaluate(() => document.readyState);
     return { pageId, url: page.url(), title: await page.title(), loadState };
+  }
+
+  async listTabs(sessionId: string): Promise<{ sessionId: string; pages: PageInfo[] }> {
+    const session = this.get(sessionId);
+    return { sessionId, pages: await session.getPageInfoList() };
   }
 
   async closeTab(sessionId: string, pageId: string): Promise<CloseTabResult> {

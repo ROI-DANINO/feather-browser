@@ -13,6 +13,7 @@ import { DebugBundleHandler } from "../commands/debug-bundle";
 import { CloseSessionHandler } from "../commands/close";
 import { OpenTabHandler } from "../commands/open-tab";
 import { CloseTabHandler } from "../commands/close-tab";
+import { ListTabsHandler } from "../commands/list-tabs";
 import { ObserveHandler } from "../commands/observe";
 import { DismissHandler } from "../commands/dismiss";
 import { ClickHandler } from "../commands/click";
@@ -189,6 +190,7 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
   const closeHandler = new CloseSessionHandler(manager);
   const openTabHandler = new OpenTabHandler(manager);
   const closeTabHandler = new CloseTabHandler(manager);
+  const listTabsHandler = new ListTabsHandler(manager);
   const observeHandler = new ObserveHandler(manager);
   const dismissHandler = new DismissHandler(manager);
   const clickHandler = new ClickHandler(manager);
@@ -243,6 +245,15 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
     try {
       const { sessionId } = request.params as { sessionId: string };
       const result = await openTabHandler.execute({ sessionId }, { requestId });
+      await reply.status(200).send(ok(requestId, result));
+    } catch (err) { await handleRouteError(err, request, reply); }
+  });
+
+  app.get("/v1/sessions/:sessionId/tabs", { preHandler: [tokenAuth] }, async (request: FastifyRequest, reply: FastifyReply) => {
+    const requestId = getRequestId(request);
+    try {
+      const { sessionId } = request.params as { sessionId: string };
+      const result = await listTabsHandler.execute({ sessionId }, { requestId });
       await reply.status(200).send(ok(requestId, result));
     } catch (err) { await handleRouteError(err, request, reply); }
   });
