@@ -78,19 +78,44 @@ describe("walkAllFrames", () => {
     await page.context().close();
   });
 
-  it("still reports absolutely-positioned overlays that carry an explicit z-index, and dialog-role elements", async () => {
+  it("still reports absolutely-positioned overlays that carry an explicit z-index", async () => {
     const page = await pageWith(`
       <div style="position:absolute;top:0;left:0;width:100%;height:70%;z-index:50"><button>Accept all</button></div>`);
     const { actions, overlays } = await walkAllFrames(page);
     expect(overlays.length).toBe(1);
     for (const a of actions) await a.handle.dispose();
     await page.context().close();
+  });
 
-    const page2 = await pageWith(`
+  it("reports dialog-role elements as overlays regardless of position", async () => {
+    const page = await pageWith(`
       <div role="dialog" style="position:absolute;top:0;left:0;width:100%;height:70%"><button>OK</button></div>`);
-    const r2 = await walkAllFrames(page2);
-    expect(r2.overlays.length).toBe(1);
-    for (const a of r2.actions) await a.handle.dispose();
-    await page2.context().close();
+    const { actions, overlays } = await walkAllFrames(page);
+    expect(overlays.length).toBe(1);
+    for (const a of actions) await a.handle.dispose();
+    await page.context().close();
+  });
+
+  it("reports a non-positioned dialog-role div as an overlay", async () => {
+    const page = await pageWith(`
+      <div role="dialog" style="width:100%;height:70%"><button>Submit</button></div>`);
+    const { actions, overlays } = await walkAllFrames(page);
+    expect(overlays.length).toBe(1);
+    for (const a of actions) await a.handle.dispose();
+    await page.context().close();
+  });
+
+  it("links actions inside an overlay to it via overlayIndex; outside buttons get none", async () => {
+    const page = await pageWith(`
+      <button id="outside">Continue</button>
+      <div style="position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center">
+        <button id="inside">Accept all</button>
+      </div>`);
+    const { actions, overlays } = await walkAllFrames(page);
+    expect(overlays.length).toBe(1);
+    expect(actions.find((a) => a.meta.name === "Accept all")!.meta.overlayIndex).toBe(0);
+    expect(actions.find((a) => a.meta.name === "Continue")!.meta.overlayIndex).toBeUndefined();
+    for (const a of actions) await a.handle.dispose();
+    await page.context().close();
   });
 });

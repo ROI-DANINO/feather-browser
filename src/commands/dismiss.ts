@@ -10,8 +10,7 @@ export function pickDismissTargets(obs: ObserveResult, labels: string[]): Observ
   if (obs.overlays.length === 0) return [];                      // only act when an overlay exists
   const wanted = labels.map((l) => l.toLowerCase());
   return obs.actions.filter((a) => {
-    const overlayRelated = a.state === "covered" || a.occludedBy != null
-      || obs.overlays.some((o) => o.ref != null && o.ref === a.ref);
+    const overlayRelated = a.state === "covered" || a.occludedBy != null;
     // The dismiss button itself usually sits *on top* (actionable) inside the overlay; allow actionable
     // elements too, but still gate on an overlay being present (checked above).
     const name = a.name.trim().toLowerCase();

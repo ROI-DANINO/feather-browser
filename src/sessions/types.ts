@@ -82,10 +82,10 @@ export interface ObserveAction {
   box: { x: number; y: number; w: number; h: number };
   state: ActionState;
   occludedBy?: { kind: "overlay" | "iframe" | "element"; name?: string };
+  overlayIndex?: number;
 }
 
 export interface Overlay {
-  ref: string | null;
   kind: "modal" | "banner" | "iframe";
   name: string;
   coverPct: number;

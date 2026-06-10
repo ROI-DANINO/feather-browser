@@ -48,6 +48,7 @@ export class ObserveHandler implements CommandHandler<ObserveInput, ObserveResul
       return {
         ref, role: a.meta.role, name: a.meta.name, tag: a.meta.tag,
         box: a.meta.box, state: a.meta.state, occludedBy: a.meta.occludedBy,
+        overlayIndex: a.meta.overlayIndex,
       };
     });
 
@@ -58,7 +59,7 @@ export class ObserveHandler implements CommandHandler<ObserveInput, ObserveResul
     const result: ObserveResult = {
       pageId, url: page.url(), title: await page.title().catch(() => ""), observeId,
       actions,
-      overlays: overlays.map((o) => ({ ref: null, ...o })),
+      overlays,
       diff,
       stats: { totalInteractive: raw.length, returned: actions.length, elapsedMs: Date.now() - t0 },
     };

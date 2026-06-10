@@ -10,6 +10,7 @@ export interface WalkMeta {
   box: { x: number; y: number; w: number; h: number };
   state: ActionState;
   occludedBy?: { kind: "overlay" | "iframe" | "element"; name?: string };
+  overlayIndex?: number;     // index into the same walk's overlays; set when an overlay element contains this one
 }
 export interface RawAction { handle: ElementHandle; frameId: string; meta: WalkMeta; }
 export interface RawOverlay { kind: "modal" | "banner" | "iframe"; name: string; coverPct: number; blocking: boolean; }
@@ -96,7 +97,7 @@ const WALK_SRC = (frameId: string) => `(() => {
       state, occludedBy };
   }
   function overlays(){
-    const W = innerWidth, H = innerHeight, area = W*H, out = [];
+    const W = innerWidth, H = innerHeight, area = W*H, metas = [], els = [];
     for (const el of document.querySelectorAll("body *")){
       const cs = getComputedStyle(el);
       const role = el.getAttribute("role");
@@ -113,14 +114,21 @@ const WALK_SRC = (frameId: string) => `(() => {
       const pct = Math.round(100*cover/area);
       if (pct > 25){
         const kind = el.tagName === "IFRAME" ? "iframe" : pct >= 90 ? "modal" : "banner";
-        out.push({ kind, name: (el.getAttribute("aria-label") || el.innerText || "").trim().slice(0,60), coverPct: pct, blocking: pct >= 60 });
+        metas.push({ kind, name: (el.getAttribute("aria-label") || el.innerText || "").trim().slice(0,60), coverPct: pct, blocking: pct >= 60 });
+        els.push(el);
       }
     }
-    return out;
+    return { metas, els };
   }
   const els = [];
   collect(document, els);
-  return { elements: els, metas: els.map(meta), overlays: overlays(), total: els.length };
+  const ov = overlays();
+  const metas = els.map(meta);
+  metas.forEach((m, i) => {
+    const k = ov.els.findIndex((o) => o.contains(els[i]));   // contains() includes self: an interactive overlay self-links, which is correct
+    if (k >= 0) m.overlayIndex = k;
+  });
+  return { elements: els, metas, overlays: ov.metas, total: els.length };
 })()`;
 
 async function walkFrame(frame: Frame, frameId: string): Promise<{ actions: RawAction[]; overlays: RawOverlay[] }> {
@@ -152,6 +160,7 @@ export async function walkAllFrames(page: Page): Promise<{ actions: RawAction[];
     const fid = `f${depth}_${actions.length}`;
     try {
       const res = await walkFrame(frame, frame === top ? "top" : fid);
+      if (frame !== top) for (const a of res.actions) delete a.meta.overlayIndex;
       actions.push(...res.actions);
       if (frame === top) overlays.push(...res.overlays);
     } catch { /* frame may be detached/blank; skip */ }

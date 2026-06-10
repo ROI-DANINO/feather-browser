@@ -10,7 +10,7 @@ const r = (over: Partial<ObserveResult>): ObserveResult => ({
 describe("pickDismissTargets", () => {
   it("matches affirmative labels only on overlay-related elements", () => {
     const obs = r({
-      overlays: [{ ref: null, kind: "modal", name: "cookies", coverPct: 100, blocking: true }],
+      overlays: [{ kind: "modal", name: "cookies", coverPct: 100, blocking: true }],
       actions: [
         { ref: "e0", role: "button", name: "Accept all", tag: "BUTTON", box: { x:0,y:0,w:1,h:1 }, state: "actionable", occludedBy: undefined },
         { ref: "e1", role: "button", name: "Manage settings", tag: "BUTTON", box: { x:0,y:0,w:1,h:1 }, state: "actionable" },
