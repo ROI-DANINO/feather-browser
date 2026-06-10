@@ -66,13 +66,39 @@ const DismissSchema = z.object({
   labels: z.array(z.string().min(1)).optional(),
 });
 
-const ExtractSchema = z.object({
-  pageId: z.string().optional(),
-  recipe: z.object({
-    fields: z.record(z.object({ selector: z.string(), type: z.enum(["text", "attribute"]), attribute: z.string().optional() })),
-    limits: z.object({ items: z.number().int().positive().optional(), textChars: z.number().int().positive().optional() }).optional(),
-  }),
+const ExtractFieldSchema = z
+  .object({
+    selector: z.string(),
+    type: z.enum(["text", "attribute", "value"]).optional(),
+    attribute: z.string().optional(),
+  })
+  .transform((f) => ({ ...f, type: f.type ?? (f.attribute !== undefined ? ("attribute" as const) : ("text" as const)) }))
+  .superRefine((f, ctx) => {
+    if (f.type === "attribute" && f.attribute === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "type 'attribute' requires an 'attribute' name, e.g. { selector: \"a\", type: \"attribute\", attribute: \"href\" }",
+      });
+    }
+  });
+
+const ExtractRecipeSchema = z.object({
+  fields: z.record(ExtractFieldSchema),
+  limits: z.object({ items: z.number().int().positive().optional(), textChars: z.number().int().positive().optional() }).optional(),
 });
+
+// Agents intuitively POST { fields: {...} } without the recipe wrapper (3 of the showcase run's
+// 7 API failures) — accept that flat shape by wrapping it.
+export const ExtractSchema = z.preprocess(
+  (body) => {
+    if (body !== null && typeof body === "object" && !("recipe" in body) && "fields" in body) {
+      const { pageId, ...rest } = body as Record<string, unknown>;
+      return { ...(pageId !== undefined ? { pageId } : {}), recipe: rest };
+    }
+    return body;
+  },
+  z.object({ pageId: z.string().optional(), recipe: ExtractRecipeSchema })
+);
 
 const atField = z.union([z.enum(["first", "last"]), z.number().int().nonnegative()]).optional();
 const TargetSchema = z.discriminatedUnion("by", [

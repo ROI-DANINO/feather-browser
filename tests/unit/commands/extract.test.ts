@@ -6,6 +6,7 @@ const mockLocator = {
   first: vi.fn().mockReturnThis(),
   textContent: vi.fn(),
   getAttribute: vi.fn(),
+  inputValue: vi.fn(),
 };
 
 const mockPage = {
@@ -128,6 +129,23 @@ describe("ExtractHandler", () => {
     expect(Object.keys(result)).toEqual(["title", "link"]);
     expect(result.title).toBe("Title text");
     expect(result.link).toBe("https://example.com");
+  });
+
+  it("extracts an input value using inputValue for type 'value'", async () => {
+    mockLocator.inputValue.mockResolvedValue("Rosh Hashana");
+    const handler = new ExtractHandler(mockManager as any);
+    const recipe: ExtractRecipe = { fields: { title: { selector: "#event-title", type: "value" } } };
+    const result = await handler.execute({ sessionId: "ses_test_001", recipe }, ctx);
+    expect(mockLocator.inputValue).toHaveBeenCalled();
+    expect(result.title).toBe("Rosh Hashana");
+  });
+
+  it("returns null when inputValue throws (non-input element)", async () => {
+    mockLocator.inputValue.mockRejectedValue(new Error("Not an input"));
+    const handler = new ExtractHandler(mockManager as any);
+    const recipe: ExtractRecipe = { fields: { x: { selector: "div", type: "value" } } };
+    const result = await handler.execute({ sessionId: "ses_test_001", recipe }, ctx);
+    expect(result.x).toBeNull();
   });
 
   it("returns the first match when selector matches multiple elements", async () => {

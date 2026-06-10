@@ -36,6 +36,10 @@ export class ExtractHandler implements CommandHandler<ExtractInput, ExtractOutpu
             const trimmed = raw.trim();
             result[fieldName] = textLimit !== undefined ? trimmed.slice(0, textLimit) : trimmed;
           }
+        } else if (field.type === "value") {
+          // input/textarea/select current value — invisible to snapshot/observe text reads.
+          // Non-input elements throw and fall through to the per-field null, like a bad selector.
+          result[fieldName] = await locator.inputValue();
         } else {
           const value = await locator.getAttribute(field.attribute!);
           result[fieldName] = value ?? null;

@@ -40,7 +40,7 @@ export interface SessionRecord {
 
 export interface ExtractField {
   selector: string;
-  type: "text" | "attribute";
+  type: "text" | "attribute" | "value";
   attribute?: string;
 }
 
