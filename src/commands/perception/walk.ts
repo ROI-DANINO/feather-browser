@@ -67,7 +67,11 @@ const WALK_SRC = (frameId: string) => `(() => {
     if (el.id){ const lab = document.querySelector('label[for="'+CSS.escape(el.id)+'"]'); if (lab) return (lab.innerText||"").trim(); }
     const nm = el.getAttribute("name") || el.getAttribute("title");
     if (nm) return nm.trim();
-    return (el.innerText || "").trim();          // NEVER el.value
+    const txt = (el.innerText || "").trim();     // NEVER el.value
+    if (txt) return txt;
+    const labelled = el.querySelector("[aria-label]");   // icon-only buttons: borrow the icon's label, last resort
+    if (labelled){ const v = labelled.getAttribute("aria-label"); if (v && v.trim()) return v.trim(); }
+    return "";
   }
   function meta(el){
     const r = el.getBoundingClientRect();
