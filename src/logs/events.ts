@@ -17,6 +17,7 @@ export const EVENTS = {
   SESSION_CLOSE_REQUESTED: "session.close.requested",
   SESSION_CLOSE_COMPLETED: "session.close.completed",
   SESSION_CLOSE_FAILED: "session.close.failed",
+  PROFILE_CLEANUP_FAILED: "profile.cleanup.failed",
   TAB_OPENED: "tab.opened",
   TAB_CREATED: "tab.created",
   TAB_UPDATED: "tab.updated",

@@ -345,7 +345,21 @@ export class SessionManager implements ISessionManager {
           await fs.promises.rename(session.profilePath, quarantineDir);
         } catch { /* profile may not exist */ }
       } else {
-        await fs.promises.rm(sessionDir, { recursive: true, force: true });
+        // Chromium can still be flushing profile files as we delete (the 3s exit-wait above is
+        // best-effort and Playwright-managed modes have no child handle at all) — Node's built-in
+        // retries cover exactly the ENOTEMPTY/EBUSY race. If it still fails, the session is
+        // closed and the dir lives under the cache tmp area: log, don't fail the close.
+        try {
+          await fs.promises.rm(sessionDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+        } catch (err) {
+          await this.logger.log({
+            ts: new Date().toISOString(),
+            level: "warn",
+            event: EVENTS.PROFILE_CLEANUP_FAILED,
+            sessionId: session.sessionId,
+            data: { error: (err as any)?.message ?? "unknown", dir: sessionDir },
+          });
+        }
       }
     }
 
