@@ -64,18 +64,34 @@ export function resolveSpawnExtraArgs(): string[] {
   return out;
 }
 
-export async function spawnAndConnect(opts: {
+/**
+ * Build the Chromium argv for the headed CDP spawn path. The requested viewport sets the real
+ * OS window size (`--window-size`) rather than Playwright viewport emulation — emulation on a
+ * CDP-attached context would taint the faithful headed fingerprint. Content viewport ≈ window
+ * minus browser chrome.
+ */
+export function buildSpawnArgs(opts: {
   profilePath: string;
-  executablePath: string;
-}): Promise<{ context: BrowserContext; childProcess: ChildProcess }> {
-  const args = [
+  viewport?: { width: number; height: number };
+}): string[] {
+  const vp = opts.viewport ?? { width: 1280, height: 800 };
+  return [
     "--remote-debugging-port=0",
     `--user-data-dir=${opts.profilePath}`,
+    `--window-size=${vp.width},${vp.height}`,
     "--no-first-run",
     "--no-default-browser-check",
     ...resolveSpawnExtraArgs(),
     "--disable-blink-features=AutomationControlled",
   ];
+}
+
+export async function spawnAndConnect(opts: {
+  profilePath: string;
+  executablePath: string;
+  viewport?: { width: number; height: number };
+}): Promise<{ context: BrowserContext; childProcess: ChildProcess }> {
+  const args = buildSpawnArgs(opts);
 
   const child = spawn(opts.executablePath, args, { stdio: ["ignore", "ignore", "pipe"] });
 

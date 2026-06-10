@@ -13,6 +13,7 @@ const waylandIt = it;
 
 let tmpDir: string;
 let cleanup: (() => Promise<void>) | null = null;
+let cleanupViewport: (() => Promise<void>) | null = null;
 
 beforeAll(async () => {
   tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "feather-cdp-int-"));
@@ -20,6 +21,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   if (cleanup) await cleanup();
+  if (cleanupViewport) await cleanupViewport();
   // Give the OS a moment to release file locks after Chromium exits
   await new Promise((r) => setTimeout(r, 500));
   await fs.promises.rm(tmpDir, { recursive: true, force: true });
@@ -44,6 +46,37 @@ describe("spawnAndConnect — anti-detection gate", () => {
       const webdriver = await page.evaluate(() => navigator.webdriver);
 
       expect(webdriver).toBe(false);
+    },
+    30_000
+  );
+});
+
+describe("spawnAndConnect — viewport", () => {
+  waylandIt(
+    "applies the requested viewport as the OS window size",
+    async () => {
+      const profilePath = path.join(tmpDir, "profile-viewport");
+      await fs.promises.mkdir(profilePath, { recursive: true });
+
+      const executablePath = chromium.executablePath();
+      const { context, childProcess } = await spawnAndConnect({
+        profilePath,
+        executablePath,
+        viewport: { width: 1024, height: 700 },
+      });
+
+      cleanupViewport = async () => {
+        try { await context.close(); } catch { /* best-effort */ }
+        childProcess.kill();
+      };
+
+      const page = await context.newPage();
+      const outer = await page.evaluate(() => ({ w: window.outerWidth, h: window.outerHeight }));
+
+      // Tolerances absorb window-manager decoration; the bug being pinned is
+      // "viewport ignored entirely", a ~600px error.
+      expect(Math.abs(outer.w - 1024)).toBeLessThanOrEqual(50);
+      expect(Math.abs(outer.h - 700)).toBeLessThanOrEqual(120);
     },
     30_000
   );

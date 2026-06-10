@@ -3,6 +3,7 @@ export const EVENTS = {
   SESSION_LAUNCH_REQUESTED: "session.launch.requested",
   SESSION_LAUNCH_COMPLETED: "session.launch.completed",
   SESSION_LAUNCH_FAILED: "session.launch.failed",
+  SESSION_OPTION_IGNORED: "session.option.ignored",
   PROFILE_LOCK_CREATED: "profile.lock.created",
   PROFILE_LOCK_REJECTED: "profile.lock.rejected",
   PAGE_NAVIGATE_REQUESTED: "page.navigate.requested",

@@ -117,9 +117,19 @@ export class SessionManager implements ISessionManager {
 
     let context: BrowserContext;
     if (browserMode === "chromium-headed-cdp") {
+      if (proxy) {
+        await this.logger.log({
+          ts: new Date().toISOString(),
+          level: "warn",
+          event: EVENTS.SESSION_OPTION_IGNORED,
+          sessionId: session.sessionId,
+          data: { option: "proxy", reason: "proxy is not applied in chromium-headed-cdp mode" },
+        });
+      }
       const { context: cdpContext, childProcess } = await spawnAndConnect({
         profilePath,
         executablePath: resolveChromiumExecutable(chromium.executablePath()),
+        viewport: input.viewport,
       });
       context = cdpContext;
       session.setChildProcess(childProcess);
