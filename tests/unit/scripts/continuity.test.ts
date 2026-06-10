@@ -25,15 +25,14 @@ describe("ensureHumanAuth", () => {
     );
   });
 
-  it("polls targetUrl until login is detected", async () => {
+  it("polls current page until login is detected", async () => {
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     const api: IFeatherApi = {
       request: vi.fn()
-        .mockResolvedValueOnce({})                     // navigate — initial
-        .mockRejectedValueOnce(new Error("timeout"))   // fast probe — not logged in
-        .mockResolvedValueOnce({})                     // navigate — poll iteration
-        .mockResolvedValueOnce({}),                    // poll probe — authenticated
+        .mockResolvedValueOnce({})                   // navigate — initial
+        .mockRejectedValueOnce(new Error("timeout")) // fast probe — not logged in
+        .mockResolvedValueOnce({}),                  // poll probe — authenticated
     };
 
     await expect(
@@ -44,14 +43,11 @@ describe("ensureHumanAuth", () => {
       }),
     ).resolves.toBeUndefined();
 
-    expect(api.request).toHaveBeenCalledTimes(4);
-    // Poll navigate goes back to targetUrl — not a separate login URL
+    expect(api.request).toHaveBeenCalledTimes(3);
+    // Polling probes the current page instead of re-navigating, so it does not
+    // interrupt OAuth/login redirects while the human is completing auth.
     expect(api.request).toHaveBeenNthCalledWith(
-      3, "POST", "/v1/sessions/sid/navigate", expect.objectContaining({ url: "https://gmail.com" }),
-    );
-    // Poll probe uses a longer timeout than the fast check
-    expect(api.request).toHaveBeenNthCalledWith(
-      4, "POST", "/v1/sessions/sid/wait", expect.objectContaining({ timeoutMs: 5000 }),
+      3, "POST", "/v1/sessions/sid/wait", expect.objectContaining({ until: "visible", timeoutMs: 0 }),
     );
 
     logSpy.mockRestore();
