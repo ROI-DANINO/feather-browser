@@ -73,10 +73,12 @@ describe("spawnAndConnect — viewport", () => {
       const page = await context.newPage();
       const outer = await page.evaluate(() => ({ w: window.outerWidth, h: window.outerHeight }));
 
-      // Tolerances absorb window-manager decoration; the bug being pinned is
-      // "viewport ignored entirely", a ~600px error.
+      // Width is the layout-breaking dimension (it's what tripped Instagram's tablet wall) and
+      // Wayland honors it tightly. Height is at the window manager's mercy under load (observed
+      // +234px in full-suite runs), so it only gets a coarse sanity bound. The bug being pinned
+      // is "viewport ignored entirely", a ~600px width error.
       expect(Math.abs(outer.w - 1024)).toBeLessThanOrEqual(50);
-      expect(Math.abs(outer.h - 700)).toBeLessThanOrEqual(120);
+      expect(Math.abs(outer.h - 700)).toBeLessThanOrEqual(300);
     },
     30_000
   );
