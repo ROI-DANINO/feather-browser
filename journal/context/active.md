@@ -30,9 +30,17 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
   written yet.** Bridge (archived at the 06:52 stop):
   `journal/archive/next/2026-06-10/0652-stop-bundle-graphify-graduation.md` (observe-bug-fixes-brainstorm entry).
   (`docs/agent-playbook.md` + `examples/showcase.sh` now COMMITTED — `23061ac`.)
-- **Recommend next:** Resume brainstorm — confirm approach choices, present full design sections, write spec,
-  user review, then invoke writing-plans. (AGENTS.md new-age refresh: DONE post-stop 2026-06-10 — phase 4a/v1
-  identity, feather.md front door, Graphify contributor section, observe-loop note, Phase-3 leftover fixed.)
+- **NEW SIDE-THREAD BRIDGE (2026-06-10 ~08:20): Native Capabilities Router research.** Roi raised a product idea:
+  Feather should route across native APIs/MCP/generated connectors/browser/human-handoff, not stay browser-only.
+  Raw notes: `journal/raw/_inbox/2026-06-10-native-capabilities-router.md` +
+  `journal/raw/_inbox/2026-06-10-native-capabilities-research-map.md`. Bridge written to `journal/context/next.md`.
+  **Do not implement yet.** Next chat should decide roadmap placement and whether this belongs inside v2 Gate A /
+  ADR-0010 capability-safety work or later.
+- **Recommend next:** Resume observe-bug-fixes brainstorm — confirm approach choices, present full design sections,
+  write spec, user review, then invoke writing-plans. If Roi pulls the side-thread forward first, read the two native
+  capability inbox notes and decide placement before writing any implementation plan. (AGENTS.md new-age refresh: DONE
+  post-stop 2026-06-10 — phase 4a/v1 identity, feather.md front door, Graphify contributor section, observe-loop note,
+  Phase-3 leftover fixed.)
 - **Prior NOW (2026-06-10 ~01:42, STOP): DAILY-DRIVER BACKGROUND LAUNCH + `primary` RE-WARMED (real account).**
   `npm run daily` [primary] / `daily:scratch` now launch the persistent profile **detached** (`nohup`+`disown` →
   logfile under `$XDG_RUNTIME_DIR/feather/`, PID file, double-launch guard) so it frees the terminal; closing the
