@@ -54,8 +54,8 @@ value assessment on request.
 - **Observe-bug-fixes brainstorm** still paused mid-design (tentative approaches for Bugs 1/2/3; no
   spec). Untouched this session. THE next action.
 - Operator-skills rewrite to observe loop; suite semantic-assertion layer; then v2 Gate A (ADR-0010).
-- Roi raised at /stop: **"should we update the AGENTS.md by the new age feather update?"** — open
-  question for next session (AGENTS.md may predate observe-loop/Graphify-era reality).
+- ~~Roi raised at /stop: "should we update the AGENTS.md by the new age feather update?"~~ —
+  **RESOLVED post-stop, same session** (Roi: "do it now"). See Addendum below.
 
 ## Flags
 
@@ -70,3 +70,20 @@ value assessment on request.
 - "Yes, this analysis is flawless and the plan is perfect. Proceed with the entire operation exactly as you described."
 - "Give me a final summary when the entire pipeline is complete and the main repo is fully wired up with Graphify."
 - "Zoom out beyond just today's commits… Keep it punchy, highly practical, and outcome-focused."
+- "should we update the AGENTS.md by the new age feather update?" → "do it now"
+
+## Addendum (post-stop, ~07:05): AGENTS.md new-age refresh — DONE
+
+Surgical refresh, committed `dbf9fea`, pushed:
+
+- **Project Identity** → v1 "It runs errands for me": agent-drivable runtime, observe → act-by-ref
+  perception loop, Cookie Mine, `feather.md` named as front door.
+- **Current Phase** → **4a — Feather v1** (4b visual shell explicitly deferred); `feather.md` added to
+  the state-owner pointers and the startup order.
+- **New contributor section "Code-Wiring Map (Graphify)":** blast-radius check before refactoring
+  shared symbols (`graphify affected` / MCP tools), rebuild verb = `update` (never `extract`),
+  intent/markdown stays fenced out of the graph, never run `graphify install`.
+- **Driving Feather** note: canonical loop = observe → act-by-ref → diff; playbook wins over the
+  stale snapshot-first skills until their queued rewrite.
+- Fixed the "out of scope for Phase 3" leftover in Change Classification.
+- Untouched (still true): Testing Honesty, branch rules, worktree workflow, session memory, tech stack.
