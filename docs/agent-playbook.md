@@ -87,8 +87,8 @@ warmed profile** — don't guess a topical website and don't reach for weaker en
   isn't always present.
 - **SERPs are self-describing in `observe`:** each organic result is one action entry with
   title + source + URL breadcrumb in its `name`. Pick by meaning, click by ref. (No need to
-  extract hrefs and navigate manually; if the click reports `INTERNAL_ERROR`, see the error
-  table — it usually navigated fine.)
+  extract hrefs and navigate manually; a nav-click returns `navigated: true` — re-observe to
+  confirm the landed page.)
 - **Respect the profile's locale.** Warmed profiles may render Google in the human's language
   (e.g. Hebrew UI). Don't force `hl=en` — operate as the human would; the organic results
   remain identifiable by name/URL.
@@ -114,7 +114,7 @@ POST /v1/sessions
 POST /v1/sessions/:sessionId/observe
 {}
 ```
-Returns numbered actionable elements (`e0`, `e1`, …), overlays (banners/modals/iframes), and a
+Returns numbered actionable elements (`obs_a1b2.e0`, `obs_a1b2.e1`, …), overlays (banners/modals/iframes), and a
 change-diff vs the previous observe. **Use the refs to act — no selector guessing.**
 
 Trimmed example response:
@@ -155,14 +155,33 @@ POST /v1/sessions/:sessionId/dismiss
 {}
 ```
 Runs an internal `observe`, finds the first element whose name matches an affirmative-dismiss label
-(`Accept all`, `I agree`, `Allow all`, `Got it`, `Accept`, `Close`, `Continue`), and clicks it
-by ref. Only fires when the observe detects an overlay — safe to call speculatively.
+(`Accept all`, `I agree`, `Allow all`, `Got it`, `Accept`, `Close`, `Continue`), clicks it, then
+**re-observes to verify**. Only fires when the observe detects an overlay — safe to call speculatively.
 
-Returns `{ "pageId": string, "dismissed": [{ "ref": string, "name": string }] }`. Empty
-`dismissed` array means no matching overlay was found — not an error.
+Returns:
+```jsonc
+{
+  "pageId": "pg_1",
+  "dismissed": [{ "ref": "obs_x1y2.e3", "name": "Accept all" }],  // verified-gone only
+  "overlaysRemaining": 0,       // from the post-click re-observe
+  "observation": { /* full ObserveResult — use these refs; your old refs are expired */ }
+}
+```
 
-Pass `"labels"` to override the default label list. Re-call if a second overlay appears after the
-first is dismissed.
+- `dismissed` lists only overlays **confirmed absent** in the post-click re-observe. A click
+  that throws but the overlay vanishes still counts as dismissed.
+- **`overlaysRemaining` is the ground truth for "am I clear."** Trust it over `dismissed.length`
+  alone — on multi-pane popups whose label text changes between panes, `dismissed` can misjudge;
+  `overlaysRemaining` is computed from the verify observe.
+- `overlaysRemaining > 0` means another wall is up: call dismiss again (one wall per call) or
+  pass different `labels`.
+- `observation` is a full, fresh `ObserveResult`. Any refs from before the dismiss call are
+  expired — act from `observation`'s refs directly. No need to call `observe` again after dismiss.
+- When nothing was clicked, `dismissed` is `[]` and `observation` is the baseline observe.
+- **`/dismiss` cannot reach buttons inside iframe overlays** (e.g. same-origin iframe consent
+  dialogs). For those, click the button directly by ref/selector or use `await-human`.
+
+Pass `"labels"` to override the default label list. Re-call if a second overlay appears (`overlaysRemaining > 0`).
 
 ### Navigate
 ```http
@@ -184,9 +203,11 @@ POST /v1/sessions/:sessionId/type
 POST /v1/sessions/:sessionId/select-option
 { "target": { "by": "css", "selector": "#country" }, "values": "US" }
 ```
-- `values` accepts a string or array (for multi-selects). Returns the `selected` values.
+- `values` accepts a string or array (for multi-selects). Returns `{ selected, navigated? }`.
 - **Only for native `<select>`.** Custom dropdown widgets (`role="combobox"`, `role="listbox"`) are
   not `<select>` — drive those with `click` instead.
+- If `navigated: true` is in the response, `selected` echoes the requested values unverified —
+  re-observe and confirm the landed page before continuing.
 
 ### Click and confirm a result
 ```http
@@ -198,13 +219,17 @@ Then verify the expected next state appeared:
 POST /v1/sessions/:sessionId/wait
 { "target": { "by": "text", "text": "Welcome" }, "until": "visible" }
 ```
+If the response contains `"navigated": true`, the click fired and the page navigated away — this
+is a hint, not a promise. Re-observe and verify the screen before continuing; don't assume the
+click failed.
 
 ### Press a key
 ```http
 POST /v1/sessions/:sessionId/press
 { "key": "Enter", "target": { "by": "placeholder", "text": "Search" } }
 ```
-`target` is optional — omit it to press at the page level.
+`target` is optional — omit it to press at the page level. If the response contains
+`"navigated": true` (e.g. Enter in a submit form), re-observe and verify the screen.
 
 ### Wait for the page to settle
 ```http
@@ -278,7 +303,7 @@ instead of deleted.
 | `PROFILE_LOCKED` | 409 | Persistent profile already in use | Close the other session or use a different profile |
 | `SESSION_NOT_RUNNING` | 409 | Session not in `running` state | Re-create the session |
 | `CANNOT_CLOSE_LAST_TAB` | 409 | Tried to close the only remaining tab | Use `DELETE /v1/sessions/:sessionId` to end the session instead |
-| `INTERNAL_ERROR` | 500 | Unexpected server error | **On a click/type/press: re-observe before concluding failure.** A click that triggers navigation (or a framework re-render) can kill its element handle mid-action and report `INTERNAL_ERROR` *after the action succeeded* ("Target page... closed" / "Element is not attached"). Re-observe, check url/title/state; retry with a fresh ref only if the action truly didn't land. Otherwise pull a `debug-bundle` and report the `requestId` |
+| `INTERNAL_ERROR` | 500 | Unexpected server error | Navigation-teardown on click/press/select-option **no longer lands here** — those return `navigated: true` instead (re-observe and verify the screen). For a genuine 500: re-observe to check page state, retry once with a fresh ref, then pull a `debug-bundle` and report the `requestId`. |
 
 **Recovery principle:** `ELEMENT_NOT_FOUND` → your *selector* is wrong (re-snapshot, re-target).
 `ELEMENT_NOT_ACTIONABLE` / `WAIT_TIMEOUT` → your *timing/state* is wrong (wait, then retry). Don't

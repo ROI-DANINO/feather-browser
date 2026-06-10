@@ -503,15 +503,15 @@ commands.
 | `title` | string | Current page title |
 | `observeId` | string | Identity token for this observe (e.g. `obs_a1b2`). Passed internally to compute the diff on the next observe; not needed by callers. |
 | `actions` | `ObserveAction[]` | Actionable elements, sorted: `actionable` → `covered` → `disabled` → `offscreen`, in-viewport first within each state |
-| `actions[].ref` | string | Short ref (`e0`, `e1`, …) — valid only until the next `observe` on this page or a navigation |
+| `actions[].ref` | string | Observe-scoped ref (e.g. `obs_a1b2.e0`, `obs_a1b2.e1`) — valid only until the next `observe` on this page or a navigation. Copy verbatim; never hand-construct. |
 | `actions[].role` | string \| null | ARIA role, or `null` if none |
 | `actions[].name` | string | Accessible name (from `aria-label` → `placeholder` → `<label>` → `name`/`title` → `innerText`). **Never `el.value`** — typed passwords are never leaked. |
 | `actions[].tag` | string | HTML tag name in uppercase (e.g. `"BUTTON"`, `"INPUT"`) |
 | `actions[].box` | object | Bounding box: `{ x, y, w, h }` in pixels |
 | `actions[].state` | `"actionable"` \| `"covered"` \| `"disabled"` \| `"offscreen"` | Interactability state |
 | `actions[].occludedBy` | object \| undefined | Present when `state` is `"covered"`: `{ kind: "overlay" \| "iframe" \| "element", name?: string }` |
+| `actions[].overlayIndex` | number \| undefined | When present, this element is contained inside `overlays[overlayIndex]` — it is part of that popup |
 | `overlays` | `Overlay[]` | Viewport-covering fixed/absolute layers detected on the page |
-| `overlays[].ref` | string \| null | Ref if the overlay has an associated action; otherwise `null` |
 | `overlays[].kind` | `"modal"` \| `"banner"` \| `"iframe"` | Overlay type |
 | `overlays[].name` | string | Name / text content of the overlay (truncated to 60 chars) |
 | `overlays[].coverPct` | number | Percentage of the viewport covered (0–100) |
@@ -557,9 +557,9 @@ curl -s -X POST http://localhost:4000/v1/sessions/ses_abc123/observe \
     "title": "Log in",
     "observeId": "obs_a1b2",
     "actions": [
-      { "ref": "e0", "role": "textbox", "name": "Email", "tag": "INPUT",
+      { "ref": "obs_a1b2.e0", "role": "textbox", "name": "Email", "tag": "INPUT",
         "box": { "x": 40, "y": 120, "w": 268, "h": 38 }, "state": "actionable" },
-      { "ref": "e1", "role": "button", "name": "Log in", "tag": "BUTTON",
+      { "ref": "obs_a1b2.e1", "role": "button", "name": "Log in", "tag": "BUTTON",
         "box": { "x": 40, "y": 180, "w": 268, "h": 44 }, "state": "actionable" }
     ],
     "overlays": [],
@@ -603,7 +603,9 @@ overridden.
 | Field | Type | Description |
 |-------|------|-------------|
 | `pageId` | string | The resolved page identifier |
-| `dismissed` | array | Elements that were clicked: `[{ ref: string, name: string }]`. Empty when no overlay or no matching label was found. |
+| `dismissed` | array | Overlays verified gone after the click: `[{ ref: string, name: string }]`. Empty when no matching overlay/label was found. Only overlays confirmed absent in the post-click re-observe appear here — a click that fails but the overlay vanishes still counts. |
+| `overlaysRemaining` | number | Count of overlays still present in the post-click re-observe. `> 0` means another wall is up — call dismiss again (one wall per call) or pass different `labels`. This is the ground truth for "am I clear"; trust it over `dismissed.length` alone (on multi-pane popups whose label text changes between panes, `dismissed` can misjudge). |
+| `observation` | object | Full, fresh `ObserveResult` from the internal post-click re-observe. Any refs from before the dismiss call are expired; act from `observation`'s refs — no need to call `observe` again after dismiss. When nothing was clicked, `observation` is the baseline observe. |
 
 **Error responses:**
 
@@ -630,7 +632,18 @@ curl -s -X POST http://localhost:4000/v1/sessions/ses_abc123/dismiss \
   "requestId": "req_a1b2c3d4",
   "data": {
     "pageId": "pg_1",
-    "dismissed": [{ "ref": "e0", "name": "Accept all" }]
+    "dismissed": [{ "ref": "obs_x1y2.e3", "name": "Accept all" }],
+    "overlaysRemaining": 0,
+    "observation": {
+      "pageId": "pg_1",
+      "url": "https://example.com/",
+      "title": "Example",
+      "observeId": "obs_x1y2",
+      "actions": [],
+      "overlays": [],
+      "diff": { "added": [], "removed": [{ "desc": "Accept all" }], "changed": [] },
+      "stats": { "totalInteractive": 3, "returned": 3, "elapsedMs": 38 }
+    }
   }
 }
 ```
@@ -752,7 +765,13 @@ It is not valid with `by="ref"` (refs are already single elements).
 | `pageId` | string | No | Page to act on (defaults to the active page) |
 | `timeoutMs` | number | No | Action timeout (default 15000) |
 
-**Response `data`:** `{ "pageId": string, "clicked": true }`
+**Response `data`:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `pageId` | string | The resolved page identifier |
+| `clicked` | `true` | Always `true` on success |
+| `navigated` | `true` \| undefined | Present when the click triggered a page navigation and the element/context was torn down before Playwright could confirm completion. This is a hint, never a promise — re-observe and verify the screen before continuing. Previously these cases surfaced as `INTERNAL_ERROR` 500. |
 
 **Error responses:**
 
@@ -812,7 +831,13 @@ It is not valid with `by="ref"` (refs are already single elements).
 | `pageId` | string | No | Page to act on (defaults to the active page) |
 | `timeoutMs` | number | No | Action timeout when `target` is provided (default 15000) |
 
-**Response `data`:** `{ "pageId": string, "pressed": string }`
+**Response `data`:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `pageId` | string | The resolved page identifier |
+| `pressed` | string | The key that was pressed |
+| `navigated` | `true` \| undefined | Present when the key press triggered a page navigation and the element/context was torn down before Playwright could confirm completion (e.g. Enter in a form). This is a hint, never a promise — re-observe and verify the screen before continuing. |
 
 **Error responses:**
 
@@ -843,9 +868,13 @@ Selects one or more options in a native `<select>` dropdown element.
 | `pageId` | string | No | Page to act on (defaults to the active page) |
 | `timeoutMs` | number | No | Action timeout in milliseconds (default 15000) |
 
-**Response `data`:** `{ "pageId": string, "selected": string[] }`
+**Response `data`:**
 
-The `selected` array contains the values of the options that were actually selected (as confirmed by Playwright).
+| Field | Type | Description |
+|-------|------|-------------|
+| `pageId` | string | The resolved page identifier |
+| `selected` | string[] | Values of the options that were actually selected (as confirmed by Playwright). When `navigated: true` is also present, this echoes the requested values, unverified — the page navigated before Playwright could confirm selection. |
+| `navigated` | `true` \| undefined | Present when selecting the option triggered a page navigation and the element/context was torn down before Playwright could confirm completion (e.g. `onchange` redirect). This is a hint, never a promise — re-observe and verify the screen before continuing. |
 
 **Error responses:**
 
@@ -1031,4 +1060,4 @@ curl -s -X POST http://localhost:4000/v1/sessions/ses_abc123/debug-bundle \
 | `ELEMENT_NOT_ACTIONABLE` | 409 | Element matched but the action timed out (covered, disabled, or off-screen) |
 | `REF_EXPIRED` | 409 | A `{ "by": "ref" }` target refers to a ref from a superseded observe (another `observe` was called on this page, or the page navigated); re-observe and use a fresh ref |
 | `WAIT_TIMEOUT` | 408 | `wait` condition not met within the allotted timeout |
-| `INTERNAL_ERROR` | 500 | An unexpected server-side error occurred; check server logs with the `requestId` |
+| `INTERNAL_ERROR` | 500 | An unexpected server-side error occurred. Navigation-teardown on click/press/select-option no longer lands here — those return `navigated: true` instead. For a genuine 500: re-observe to check page state, retry once with a fresh ref, then report the `requestId` from server logs. |
