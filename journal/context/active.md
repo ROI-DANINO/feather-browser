@@ -15,13 +15,16 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
   api-reference + port/Referer rationale in comments. **Task 0 verified `/resume` same-origin** (pause
   banner = CDP-polled DOM flag, no network) → R1; stale `http.ts` comment fixed. **Cadence locked:
   plan-first PR → approve → code PR → CI-green → merge.** dev == origin/dev.
-- **Recommend next: A1 — the capability system** (tiers + session-hold primitive + capability-grant
-  registry + dangerous-mode policy + dual audit), **plan-first** like A0. Read ADR-0010 + the Gate A
-  design doc + `src/transport/middleware.ts` (the pattern A1 extends). (`/blog` v1 finale still owed —
-  4 lines in `blog/_pending.md` — fold when convenient.)
-- **HOUSEKEEPING (blocked):** merged remote branches NOT deleted — git proxy rejects ref deletion
-  (HTTP 403), no MCP delete-branch tool. `claude/{session-branch-work-leu1oj, a0-transport-hardening-
-  plan, a0-transport-hardening-code, last-15-commits-8aizhv}` linger on origin; delete via GitHub UI.
+- **v1 finale BLOGGED + reconciled to dev (2026-06-11): v1 wrap fully closed.** `/blog` shipped
+  `blog/0019-the-reviews-that-caught-me-lying.md` (06-10 testing-honesty trio) +
+  `blog/0020-feather-on-trial.md` (the Fable-acquittal finale); all 4 owed `_pending.md` lines
+  cleared. Blog branch merged to `dev` minus the temporary superpowers-vendor commit (dropped —
+  Roi's call, remote-working scaffolding only).
+- **Recommend next: A1 — the capability system** (tiers + capability-grant registry +
+  dangerous-mode policy + dual audit). **A1 slice 1 (session-hold primitive,
+  `src/capability/holds.ts`) is in flight on `claude/session-branch-work-leu1oj`** — review/merge
+  that branch before starting new A1 work. Read ADR-0010 + the Gate A design doc +
+  `src/transport/middleware.ts` (the pattern A1 extends).
 - **Current phase:** Phase 4a — **Feather v1** ("It runs errands for me"). v1 proven, sighted,
   wrap-analyzed, gap-fixed. Remaining v1 leftovers are small (see tasks.md); v2 spine unchanged —
   nothing from the workflow jumps Gate A.

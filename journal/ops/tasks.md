@@ -3,9 +3,9 @@
 Checklist only. Front door → `feather.md`; version roadmaps → `docs/roadmap/{v1,v2,v3}.md`;
 execution index → `ROADMAP.md`; live pointer → `journal/context/active.md`.
 
-**Next action = `/blog` the v1 finale** (4 owed lines in `blog/_pending.md`, incl. the
-workflow-acquittal session — richest material yet) → **then the v2 Gate A planning pass**
-(Session 5.0.0, ADR-0010, fresh session; phase boundary = planning/reconciliation first, then build).
+**Next action = Gate A / A1 capability system** (the planning/brainstorm pass is DONE —
+ADR-0010 accepted, A0 shipped; A1 slice 1 in flight on `claude/session-branch-work-leu1oj`).
+The `/blog` v1 finale is DONE (0019 + 0020, all 4 owed lines cleared) — v1 wrap is fully closed.
 
 Latest (2026-06-11 ~14:30 STOP): **EXPANDED FABLE WORKFLOW SHIPPED** — meta-analysis
 (`docs/v1_wrap/META-ANALYSIS.md`) overturned the v1-wrap failure story (H3 socket death =
@@ -27,7 +27,10 @@ Prior history → `journal/ops/archive/tasks-20260611-1430.md`.
       best-effort newPageId; extract flat-shape/type-default/`value`; teardown ENOTEMPTY retry;
       per-action session log + GET /health; docs/skills truth pass (stale browserMode enum fixed).
       Plan: `docs/specs/2026-06-11-v1-wrap-gap-fixes-plan.md`.
-- [ ] **`/blog` v1 finale** — fold the 4 owed `blog/_pending.md` lines that fit. **← NEXT**
+- [x] **`/blog` v1 finale (2026-06-11)** — 4 owed lines folded into 2 entries: `0019` the 06-10
+      testing-honesty trio + `0020` "Feather on Trial" finale. `_pending.md` Owed cleared.
+      (Committed `af83a65` on task branch, reconciled to `dev` 2026-06-11; the branch's temporary
+      superpowers-vendor commit was dropped — Roi's call.)
 
 ### Open v1 leftovers (small / optional)
 
