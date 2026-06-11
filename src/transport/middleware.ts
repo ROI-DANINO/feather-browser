@@ -45,7 +45,18 @@ function parseUrlAuthority(value: string): { hostname: string; port: string } | 
   }
 }
 
-/** Loopback hostname required; port must match the bound port when present (lenient when absent). */
+/**
+ * Loopback hostname required; port must match the bound port when present, lenient when absent.
+ *
+ * Rationale (reviewed 2026-06-11): the hostname check is the load-bearing gate. An *explicit*
+ * mismatched port is rejected (catches a same-host different-port local origin, e.g. an XSS'd dev
+ * tool on :3000). An *absent* port is allowed because it creates no realistic path for the
+ * remote-browser threat model: a remote page's Origin is its own foreign hostname (rejected outright,
+ * and `Origin` can't be forged to loopback by JS), and to even reach Feather a request must target
+ * `127.0.0.1:<boundPort>` (so its Host carries the matching port). The only producer of an
+ * absent-port *loopback* authority is a local origin on :80/:443 — out of model (a local process can
+ * read the 0600 token file directly).
+ */
 function isLoopback(authority: { hostname: string; port: string } | null, localPort: number): boolean {
   if (!authority) return false;
   if (!LOOPBACK_HOSTNAMES.has(authority.hostname)) return false;
@@ -74,6 +85,13 @@ export function createOriginHostGuard() {
     }
 
     if (UNSAFE_METHODS.has(request.method)) {
+      // Origin is the authoritative initiator signal: a cross-origin POST/PUT/PATCH/DELETE always
+      // carries it (Fetch spec), and JS cannot forge or suppress it — so checking Origin alone catches
+      // every realistic CSRF. Referer is only a fallback for the (old/odd) Origin-less unsafe request:
+      // it can add a reject, never a wrongful allow. "Reject if either is foreign" would add only
+      // false-rejects, since a browser can't produce a same-origin Origin with a foreign Referer
+      // (both derive from the same initiating document). Origin: null (opaque) fails to parse → foreign
+      // → rejected, which is correct. (Reviewed 2026-06-11.)
       const originHeader = request.headers.origin ?? request.headers.referer;
       if (originHeader !== undefined && !isLoopback(parseUrlAuthority(originHeader), localPort)) {
         return reply.status(403).send({
