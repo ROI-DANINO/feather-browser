@@ -15,10 +15,22 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
   api-reference + port/Referer rationale in comments. **Task 0 verified `/resume` same-origin** (pause
   banner = CDP-polled DOM flag, no network) → R1; stale `http.ts` comment fixed. **Cadence locked:
   plan-first PR → approve → code PR → CI-green → merge.** dev == origin/dev.
-- **Recommend next: A1 — the capability system** (tiers + session-hold primitive + capability-grant
-  registry + dangerous-mode policy + dual audit), **plan-first** like A0. Read ADR-0010 + the Gate A
-  design doc + `src/transport/middleware.ts` (the pattern A1 extends). (`/blog` v1 finale still owed —
-  4 lines in `blog/_pending.md` — fold when convenient.)
+- **NOW (2026-06-11 ~17:28 NEXT): A1 SLICE 1 SHIPPED — session-hold primitive in core.**
+  `src/capability/holds.ts` `SessionHoldRegistry`: refcounted holds w/ `reason`
+  (`mfa|human-approval|cdp-attach|shutdown`) + optional teardown-on-release (the revoke-teeth seam),
+  `observe`/`has`/`count` read surface for the future policy layer, `releaseAllForSession` revoke
+  hammer. Idempotent release; async teardown awaited; throwing teardown → `onTeardownError`. 11 unit
+  tests, tsc clean. **PURE INFRA — no live session paths wired (zero behavior change).** On
+  `claude/session-branch-work-leu1oj` (rebased onto dev = `dev + holds`), pushed. **Under Roi review.**
+- **Workflow SIMPLIFIED (Roi, 2026-06-11):** no PR-per-step unless asked — work directly on the active
+  branch; plan briefly → implement → test → summarize. Pause only for: real warmed profiles/personal
+  accounts; a *material change* to security architecture (vs. executing accepted ADR-0010); large
+  deletes/rewrites; non-obvious CI failure; an unclear architectural tradeoff.
+- **Recommend next (after Roi's review): A1 slice 2 — capability-grant registry + state machine**
+  (`requested → granted → used → {expired|revoked}`; opaque single-use nonce → server-side record
+  `{sessionId, capability, ttl, status}`). Infra only; local approval page + Dangerous-tier wiring
+  follow. Read `src/capability/holds.ts` + Gate A design §3 + ADR-0010 §2. (`/blog` v1 finale still
+  owed — 4 lines in `blog/_pending.md`.)
 - **HOUSEKEEPING (blocked):** merged remote branches NOT deleted — git proxy rejects ref deletion
   (HTTP 403), no MCP delete-branch tool. `claude/{session-branch-work-leu1oj, a0-transport-hardening-
   plan, a0-transport-hardening-code, last-15-commits-8aizhv}` linger on origin; delete via GitHub UI.

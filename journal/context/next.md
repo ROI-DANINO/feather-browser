@@ -71,3 +71,69 @@ to `journal/archive/next/2026-06-11/1430-stop-bundle-fable-workflow.md`. Current
 ### Risks / blockers
 - A1 touches core session/profile/security — heavily-reviewed, short-lived per AGENTS.md domain-risk
   note. No pre-committed cross-module TS interfaces (ADR-0010 scope): hold + grant are seams.
+
+---
+## 2026-06-11 17:28 — A1 slice 1: session-hold primitive shipped (simplified workflow)
+
+### Session pointer
+- Phase 5.0.0 (Gate A) → A1; `journal/ops/tasks.md` §5.0.0 A1; ADR-0010 §4 + Gate A design §2.
+
+### Summary
+- Shipped the FIRST A1 slice — the session-hold primitive in core. Workflow simplified: working
+  directly on the session branch, no PR-per-slice; plan→implement→test→summarize.
+
+### Completed
+- **`src/capability/holds.ts`** — `SessionHoldRegistry`: refcounted holds with `reason`
+  (`mfa | human-approval | cdp-attach | shutdown`), optional teardown closure run once on release
+  (the revoke-teeth seam), `observe`/`has`/`count` read surface for the future policy layer,
+  `releaseAllForSession(id, reason?)` revoke hammer. Idempotent release; async teardown awaited;
+  throwing teardown → `onTeardownError`, never propagated. Instance-scoped (not a module singleton).
+- **`tests/unit/capability/holds.test.ts`** — 11 unit tests.
+- Committed on `claude/session-branch-work-leu1oj` (rebased onto dev so the branch carries A0 + the
+  current tracking state — it was cut from a pre-A0 base; rebase made it `dev + holds`).
+- **Pure infrastructure — NO live session paths wired** (no behavior change to running sessions).
+
+### User decisions / quotes
+- Decision: SIMPLIFIED WORKFLOW (new default) — no PR-per-step unless explicitly asked; work on the
+  active branch; plan briefly, implement, test, summarize; don't stop for approval on every step.
+  Pause only if: touches real warmed profiles/personal accounts; materially CHANGES security
+  architecture (vs. executing accepted ADR-0010); deletes/rewrites large parts; CI fails non-obviously;
+  unclear architectural tradeoff.
+- Quote: "Stop using a PR-per-step process unless I explicitly ask for it."
+- Quote: "For A1, continue with a compact plan and then start the first safe implementation slice."
+- Quote: "I want to review it" — Roi reviews slice 1 before the grant-registry slice proceeds.
+
+### Agent decisions / assumptions / rationale
+- Implementing the ACCEPTED ADR-0010 design = in scope (no pause); only a genuine under-specified fork
+  would trigger a pause. Confirmed reading with Roi up front.
+- Chose the hold primitive as slice 1 because the Gate A build-order names it first (MFA + CDP both
+  depend on it; it unblocks Stealth-last) and it is pure infra — safest first slice.
+- Did NOT wire holds into the live session-close path this slice — that wiring belongs with the grant
+  work (build-order step 4), keeping slice 1 zero-behavior-change.
+- Instance-scoped registry (not module singleton like pause-registry) — clean per-test, and the grant
+  registry will need the same treatment.
+
+### Files read or touched
+- Touched: `src/capability/holds.ts`, `tests/unit/capability/holds.test.ts`.
+- Read: `docs/specs/adr-0010-local-control-plane-capability-model.md`,
+  `docs/specs/2026-06-11-gate-a-capability-system-design.md`, `src/transport/middleware.ts`,
+  `src/sessions/{session,types}.ts`, `src/commands/pause-registry.ts`.
+
+### Open threads / unresolved questions
+- Roi wants to review slice 1 before continuing. Hold the grant-registry slice until reviewed.
+- Merged-branch deletion still BLOCKED (git proxy 403, no MCP delete-branch tool) — unchanged.
+
+### Next action
+- After Roi's review: build A1 slice 2 — capability-grant registry + state machine
+  (`requested → granted → used → {expired|revoked}`, opaque single-use nonce → server-side registry
+  record `{sessionId, capability, ttl, status}`). Infra only; local approval page + Dangerous-tier
+  wiring come after.
+
+### Next session should read
+- `src/capability/holds.ts` (the seam slice 2 builds on)
+- `docs/specs/2026-06-11-gate-a-capability-system-design.md` §3 (grant lifecycle)
+- `docs/specs/adr-0010-local-control-plane-capability-model.md` §2 (grant primitive)
+
+### Risks / blockers
+- A1 is core security infra — short-lived branch, heavy review per AGENTS.md domain-risk note.
+- Slice 1 has no call sites yet (by design) — slice 2+ must actually wire it or it's dead code.
