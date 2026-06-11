@@ -65,8 +65,16 @@ Security-first spine: `gate → Identity → MFA → warmed attach → Stealth l
                   `{sessionId, capability, ttlMs, status}`; lazy TTL expiry (injectable clock);
                   `revokeAllForSession` hammer; redacted `onEvent` seam for the audit surfaces.
                   13u TDD red→green, suite 339/339, tsc clean. PURE INFRA, no live paths wired.
-            - [ ] Slice 3 — local approval page (MFA `humanToken`/CSRF/CSP stack) + dangerous-mode policy
-                  + dual audit, then wire CDP-attach / vault-unlock / cookie-export behind grants.
+            - [x] **Slice 3 — approval page + policy + dual audit + cookie-export door** (2026-06-11
+                  local; plan `docs/specs/2026-06-11-a1-slice3-plan.md`): `DangerousModePolicy`
+                  (off-by-default, `FEATHER_DANGEROUS_CAPABILITIES`), append-only audit JSONL +
+                  SSE bus, single-use humanToken/CSRF approval page (strict CSP), `consumeGranted`,
+                  `CapabilityService` facade. Routes: `POST …/grants` (returns `{grant}` only),
+                  `GET/POST /v1/approvals/:humanToken`, `POST …/cookies/export` (the gated demo door),
+                  session-close→revoke. TDD +21u + 7i. **Gate A live + proven end-to-end.** Remaining
+                  dangerous doors (CDP attach, vault) gated when built in 5c / ADR-0008.
+            - [ ] **Live-test Gate A on `scratch`** — `FEATHER_DANGEROUS_CAPABILITIES=cookie-export`;
+                  request→approve→export, then deny / 60s-expire / revoke-by-close. ← NEXT (with Roi)
       Body: `docs/sessions/5.0.0-capability-gate.md`. NB: the deferred `/evaluate` endpoint and
       batch endpoint land behind/after this gate (META-ANALYSIS ◇ items).
 - [ ] **5.0.1 — MCP & tool-surface reconciliation** — owns the **Connector Registry** decision +

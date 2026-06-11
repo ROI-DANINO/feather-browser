@@ -32,15 +32,25 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
   `blog/0020-feather-on-trial.md` (the Fable-acquittal finale); all 4 owed `_pending.md` lines
   cleared. Blog branch merged to `dev` minus the temporary superpowers-vendor commit (dropped —
   Roi's call, remote-working scaffolding only). Remote-branch cleanup done (only `dev`/`master` remain).
-- **A1 SLICE 2 SHIPPED (2026-06-11, local): capability-grant registry + state machine**
-  (`src/capability/grants.ts`). Lifecycle `requested → (approved|denied) → granted → used →
-  {expired|revoked}`; opaque single-use nonce minted at approval; lazy TTL expiry (injectable
-  clock); `revokeAllForSession` = the session-close/MFA-open/shutdown hammer; redacted `onEvent`
-  seam for the future audit surfaces. TDD, 13u, suite 339/339, tsc clean. PURE INFRA — nothing wired.
-- **Recommend next: A1 slice 3 — local approval page + dangerous-mode policy + dual audit**
-  (the MFA `humanToken`/CSRF/CSP page pattern; grants off-by-default config; bus + durable
-  append-only audit log under the STATE root), then wire CDP-attach/vault-unlock/cookie-export
-  behind grants+holds. Read Gate A design §3–5 + `src/capability/{holds,grants}.ts`.
+- **A1 SLICE 3 SHIPPED (2026-06-11, local) — GATE A IS NOW LIVE, PROVEN END-TO-END.** The full
+  `request → human-approve → consume → audit → revoke` loop runs over HTTP, gated on a real
+  Dangerous-tier door: **cookie export**. New `src/capability/`: `consumeGranted` (door-facing,
+  agent never transports the nonce), `policy.ts` (`DangerousModePolicy` — OFF by default, opt-in via
+  `FEATHER_DANGEROUS_CAPABILITIES`), `audit.ts` (append-only JSONL `<state>/logs/audit/grants.jsonl`),
+  `approval.ts` (single-use humanToken + per-page CSRF), `service.ts` (facade → BOTH audit surfaces).
+  Transport: hardened approval page (strict CSP; action+csrf in query like resume), `POST
+  /v1/sessions/:id/grants` (returns `{grant}` ONLY — no token), `GET/POST /v1/approvals/:humanToken`,
+  `POST /v1/sessions/:id/cookies/export` (the gated door), session-close → `revokeSession`. TDD: +21u
+  + 7-case integration loop. Gates: tsc clean, **360 unit / 92 integration**. Plan:
+  `docs/specs/2026-06-11-a1-slice3-plan.md`.
+- **Joint calls (2026-06-11 brainstorm, recorded):** approval ping = terminal + SSE (no
+  desktop/Telegram); grants die on restart (in-memory; only the audit log persists); 60s flat TTL;
+  scope = gate + the one cookie-export demo door (CDP attach / vault gated when built in 5c / ADR-0008).
+- **Recommend next: live-test Gate A on `scratch`** — start the server with
+  `FEATHER_DANGEROUS_CAPABILITIES=cookie-export`, drive an agent through request → approve on the
+  local page → export, then the honest failure runs (deny, 60s expiry, revoke-by-close). Then **5a —
+  Identity Model** (first real consumer of the gate). NB: the cookie-export door is the ONLY live
+  dangerous op; vault stays frozen, CDP-attach is 5c.
 - **Current phase:** Phase 4a — **Feather v1** ("It runs errands for me"). v1 proven, sighted,
   wrap-analyzed, gap-fixed. Remaining v1 leftovers are small (see tasks.md); v2 spine unchanged —
   nothing from the workflow jumps Gate A.
