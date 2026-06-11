@@ -4,7 +4,7 @@ import * as fs from "fs";
 import { randomBytes } from "crypto";
 import type { SessionManager } from "../sessions/manager";
 import type { FeatherPaths } from "../fs-layout";
-import { injectRequestId } from "./middleware";
+import { injectRequestId, createOriginHostGuard } from "./middleware";
 import { registerRoutes } from "./routes";
 import { registerSsePlugin } from "./sse";
 import { setBaseUrl } from "./server-info";
@@ -28,8 +28,14 @@ export async function startHttpServer(
 
   app.addHook("onRequest", async (request) => { injectRequestId(request); });
 
-  // Accept (and ignore) urlencoded bodies so the on-page banner's cross-origin form POST to the
-  // resume route is not rejected with 415. No other route consumes urlencoded.
+  // Transport hardening (Gate A / A0): reject DNS-rebinding (foreign Host) and cross-origin CSRF
+  // drive-bys (foreign Origin/Referer on state-changing methods) before token auth or body parsing.
+  // Runs after injectRequestId so its 403 envelopes carry a requestId. See middleware.ts.
+  app.addHook("onRequest", createOriginHostGuard());
+
+  // Accept (and ignore) urlencoded bodies so the resume page's same-origin form POST is not rejected
+  // with 415. (The on-page pause banner sets a CDP-polled DOM flag and makes no network request, so
+  // it is not the consumer here.) No other route consumes urlencoded.
   app.addContentTypeParser("application/x-www-form-urlencoded", { parseAs: "string" }, (_req, _body, done) => done(null, {}));
 
   // Allow DELETE (and other verb) requests that include Content-Type: application/json but no body.
