@@ -30,6 +30,12 @@ import type { AwaitHumanInput } from "../sessions/types";
 import { peekPause, resumePause } from "../commands/pause-registry";
 import { promptPage, confirmedPage, expiredPage } from "./resume-page";
 import { registerSseRoute } from "./sse";
+import { CapabilityService } from "../capability/service";
+import { DangerousModePolicy } from "../capability/policy";
+import type { CapabilityName } from "../capability/grants";
+import { ExportCookiesHandler } from "../commands/export-cookies";
+import { approvalPage, approvedPage, deniedPage, expiredApprovalPage, APPROVAL_CSP } from "./approval-page";
+import { getBaseUrl } from "./server-info";
 
 const LaunchSchema = z.object({
   workspaceId: z.string().optional(),
@@ -173,6 +179,12 @@ const AwaitHumanSchema = z.object({
 const ScreenshotSchema = z.object({ pageId: z.string().optional(), fullPage: z.boolean().optional() });
 const CloseSchema = z.object({ force: z.boolean().optional(), quarantineDisposableProfile: z.boolean().optional() });
 
+const CapabilitySchema = z.enum(["cdp-attach", "vault-unlock", "cookie-export"]);
+const GrantRequestSchema = z.object({
+  capability: CapabilitySchema,
+  ttlMs: z.number().int().positive().optional(),
+});
+
 const ERROR_STATUS: Record<string, number> = {
   SESSION_NOT_FOUND: 404,
   PROFILE_LOCKED: 409,
@@ -184,6 +196,8 @@ const ERROR_STATUS: Record<string, number> = {
   WAIT_TIMEOUT: 408,
   CANNOT_CLOSE_LAST_TAB: 409,
   REF_EXPIRED: 409,
+  DANGEROUS_DISABLED: 403,
+  GRANT_REQUIRED: 403,
 };
 
 function errorStatus(code: string): number { return ERROR_STATUS[code] ?? 500; }
@@ -229,6 +243,14 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
   const awaitHumanHandler = new AwaitHumanHandler(manager);
   const selectOptionHandler = new SelectOptionHandler(manager);
   const healthHandler = new HealthHandler(manager);
+  const exportCookiesHandler = new ExportCookiesHandler(manager as any);
+
+  // Gate A / A1: the server-owned capability service (grants + holds + approvals + dual audit).
+  // Dangerous capabilities are off unless opted-in via FEATHER_DANGEROUS_CAPABILITIES (default: none).
+  const capabilities = new CapabilityService({
+    policy: DangerousModePolicy.fromEnv(process.env),
+    auditFile: paths.grantAuditLog(),
+  });
 
   // Per-action trace in the session JSONL: the H3 forensics took an investigation because 7.5
   // minutes of observe/click/type left no per-action record. Action name + status code ONLY —
@@ -449,6 +471,83 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
       .send(settled ? confirmedPage() : expiredPage());
   });
 
+  // ── Gate A / A1: capability grants ─────────────────────────────────────────
+  // Agent-facing: request a Dangerous-tier grant. The response carries ONLY {grant} — never the
+  // approval URL or the humanToken (ADR-0010: the agent never holds a grant secret). The approval
+  // link is surfaced to the HUMAN via the server console + the SSE bus.
+  app.post("/v1/sessions/:sessionId/grants", { preHandler: [tokenAuth] }, async (request: FastifyRequest, reply: FastifyReply) => {
+    const requestId = getRequestId(request);
+    try {
+      const { sessionId } = request.params as { sessionId: string };
+      const { capability, ttlMs } = GrantRequestSchema.parse(request.body);
+      manager.get(sessionId); // 404 for an unknown session before minting anything
+      const result = capabilities.requestGrant(sessionId, capability as CapabilityName, ttlMs);
+      if (!result.ok) {
+        await reply.status(403).send(fail(requestId, "DANGEROUS_DISABLED",
+          `Capability '${capability}' is not enabled. Set FEATHER_DANGEROUS_CAPABILITIES to opt in.`));
+        return;
+      }
+      const url = `${getBaseUrl()}${result.approvalPath}`;
+      // The human's out-of-band channel: console now; the visual shell adds real notifications later.
+      console.log(`\n[Feather] Capability approval needed — ${capability} on ${sessionId}\n  Approve: ${url}\n`);
+      await reply.status(200).send(ok(requestId, { grant: result.grant }));
+    } catch (err) { await handleRouteError(err, request, reply); }
+  });
+
+  // Human-facing approval page: NO API token (a browser click can't send the header). Security is
+  // the single-use humanToken in the URL + a per-page CSRF nonce + a strict CSP with no external
+  // resources. The global A0 Origin/Host guard sits in front of both routes.
+  app.get("/v1/approvals/:humanToken", async (request: FastifyRequest, reply: FastifyReply) => {
+    const { humanToken } = request.params as { humanToken: string };
+    const view = capabilities.peekApproval(humanToken);
+    await reply.header("content-security-policy", APPROVAL_CSP).type("text/html").status(200).send(
+      view
+        ? approvalPage({
+            humanToken,
+            sessionId: view.grant.sessionId,
+            capability: view.grant.capability,
+            ttlSeconds: Math.round(view.grant.ttlMs / 1000),
+            csrfNonce: view.csrfNonce,
+          })
+        : expiredApprovalPage(),
+    );
+  });
+
+  app.post("/v1/approvals/:humanToken", async (request: FastifyRequest, reply: FastifyReply) => {
+    const { humanToken } = request.params as { humanToken: string };
+    // action + csrf ride in the query string (Feather discards urlencoded bodies — see approval-page).
+    const { action: rawAction, csrf } = (request.query as { action?: string; csrf?: string }) ?? {};
+    const action = rawAction === "deny" ? "deny" : "approve";
+    const result = capabilities.resolveApproval(humanToken, csrf ?? "", action);
+    const html = !result.ok
+      ? expiredApprovalPage()
+      : result.outcome === "approved" ? approvedPage() : deniedPage();
+    await reply.header("content-security-policy", APPROVAL_CSP).type("text/html").status(200).send(html);
+  });
+
+  // The first real Dangerous-tier door: export the session's cookies (login tokens). Gated by a
+  // spent capability grant — no grant, no cookies. Off entirely unless cookie-export is opted-in.
+  app.post("/v1/sessions/:sessionId/cookies/export", { preHandler: [tokenAuth] }, async (request: FastifyRequest, reply: FastifyReply) => {
+    const requestId = getRequestId(request);
+    try {
+      const { sessionId } = request.params as { sessionId: string };
+      manager.get(sessionId);
+      if (!capabilities.isEnabled("cookie-export")) {
+        await reply.status(403).send(fail(requestId, "DANGEROUS_DISABLED",
+          "Capability 'cookie-export' is not enabled. Set FEATHER_DANGEROUS_CAPABILITIES to opt in."));
+        return;
+      }
+      const consumed = capabilities.consume(sessionId, "cookie-export");
+      if (!consumed.ok) {
+        await reply.status(403).send(fail(requestId, "GRANT_REQUIRED",
+          `No usable cookie-export grant for this session (${consumed.reason}). Request one via POST /v1/sessions/:id/grants and approve it.`));
+        return;
+      }
+      const result = await exportCookiesHandler.execute({ sessionId }, { requestId });
+      await reply.status(200).send(ok(requestId, result));
+    } catch (err) { await handleRouteError(err, request, reply); }
+  });
+
   app.post("/v1/sessions/:sessionId/screenshot", { preHandler: [tokenAuth] }, async (request: FastifyRequest, reply: FastifyReply) => {
     const requestId = getRequestId(request);
     try {
@@ -474,6 +573,8 @@ export function registerRoutes(app: FastifyInstance, manager: ISessionManager, p
       const { sessionId } = request.params as { sessionId: string };
       const input = CloseSchema.parse(request.body ?? {});
       const closeResult = await closeHandler.execute({ sessionId, ...input }, { requestId });
+      // Revoke hammer: a closed session's grants/holds die with it (auto-revoke on close, ADR-0010).
+      await capabilities.revokeSession(sessionId);
       await reply.status(200).send(ok(requestId, closeResult));
     } catch (err) { await handleRouteError(err, request, reply); }
   });

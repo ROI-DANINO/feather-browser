@@ -25,6 +25,12 @@ export const EVENTS = {
   ACTION_COMPLETED: "action.completed",
   HUMAN_PAUSE_REQUESTED: "human.pause.requested",
   HUMAN_PAUSE_RESOLVED: "human.pause.resolved",
+  GRANT_REQUESTED: "grant.requested",
+  GRANT_GRANTED: "grant.granted",
+  GRANT_DENIED: "grant.denied",
+  GRANT_USED: "grant.used",
+  GRANT_EXPIRED: "grant.expired",
+  GRANT_REVOKED: "grant.revoked",
 } as const;
 
 export type EventName = (typeof EVENTS)[keyof typeof EVENTS];

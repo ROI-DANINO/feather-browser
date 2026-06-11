@@ -41,6 +41,11 @@ export class FeatherPaths {
     return path.join(this.dirs.state, "logs", "sessions", `${sessionId}.jsonl`);
   }
 
+  /** Append-only forensic record of capability-grant lifecycle events (Gate A / A1 audit). */
+  grantAuditLog(): string {
+    return path.join(this.dirs.state, "logs", "audit", "grants.jsonl");
+  }
+
   endpointFile(): string {
     return path.join(this.dirs.runtime, "run", "endpoint.json");
   }
@@ -65,6 +70,7 @@ export async function ensureDirs(dirs: FeatherDirs | string): Promise<void> {
     path.join(d.cache, "tmp", "sessions"),
     path.join(d.state, "debug"),
     path.join(d.state, "logs", "sessions"),
+    path.join(d.state, "logs", "audit"),
     path.join(d.runtime, "run"),
     path.join(d.state, "measurements"),
   ];

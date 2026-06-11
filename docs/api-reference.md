@@ -1146,10 +1146,64 @@ curl -s -X POST http://localhost:4000/v1/sessions/ses_abc123/debug-bundle \
 
 ---
 
+### Capability Grants (Dangerous-tier — Gate A)
+
+Some operations can hand an untrusted caller the keys to a warmed profile — raw CDP attach, vault
+release, **cookie export** (login tokens). These are the **Dangerous tier** (ADR-0010). The static
+bearer token is never enough: each use needs a **one-time, human-approved capability grant**, and the
+capability must be **opted-in** at startup. None of this is on by default.
+
+**Enabling a dangerous capability:** set the `FEATHER_DANGEROUS_CAPABILITIES` environment variable to
+a comma-separated allowlist before starting the server, e.g.
+`FEATHER_DANGEROUS_CAPABILITIES=cookie-export`. Unknown names are ignored. With nothing set, every
+dangerous operation returns `403 DANGEROUS_DISABLED`.
+
+**The flow (agent + human):**
+
+1. The agent requests a grant: `POST /v1/sessions/:sessionId/grants`. The response carries **only**
+   `{ grant }` (id + status) — never the approval link or token. (The agent must never hold the grant
+   secret.)
+2. Feather surfaces a one-time **approval URL** out-of-band — printed to the server console and
+   emitted as a redacted `grant.requested` event on `GET /v1/events`. A human opens it.
+3. The human approves or denies on a local page (`GET`/`POST /v1/approvals/:humanToken`) — hardened
+   like the resume page: single-use URL token, per-page CSRF nonce, strict CSP, and the global
+   Origin/Host guard. Approving mints a single-use grant that **self-expires in ~60s**.
+4. The agent performs the operation (e.g. `POST /v1/sessions/:sessionId/cookies/export`). The grant
+   is spent once, then dead.
+
+**Revocation has teeth:** closing the session (and, later, an MFA challenge opening or shutdown)
+**revokes** any outstanding grant for it — an approved-but-unused grant is torn down, not merely
+blocked. Every lifecycle step (`requested` / `granted` / `denied` / `used` / `expired` / `revoked`)
+is written, redacted, to a durable audit log at `<state>/logs/audit/grants.jsonl` **and** to the SSE
+bus.
+
+#### `POST /v1/sessions/:sessionId/grants` — Request a capability grant (agent-facing)
+
+**Request body:** `{ "capability": "cookie-export" | "cdp-attach" | "vault-unlock", "ttlMs"?: number }`
+
+**Response `data`:** `{ "grant": { "id", "sessionId", "capability", "status": "requested", "ttlMs", "requestedAt" } }`
+— deliberately **no** approval URL or token. Watch the server console / `GET /v1/events` for the
+approval link.
+
+#### `GET` / `POST /v1/approvals/:humanToken` — Approval page (human-facing)
+
+No API token (a browser click can't send the header). `GET` renders the approve/deny page; `POST`
+(with the page's `csrf` nonce + `action` in the query string) records the decision. Single-use.
+
+#### `POST /v1/sessions/:sessionId/cookies/export` — Export session cookies (Dangerous)
+
+Requires `cookie-export` enabled **and** an approved, unspent grant for this session. Returns
+`{ "sessionId", "cookies": [...] }` (Playwright cookie shape). Refuses with `DANGEROUS_DISABLED` (not
+opted-in) or `GRANT_REQUIRED` (no usable grant — none approved, already spent, expired, or revoked).
+
+---
+
 ## Error Codes
 
 | Code | HTTP Status | Description |
 |------|-------------|-------------|
+| `DANGEROUS_DISABLED` | 403 | A Dangerous-tier capability was used but is not opted-in via `FEATHER_DANGEROUS_CAPABILITIES` |
+| `GRANT_REQUIRED` | 403 | A Dangerous-tier operation ran without an approved, unspent capability grant for the session |
 | `FORBIDDEN_HOST` | 403 | `Host` header is not a recognized loopback address (DNS-rebind defense); applies to all routes |
 | `FORBIDDEN_ORIGIN` | 403 | Cross-origin `Origin`/`Referer` on a state-changing request (CSRF defense); applies to `POST`/`PUT`/`PATCH`/`DELETE` |
 | `UNAUTHORIZED` | 401 | `X-Feather-Token` header is missing or does not match the server token |

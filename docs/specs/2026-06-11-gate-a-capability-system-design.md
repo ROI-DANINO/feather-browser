@@ -1,7 +1,11 @@
 # Gate A — Local Control-Plane & Capability System — Design
 
 **Date:** 2026-06-11
-**Status:** Design approved (brainstorm). Decisions locked; ready for spec review → implementation plan.
+**Status:** Design approved (brainstorm). Decisions locked. **A0 shipped; A1 slices 1–3 shipped**
+(session-hold primitive, grant registry + state machine, approval page + dangerous-mode policy +
+dual audit + the cookie-export demo door — proven end-to-end). Slice-3 build doc:
+`docs/specs/2026-06-11-a1-slice3-plan.md`. Remaining Dangerous-tier doors (CDP attach, vault release)
+get gated as they are built in 5c / ADR-0008.
 **Phase:** Phase 5.0 ("Gate A") — the first Phase 5 work, ahead of Identity, MFA, warmed CDP, Stealth.
 **Classification:** Core browser stability + security. This is the safety machinery that governs
 Feather's highest-privilege surfaces (warmed-profile CDP attach, vault release, raw cookie/storage

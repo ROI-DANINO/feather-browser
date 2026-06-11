@@ -155,6 +155,49 @@ describe("CapabilityGrantRegistry", () => {
     }
   });
 
+  it("consumeGranted spends the approved grant for (session, capability) without any external nonce", () => {
+    const reg = new CapabilityGrantRegistry();
+    const grant = reg.request("ses_1", "cookie-export");
+    reg.approve(grant.id);
+
+    const result = reg.consumeGranted("ses_1", "cookie-export");
+
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.grant.id).toBe(grant.id);
+    expect(reg.get(grant.id)?.status).toBe("used");
+  });
+
+  it("consumeGranted is single-use and scope-exact", () => {
+    const reg = new CapabilityGrantRegistry();
+    const grant = reg.request("ses_1", "cookie-export");
+    reg.approve(grant.id);
+
+    expect(reg.consumeGranted("ses_1", "cdp-attach").ok).toBe(false);
+    expect(reg.consumeGranted("ses_2", "cookie-export").ok).toBe(false);
+    expect(reg.consumeGranted("ses_1", "cookie-export").ok).toBe(true);
+
+    const second = reg.consumeGranted("ses_1", "cookie-export");
+    expect(second.ok).toBe(false);
+    if (!second.ok) expect(second.reason).toBe("no-grant");
+  });
+
+  it("consumeGranted refuses an expired grant with reason expired, a pending one with no-grant", () => {
+    let nowMs = 1_000_000;
+    const reg = new CapabilityGrantRegistry({ now: () => nowMs });
+    const pendingOnly = reg.request("ses_2", "cookie-export");
+    expect(pendingOnly.status).toBe("requested");
+    const noApproval = reg.consumeGranted("ses_2", "cookie-export");
+    expect(noApproval.ok).toBe(false);
+    if (!noApproval.ok) expect(noApproval.reason).toBe("no-grant");
+
+    const grant = reg.request("ses_1", "cookie-export", { ttlMs: 1_000 });
+    reg.approve(grant.id);
+    nowMs += 2_000;
+    const result = reg.consumeGranted("ses_1", "cookie-export");
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toBe("expired");
+  });
+
   it("expiry is observable as an event exactly once, when first noticed", () => {
     let nowMs = 1_000_000;
     const events: { type: string }[] = [];

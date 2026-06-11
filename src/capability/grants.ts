@@ -133,6 +133,30 @@ export class CapabilityGrantRegistry {
     return { ok: true, grant: this.toRecord(grant) };
   }
 
+  /**
+   * Spend the approved grant for `(sessionId, capability)` — how a dangerous operation authorizes
+   * itself. Consume-by-scope, not present-a-secret: the agent never transports the nonce (ADR-0010 —
+   * "the agent never holds a capability grant secret"); the registry redeems internally. Returns
+   * `expired` when the only matching grant timed out, `no-grant` when nothing approved exists.
+   */
+  consumeGranted(
+    sessionId: string,
+    capability: CapabilityName,
+  ): { ok: true; grant: GrantRecord } | { ok: false; reason: "no-grant" | "expired" } {
+    let sawExpired = false;
+    for (const grant of this.grants.values()) {
+      if (grant.sessionId !== sessionId || grant.capability !== capability) continue;
+      const wasGranted = grant.status === "granted";
+      this.touch(grant);
+      if (grant.status === "granted" && grant.nonce !== undefined) {
+        const result = this.redeem(grant.nonce);
+        if (result.ok) return result;
+      }
+      if (wasGranted && grant.status === "expired") sawExpired = true;
+    }
+    return { ok: false, reason: sawExpired ? "expired" : "no-grant" };
+  }
+
   /** Revoke one non-terminal grant. The auto-revoke triggers call this; the nonce dies with it. */
   revoke(id: string): void {
     this.revokeGrant(this.mustGet(id));

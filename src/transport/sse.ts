@@ -17,6 +17,12 @@ const LIFECYCLE_EVENTS = new Set<EventName>([
   "tab.closed",
   "human.pause.requested",
   "human.pause.resolved",
+  "grant.requested",
+  "grant.granted",
+  "grant.denied",
+  "grant.used",
+  "grant.expired",
+  "grant.revoked",
 ]);
 
 async function* sseSource(
