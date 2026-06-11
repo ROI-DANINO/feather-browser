@@ -32,10 +32,15 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
   `blog/0020-feather-on-trial.md` (the Fable-acquittal finale); all 4 owed `_pending.md` lines
   cleared. Blog branch merged to `dev` minus the temporary superpowers-vendor commit (dropped —
   Roi's call, remote-working scaffolding only). Remote-branch cleanup done (only `dev`/`master` remain).
-- **Recommend next: A1 slice 2 — capability-grant registry + state machine**
-  (`requested → granted → used → {expired|revoked}`; opaque single-use nonce → server-side record
-  `{sessionId, capability, ttl, status}`). Infra only; local approval page + Dangerous-tier wiring
-  follow. Read `src/capability/holds.ts` + Gate A design §3 + ADR-0010 §2.
+- **A1 SLICE 2 SHIPPED (2026-06-11, local): capability-grant registry + state machine**
+  (`src/capability/grants.ts`). Lifecycle `requested → (approved|denied) → granted → used →
+  {expired|revoked}`; opaque single-use nonce minted at approval; lazy TTL expiry (injectable
+  clock); `revokeAllForSession` = the session-close/MFA-open/shutdown hammer; redacted `onEvent`
+  seam for the future audit surfaces. TDD, 13u, suite 339/339, tsc clean. PURE INFRA — nothing wired.
+- **Recommend next: A1 slice 3 — local approval page + dangerous-mode policy + dual audit**
+  (the MFA `humanToken`/CSRF/CSP page pattern; grants off-by-default config; bus + durable
+  append-only audit log under the STATE root), then wire CDP-attach/vault-unlock/cookie-export
+  behind grants+holds. Read Gate A design §3–5 + `src/capability/{holds,grants}.ts`.
 - **Current phase:** Phase 4a — **Feather v1** ("It runs errands for me"). v1 proven, sighted,
   wrap-analyzed, gap-fixed. Remaining v1 leftovers are small (see tasks.md); v2 spine unchanged —
   nothing from the workflow jumps Gate A.

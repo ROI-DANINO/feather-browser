@@ -60,8 +60,11 @@ Security-first spine: `gate → Identity → MFA → warmed attach → Stealth l
                   refcounted holds w/ reason + teardown-on-release (revoke-teeth seam), observe/has/count,
                   `releaseAllForSession` revoke hammer. 11u, tsc clean. PURE INFRA, no live paths wired.
                   Reviewed clean + merged to dev 2026-06-11 (local takeover; remote branch deleted).
-            - [ ] **Slice 2 — capability-grant registry + state machine** (opaque single-use nonce →
-                  server-side record `{sessionId, capability, ttl, status}`). Next after review.
+            - [x] **Slice 2 — capability-grant registry + state machine** (`src/capability/grants.ts`,
+                  2026-06-11 local): opaque single-use nonce minted at approval → record
+                  `{sessionId, capability, ttlMs, status}`; lazy TTL expiry (injectable clock);
+                  `revokeAllForSession` hammer; redacted `onEvent` seam for the audit surfaces.
+                  13u TDD red→green, suite 339/339, tsc clean. PURE INFRA, no live paths wired.
             - [ ] Slice 3 — local approval page (MFA `humanToken`/CSRF/CSP stack) + dangerous-mode policy
                   + dual audit, then wire CDP-attach / vault-unlock / cookie-export behind grants.
       Body: `docs/sessions/5.0.0-capability-gate.md`. NB: the deferred `/evaluate` endpoint and
