@@ -54,6 +54,32 @@ assigns them and cuts tasks into work sessions.
 - **Core driving works end-to-end.** Form fill → email verify → social interaction (like, comment) all
   passed on a real site. Friction is tooling, not the core architecture.
 
+## v1-wrap forensics + API surface (durable, 2026-06-11 — META-ANALYSIS supersedes the 2026-06-10 v1_wrap docs where they disagree)
+
+- **"API Error: The socket connection was closed unexpectedly" in a subagent transcript = the
+  HARNESS's Anthropic connection died**, not the platform under test. Check `isApiErrorMessage`/
+  `model:"<synthetic>"` on the final transcript line before blaming Feather. Corollary: grep counts
+  over transcripts match the errand PROMPT text too — verify endpoint-level `tool_use` calls, not
+  string hits (the "H3 liked a post" claim was exactly this artifact).
+- **Headed-CDP mode now honors `viewport` as the OS window size** (`--window-size` at spawn;
+  deliberately NOT Playwright emulation — keeps the headed fingerprint faithful; content viewport ≈
+  window minus chrome). `proxy` remains unapplied in this mode — logged `session.option.ignored`.
+- **Tab discovery:** `GET /v1/sessions/:id/tabs` is ground truth; click's `newPageId` is strictly
+  best-effort (the context `page` event usually fires AFTER the click response — measured; also
+  unreliable under concurrent clicks). Same signal-vs-ground-truth pattern as `/dismiss`.
+- **Extract:** flat `{fields}` accepted; `type` optional (defaults text, infers attribute);
+  `type:"value"` reads input/textarea/select current values (text reads can't see them). A general
+  `/evaluate` endpoint is deferred to v2 Gate A by design (ADR-0010 high-privilege surface).
+- **Observability:** every POST action writes `action.completed` (action + statusCode ONLY, never
+  bodies — credential discipline) to the session JSONL; `GET /v1/sessions/:id/health` = CDP-alive
+  probe (agent-died vs browser-died in one call). Security rule learned in review: global Fastify
+  `onResponse` hooks fire for unauthenticated 401s/404s too — anything that writes to disk from a
+  hook must re-check auth/session registration itself.
+- **M2/httpbin is NOT stealth evidence** in either direction (rerun 200s vs original
+  curl-200/browser-503×4; cause undetermined). M1 cold-profile search walls remain 5d's evidence.
+- **`/screenshot` returns an artifact descriptor** `{artifactId, path, mimeType}` — read the PNG
+  from `path`; screenshot-then-read is the sanctioned vision fallback for overflowing reads.
+
 ## Perception/operator durable facts (2026-06-10)
 
 - **Operator skills teach the observe loop** (`observe → act by ref → re-observe`), rewritten
