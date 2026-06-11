@@ -6,22 +6,22 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 
 ## Current pointer
 
-- **NOW (2026-06-11 ~14:30 STOP): EXPANDED FABLE WORKFLOW SHIPPED — v1-wrap story corrected, gap
-  fixes landed.** Session: `journal/ops/sessions/fable-workflow-v1-acquittal-20260611-1430.md`.
-  (1) **Meta-analysis** `docs/v1_wrap/META-ANALYSIS.md` (3 analyst agents + adversarial review;
-  where it disagrees with the 2026-06-10 v1_wrap docs, IT wins): H3's "socket death" = **the agent
-  harness's own Anthropic-API connection, NOT Feather/CDP** (P0 withdrawn); **H3 never liked or
-  commented** (grep matched the errand prompt — no real-world side effect; "Feather burned IG"
-  unfounded; account gone = cause unknown); real H3 blocker = **viewport silently ignored in
-  chromium-headed-cdp**; M2 = environmental-rerunnable, **cause undetermined** (not 5d evidence in
-  either direction). (2) **Fixes pushed `60ef4fd..235ebbb`** (10 commits): headed-CDP viewport via
-  `--window-size`, `GET /tabs`, best-effort `newPageId` on click, extract flat-shape/type-default/
-  `value` reads, teardown ENOTEMPTY retry, per-action `action.completed` log + `GET /health`,
-  docs/skills truth pass. Code review caught + fixed a MAJOR unauth-log-write hole (regression-
-  pinned). Gates: tsc clean, 301/301 unit, 79/79 integration. dev == origin/dev.
-- **Recommend next: `/blog` the v1 finale** — 4 owed lines in `blog/_pending.md` incl. this
-  session's acquittal arc — **then the v2 Gate A planning pass** (Session 5.0.0, ADR-0010, fresh
-  session, planning-first).
+- **NOW (2026-06-11 ~17:05 NEXT): GATE A STARTED — ADR-0010 ACCEPTED + A0 transport hardening
+  SHIPPED.** Three PRs merged to `dev`: **#3** ADR-0010 flipped to ACCEPTED (4 open Qs resolved +
+  revoke-teeth) + Gate A design (`docs/specs/2026-06-11-gate-a-capability-system-design.md`); **#4**
+  A0 plan; **#5** A0 code (CI green). A0 = global `createOriginHostGuard` onRequest hook
+  (`src/transport/middleware.ts`): `FORBIDDEN_HOST` (loopback-only Host kills DNS-rebind) +
+  `FORBIDDEN_ORIGIN` (cross-origin Origin/Referer on unsafe methods kills CSRF); 14u+6i tests;
+  api-reference + port/Referer rationale in comments. **Task 0 verified `/resume` same-origin** (pause
+  banner = CDP-polled DOM flag, no network) → R1; stale `http.ts` comment fixed. **Cadence locked:
+  plan-first PR → approve → code PR → CI-green → merge.** dev == origin/dev.
+- **Recommend next: A1 — the capability system** (tiers + session-hold primitive + capability-grant
+  registry + dangerous-mode policy + dual audit), **plan-first** like A0. Read ADR-0010 + the Gate A
+  design doc + `src/transport/middleware.ts` (the pattern A1 extends). (`/blog` v1 finale still owed —
+  4 lines in `blog/_pending.md` — fold when convenient.)
+- **HOUSEKEEPING (blocked):** merged remote branches NOT deleted — git proxy rejects ref deletion
+  (HTTP 403), no MCP delete-branch tool. `claude/{session-branch-work-leu1oj, a0-transport-hardening-
+  plan, a0-transport-hardening-code, last-15-commits-8aizhv}` linger on origin; delete via GitHub UI.
 - **Current phase:** Phase 4a — **Feather v1** ("It runs errands for me"). v1 proven, sighted,
   wrap-analyzed, gap-fixed. Remaining v1 leftovers are small (see tasks.md); v2 spine unchanged —
   nothing from the workflow jumps Gate A.

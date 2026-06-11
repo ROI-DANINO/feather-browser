@@ -45,8 +45,14 @@ Prior history → `journal/ops/archive/tasks-20260611-1430.md`.
 
 Security-first spine: `gate → Identity → MFA → warmed attach → Stealth last`. Do not start before Gate A.
 
-- [ ] **5.0.0 — Capability/safety gate** (implements ADR-0010) — Gate A — **THE NEXT MAJOR WORK**
-      after the blog. Phase boundary: planning/reconciliation pass first (fresh session), then build.
+- [ ] **5.0.0 — Capability/safety gate** (implements ADR-0010) — Gate A — **IN PROGRESS.**
+      Phase boundary done (planning-first). ADR-0010 **ACCEPTED** (#3) + Gate A design
+      (`docs/specs/2026-06-11-gate-a-capability-system-design.md`); split into A0 + A1.
+      - [x] **A0 — transport hardening** — global `Origin`/`Referer`/`Host` guard SHIPPED
+            (plan #4, code #5, CI green, merged to `dev`). `FORBIDDEN_HOST`/`FORBIDDEN_ORIGIN`;
+            `/resume` verified same-origin → R1. `src/transport/middleware.ts` `createOriginHostGuard`.
+      - [ ] **A1 — capability system** ← **NEXT MAJOR WORK.** Tiers + session-hold primitive +
+            capability-grant registry + dangerous-mode policy + dual audit. Plan-first, same as A0.
       Body: `docs/sessions/5.0.0-capability-gate.md`. NB: the deferred `/evaluate` endpoint and
       batch endpoint land behind/after this gate (META-ANALYSIS ◇ items).
 - [ ] **5.0.1 — MCP & tool-surface reconciliation** — owns the **Connector Registry** decision +
