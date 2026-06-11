@@ -54,6 +54,24 @@ If the header is absent or the token does not match, the server returns `401 UNA
 
 > The `GET /health` endpoint does **not** require authentication.
 
+### Transport hardening (Origin / Referer / Host)
+
+A global guard runs on **every** route (authenticated or not), before token auth, and rejects two
+classes of browser-driven request with `403`:
+
+- **`Host`** — every request must carry a loopback `Host` (`127.0.0.1`, `localhost`, or `[::1]`,
+  matching the bound port). A request with any other `Host` is rejected `FORBIDDEN_HOST`. This blocks
+  DNS-rebinding, where a hostile page resolves its own domain to `127.0.0.1`.
+- **`Origin` / `Referer`** — on **state-changing** methods (`POST`/`PUT`/`PATCH`/`DELETE`), a request
+  whose `Origin` (or, if absent, `Referer`) is **cross-origin** is rejected `FORBIDDEN_ORIGIN`. This
+  blocks the CSRF drive-by where the warmed browser, sitting on an untrusted page, is made to POST to
+  the local control plane. An **absent** `Origin`/`Referer` is allowed — non-browser callers (the
+  agent's HTTP client, `curl`) legitimately send none, and a genuine cross-origin browser POST always
+  carries an `Origin`. Safe methods (`GET`/`HEAD`/`OPTIONS`) are not Origin-checked, so a human can
+  open a link to the local control plane from any page.
+
+The server still binds to loopback only.
+
 ---
 
 ## Endpoints
@@ -1132,6 +1150,8 @@ curl -s -X POST http://localhost:4000/v1/sessions/ses_abc123/debug-bundle \
 
 | Code | HTTP Status | Description |
 |------|-------------|-------------|
+| `FORBIDDEN_HOST` | 403 | `Host` header is not a recognized loopback address (DNS-rebind defense); applies to all routes |
+| `FORBIDDEN_ORIGIN` | 403 | Cross-origin `Origin`/`Referer` on a state-changing request (CSRF defense); applies to `POST`/`PUT`/`PATCH`/`DELETE` |
 | `UNAUTHORIZED` | 401 | `X-Feather-Token` header is missing or does not match the server token |
 | `VALIDATION_ERROR` | 400 | Request body failed Zod schema validation; `error.details` contains the array of Zod issues |
 | `SESSION_NOT_FOUND` | 404 | No session exists with the requested `sessionId` |
