@@ -15,16 +15,27 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
   api-reference + port/Referer rationale in comments. **Task 0 verified `/resume` same-origin** (pause
   banner = CDP-polled DOM flag, no network) → R1; stale `http.ts` comment fixed. **Cadence locked:
   plan-first PR → approve → code PR → CI-green → merge.** dev == origin/dev.
+- **NOW (2026-06-11, local takeover): A1 SLICE 1 MERGED TO DEV — session-hold primitive in core.**
+  `src/capability/holds.ts` `SessionHoldRegistry`: refcounted holds w/ `reason`
+  (`mfa|human-approval|cdp-attach|shutdown`) + optional teardown-on-release (the revoke-teeth seam),
+  `observe`/`has`/`count` read surface for the future policy layer, `releaseAllForSession` revoke
+  hammer. Idempotent release; async teardown awaited; throwing teardown → `onTeardownError`. 11 unit
+  tests, tsc clean. **PURE INFRA — no live session paths wired (zero behavior change).** Built by the
+  remote session, **reviewed clean + merged to `dev` locally (Roi: drive A1 locally from here)**;
+  the remote A1 branch is deleted.
+- **Workflow SIMPLIFIED (Roi, 2026-06-11):** no PR-per-step unless asked — work directly on the active
+  branch; plan briefly → implement → test → summarize. Pause only for: real warmed profiles/personal
+  accounts; a *material change* to security architecture (vs. executing accepted ADR-0010); large
+  deletes/rewrites; non-obvious CI failure; an unclear architectural tradeoff.
 - **v1 finale BLOGGED + reconciled to dev (2026-06-11): v1 wrap fully closed.** `/blog` shipped
   `blog/0019-the-reviews-that-caught-me-lying.md` (06-10 testing-honesty trio) +
   `blog/0020-feather-on-trial.md` (the Fable-acquittal finale); all 4 owed `_pending.md` lines
   cleared. Blog branch merged to `dev` minus the temporary superpowers-vendor commit (dropped —
-  Roi's call, remote-working scaffolding only).
-- **Recommend next: A1 — the capability system** (tiers + capability-grant registry +
-  dangerous-mode policy + dual audit). **A1 slice 1 (session-hold primitive,
-  `src/capability/holds.ts`) is in flight on `claude/session-branch-work-leu1oj`** — review/merge
-  that branch before starting new A1 work. Read ADR-0010 + the Gate A design doc +
-  `src/transport/middleware.ts` (the pattern A1 extends).
+  Roi's call, remote-working scaffolding only). Remote-branch cleanup done (only `dev`/`master` remain).
+- **Recommend next: A1 slice 2 — capability-grant registry + state machine**
+  (`requested → granted → used → {expired|revoked}`; opaque single-use nonce → server-side record
+  `{sessionId, capability, ttl, status}`). Infra only; local approval page + Dangerous-tier wiring
+  follow. Read `src/capability/holds.ts` + Gate A design §3 + ADR-0010 §2.
 - **Current phase:** Phase 4a — **Feather v1** ("It runs errands for me"). v1 proven, sighted,
   wrap-analyzed, gap-fixed. Remaining v1 leftovers are small (see tasks.md); v2 spine unchanged —
   nothing from the workflow jumps Gate A.

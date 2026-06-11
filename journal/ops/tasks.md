@@ -54,8 +54,16 @@ Security-first spine: `gate → Identity → MFA → warmed attach → Stealth l
       - [x] **A0 — transport hardening** — global `Origin`/`Referer`/`Host` guard SHIPPED
             (plan #4, code #5, CI green, merged to `dev`). `FORBIDDEN_HOST`/`FORBIDDEN_ORIGIN`;
             `/resume` verified same-origin → R1. `src/transport/middleware.ts` `createOriginHostGuard`.
-      - [ ] **A1 — capability system** ← **NEXT MAJOR WORK.** Tiers + session-hold primitive +
-            capability-grant registry + dangerous-mode policy + dual audit. Plan-first, same as A0.
+      - [~] **A1 — capability system** ← **IN PROGRESS** (simplified workflow: no PR-per-slice).
+            Tiers + session-hold primitive + capability-grant registry + dangerous-mode policy + dual audit.
+            - [x] **Slice 1 — session-hold primitive** (`src/capability/holds.ts`): `SessionHoldRegistry`,
+                  refcounted holds w/ reason + teardown-on-release (revoke-teeth seam), observe/has/count,
+                  `releaseAllForSession` revoke hammer. 11u, tsc clean. PURE INFRA, no live paths wired.
+                  Reviewed clean + merged to dev 2026-06-11 (local takeover; remote branch deleted).
+            - [ ] **Slice 2 — capability-grant registry + state machine** (opaque single-use nonce →
+                  server-side record `{sessionId, capability, ttl, status}`). Next after review.
+            - [ ] Slice 3 — local approval page (MFA `humanToken`/CSRF/CSP stack) + dangerous-mode policy
+                  + dual audit, then wire CDP-attach / vault-unlock / cookie-export behind grants.
       Body: `docs/sessions/5.0.0-capability-gate.md`. NB: the deferred `/evaluate` endpoint and
       batch endpoint land behind/after this gate (META-ANALYSIS ◇ items).
 - [ ] **5.0.1 — MCP & tool-surface reconciliation** — owns the **Connector Registry** decision +
