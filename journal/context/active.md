@@ -19,9 +19,14 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
   `value` reads, teardown ENOTEMPTY retry, per-action `action.completed` log + `GET /health`,
   docs/skills truth pass. Code review caught + fixed a MAJOR unauth-log-write hole (regression-
   pinned). Gates: tsc clean, 301/301 unit, 79/79 integration. dev == origin/dev.
-- **Recommend next: `/blog` the v1 finale** — 4 owed lines in `blog/_pending.md` incl. this
-  session's acquittal arc — **then the v2 Gate A planning pass** (Session 5.0.0, ADR-0010, fresh
-  session, planning-first).
+- **UPDATE (2026-06-11, post-STOP `/next`): v1 finale BLOGGED — v1 wrap fully closed.** `/blog`
+  shipped 2 entries (`blog/0019-the-reviews-that-caught-me-lying.md` = 06-10 testing-honesty trio;
+  `blog/0020-feather-on-trial.md` = the Fable-acquittal finale); all 4 owed `_pending.md` lines
+  cleared. Committed `af83a65` on task branch `claude/last-15-commits-8aizhv` — **NOT `dev`;
+  reconcile/cherry-pick to `dev` later so the finale isn't stranded.**
+- **Recommend next: the v2 Gate A planning/brainstorm pass** (Session 5.0.0, ADR-0010, fresh
+  session, planning-first per the phase-boundary rule — no implementation yet). Roi's signal for the
+  next session: "session we'll brainstorm gate a." Bridge entry in `journal/context/next.md`.
 - **Current phase:** Phase 4a — **Feather v1** ("It runs errands for me"). v1 proven, sighted,
   wrap-analyzed, gap-fixed. Remaining v1 leftovers are small (see tasks.md); v2 spine unchanged —
   nothing from the workflow jumps Gate A.
