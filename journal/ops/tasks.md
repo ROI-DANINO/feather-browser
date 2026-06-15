@@ -26,6 +26,19 @@ repo + git history → top next task (see Security below).** Prior history →
       credential** (the IG password is already public → treat `roionly9` as compromised, change it
       regardless of the scrub). Decide with Roi: scrub usernames/email too, or only the password.
       Working-tree redaction alone is NOT remediation.
+      - [ ] **Rotate the IG password via the AGENT itself (planned test — Roi, 2026-06-15).** Use the
+            warmed `scratch` profile (its strongest stealth asset) to let Feather drive IG's
+            password-change flow autonomously — doubling as remediation AND a real bot-footprint probe.
+            Honest framing: Feather is NOT fully stealthy yet (Stealth Stack 5d + MFA Handler 5b
+            unbuilt; no human-like input timing); expect IG to **challenge** (re-auth / email-SMS code),
+            not necessarily block (detection ≠ blocking — cf. the Google security-alert-but-not-blocked
+            data point 2026-06-15). **Design so rotation succeeds even if the stealth test "fails":**
+            headed, Roi watching, agent drives observe→act → on any challenge it **hands off via
+            await-human** (the navigation-survivable banner + human-in-control guard shipped this
+            session are purpose-built for exactly this) → Roi clears it → agent continues. Record
+            honestly: did IG challenge? at which step? did the handoff work? A clean failure-with-
+            fallback = a passing test. NB: changing the password invalidates the mined cookies / logs
+            out other sessions (fine — rotation is the goal). Evidence feeds 5d (stealth) + 5b (MFA).
 
 ---
 
