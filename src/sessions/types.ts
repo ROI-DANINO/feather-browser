@@ -27,6 +27,7 @@ export interface PageInfo {
 export interface SessionRecord {
   sessionId: string;
   workspaceId: string;
+  identityId?: string;          // present when the session was launched via an identity (Phase 5a)
   profileKind: ProfileKind;
   browserMode: BrowserMode;
   state: SessionState;

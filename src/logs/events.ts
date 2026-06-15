@@ -31,6 +31,8 @@ export const EVENTS = {
   GRANT_USED: "grant.used",
   GRANT_EXPIRED: "grant.expired",
   GRANT_REVOKED: "grant.revoked",
+  IDENTITY_CREATED: "identity.created",
+  IDENTITY_WARMED: "identity.warmed",
 } as const;
 
 export type EventName = (typeof EVENTS)[keyof typeof EVENTS];

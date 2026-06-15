@@ -3,6 +3,8 @@ import { FeatherPaths, ensureDirs } from "./fs-layout";
 import { ProfileLock } from "./profiles/lock";
 import { WorkspaceMetadata } from "./profiles/workspace";
 import { SessionManager } from "./sessions/manager";
+import { IdentityStore } from "./identity/store";
+import { IdentityManager } from "./identity/manager";
 import { FeatherLogger } from "./logs/logger";
 import { EVENTS } from "./logs/events";
 import { startHttpServer } from "./transport/http";
@@ -17,7 +19,12 @@ async function main(): Promise<void> {
   const manager = new SessionManager(paths, lock, workspace);
   const logger = new FeatherLogger(paths);
 
-  const { port, token: _token } = await startHttpServer(config.host, config.port, manager, paths);
+  // Identity Model (Phase 5a): named handles over warmed profiles. Wired one-way — the session
+  // manager resolves an identityId → workspaceId via the resolver seam (no import cycle).
+  const identityManager = new IdentityManager(new IdentityStore(paths.identitiesDir()), paths, manager, logger);
+  manager.setIdentityResolver(identityManager);
+
+  const { port, token: _token } = await startHttpServer(config.host, config.port, manager, paths, identityManager);
 
   await logger.log({
     ts: new Date().toISOString(),

@@ -39,11 +39,20 @@ async function closeContextWithTimeout(context: BrowserContext, timeoutMs: numbe
 
 export interface LaunchSessionInput {
   workspaceId?: string;
+  identityId?: string;        // Phase 5a: resolves to a workspaceId via the IdentityResolver
   profile: { kind: ProfileKind };
   browserMode?: BrowserMode;
   viewport?: { width: number; height: number };
   proxy?: ProxyConfig | null;
   debug?: { trace?: boolean; screenshots?: boolean };
+}
+
+/**
+ * Minimal contract SessionManager needs to resolve an identity at launch. Injected via a setter
+ * (not the constructor) so the session ↔ identity wiring stays one-way and avoids an import cycle.
+ */
+export interface IdentityResolver {
+  get(id: string): Promise<{ defaultWorkspaceId: string }>;
 }
 
 export interface CloseTabResult {
@@ -65,6 +74,7 @@ export interface ISessionManager {
 export class SessionManager implements ISessionManager {
   private readonly registry: Map<string, FeatherSession> = new Map();
   private readonly logger: FeatherLogger;
+  private identityResolver?: IdentityResolver;
 
   constructor(
     private readonly paths: FeatherPaths,
@@ -74,8 +84,25 @@ export class SessionManager implements ISessionManager {
     this.logger = new FeatherLogger(paths);
   }
 
+  /** Wire the identity resolver after construction (breaks the session ↔ identity import cycle). */
+  setIdentityResolver(resolver: IdentityResolver): void {
+    this.identityResolver = resolver;
+  }
+
   async launch(input: LaunchSessionInput): Promise<FeatherSession> {
-    const workspaceId = input.workspaceId ?? "default";
+    // Phase 5a: an identityId resolves to its workspace before any FS/Chromium work. A missing
+    // identity throws IdentityNotFoundError here (→ 404) and nothing is spawned.
+    let resolvedWorkspaceId = input.workspaceId ?? "default";
+    let identityId: string | undefined;
+    if (input.identityId !== undefined) {
+      if (!this.identityResolver) {
+        throw new Error("identityId was provided but no IdentityResolver is configured.");
+      }
+      const identity = await this.identityResolver.get(input.identityId);
+      resolvedWorkspaceId = identity.defaultWorkspaceId;
+      identityId = input.identityId;
+    }
+    const workspaceId = resolvedWorkspaceId;
     const browserMode: BrowserMode = input.browserMode ?? "chromium-new-headless";
     const profileKind = input.profile.kind;
     const proxy = input.proxy ?? null;
@@ -83,6 +110,7 @@ export class SessionManager implements ISessionManager {
 
     const session = new FeatherSession({
       workspaceId,
+      identityId,
       profileKind,
       browserMode,
       profilePath: "",
@@ -113,7 +141,7 @@ export class SessionManager implements ISessionManager {
       level: "info",
       event: EVENTS.SESSION_LAUNCH_REQUESTED,
       sessionId: session.sessionId,
-      data: { workspaceId, profileKind, browserMode, proxy: proxySummary },
+      data: { workspaceId, ...(identityId ? { identityId } : {}), profileKind, browserMode, proxy: proxySummary },
     });
 
     let context: BrowserContext;

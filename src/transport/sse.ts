@@ -23,6 +23,8 @@ const LIFECYCLE_EVENTS = new Set<EventName>([
   "grant.used",
   "grant.expired",
   "grant.revoked",
+  "identity.created",
+  "identity.warmed",
 ]);
 
 async function* sseSource(

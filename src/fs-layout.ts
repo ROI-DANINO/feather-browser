@@ -21,6 +21,15 @@ export class FeatherPaths {
     return path.join(this.dirs.data, "profiles", workspaceId, "workspace.json");
   }
 
+  /** Directory holding per-identity JSON records (Identity Model / Phase 5a). */
+  identitiesDir(): string {
+    return path.join(this.dirs.data, "identities");
+  }
+
+  identityFile(id: string): string {
+    return path.join(this.identitiesDir(), `${id}.json`);
+  }
+
   lockFile(workspaceId: string): string {
     return path.join(this.dirs.data, "profiles", workspaceId, "lock");
   }
@@ -73,6 +82,7 @@ export async function ensureDirs(dirs: FeatherDirs | string): Promise<void> {
     path.join(d.state, "logs", "audit"),
     path.join(d.runtime, "run"),
     path.join(d.state, "measurements"),
+    path.join(d.data, "identities"),
   ];
   for (const dir of toCreate) {
     await fs.promises.mkdir(dir, { recursive: true });

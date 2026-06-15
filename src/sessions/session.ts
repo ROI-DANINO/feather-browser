@@ -57,6 +57,7 @@ export class CannotCloseLastTabError extends Error {
 export class FeatherSession implements ISession {
   readonly sessionId: string;
   readonly workspaceId: string;
+  readonly identityId?: string;
   readonly profileKind: ProfileKind;
   readonly browserMode: BrowserMode;
   readonly profilePath: string;
@@ -74,6 +75,7 @@ export class FeatherSession implements ISession {
 
   constructor(opts: {
     workspaceId: string;
+    identityId?: string;
     profileKind: ProfileKind;
     browserMode: BrowserMode;
     profilePath: string;
@@ -82,6 +84,7 @@ export class FeatherSession implements ISession {
   }) {
     this.sessionId = newId("ses");
     this.workspaceId = opts.workspaceId;
+    this.identityId = opts.identityId;
     this.profileKind = opts.profileKind;
     this.browserMode = opts.browserMode;
     this.profilePath = opts.profilePath;
@@ -244,6 +247,7 @@ export class FeatherSession implements ISession {
     return {
       sessionId: this.sessionId,
       workspaceId: this.workspaceId,
+      ...(this.identityId !== undefined ? { identityId: this.identityId } : {}),
       profileKind: this.profileKind,
       browserMode: this.browserMode,
       state: this._state,

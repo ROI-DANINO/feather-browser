@@ -43,6 +43,7 @@ import { FeatherPaths } from "../../../src/fs-layout";
 import { ProfileLock } from "../../../src/profiles/lock";
 import { WorkspaceMetadata } from "../../../src/profiles/workspace";
 import { spawnAndConnect } from "../../../src/browser/modes";
+import { IdentityNotFoundError } from "../../../src/identity/types";
 
 let tmpDir: string;
 let paths: FeatherPaths;
@@ -657,5 +658,39 @@ describe("SessionManager.close — disposable CDP race fix", () => {
     // rm should have been called despite child never exiting
     expect(rmSpy).toHaveBeenCalled();
     rmSpy.mockRestore();
+  });
+});
+
+describe("SessionManager.launch — identity resolution (Phase 5a, Task 8)", () => {
+  it("resolves workspaceId from the identity's defaultWorkspaceId and records identityId", async () => {
+    manager.setIdentityResolver({
+      get: async (id: string) => {
+        expect(id).toBe("alias");
+        return { defaultWorkspaceId: "real-ws" };
+      },
+    });
+    const session = await manager.launch({
+      identityId: "alias",
+      profile: { kind: "persistent" },
+    });
+    expect(session.workspaceId).toBe("real-ws");
+    expect(session.toRecord().identityId).toBe("alias");
+  });
+
+  it("propagates IdentityNotFoundError before any Chromium spawn", async () => {
+    manager.setIdentityResolver({
+      get: async (id: string) => {
+        throw new IdentityNotFoundError(id);
+      },
+    });
+    await expect(
+      manager.launch({ identityId: "ghost", profile: { kind: "persistent" } }),
+    ).rejects.toMatchObject({ code: "IDENTITY_NOT_FOUND" });
+    expect(manager.list()).toHaveLength(0);
+  });
+
+  it("leaves identityId undefined for a normal workspace launch", async () => {
+    const session = await manager.launch({ workspaceId: "plain-ws", profile: { kind: "persistent" } });
+    expect(session.toRecord().identityId).toBeUndefined();
   });
 });

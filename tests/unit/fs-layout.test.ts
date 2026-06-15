@@ -48,6 +48,11 @@ describe("FeatherPaths (single-root string — backward compat)", () => {
   it("builds quarantined profile dir", () => {
     expect(paths.quarantinedProfileDir("ses1")).toBe(".feather/debug/ses1/quarantined-profile");
   });
+
+  it("builds identities dir + per-identity file", () => {
+    expect(paths.identitiesDir()).toBe(".feather/identities");
+    expect(paths.identityFile("roi-linkedin")).toBe(".feather/identities/roi-linkedin.json");
+  });
 });
 
 describe("FeatherPaths (split roots)", () => {
@@ -80,6 +85,11 @@ describe("FeatherPaths (split roots)", () => {
     expect(paths.tokenFile()).toBe("/R/run/control-token");
     expect(paths.endpointFile()).toBe("/R/run/endpoint.json");
   });
+
+  it("routes identities to the data root", () => {
+    expect(paths.identitiesDir()).toBe("/D/identities");
+    expect(paths.identityFile("x")).toBe("/D/identities/x.json");
+  });
 });
 
 describe("ensureDirs", () => {
@@ -93,6 +103,7 @@ describe("ensureDirs", () => {
     expect(check("logs/sessions")).toBe(true);
     expect(check("run")).toBe(true);
     expect(check("measurements")).toBe(true);
+    expect(check("identities")).toBe(true);
     await fs.promises.rm(tmp, { recursive: true });
   });
 

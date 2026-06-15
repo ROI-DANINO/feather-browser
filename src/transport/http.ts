@@ -3,6 +3,7 @@ import type { FastifyInstance } from "fastify";
 import * as fs from "fs";
 import { randomBytes } from "crypto";
 import type { SessionManager } from "../sessions/manager";
+import type { IdentityManager } from "../identity/manager";
 import type { FeatherPaths } from "../fs-layout";
 import { injectRequestId, createOriginHostGuard } from "./middleware";
 import { registerRoutes } from "./routes";
@@ -19,7 +20,8 @@ export async function startHttpServer(
   host: string,
   port: number,
   manager: SessionManager,
-  paths: FeatherPaths
+  paths: FeatherPaths,
+  identityManager?: IdentityManager
 ): Promise<StartHttpServerResult> {
   const token = randomBytes(32).toString("hex");
   await fs.promises.writeFile(paths.tokenFile(), token, { encoding: "utf8", mode: 0o600 });
@@ -48,7 +50,7 @@ export async function startHttpServer(
 
   await registerSsePlugin(app);
 
-  registerRoutes(app, manager, paths, token);
+  registerRoutes(app, manager, paths, token, identityManager);
 
   await app.listen({ host, port });
 
