@@ -1,0 +1,4 @@
+# Raw, unredacted Claude-for-Chrome run transcripts contain personal data
+# (real email senders, LinkedIn profile content). Keep them local — never publish.
+# The README and any future redacted summaries stay tracked.
+*.txt

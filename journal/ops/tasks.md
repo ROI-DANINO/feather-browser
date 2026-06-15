@@ -42,6 +42,9 @@ Prior history → `journal/ops/archive/tasks-20260611-1430.md`.
       (agent-driven is the H3 benchmark now — Roi's call 2026-06-11).
 - [ ] **(kind,name) overlay-identity mutation watch-item** — code change only on real-world failure.
 - [ ] **Navigation-survivable resume banner** — re-inject on `framenavigated` (v2 MFA core, OPEN).
+      ← **NEXT SESSION (Roi, 2026-06-15):** "agent should *feel* the page switch and reshoot the banner
+      so the user can confirm." Motivated by the Hebrew-`resumeOn` miss this session. Plan-first →
+      approve → implement. Read `await-human.ts` / `pause-registry.ts` / `browser/pause-banner.ts`.
 - [~] **pi_agency ⇄ Feather thin integration — PARKED.** Resume only if Roi pulls it forward.
 
 ## Feather v2 — "It survives the scary sites, safely"  (`docs/roadmap/v2.md`)
@@ -73,8 +76,13 @@ Security-first spine: `gate → Identity → MFA → warmed attach → Stealth l
                   `GET/POST /v1/approvals/:humanToken`, `POST …/cookies/export` (the gated demo door),
                   session-close→revoke. TDD +21u + 7i. **Gate A live + proven end-to-end.** Remaining
                   dangerous doors (CDP attach, vault) gated when built in 5c / ADR-0008.
-            - [ ] **Live-test Gate A on `scratch`** — `FEATHER_DANGEROUS_CAPABILITIES=cookie-export`;
-                  request→approve→export, then deny / 60s-expire / revoke-by-close. ← NEXT (with Roi)
+            - [x] **Live-test Gate A — REAL use-case PROVEN (2026-06-15).** Re-warmed `scratch` Gmail via
+                  human-in-the-loop login, mined 77 cookies THROUGH the gate (refuse→approve→export→
+                  single-use; audit `requested→granted→used`), then a fresh empty browser opened
+                  roionly9's inbox using ONLY those cookies = **mined AND used**, on Google (hard target).
+                  Honest nuance: Google emailed a security alert but didn't invalidate the session
+                  (detection≠blocking → 5d stealth input). Detail: `journal/context/next.md` 2026-06-15
+                  03:30 entry. (Earlier disposable-github demo proved only the lock; this fills the box.)
       Body: `docs/sessions/5.0.0-capability-gate.md`. NB: the deferred `/evaluate` endpoint and
       batch endpoint land behind/after this gate (META-ANALYSIS ◇ items).
 - [ ] **5.0.1 — MCP & tool-surface reconciliation** — owns the **Connector Registry** decision +
