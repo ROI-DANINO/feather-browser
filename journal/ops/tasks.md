@@ -3,7 +3,8 @@
 Checklist only. Front door → `feather.md`; version roadmaps → `docs/roadmap/{v1,v2,v3}.md`;
 execution index → `ROADMAP.md`; live pointer → `journal/context/active.md`.
 
-**Next action = (1) SECURITY SCRUB [#1] then (2) v1 leftover cleanup**, then **5a — Identity Model**.
+**Next action = v1 leftover cleanup**, then **5a — Identity Model**. (Security leak triaged + accepted
+as low-risk — unique throwaway, no history rewrite, rotation deferred to 5d. See Security section.)
 Gate A is DONE end-to-end (A0 + A1 + proven mined-AND-used). The navigation-survivable banner AND a
 new human-in-control guard shipped 2026-06-15 (`2c7773a`).
 
@@ -14,19 +15,24 @@ tsc clean, 366u, await-human integration 9/9. **⚠️ Roi flagged real TEST cre
 repo + git history → top next task (see Security below).** Prior history →
 `journal/ops/archive/tasks-20260615-0446.md`.
 
-## 🔴 SECURITY — credentials in the remote repo (Roi, 2026-06-15) — DO FIRST
+## ✅ SECURITY — credentials in the remote repo — TRIAGED + ACCEPTED (Roi, 2026-06-15)
 
-- [ ] **Scrub leaked test credentials from the remote + git history.** Roi found the scratch IG
-      password + the `roionly9` Gmail address pushed to the open repo. Scope (tracked-file grep):
-      - **The scratch IG password** — was in 3 files; **redacted from the working tree 2026-06-15**
-        (`[REDACTED-PW]`) but **STILL in pushed git history.** (Find via history, not by re-typing it here.)
+**Roi's decision: NO git-history rewrite / force-push; NO urgent rotation.** The IG password is a
+**unique throwaway** (not reused on any real account), so the public leak can only ever burn one
+rebuildable sacrificial asset. Leak accepted as low-risk. Working-tree password already redacted
+(`[REDACTED-PW]`); usernames/email (`roionly9`, `feather_test_roi`) stay — just identifiers for a
+throwaway. The agent-driven IG password-change is **re-filed under 5d** below (it's a meaningful
+stealth probe only once Stealth 5d + MFA 5b exist; running it now would give muddy data).
+
+<details><summary>Original scope (for the record — no longer an action item)</summary>
+
+      - **The scratch IG password** — was in 3 files; redacted from the working tree 2026-06-15.
       - **`roionly9` / `roionly9@gmail.com`** — 47 hits across 24 files.
       - **`feather_test_roi`** (old IG) — 69 hits across 38 files.
-      Real fix = **(a) git history rewrite** (git-filter-repo / BFG) + force-push, **(b) ROTATE the
-      credential** (the IG password is already public → treat `roionly9` as compromised, change it
-      regardless of the scrub). Decide with Roi: scrub usernames/email too, or only the password.
-      Working-tree redaction alone is NOT remediation.
-      - [ ] **Rotate the IG password via the AGENT itself (planned test — Roi, 2026-06-15).** Use the
+
+</details>
+
+- [ ] **(deferred → 5d) Rotate the IG password via the AGENT itself as a stealth probe.** Use the
             warmed `scratch` profile (its strongest stealth asset) to let Feather drive IG's
             password-change flow autonomously — doubling as remediation AND a real bot-footprint probe.
             Honest framing: Feather is NOT fully stealthy yet (Stealth Stack 5d + MFA Handler 5b
@@ -60,11 +66,19 @@ repo + git history → top next task (see Security below).** Prior history →
 ### Open v1 leftovers (small / optional)
 
 - [ ] Prune duplicate "Rosh Hashana" Sep-12 events on scratch Google (Feather H1 + C4C H1).
-- [ ] H3 viewport acceptance check — does a 1280×800 headed window render IG-class desktop?
-      (The "fix would have saved H3" counterfactual was never tested.) Fold into the next
-      warmed-IG errand.
-- [ ] Remove the retired scripted `run_h3` from `examples/showcase.sh` next time the suite is touched
-      (agent-driven is the H3 benchmark now — Roi's call 2026-06-11).
+- [x] **H3 viewport acceptance check — RUN 2026-06-15; counterfactual FALSE on niri.** Drove IG
+      logged-out in a headed `chromium-headed-cdp` session and measured the CSS layout width from
+      observe box coords. Requesting `1280×800` → max content right-edge **604 CSS px** (IG mobile
+      layout); requesting `2560×1600` → **identical 604 px**. Since doubling the requested size
+      changed nothing, `--window-size` is being **ignored** — Roi's **niri** (scrolling tiling
+      Wayland WM) tiles the Chromium window to its column width, so the effective viewport is ~700px
+      regardless of request → sites serve mobile. **Not HiDPI, not a Feather bug — a tiling-WM
+      constraint.** So the earlier "viewport silently ignored" fix (`--window-size`) only helps on a
+      floating/stacking WM; it cannot force a desktop viewport under niri. → see the 5d note below
+      for the durable fix.
+- [x] **Remove the retired scripted `run_h3` from `examples/showcase.sh` — DONE 2026-06-15.** Deleted
+      the function + `HARD` array entry + stale `H1-H4` header comment; `bash -n` clean. Agent-driven
+      is the H3 benchmark now (Roi 2026-06-11).
 - [ ] **(kind,name) overlay-identity mutation watch-item** — code change only on real-world failure.
 - [x] **Navigation-survivable resume banner — SHIPPED (2026-06-15, `2c7773a`).** Re-injects on
       `domcontentloaded` (not raw `framenavigated` — needs `document.body` present) so the banner
@@ -120,11 +134,31 @@ Security-first spine: `gate → Identity → MFA → warmed attach → Stealth l
       the batch-endpoint call (input `research/2026-06-10-native-capabilities-router.md`)
 - [ ] **5.0.2 — First-agent safety gate** — Gate B (input: C4C's per-origin allowlist + hard
       credential line, recorded in META-ANALYSIS §4.11)
-- [ ] **5a — Identity Model** (plan: `docs/specs/2026-06-07-identity-model-plan.md`)
+- [x] **5a — Identity Model — SHIPPED 2026-06-15 (TDD).** Named, agent-attachable handle over a
+      warmed profile + opaque stealth/MFA policy slots + dormant `vaultRef`. New `src/identity/`
+      (types/store/manager) + `src/transport/identity-routes.ts` + `http-helpers.ts` (extracted to
+      break a route import cycle). Six routes: `POST/GET/GET:id/DELETE:id /v1/identities`,
+      `POST :id/warm`, `POST :id/mark-warm`. `LaunchSessionInput.identityId` resolves via an injected
+      resolver seam (no import cycle); `SessionRecord.identityId` flows through. **Council S1–S5 baked
+      in:** separable `defaultWorkspaceId`/`defaultProfileId` (S1); explicit `markWarm()` — NO
+      close-bus inference (S2); opaque `stealthPolicy`/`mfaPolicy` versioned blobs, no cross-module
+      imports (S3); per-identity write mutex + `version` field (S4); `disablePasswordManager` at
+      create, 0600/0700 store perms, `vaultRef` redacted from all API responses + dormant (S5).
+      Gates: tsc clean, **399 unit** (+33), identity integration 4/4, full integration 96/96 (the lone
+      red is the pre-existing niri `attach-cdp` viewport test — env-specific, untouched by 5a), manual
+      curl CRUD round-trip green. Plan: `docs/specs/2026-06-07-identity-model-plan.md`.
 - [ ] **5b — MFA Handler** (plan: `docs/specs/2026-06-07-mfa-handler-plan.md`)
 - [ ] **5d — Stealth Stack** (verify-not-spoof; plan: `docs/specs/2026-06-07-stealth-stack-plan.md`)
       NB: M2 is NOT usable as 5d evidence or regression test (cause undetermined — META-ANALYSIS §1);
       M1 cold-profile search walls remain the evidence.
+      - [ ] **Headed-CDP viewport pinning (durable fix for the niri finding, 2026-06-15).** On a tiling
+            WM (niri), `--window-size` is ignored → the render viewport is the tile width (~700px) →
+            sites serve MOBILE layout. Durable fix = pin the render viewport via CDP
+            `Emulation.setDeviceMetricsOverride` (e.g. 1280×800) in the `chromium-headed-cdp` launch
+            path, **decoupled from the OS window geometry**. CAVEAT (why it lands in 5d): a
+            window-vs-viewport mismatch is a mild fingerprint signal → gate behind a flag, default to
+            the honest "match the window" behavior. Cheap user-side workaround meanwhile: a niri
+            window rule to **float** the Feather Chromium window (size requests honored when floating).
 - [ ] **Learn-your-behavior** + **active anti-bot self-detection**
 - [ ] **Teach-a-workflow / action cache** (Anchor-inspired determinism layer)
 - [ ] **Perception-output efficiency** (idea logged 2026-06-15 — NOT felt yet, do not build) —

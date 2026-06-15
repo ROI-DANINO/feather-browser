@@ -17,17 +17,33 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
   **366 unit**, await-human **integration 9/9**. `pause-registry` now tracks `pageId` +
   `isPagePaused`/`assertPageNotPaused`. Full handoff:
   `journal/ops/sessions/banner-and-pause-guard-20260615-0446.md`.
-- **⚠️ SECURITY FLAG (Roi, top next priority): real TEST CREDS are in the remote repo + git history.**
-  Roi found the scratch IG password + the `roionly9` Gmail address pushed to the open repo. Scoped:
-  password (3 files) **redacted from the working tree this STOP** (`[REDACTED-PW]`) but **still in
-  pushed history**; `roionly9`/email across **24 files**; `feather_test_roi` (old IG) across **38
-  files**. **Working-tree redaction ≠ fix** — next session needs **git history rewrite + force-push**
-  AND **credential rotation** (the IG password is already public → treat `roionly9` as compromised,
-  change it regardless). Decide with Roi: scrub usernames/email too, or just the password.
-- **Recommend next (Roi's pick): (1) the SECURITY SCRUB above [#1], then (2) v1 leftover cleanup**
-  (prune duplicate "Rosh Hashana" events on scratch Google; H3 viewport acceptance check; remove dead
-  `run_h3` from `examples/showcase.sh`). After that → **5a Identity Model** (first real consumer of
-  Gate A; plan `docs/specs/2026-06-07-identity-model-plan.md`).
+- **✅ SECURITY LEAK — TRIAGED + ACCEPTED, NO ACTION NEEDED NOW (Roi decision 2026-06-15).** Real TEST
+  creds (scratch IG password + `roionly9` Gmail address + `feather_test_roi` handle) are in the pushed
+  remote repo + git history. **Roi's calls:** (a) **NO git-history rewrite / force-push** — leave
+  history as-is; (b) the IG password is a **unique throwaway** (NOT reused on any real account), so
+  blast radius = a single rebuildable sacrificial asset → **defer rotation to Phase 5d as a stealth
+  probe**, not a security must-do. The password is already redacted from the working tree
+  (`[REDACTED-PW]`); usernames/email stay (just identifiers for a throwaway). The agent-driven IG
+  password-change is re-filed under 5d (meaningful probe only once Stealth 5d + MFA 5b exist).
+- **v1 leftovers CLEARED 2026-06-15:** (1) `run_h3` removed from `examples/showcase.sh` (function +
+  HARD array + header comment; `bash -n` clean); (2) all 4 agent-created duplicate "Rosh Hashana"
+  Sep-12 events deleted from scratch Google (only the official `חגים בישראל` subscribed entry
+  remains); (3) H3 viewport check RUN — counterfactual **FALSE on niri**: `--window-size` is ignored
+  under the tiling WM (1280 and 2560 requests both → 604px content / IG mobile), so a headed window
+  can't force a desktop viewport without CDP `setDeviceMetricsOverride` (durable fix filed under 5d,
+  with stealth-flag caveat; niri float-rule is the user-side workaround). None of this needs a repo
+  commit except the `showcase.sh` edit (uncommitted, for `/next`/`/stop`).
+- **5a IDENTITY MODEL — SHIPPED 2026-06-15 (TDD, UNCOMMITTED).** Named handle over a warmed profile:
+  new `src/identity/` (types/store/manager) + `src/transport/identity-routes.ts` + extracted
+  `http-helpers.ts`; six `/v1/identities` routes; `LaunchSessionInput.identityId` resolves via an
+  injected resolver seam. Council S1–S5 baked in (separable ids / explicit markWarm / opaque policy /
+  write-mutex+version / vaultRef redacted+dormant + 0600 store + disablePasswordManager). Gates: tsc
+  clean, 399 unit, identity integration 4/4, full integration 96/96 (lone red = pre-existing niri
+  attach-cdp viewport, unrelated). Manual curl CRUD round-trip green on real `npm run dev`. Detail →
+  tasks.md 5a entry. **Next: 5b MFA Handler** (now that Identity carries the `mfaPolicy` slot) — or
+  Roi's pick.
+- **NOTE:** a fresh `npm run dev` server is running (started this session for the curl test); stop by
+  pid in `endpoint.json` when done.
 - **Gate A is DONE end-to-end** (A0 transport hardening + A1 holds/grants/policy/audit/approval-page +
   cookie-export demo door; proven "mined AND used" on warmed Gmail 2026-06-15). v2 spine unchanged.
 - **Workflow SIMPLIFIED (Roi, 2026-06-11):** no PR-per-step unless asked — work directly on the active

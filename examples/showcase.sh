@@ -7,7 +7,7 @@
 # Prereqs:
 #   - Feather running: `npm run dev` in another terminal.
 #   - node + curl. (No jq required.)
-#   - For the HARD tier (H1-H4): the server must be started from a shell with
+#   - For the HARD tier (H1, H2, H4): the server must be started from a shell with
 #     WAYLAND_DISPLAY/DISPLAY (headed windows), and the `scratch` workspace must
 #     hold warmed Google + feather_test_roi Instagram sessions.
 #
@@ -358,133 +358,6 @@ run_h2() { # Google search → article → extract content (warmed Google)
   close_session "$sid"
 }
 
-run_h3() { # IG: pick a REAL post (non-sponsored permalink) → comment from image+caption+top-comments + verified like
-  # Semantic bar v3 (Roi 2026-06-10): don't act on whatever tops the feed. Collect /p/ permalinks
-  # from the feed, open the first NON-SPONSORED one, and build the comment from the post's own
-  # context: the image (via IG's auto-alt — the script's "eyes"; photo posts only), the caption,
-  # and the top comments. PASS = post-level like VERIFIED (24px Unlike flip — comment likes are
-  # 16px, plain first-match would hit those) + a comment woven from >=2 context sources, verified
-  # visible. One-source comment or any unverified leg -> PARTIAL with the reason.
-  local sid pid t0; read -r sid pid < <(open_warmed_scratch); t0="$(now_ms)"
-  api POST "/v1/sessions/$sid/navigate" \
-    '{"url":"https://www.instagram.com/","waitUntil":"domcontentloaded","timeoutMs":25000}' >/dev/null
-  sleep 2
-  api POST "/v1/sessions/$sid/click" '{"target":{"by":"text","text":"Not Now"}}' >/dev/null 2>&1 || true
-  sleep 0.5
-  # Step 1: collect post permalinks (/p/...) from the feed — these are real posts, chosen, not "whatever is first"
-  local links; links="$(api POST "/v1/sessions/$sid/snapshot" '{}' | node -e '
-    let s=""; process.stdin.on("data",d=>s+=d).on("end",()=>{
-      const o=JSON.parse(s); const L=(o.data&&o.data.links)||[];
-      const seen=new Set(); const out=[];
-      for(const l of L){ const m=(l.href||"").match(/^https:\/\/www\.instagram\.com\/p\/[A-Za-z0-9_-]+\/?$/);
-        if(m && !seen.has(l.href)){ seen.add(l.href); out.push(l.href); } }
-      process.stdout.write(out.slice(0,4).join(" "));
-    });' || true)"
-  if [ -z "$links" ]; then
-    local shot0; shot0="$(save_shot "$sid" H3)"
-    record H3 PARTIAL "$(fmt_elapsed "$t0")" "no /p/ permalinks in feed (reels-only feed?) — nothing deliberate to pick → $shot0"
-    close_session "$sid"; return
-  fi
-  # Step 2: open the first NON-SPONSORED permalink and read its context from the snapshot text
-  # (permalink text shape, probed live: author / [audio] / Follow / author / age / CAPTION... /
-  #  then comment blocks of "author / age / text / N likes / Reply")
-  local post_url="" ctx=""
-  local u; for u in $links; do
-    api POST "/v1/sessions/$sid/navigate" "$(node -e 'process.stdout.write(JSON.stringify({url:process.argv[1],waitUntil:"domcontentloaded",timeoutMs:25000}))' "$u")" >/dev/null
-    sleep 2
-    ctx="$(api POST "/v1/sessions/$sid/snapshot" '{}' | field text 2>/dev/null || true)"
-    if printf '%s' "$ctx" | head -40 | grep -qx "Sponsored"; then ctx=""; continue; fi
-    post_url="$u"; break
-  done
-  if [ -z "$post_url" ]; then
-    local shot1; shot1="$(save_shot "$sid" H3)"
-    record H3 PARTIAL "$(fmt_elapsed "$t0")" "all candidate permalinks sponsored — no organic post found → $shot1"
-    close_session "$sid"; return
-  fi
-  # Step 3: parse caption + top-3 comments from the permalink text
-  local parsed; parsed="$(printf '%s\n' "$ctx" | node -e '
-    let s=""; process.stdin.on("data",d=>s+=d).on("end",()=>{
-      const clean=(t)=>t.replace(/[^\p{L}\p{N} ,.!?-]/gu," ").replace(/\s+/g," ").trim();
-      const AGE=/^\d+\s?[smhdwy]$/;
-      const NOISE=/^(\d[\d,.]*\s?(likes?|like))$|^Reply$|^View all\b|^more$|^See translation$|^Edited$|^Follow$|^Verified$/i;
-      const lines=s.split("\n").map(l=>l.trim()).filter(Boolean);
-      const author=lines[0]||"";
-      let i=1; while(i<lines.length && lines[i]!==author) i++;     // 2nd author occurrence
-      i++; if(AGE.test(lines[i]||"")) i++;                          // skip the post age
-      const capLines=[];
-      while(i<lines.length){
-        if(AGE.test(lines[i+1]||"") && !NOISE.test(lines[i])) break;  // next block = first comment (author then age)
-        if(!NOISE.test(lines[i])) capLines.push(lines[i]);
-        i++;
-      }
-      const comments=[];
-      while(i<lines.length && comments.length<3){
-        if(AGE.test(lines[i+1]||"")){                                // comment block: author / age / text
-          const text=lines[i+2]||"";
-          if(text && !NOISE.test(text) && !AGE.test(text)) comments.push(clean(text));
-          i+=3;
-        } else i++;
-      }
-      const capSnip=clean(capLines.join(" ")).split(" ").slice(0,5).join(" ");
-      const echo=(comments[0]||"").split(" ").slice(0,4).join(" ");
-      process.stdout.write([capSnip, echo, String(comments.length)].join("|"));
-    });' || true)"
-  local cap_snip echo_snip n_comments
-  IFS='|' read -r cap_snip echo_snip n_comments <<< "$parsed"
-  # Step 4: the image signal — IG auto-alt of the content image (videos have none; that is honest)
-  local alt subject; alt="$(api POST "/v1/sessions/$sid/extract" \
-    '{"recipe":{"fields":{"x":{"selector":"article img[alt]:not([alt*=\"profile picture\"])","type":"attribute","attribute":"alt"}}}}' \
-    | field x 2>/dev/null || true)"
-  subject="$(node -e '
-    const t=(process.argv[1]||"");
-    const m=t.match(/May be (?:an image|a graphic|art|a cartoon|a meme) of ([^.]+)/i);
-    let out=m?m[1]:"";
-    out=out.replace(/[^\p{L}\p{N} ,-]/gu," ").replace(/\s+/g," ").trim();
-    process.stdout.write(out.split(" ").slice(0,6).join(" "));' "$alt")"
-  # Step 5: weave the comment from the available sources; count them
-  local sources=0 comment=""
-  [ -n "$cap_snip" ] && sources=$((sources+1))
-  [ -n "$subject" ] && sources=$((sources+1))
-  [ -n "$echo_snip" ] && sources=$((sources+1))
-  comment="$(node -e '
-    const [cap,subj,echo]=process.argv.slice(1);
-    const parts=[];
-    if(cap) parts.push("Love this — \u201C"+cap+"\u201D");
-    if(subj) parts.push("beautiful "+subj);
-    if(echo) parts.push("and the comments are right about \u201C"+echo+"\u2026\u201D");
-    process.stdout.write((parts.length?parts.join(", "):"Great post")+" \uD83D\uDE4C");' \
-    "$cap_snip" "$subject" "$echo_snip")"
-  # Step 6: like the POST (24px action-bar icon; not a 16px comment like), then VERIFY the flip
-  api POST "/v1/sessions/$sid/click" \
-    '{"target":{"by":"css","selector":"svg[aria-label=\"Like\"][height=\"24\"]"}}' >/dev/null 2>&1 || true
-  sleep 1
-  local like_state; like_state="$(api POST "/v1/sessions/$sid/extract" \
-    '{"recipe":{"fields":{"u":{"selector":"svg[aria-label=\"Unlike\"][height=\"24\"]","type":"attribute","attribute":"aria-label"}}}}' \
-    | field u 2>/dev/null || true)"
-  # Step 7: post the comment, then VERIFY it is visible (probe = the distinctive leading segment)
-  api POST "/v1/sessions/$sid/type" \
-    "$(node -e 'process.stdout.write(JSON.stringify({target:{by:"css",selector:"[placeholder=\"Add a comment…\"]"},text:process.argv[1],mode:"sequential"}))' "$comment")" \
-    >/dev/null 2>&1 || true
-  sleep 0.5
-  api POST "/v1/sessions/$sid/press" '{"key":"Enter"}' >/dev/null 2>&1 || true
-  sleep 2
-  local page_text probe comment_visible=0
-  page_text="$(api POST "/v1/sessions/$sid/snapshot" '{}' | field text 2>/dev/null || true)"
-  probe="$(node -e 'process.stdout.write((process.argv[1]||"").split(",")[0])' "$comment")"
-  if [ -n "$probe" ] && printf '%s' "$page_text" | grep -qF "$probe"; then comment_visible=1; fi
-  local shot; shot="$(save_shot "$sid" H3)"
-  if [ "$like_state" = "Unlike" ] && [ "$comment_visible" = "1" ] && [ "$sources" -ge 2 ]; then
-    record H3 PASS "$(fmt_elapsed "$t0")" "picked $post_url; like verified (24px Unlike); comment from $sources/3 sources (cap+img+comments) visible: '${comment:0:60}' → $shot"
-  else
-    local why=""
-    [ "$like_state" != "Unlike" ] && why="post-like not verified; "
-    [ "$comment_visible" != "1" ] && why="${why}comment not seen on page; "
-    [ "$sources" -lt 2 ] && why="${why}only $sources/3 context sources available (video post has no alt; $n_comments comments parsed); "
-    record H3 PARTIAL "$(fmt_elapsed "$t0")" "${why}post=$post_url comment='${comment:0:40}' → $shot"
-  fi
-  close_session "$sid"
-}
-
 run_h4() { # multi-tab research: 3 tabs, 3 facts (warmed headed)
   local sid pid t0; read -r sid pid < <(open_warmed_scratch); t0="$(now_ms)"
   # Reuse initial page for tab 1 (HN), create 2 new tabs
@@ -535,7 +408,7 @@ fi
 
 EASY=(run_e1 run_e2 run_e3)
 MEDIUM=(run_m1 run_m2 run_m3)
-HARD=(run_h1 run_h2 run_h3 run_h4)
+HARD=(run_h1 run_h2 run_h4)  # run_h3 retired 2026-06-11 — agent-driven is the H3 benchmark now
 
 run_group() {
   local -n g="$1"
