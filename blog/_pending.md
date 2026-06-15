@@ -14,3 +14,4 @@ If this list is empty, nothing is owed.
 -->
 <!-- Cleared 2026-06-09: the owed E1–E3 fork→fresh beat was folded into blog/0016-ten-errands.md. Nothing owed. -->
 <!-- Cleared 2026-06-11 via /blog: native-capabilities + observe-bug-fixes + skills-asserts-iframe-dismiss (all 2026-06-10) folded into blog/0019-the-reviews-that-caught-me-lying.md; fable-workflow-v1-acquittal (2026-06-11) written as blog/0020-feather-on-trial.md. Nothing owed. -->
+- `journal/ops/sessions/banner-and-pause-guard-20260615-0446.md` — the agent yanked the human out mid-login while testing the banner; the bug became a feature (human-in-control guard: a pause now blocks the agent, not just the page) — 2026-06-15

@@ -4,6 +4,21 @@ Use this desk for browser engine research, shell architecture, extension compati
 
 ## Current Focus
 
+**Human-handoff hardened: navigation-survivable banner + human-in-control guard (2026-06-15, `dev`
+`2c7773a`).** Two durable `await-human` behaviors. (1) **The Resume banner now survives navigation** —
+re-injected on each new main-frame document via a `domcontentloaded` listener (detached on resolve;
+`showBanner` is idempotent; the DOM-flag poll reads the live page). Chose `domcontentloaded` over raw
+`framenavigated` because it guarantees `document.body` is present for injection. (2) **A pause now
+blocks the *agent*, not just shapes the page** — while a pause is active, agent page-mutating commands
+(navigate/click/type/press/select-option; dismiss via its internal click) are refused with
+`HUMAN_IN_CONTROL` (409); read-only commands (observe/snapshot/screenshot/wait/tabs/health) stay
+allowed; **page-scoped** (a pause on one tab doesn't freeze another). `pause-registry` records each
+pause's `pageId` and exposes `isPagePaused`/`assertPageNotPaused` (`HumanInControlError`). Proven live
+on scratch (Hebrew Google login): banner followed the human across the login; an agent navigate during
+the pause was refused and the page didn't move. **Design note:** this reuses the pause-registry (the
+already-live "human in control" signal) rather than the not-yet-wired `SessionHoldRegistry`; the hold
+primitive remains the heavier general mechanism for MFA/CDP-attach when those land.
+
 **Observe-loop bug fixes — perception hardened by field evidence (2026-06-10, `dev` `09a6b6c`..`579b445`).**
 The three pass-2 showcase bugs are fixed. **`/dismiss` is now verify-by-re-observe**: click the best
 in-popup button, observe again, report from reality — response is `{dismissed (verified-gone only),
@@ -88,9 +103,10 @@ double-launch guard) so it frees the terminal; closing the Chromium window saves
 child-exit hook. `npm run daily:stop` is the force-stop escape hatch (SIGTERM → clean save, `/proc/<pid>/cmdline`
 guard against PID reuse). Scripts: `scripts/start-daily-driver.sh`, `scripts/stop-daily-driver.sh` (commit `61fe677`).
 **Important profile-history fact:** the warmed `primary` was deliberately deleted 2026-06-08 ("at Roi's request"
-before a demo re-record; no backup) — that emptied it. **Re-warmed 2026-06-10 with Roi's REAL personal Google
-account** (438MB, 306 cookies, full auth set across google.com/.co.il/youtube). Roi now uses `primary` as his real
-daily-driver browser to cookie-mine his own identity. `scratch` remains the TEST identity (`roionly9` / `feather_test_roi`).
+before a demo re-record; no backup), re-warmed 2026-06-10 with Roi's real Google, then **deleted again — as of
+2026-06-15 `primary` NO LONGER EXISTS on disk** (the old "438MB, 306 cookies" line is stale). `scratch` remains the
+TEST identity (a sacrificial IG + warmed Gmail; handles intentionally not recorded here — see the security-scrub
+task, real creds were found leaked to the remote repo + git history 2026-06-15).
 
 **Phase 4 Step 0 DONE (2026-06-04)** — answered by spikes, not specs. Cookie Mine proven
 end-to-end on a real site (agent acted in Roi's live ChatGPT).
