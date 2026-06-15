@@ -142,13 +142,72 @@ describe("await-human (real Chromium)", () => {
     });
     expect(appeared.status).toBe(200);
 
-    const click = await api("POST", `/v1/sessions/${sessionId}/click`, {
-      target: { by: "css", selector: "#__feather_pause_banner__ button" },
-    });
-    expect(click.status).toBe(200);
+    // The HUMAN clicks the banner in the real window — drive the raw page, not the agent /click API
+    // (the agent is blocked from acting on a paused page by the human-in-control guard).
+    await manager.get(sessionId).getPage().page.click("#__feather_pause_banner__ button");
 
     const { body } = await pausePromise;
     expect(body.data.resumedBy).toBe("human");
+  });
+
+  it("re-injects the banner after a real navigation destroys it", async () => {
+    await api("POST", `/v1/sessions/${sessionId}/navigate`, {
+      url: dataUrl(`<body><h1>page A</h1></body>`),
+    });
+    const { resumePath, pausePromise } = await captureResumePath("survive the nav", 15000);
+
+    // banner appears on page A
+    const onA = await api("POST", `/v1/sessions/${sessionId}/wait`, {
+      target: { by: "css", selector: "#__feather_pause_banner__" }, until: "visible", timeoutMs: 3000,
+    });
+    expect(onA.status).toBe(200);
+
+    // a real navigation replaces the document and destroys the banner. Drive the raw Playwright
+    // page (not the agent navigate API): during a pause the human/site navigates, not the agent —
+    // the agent API is blocked by the human-in-control guard (covered by its own test below).
+    await manager.get(sessionId).getPage().page.goto(dataUrl(`<body><h1>page B</h1></body>`), { waitUntil: "domcontentloaded" });
+
+    // the banner is re-injected on the new document so the human keeps the Resume affordance
+    const onB = await api("POST", `/v1/sessions/${sessionId}/wait`, {
+      target: { by: "css", selector: "#__feather_pause_banner__" }, until: "visible", timeoutMs: 3000,
+    });
+    expect(onB.status).toBe(200);
+
+    // and the re-injected banner still resolves the pause
+    const r = await fetch(`${baseUrl}${resumePath}`, { method: "POST" });
+    expect(r.status).toBe(200);
+    const { body } = await pausePromise;
+    expect(body.data.resumedBy).toBe("human");
+  });
+
+  it("blocks agent page-mutating actions while a human pause is active, allows them after resume", async () => {
+    await api("POST", `/v1/sessions/${sessionId}/navigate`, {
+      url: dataUrl(`<body><h1>before pause</h1></body>`),
+    });
+    const { resumePath, pausePromise } = await captureResumePath("human in control", 15000);
+
+    // agent navigation is refused while the human holds the page
+    const blocked = await api("POST", `/v1/sessions/${sessionId}/navigate`, {
+      url: dataUrl(`<body><h1>agent tried to move</h1></body>`),
+    });
+    expect(blocked.status).toBe(409);
+    expect(blocked.body.ok).toBe(false);
+    expect(blocked.body.error.code).toBe("HUMAN_IN_CONTROL");
+
+    // read-only commands stay allowed (the agent can still watch)
+    const observed = await api("POST", `/v1/sessions/${sessionId}/observe`, {});
+    expect(observed.status).toBe(200);
+
+    // resume hands control back
+    const r = await fetch(`${baseUrl}${resumePath}`, { method: "POST" });
+    expect(r.status).toBe(200);
+    await pausePromise;
+
+    // now the agent can navigate again
+    const allowed = await api("POST", `/v1/sessions/${sessionId}/navigate`, {
+      url: dataUrl(`<body><h1>agent free again</h1></body>`),
+    });
+    expect(allowed.status).toBe(200);
   });
 
   it("banner:false leaves the working page untouched", async () => {

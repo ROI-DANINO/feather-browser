@@ -2,6 +2,7 @@ import type { CommandHandler, CommandContext } from "./handler";
 import type { TypeInput, TypeOutput } from "../sessions/types";
 import { resolveLocator, resolveActionable } from "../browser/locators";
 import { withActionErrors } from "./input-errors";
+import { assertPageNotPaused } from "./pause-registry";
 
 interface IManager {
   get(sessionId: string): {
@@ -17,6 +18,7 @@ export class TypeHandler implements CommandHandler<TypeInput, TypeOutput> {
     const { sessionId, pageId, target, text, mode, delayMs, timeoutMs } = input;
     const session = this.manager.get(sessionId);
     const { pageId: resolvedPageId, page } = session.getPage(pageId);
+    assertPageNotPaused(sessionId, resolvedPageId); // a human in control of this page blocks agent typing
     const timeout = timeoutMs ?? 15000;
 
     if (mode === "sequential" && target.by !== "ref") {

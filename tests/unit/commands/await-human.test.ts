@@ -15,6 +15,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   _resetForTests();
   mockPage.evaluate = vi.fn().mockResolvedValue(undefined); // banner show/remove run through here
+  mockPage.on = vi.fn();   // domcontentloaded re-inject listener (navigation-survivable banner)
+  mockPage.off = vi.fn();
   mockSession.getPage.mockReturnValue({ pageId: "page_001", page: mockPage });
   mockManager.get.mockReturnValue(mockSession);
   (resolveLocator as any).mockReturnValue({ waitFor: vi.fn(() => new Promise(() => {})) }); // never resolves by default
@@ -65,6 +67,22 @@ describe("AwaitHumanHandler", () => {
       { sessionId: "ses_1", reason: "x", timeoutMs: 20 }, ctx);
     // showBanner and removeBanner each fire at least one page.evaluate; CDP polls may add more
     expect(mockPage.evaluate.mock.calls.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("registers a domcontentloaded re-inject listener and removes it on resolve", async () => {
+    await new AwaitHumanHandler(mockManager as any).execute(
+      { sessionId: "ses_1", reason: "x", timeoutMs: 20 }, ctx);
+    expect(mockPage.on).toHaveBeenCalledWith("domcontentloaded", expect.any(Function));
+    expect(mockPage.off).toHaveBeenCalledWith("domcontentloaded", expect.any(Function));
+    // same handler reference attached and detached — no leak
+    expect(mockPage.off.mock.calls[0][1]).toBe(mockPage.on.mock.calls[0][1]);
+  });
+
+  it("registers no re-inject listener when banner:false", async () => {
+    await new AwaitHumanHandler(mockManager as any).execute(
+      { sessionId: "ses_1", reason: "x", timeoutMs: 20, banner: false }, ctx);
+    expect(mockPage.on).not.toHaveBeenCalled();
+    expect(mockPage.off).not.toHaveBeenCalled();
   });
 
   it("skips banner injection when banner:false", async () => {

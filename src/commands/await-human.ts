@@ -20,7 +20,7 @@ export class AwaitHumanHandler implements CommandHandler<AwaitHumanInput, AwaitH
     const timeoutMs = input.timeoutMs ?? 300000;
     const startedAt = Date.now();
 
-    const pause = createPause(input.sessionId, input.reason);
+    const pause = createPause(input.sessionId, input.reason, pageId);
     emitBusEvent({
       event: EVENTS.HUMAN_PAUSE_REQUESTED,
       sessionId: input.sessionId,
@@ -31,8 +31,17 @@ export class AwaitHumanHandler implements CommandHandler<AwaitHumanInput, AwaitH
     // On-page banner (default on). Injection failures (page navigating/closed) must not break the
     // pause — the SSE event + off-page resume URL remain as the fallback.
     const wantBanner = input.banner !== false;
+    let reinject: (() => void) | undefined;
     if (wantBanner) {
       await showBanner(page, input.reason).catch(() => {});
+      // A real navigation replaces the document and destroys the banner. Re-inject it on each new
+      // main-frame document so the human keeps the Resume affordance across page switches.
+      // `domcontentloaded` (not `framenavigated`) is the right hook: it fires once per new document
+      // with document.body present, so injection can't silently no-op on a half-built page.
+      // showBanner is idempotent (it early-returns if the banner already exists), and the DOM-flag
+      // poll below reads the live page, so it picks up the re-injected banner automatically.
+      reinject = () => { showBanner(page, input.reason).catch(() => {}); };
+      page.on("domcontentloaded", reinject);
     }
 
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -67,6 +76,7 @@ export class AwaitHumanHandler implements CommandHandler<AwaitHumanInput, AwaitH
 
     stopPoll = true;
     if (timer) clearTimeout(timer);
+    if (reinject) page.off("domcontentloaded", reinject); // stop re-injecting before we tear down
     discardPause(pause.token);
     if (wantBanner) {
       await sleep(1000);

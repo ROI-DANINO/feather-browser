@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { createPause, peekPause, resumePause, discardPause, _resetForTests } from "../../../src/commands/pause-registry";
+import { createPause, peekPause, resumePause, discardPause, isPagePaused, assertPageNotPaused, HumanInControlError, _resetForTests } from "../../../src/commands/pause-registry";
 
 beforeEach(() => _resetForTests());
 
@@ -40,5 +40,41 @@ describe("PauseRegistry", () => {
     discardPause(p.token);
     expect(peekPause(p.token)).toBeUndefined();
     expect(resumePause(p.token, "ses_1")).toBe(false);
+  });
+
+  describe("page-scoped pause guard (human-in-control)", () => {
+    it("isPagePaused is true only for the exact (session, page) under an active pause", () => {
+      createPause("ses_1", "x", "page_A");
+      expect(isPagePaused("ses_1", "page_A")).toBe(true);
+      expect(isPagePaused("ses_1", "page_B")).toBe(false); // a different tab is free
+      expect(isPagePaused("ses_2", "page_A")).toBe(false); // a different session is free
+    });
+
+    it("isPagePaused goes false once the pause is resumed or discarded", () => {
+      const p1 = createPause("ses_1", "x", "page_A");
+      resumePause(p1.token, "ses_1");
+      expect(isPagePaused("ses_1", "page_A")).toBe(false);
+
+      const p2 = createPause("ses_1", "x", "page_A");
+      discardPause(p2.token);
+      expect(isPagePaused("ses_1", "page_A")).toBe(false);
+    });
+
+    it("a pause created without a pageId scopes to no page (never blocks)", () => {
+      createPause("ses_1", "x");
+      expect(isPagePaused("ses_1", "page_A")).toBe(false);
+    });
+
+    it("assertPageNotPaused throws HUMAN_IN_CONTROL while paused, is a no-op otherwise", () => {
+      createPause("ses_1", "Solve the CAPTCHA", "page_A");
+      try {
+        assertPageNotPaused("ses_1", "page_A");
+        expect.unreachable("should have thrown");
+      } catch (e) {
+        expect(e).toBeInstanceOf(HumanInControlError);
+        expect((e as HumanInControlError).code).toBe("HUMAN_IN_CONTROL");
+      }
+      expect(() => assertPageNotPaused("ses_1", "page_B")).not.toThrow();
+    });
   });
 });

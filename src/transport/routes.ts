@@ -198,6 +198,7 @@ const ERROR_STATUS: Record<string, number> = {
   REF_EXPIRED: 409,
   DANGEROUS_DISABLED: 403,
   GRANT_REQUIRED: 403,
+  HUMAN_IN_CONTROL: 409,
 };
 
 function errorStatus(code: string): number { return ERROR_STATUS[code] ?? 500; }

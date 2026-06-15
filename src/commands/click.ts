@@ -2,6 +2,7 @@ import type { CommandHandler, CommandContext } from "./handler";
 import type { ClickInput, ClickOutput } from "../sessions/types";
 import { resolveActionable } from "../browser/locators";
 import { withActionErrors, isNavigationTeardown } from "./input-errors";
+import { assertPageNotPaused } from "./pause-registry";
 
 interface IManager {
   get(sessionId: string): {
@@ -18,6 +19,7 @@ export class ClickHandler implements CommandHandler<ClickInput, ClickOutput> {
     const { sessionId, pageId, target, timeoutMs } = input;
     const session = this.manager.get(sessionId);
     const { pageId: resolvedPageId, page } = session.getPage(pageId);
+    assertPageNotPaused(sessionId, resolvedPageId); // a human in control of this page blocks agent clicks
     const refLookup = (r: string) => session.getObserveCache(resolvedPageId)?.refs.get(r);
     const { act, probe } = resolveActionable(page, target, refLookup);
     // Best-effort popup signal: the manager's context.on("page") listener (registered at launch,

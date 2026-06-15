@@ -1,4 +1,5 @@
 import type { CommandHandler, CommandContext } from "./handler";
+import { assertPageNotPaused } from "./pause-registry";
 
 interface IManager {
   get(sessionId: string): {
@@ -27,6 +28,7 @@ export class NavigateHandler implements CommandHandler<NavigateInput, NavigateOu
     const { sessionId, pageId, url, waitUntil, timeoutMs } = input;
     const session = this.manager.get(sessionId);
     const { pageId: resolvedPageId, page } = session.getPage(pageId);
+    assertPageNotPaused(sessionId, resolvedPageId); // a human in control of this page blocks agent navigation
     const response = await page.goto(url, { waitUntil: waitUntil as any, timeout: timeoutMs });
     return { pageId: resolvedPageId, url: page.url(), status: response?.status() ?? null };
   }

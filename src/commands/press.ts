@@ -2,6 +2,7 @@ import type { CommandHandler, CommandContext } from "./handler";
 import type { PressInput, PressOutput } from "../sessions/types";
 import { resolveActionable } from "../browser/locators";
 import { withActionErrors, isNavigationTeardown } from "./input-errors";
+import { assertPageNotPaused } from "./pause-registry";
 
 interface IManager {
   get(sessionId: string): {
@@ -17,6 +18,7 @@ export class PressHandler implements CommandHandler<PressInput, PressOutput> {
     const { sessionId, pageId, target, key, timeoutMs } = input;
     const session = this.manager.get(sessionId);
     const { pageId: resolvedPageId, page } = session.getPage(pageId);
+    assertPageNotPaused(sessionId, resolvedPageId); // a human in control of this page blocks agent key-presses
     const refLookup = (r: string) => session.getObserveCache(resolvedPageId)?.refs.get(r);
     const resolved = target ? resolveActionable(page, target, refLookup) : null;
     try {
