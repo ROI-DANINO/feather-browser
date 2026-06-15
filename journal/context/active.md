@@ -33,17 +33,16 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
   can't force a desktop viewport without CDP `setDeviceMetricsOverride` (durable fix filed under 5d,
   with stealth-flag caveat; niri float-rule is the user-side workaround). None of this needs a repo
   commit except the `showcase.sh` edit (uncommitted, for `/next`/`/stop`).
-- **5a IDENTITY MODEL — SHIPPED 2026-06-15 (TDD, UNCOMMITTED).** Named handle over a warmed profile:
+- **5a IDENTITY MODEL — SHIPPED + COMMITTED to `dev` 2026-06-15 (`3674d82` feat + `6a72bc0` chore, TDD).** Named handle over a warmed profile:
   new `src/identity/` (types/store/manager) + `src/transport/identity-routes.ts` + extracted
   `http-helpers.ts`; six `/v1/identities` routes; `LaunchSessionInput.identityId` resolves via an
   injected resolver seam. Council S1–S5 baked in (separable ids / explicit markWarm / opaque policy /
   write-mutex+version / vaultRef redacted+dormant + 0600 store + disablePasswordManager). Gates: tsc
   clean, 399 unit, identity integration 4/4, full integration 96/96 (lone red = pre-existing niri
   attach-cdp viewport, unrelated). Manual curl CRUD round-trip green on real `npm run dev`. Detail →
-  tasks.md 5a entry. **Next: 5b MFA Handler** (now that Identity carries the `mfaPolicy` slot) — or
-  Roi's pick.
-- **NOTE:** a fresh `npm run dev` server is running (started this session for the curl test); stop by
-  pid in `endpoint.json` when done.
+  tasks.md 5a entry. **Next: 5b MFA Handler** (now that Identity carries the `mfaPolicy` slot) —
+  Roi will start the 5b planning pass in a fresh `/next` chat.
+- **NOTE:** dev server stopped at end of session (was up only for the manual curl test). No running server.
 - **Gate A is DONE end-to-end** (A0 transport hardening + A1 holds/grants/policy/audit/approval-page +
   cookie-export demo door; proven "mined AND used" on warmed Gmail 2026-06-15). v2 spine unchanged.
 - **Workflow SIMPLIFIED (Roi, 2026-06-11):** no PR-per-step unless asked — work directly on the active
