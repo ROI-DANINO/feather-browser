@@ -96,6 +96,13 @@ Security-first spine: `gate → Identity → MFA → warmed attach → Stealth l
       M1 cold-profile search walls remain the evidence.
 - [ ] **Learn-your-behavior** + **active anti-bot self-detection**
 - [ ] **Teach-a-workflow / action cache** (Anchor-inspired determinism layer)
+- [ ] **Perception-output efficiency** (idea logged 2026-06-15 — NOT felt yet, do not build) —
+      spend agent context efficiently (ADR-0005) by shrinking big perception payloads
+      (snapshot / observe / extract). **Native kernel = return-less + expand-on-demand (progressive
+      disclosure), NOT an ML compressor** — Feather's loop lets the agent re-query, so beat token
+      bloat by *selection*, not squeezing. Trigger: a real errand choking on a giant snapshot.
+      Neighbors: action cache / learn-your-behavior. Full intake (source: Headroom):
+      `research/2026-06-15-headroom-integration-intake.md`.
 
 ## Feather v3 — "The polished product"  (`docs/roadmap/v3.md`)
 
