@@ -1,0 +1,4 @@
+# Volatile working notes for the v2 wrap — not load-bearing, not tracked.
+# Mirrors the docs/v1_wrap/**/raw/ house pattern: committed = analysis; raw/ = scratch.
+*
+!.gitignore
