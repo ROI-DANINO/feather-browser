@@ -12,7 +12,7 @@ export interface VersionedPolicy {
   [key: string]: unknown;
 }
 
-export type WarmStatus = "cold" | "warm" | "unknown";
+export type WarmStatus = "cold" | "warm";
 
 export interface IdentityRecord {
   id: string;                     // slug — the stable named handle
