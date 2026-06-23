@@ -184,17 +184,30 @@ raw codes.
 - **Read:** `docs/specs/2026-06-23-5c-native-vs-cdp-attach-decision.md` (the reframe),
   [[adr-0010-local-control-plane-capability-model]], `docs/specs/2026-06-04-attach-dont-launch-design.md`.
 
-### 🔴 Phase 5d — Stealth Stack  *(was 5a; now LAST — most complex/breakable)*
-Secure-by-default stealth hygiene + verification for agent-driven sessions.
-- **Plan:** `docs/plans/2026-06-23-5d-stealth-reconciled.md` (the executable body).
-- **Spec:** `docs/specs/2026-06-23-5d-stealth-reconciled-design.md` (rev 3);
-  research `research/2026-06-07-council-audit-stealth-stack.md`,
-  `research/2026-06-05-anti-detection-self-test.md`.
+### 🔴 Phase 5d — Stealth + Behavior-Mine Arc  *(was 5a; now LAST — most complex/breakable)*
+A 5-step ordered arc: stealth hygiene → measure → capture human behavior → learn from it → teach
+workflows. **One foundation, two payoffs** — record the human's browser use once ("the Behavior
+Mine"), then the *motion/rhythm* feeds stealth realism and the *steps* feed workflow replay. The
+Cookie Mine pattern again, new payload. **Arc design (owns the ordering):**
+`docs/specs/2026-06-23-stealth-behavior-arc-design.md`. Each step gets its own design + plan when
+reached; we commit to the *sequence* now.
+
+| Step | What | Status / body |
+|---|---|---|
+| **5d.1 — Stealth base** | always-on verify-don't-spoof checks + secure-by-default typing cadence + self-test | **planned, ready** — plan `docs/plans/2026-06-23-5d-stealth-reconciled.md`, design `docs/specs/2026-06-23-5d-stealth-reconciled-design.md` (rev 3, secure-only) |
+| **5d.2 — Measure reality** | point secure Feather at real detectors (sannysoft/CreepJS → real site); record the honest baseline | next design |
+| **5d.3 — Behavior Mine (capture)** | record human motion/rhythm + step sequence during warm/daily sessions; the shared ground | future design |
+| **5d.4 — Learned human-like input → STEALTH** | agent replays *your* captured dynamics; re-measure vs 5d.2 (spike-first) | future design |
+| **5d.5 — Teach-a-workflow → EFFICIENCY** | agent replays captured *steps* as recipes (Anchor-inspired; Maxun reference-only) | future design |
+
 - **Model:** secure-only — the rev-2 two-mode model + mode-switch endpoint were dropped
   (2026-06-07 plan/design docs superseded).
+- **Gate:** 5d.2 is a real gate — if behavioral detection isn't biting, 5d.4 may shrink/defer. Let the
+  measurement decide.
 - **Constraint:** `fingerprint-generator` / `fingerprint-injector` / `idcac-playwright` are
-  reference-only (they spoof — contradicts verify-don't-spoof); never import AGPL Maxun code;
-  kinematic input is spike-first.
+  reference-only (they spoof — contradicts verify-don't-spoof); never import AGPL Maxun code.
+- **Neighbor (later, optional):** active anti-bot self-detection (watch own behavior live, correct
+  when robotic) — folds near 5d.4.
 
 ### 🔴 Phase 5e — Agent Runtime Surface And Ecosystem Interop  *(was 5d; cold storage)*
 Expose Feather as a standard local browser tool for external agents/frameworks.

@@ -211,24 +211,35 @@ Security-first spine: `gate → Identity → MFA → warmed attach → Stealth l
       integration 101p/1skip/1 pre-existing niri attach-cdp red. Docs: api-reference MFA section + 3 error
       codes + human-handoff skill. **⚠️ Proven with a MOCK browser only — live-MFA-wall test is the
       deferred testing brainstorm.** Pushed `origin/dev` (`12ffa91`).
-- [ ] **5d — Stealth Stack** (verify-not-spoof; **secure-only + design reconciled rev 3** —
-      design: `docs/specs/2026-06-23-5d-stealth-reconciled-design.md`,
-      plan: `docs/plans/2026-06-23-5d-stealth-reconciled.md`).
-      NB: rev-2 two-mode model (secure/assisted enum) + the mode-switch endpoint are DROPPED
-      (dead — 5b MFA uses a pause/hold + HUMAN_IN_CONTROL brake; fast path = per-call `type`
-      override); the 2026-06-07 design/plan docs are SUPERSEDED.
+- [ ] **5d — Stealth + Behavior-Mine arc** (ordered; **one foundation / two payoffs** — record the
+      human's browser use once, then motion/rhythm → stealth realism, steps → workflow replay; the
+      Cookie Mine pattern, new payload). **Arc design owns the ordering:**
+      `docs/specs/2026-06-23-stealth-behavior-arc-design.md`. Each step = its own design + plan.
+      - [ ] **5d.1 — Stealth base** (verify-not-spoof; **secure-only, reconciled rev 3** — design
+            `docs/specs/2026-06-23-5d-stealth-reconciled-design.md`, plan
+            `docs/plans/2026-06-23-5d-stealth-reconciled.md`). **Planned, ready to build.** NB: rev-2
+            two-mode model + mode-switch endpoint DROPPED (5b MFA uses a pause/hold + HUMAN_IN_CONTROL
+            brake; fast path = per-call `type` override); 2026-06-07 docs SUPERSEDED.
+            - [ ] **Headed-CDP viewport pinning (niri finding, 2026-06-15)** — `--window-size` ignored
+                  on a tiling WM → render viewport = tile width (~700px) → MOBILE layout. Durable fix =
+                  pin via CDP `Emulation.setDeviceMetricsOverride`, decoupled from OS window geometry,
+                  flag-gated (window-vs-viewport mismatch is a mild fingerprint signal; default honest
+                  "match the window"). Workaround: niri float-rule for the Feather Chromium window.
+      - [ ] **5d.2 — Measure reality** — point secure Feather at real detectors (sannysoft/CreepJS →
+            real site); record the honest baseline. **A real gate** — if behavioral detection isn't
+            biting, 5d.4 may shrink/defer.
+      - [ ] **5d.3 — Behavior Mine (capture)** — record human motion/rhythm + step sequence during
+            warm/daily sessions; the shared ground. Credential-adjacent → same boundaries as the
+            Cookie Mine (opt-in, redaction, no secrets into shared artifacts).
+      - [ ] **5d.4 — Learned human-like input → STEALTH** — agent replays *your* captured dynamics
+            (not generic math); re-measure vs 5d.2 (spike-first). Neighbor: active anti-bot
+            self-detection (watch own behavior live, correct when robotic).
+      - [ ] **5d.5 — Teach-a-workflow / action cache → EFFICIENCY** — agent replays captured *steps*
+            as recipes (Anchor-inspired; Maxun `where/what` reference-only). Last — doesn't serve
+            "look human". Inputs: `research/2026-06-23-agent-speed-perception-toolbox-intake.md`,
+            `research/2026-06-06-anchor-browser-product-reference.md`.
       NB: M2 is NOT usable as 5d evidence or regression test (cause undetermined — META-ANALYSIS §1);
       M1 cold-profile search walls remain the evidence.
-      - [ ] **Headed-CDP viewport pinning (durable fix for the niri finding, 2026-06-15).** On a tiling
-            WM (niri), `--window-size` is ignored → the render viewport is the tile width (~700px) →
-            sites serve MOBILE layout. Durable fix = pin the render viewport via CDP
-            `Emulation.setDeviceMetricsOverride` (e.g. 1280×800) in the `chromium-headed-cdp` launch
-            path, **decoupled from the OS window geometry**. CAVEAT (why it lands in 5d): a
-            window-vs-viewport mismatch is a mild fingerprint signal → gate behind a flag, default to
-            the honest "match the window" behavior. Cheap user-side workaround meanwhile: a niri
-            window rule to **float** the Feather Chromium window (size requests honored when floating).
-- [ ] **Learn-your-behavior** + **active anti-bot self-detection**
-- [ ] **Teach-a-workflow / action cache** (Anchor-inspired determinism layer)
 - [ ] **Perception-output efficiency** (idea logged 2026-06-15 — NOT felt yet, do not build) —
       spend agent context efficiently (ADR-0005) by shrinking big perception payloads
       (snapshot / observe / extract). **Native kernel = return-less + expand-on-demand (progressive
