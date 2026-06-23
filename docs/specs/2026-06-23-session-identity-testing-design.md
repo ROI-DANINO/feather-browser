@@ -6,7 +6,7 @@
 > [`2026-06-23-v2-spine-completion-plan.md`](2026-06-23-v2-spine-completion-plan.md).
 > **Safety authority:** [`docs/testing/anti-bot-testing-policy.md`](../testing/anti-bot-testing-policy.md)
 > owns *what may be touched*. This doc owns *how it is measured*.
-> **Raw origin:** `journal/raw/_inbox/2026-06-23-agentic-browser-antibot-testing-{research,bibliography}.md`.
+> **Raw origin (archived after canonicalization):** `journal/raw/archive/2026-06-23-agentic-browser-antibot-testing-{research,bibliography}.md`.
 
 ## 1. The core idea — test *session identity*, not a *page*
 

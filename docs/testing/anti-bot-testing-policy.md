@@ -4,7 +4,7 @@
 > **Authority:** this file is the source of truth for *what Feather's fingerprint/anti-bot
 > testing is allowed to touch*. The design of *how* it measures lives in
 > [`docs/specs/2026-06-23-session-identity-testing-design.md`](../specs/2026-06-23-session-identity-testing-design.md).
-> Raw research origin: `journal/raw/_inbox/2026-06-23-agentic-browser-antibot-testing-{research,bibliography}.md`.
+> Raw research origin (archived after canonicalization): `journal/raw/archive/2026-06-23-agentic-browser-antibot-testing-{research,bibliography}.md`.
 
 ## Purpose and framing
 
