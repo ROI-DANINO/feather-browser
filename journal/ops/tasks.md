@@ -253,11 +253,18 @@ Security-first spine: `gate → Identity → MFA → warmed attach → Stealth l
             (incolumitas 0–1 score @15s). **NOT keystroke math (done), NOT spoofing (off), NOT isTrusted
             faking.** Width caveat (research 2026-06-23): high-leverage for DataDome/HUMAN/PerimeterX,
             ~zero for Cloudflare → scope to Feather's real target mix.
-            - [x] **GATE (b) — rebrowser `Runtime.enable` leak — DONE 2026-06-23 → 🟢 NO LEAK.** Ran
-                  Feather (headed-CDP) vs `bot-detector.rebrowser.net`: 6🟢/1🔴/3⚪️. `runtimeEnableLeak`,
-                  `navigatorWebdriver`, `pwInitScripts`, `exposeFunctionLeak`, `viewport`, `bypassCsp` all
-                  clean → **CDP-attach architecture clean; NO rebrowser-patches / NO forced spoof exception;
-                  5d.4 not outranked.** Evidence: baseline-report Addendum B + screenshot 07.
+            - [~] **GATE (b) — CDP `Runtime.enable` leak — RAN 2026-06-23, two detectors DISAGREE.**
+                  rebrowser `runtimeEnableLeak` = 🟢 NO LEAK (stack/console method; 6🟢/1🔴/3⚪️, Addendum B).
+                  **BUT Brotector `runtime.enabled` = 🔴 score 1 via `nameLookupCount:3` → Average 1.00
+                  DETECTED** (Addendum C, screenshot 08). Same surface, different technique, opposite verdict
+                  → **gate (b) NOT cleanly closed.** CDP-runtime hardening re-opened as a real (possibly
+                  higher-priority-than-5d.4) workstream. `Input.untrusted` PASS (Feather input isTrusted).
+            - [ ] **NEXT (CDP-hardening, surfaced by Brotector):** (1) isolate the mechanism — does
+                  `runtime.enabled` still fire with ZERO Feather evaluates (navigate + idle)? (2) test whether
+                  rebrowser-patches-style `Runtime.enable` suppression defeats Brotector's `nameLookupCount`
+                  method. If a CDP tell scores 1.00 regardless of behavior, it may **outrank 5d.4** → sequence
+                  CDP-hardening before/alongside mouse-motion. Tension: a CDP patch = narrow verify-don't-spoof
+                  exception.
             - [ ] **GATE (a) — Chrome 136+ attach** — spawn path OK (non-default `--user-data-dir`,
                   modes.ts:80); verify only for the future attach-to-stock-Chrome ambition. Not pursued now.
       - [ ] **(harden 5d.2 suite, next pass)** add `bot-detector.rebrowser.net` (CDP leak),

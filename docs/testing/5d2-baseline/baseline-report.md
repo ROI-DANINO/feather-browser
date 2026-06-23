@@ -246,3 +246,66 @@ Ran the higher-priority gating verification first: Feather (disposable headed-CD
 3. Gate (a) — Chrome-136 attach — remains "spawn path OK; verify only for the future attach-to-stock-Chrome
    ambition." Not pursued now.
 4. Still-queued capability gap (non-stealth): JS-dialog handling.
+
+---
+
+# Addendum C — Brotector (2026-06-23, session `ses_c06664d498`) — ⚠️ contradicts gate (b)
+
+Ran the second behavioral detector, `ttlns.github.io/brotector/`. Evidence: `screenshots/08-brotector.png`.
+
+**Result: Average score `1.00` → fully DETECTED as a webdriver.** Driven by ONE check, firing every
+~250ms:
+
+| Detection | Type | Score | Data |
+|---|---|---|---|
+| **`runtime.enabled`** | webdriver | **1** | `{ "stackLookupCount": 0, "nameLookupCount": 3 }` |
+| `Input.untrusted` | — | (no row) | **did not fire** — Feather's CDP input reports `isTrusted: true` ⇒ PASS |
+| (no other detection fired) | | | |
+
+## The important part — two detectors disagree on the CDP `Runtime.enable` leak
+
+- **rebrowser** (Addendum B): `runtimeEnableLeak` → **🟢 "No leak detected"** (stack/console-artifact method).
+- **Brotector**: `runtime.enabled` → **🔴 score 1** via a **`nameLookupCount`** method (3 property-name
+  lookups on its trap ⇒ CDP object-serialization is happening).
+
+**Same underlying surface, different technique, opposite verdict.** So gate (b)'s "no Runtime.enable
+leak ⇒ CDP clean" was **method-dependent and is now qualified: clean against rebrowser's test, DETECTED
+by Brotector's.** The single rebrowser PASS was falsely reassuring — exactly why running a second
+detector mattered.
+
+## What this changes (honest walk-back)
+
+- **The CDP-leak axis is NOT cleanly closed.** At least one public detector flags Feather as a webdriver
+  purely on CDP-runtime presence — scoring 1.00 **before any behavioral consideration.** On a
+  Brotector-class detector, **mouse-motion realism (5d.4) is moot** — the static CDP tell dominates the
+  score.
+- **The "no rebrowser-patches needed / no verify-don't-spoof exception" conclusion from gate (b) is
+  RE-OPENED.** Brotector's `nameLookupCount` detection is the kind of CDP-runtime tell that CDP-hardening
+  (rebrowser-patches: suppress automatic `Runtime.enable`) targets — though whether that patch defeats
+  *this specific* method needs its own test. The narrow-exception tension is back on the table.
+- **`Input.untrusted` PASS is a genuine positive** — confirms the research prediction live: Feather's
+  CDP `Input.*` is trusted, so the cheapest behavioral check passes. The behavioral *provenance* axis is
+  clean; the CDP runtime-*presence* axis is not.
+
+## Honest caveats
+
+- Brotector is an **aggressive research detector** (it ships a `popupCrash` that crashes naive drivers;
+  Feather survived — `health: alive`). Its `nameLookupCount` method and `1.00` scale are its own; whether
+  *commercial* anti-bot uses this exact technique is unverified. It is, however, a real public detector
+  catching a real signal.
+- The detection fires continuously at Brotector's ~250ms poll cadence — consistent with persistent
+  CDP-runtime presence, not a one-off `page.evaluate`. Mechanism (inherent attach vs. Feather's
+  perception evaluates re-triggering it) is **not yet isolated** — worth a dedicated probe (navigate +
+  sit idle with zero observe/snapshot calls, watch if it still fires).
+
+## Gate decision v4 (after Brotector)
+
+1. **CDP-runtime hardening is now a real, possibly-higher-priority workstream** — not the closed box gate
+   (b) suggested. Next concrete step: **isolate the mechanism** (does it fire with zero Feather evaluates?),
+   then **test whether rebrowser-patches-style `Runtime.enable` suppression defeats Brotector's
+   `nameLookupCount` method.** If a CDP tell scores 1.00 regardless of behavior, it may **outrank 5d.4**.
+2. **5d.4 mouse-motion**: still valid for DataDome/HUMAN-class (which don't use Brotector's method), but
+   its standalone value drops if the CDP tell isn't fixed first — **sequence CDP-hardening before, or
+   alongside, motion.**
+3. `Input.untrusted` PASS stands — provenance axis clean; do not spend effort there.
+4. Carryover unchanged: real-Chrome static win (gated on install), JS-dialog gap, Chrome-136 (a) deferred.
