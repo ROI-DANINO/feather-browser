@@ -17,6 +17,7 @@ import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import { spawnAndConnect } from "../../src/browser/modes";
+import { applyStealthEnvironment, applyFingerprintCheck } from "../../src/browser/stealth";
 
 const SYSTEM_CHROMIUM_CANDIDATES = [
   "/usr/bin/chromium-browser",
@@ -83,6 +84,47 @@ async function probeMode(label: string, headless: boolean, executablePath: strin
   }
 }
 
+/**
+ * Layer 1 hard tells — exit non-zero on failure so this doubles as a CI-style self-test gate.
+ * navigator.webdriver MUST be false on the real headed-CDP session path.
+ */
+function assertHardTells(headed: Record<string, unknown>): void {
+  const failures: string[] = [];
+  if (headed.webdriver !== false) failures.push(`navigator.webdriver is ${headed.webdriver} (must be false)`);
+  // Runtime.enable absence is guaranteed structurally (Layer 1: no console/pageerror listeners on the
+  // session path; see src/browser/stealth.ts). If a CDP-level Runtime.enable check is added later, assert it here.
+  if (failures.length) {
+    console.error("HARD TELL FAILURES:\n - " + failures.join("\n - "));
+    process.exit(2);
+  }
+  console.log("\nhard tells OK: webdriver === false");
+}
+
+/**
+ * Opt-in (FEATHER_PROBE_ONLINE=1) secure-mode report: runs the always-on checks against a clean
+ * headed-CDP session pointed at bot.sannysoft.com, with a screenshot for manual inspection.
+ */
+async function probeSecureAgainstSannysoft(executablePath: string): Promise<void> {
+  const profile = await fs.promises.mkdtemp(path.join(os.tmpdir(), "feather-secure-"));
+  const { context, childProcess } = await spawnAndConnect({ profilePath: profile, executablePath });
+  try {
+    const page = await context.newPage();
+    const env = await applyStealthEnvironment(page);
+    const fp = await applyFingerprintCheck(page);
+    await page.goto("https://bot.sannysoft.com/", { waitUntil: "networkidle", timeout: 30_000 }).catch(() => {});
+    const shot = path.join(os.tmpdir(), `feather-sannysoft-${Date.now()}.png`);
+    await page.screenshot({ path: shot, fullPage: true }).catch(() => {});
+    console.log("\n## Secure-mode self-test (bot.sannysoft.com)");
+    console.log(`environment: ok=${env.ok} ${JSON.stringify(env.warnings)}`);
+    console.log(`fingerprint: ok=${fp.ok} ${JSON.stringify(fp.warnings)}`);
+    console.log(`screenshot: ${shot}`);
+  } finally {
+    try { await context.browser()?.close(); } catch { /* */ }
+    try { childProcess.kill(); } catch { /* */ }
+    await fs.promises.rm(profile, { recursive: true, force: true }).catch(() => {});
+  }
+}
+
 async function main(): Promise<void> {
   const executablePath = process.env.FEATHER_CHROMIUM_PATH
     ?? SYSTEM_CHROMIUM_CANDIDATES.find((p) => fs.existsSync(p))
@@ -108,6 +150,12 @@ async function main(): Promise<void> {
   const outFile = path.join(os.tmpdir(), `feather-antidetect-${Date.now()}.json`);
   await fs.promises.writeFile(outFile, JSON.stringify({ headed, headless }, null, 2));
   console.log(`\nraw: ${outFile}`);
+
+  assertHardTells(headed);
+
+  if (process.env.FEATHER_PROBE_ONLINE === "1") await probeSecureAgainstSannysoft(executablePath);
+  else console.log("\n(skip online sannysoft probe; set FEATHER_PROBE_ONLINE=1 to run it)");
+
   process.exit(0);
 }
 
