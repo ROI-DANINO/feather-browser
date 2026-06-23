@@ -45,3 +45,34 @@ GitHub throwaway). Server up→down this session; identity `gh-spine-test` persi
 + transport test (TDD) — THEN run plan Tasks 4–11. Run facts grounded: no `email` MfaType (use `sms`);
 `ConsoleNotifier` prints the tokened MFA URL to server stdout; default MFA timeout 5min (bump via
 `FEATHER_MFA_TIMEOUT_MS=600000`).
+
+---
+
+## 2026-06-23 ~15:20 — Spine SAFETY live test RAN → PARTIAL (Finding #1 fixed+proven)
+
+**Finding #1 — FIXED (TDD, `4c75a1e`):** added `identityId: z.string().optional()` to `LaunchSchema`
+(`src/transport/routes.ts`) + `LaunchInput`; launch-by-identity now reachable from the API. NOT caused
+by the ponytail audit — `identityId` was never in routes.ts in git history (`git log -S` empty); an
+original 5a gap (5a tested the manager directly). **Proven live this run:** launch envelope carried
+`identityId`→resolved `workspaceId: gh-spine-test`.
+
+**Live run (operate-by-hand, plan Tasks 2–11) → PARTIAL.** Throwaway GitHub `roionly9-byte` / scratch
+Gmail, headed `chromium-headed-cdp`, session `ses_b8ccf08dfb`.
+- **PROVEN LIVE:** native drive + agent never typed the password; `await-human` password handoff
+  (`resumedBy:human`, ~80s); **brake #1 = `409 HUMAN_IN_CONTROL`** (agent navigate refused mid-pause);
+  real login → `meta[name=user-login]=roionly9-byte`; identity `gh-spine-test` marked **warm** (v2).
+- **NOT EXERCISED:** GitHub showed **no emailed device-code wall** to a new account from a fresh
+  Chromium (same machine/IP) → 5b MFA half had no real challenge to bind to. Roi: bank PARTIAL.
+
+**Findings:** **#2** plan-doc bug — `await-human` body is `reason` not `prompt` (`AwaitHumanSchema`);
+the 400'd call registered no pause and briefly defeated the first brake check (navigate hit example.com,
+recovered). Fixed in the plan. MFA-challenge body correctly uses `prompt`. **#3** GitHub didn't
+challenge — env/target data point, not a Feather bug.
+
+**State:** report+screenshot `docs/v2_wrap/spine-live-test/run-report.md`; both commits pushed
+`origin/dev` (`0736824`). Scratch-profile `warm-session.ts` orphan killed; no Feather procs left.
+Warmed `gh-spine-test` persists for deferred Phase 2.
+
+**Next (Roi: resume testing):** run the **5b MFA LIVE-WALL test** against a target that *reliably*
+2FA-walls a new-device login, or **pre-enable TOTP** so the wall is guaranteed (the missing piece —
+5b is still mock-only). await-human=`reason`, mfa/challenge=`prompt` (both confirmed live).

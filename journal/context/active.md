@@ -6,7 +6,26 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 
 ## Current pointer
 
-- **NOW (2026-06-23 09:10 STOP — spine LIVE TEST designed + planned; run-prep caught Finding #1).**
+- **NOW (2026-06-23 ~15:20 — spine SAFETY live test RAN → PARTIAL; Finding #1 fixed+proven live).**
+  Fixed **Finding #1** (TDD, `4c75a1e`): `LaunchSchema` (`src/transport/routes.ts`) + `LaunchInput`
+  now carry `identityId` → launch-by-identity reachable from the API (was Zod-stripped). NOT caused by
+  the ponytail audit — `identityId` was never in routes.ts in git history; it's an original 5a gap
+  (5a tested the manager directly). Then **ran the operate-by-hand live test** (plan Tasks 2–11) on a
+  throwaway GitHub (`roionly9-byte`, scratch Gmail). **PROVEN LIVE:** native drive + agent never typed
+  the password; `await-human` password handoff; **brake #1 holds (`409 HUMAN_IN_CONTROL`** blocked an
+  agent navigate mid-pause); real login → logged in as `roionly9-byte`; identity `gh-spine-test` marked
+  **warm**. **NOT EXERCISED:** GitHub showed **no emailed-code wall** to a new account from a fresh
+  Chromium (same machine/IP) → the **5b MFA half had no real challenge to bind to** → Roi's call: bank
+  PARTIAL, don't fake a wall. Findings: **#2** plan-doc bug (`await-human` body is `reason` not
+  `prompt`; fixed in the plan); **#3** GitHub didn't challenge (env/target data point). Run report +
+  dashboard screenshot: `docs/v2_wrap/spine-live-test/run-report.md`. Both commits **pushed to
+  `origin/dev`** (`0736824`). Scratch-profile orphan (`warm-session.ts`) killed; no Feather procs left.
+  **RECOMMEND NEXT (Roi: resume testing): run the 5b MFA LIVE-WALL test** against a target that
+  *reliably* 2FA-walls a new-device login (or an account with **TOTP pre-enabled** so the wall is
+  guaranteed) — drive observe→find code field→`mfa/challenge` (type `sms`/`totp`)→brake #2 (409)→human
+  enters code via the tokened resolve URL→resume. This is the still-owed proof (5b is mock-only). The
+  warmed `gh-spine-test` identity persists for the deferred Phase 2 (warmed step-up).
+- **(prior) NOW (2026-06-23 09:10 STOP — spine LIVE TEST designed + planned; run-prep caught Finding #1).**
   Ran the deferred live-testing brainstorm. Settled (5 forks w/ Roi): **spine *safety* test** (not the
   anti-bot/fingerprint track); **Phase 1 = fresh GitHub login + emailed device-code wall**, then Phase 2
   warmed step-up; **throwaway GitHub** registered to scratch Gmail (`roionly9`); **operate-by-hand, no new

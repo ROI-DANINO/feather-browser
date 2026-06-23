@@ -3,20 +3,26 @@
 Checklist only. Front door → `feather.md`; version roadmaps → `docs/roadmap/{v1,v2,v3}.md`;
 execution index → `ROADMAP.md`; live pointer → `journal/context/active.md`.
 
-**Next action (2026-06-23 09:10, Roi's call) = FIX FINDING #1 FIRST, then RUN the spine live test.**
-The live-testing brainstorm is DONE → design + 11-task operate-by-hand run plan committed
-(`docs/specs/2026-06-23-spine-live-test-{design,plan}.md`, `b8e9745`/`f3c1ceb`). Run-prep caught
-**Finding #1**: the HTTP launch route can't bind a session to an identity — `LaunchSchema`
-(`src/transport/routes.ts:49-61`) omits `identityId`; Zod strips it → `launchHandler` never sees it,
-though `SessionManager.launch` resolves `identityId → defaultWorkspaceId`. **Launch-by-identity is
-unreachable from the API.**
-- [ ] **FINDING #1 — wire `identityId` into `LaunchSchema`** (TDD: transport test that launching with
-      `identityId` resolves to the identity's workspace). Add `identityId: z.string().optional()`.
-      Do this **before** the live run. Workaround if skipped: launch by `workspaceId`.
-- [ ] **THEN — run the spine live test** (plan Tasks 4–11): Roi creates throwaway GitHub → `roionly9`
-      (no app-2FA), shares username; restart server `FEATHER_MFA_TIMEOUT_MS=600000 npm run dev`; launch
-      persistent headed session bound to `gh-spine-test`; drive login → emailed-code wall → MFA challenge
-      → brake assertions → resume → mark-warm → run report. Identity `gh-spine-test` already exists (cold).
+**Next action (2026-06-23 ~15:20, Roi: resume testing) = RUN THE 5b MFA LIVE-WALL TEST against a
+guaranteed-challenge target.** The Phase-1 spine live test RAN → **PARTIAL** (report:
+`docs/v2_wrap/spine-live-test/run-report.md`). Half the spine is proven live; the MFA half is still
+owed because GitHub presented no wall.
+- [x] **FINDING #1 — wired `identityId` into `LaunchSchema`** (TDD, `4c75a1e`): added
+      `identityId: z.string().optional()` to `LaunchSchema` + `LaunchInput`; launch-by-identity now
+      reachable from the API. **Proven live this run** (launch envelope carried identityId→workspaceId).
+      NOT caused by the ponytail audit (never in git history; original 5a gap).
+- [x] **Phase-1 live test RAN → PARTIAL.** PROVEN LIVE: native drive + agent never typed the password;
+      `await-human` handoff; **brake #1 = `409 HUMAN_IN_CONTROL`**; real login (`roionly9-byte`); identity
+      `gh-spine-test` marked warm. NOT EXERCISED: no emailed-code wall appeared. Finding #2 (plan doc
+      `prompt`→`reason`, fixed) + #3 (GitHub didn't challenge). Pushed `origin/dev` `0736824`.
+- [ ] **NEXT — 5b MFA LIVE-WALL test (the still-owed proof; 5b is mock-only).** Pick a target that
+      *reliably* 2FA-walls a new-device login, OR pre-enable **TOTP** on an account so the wall is
+      guaranteed (lesson from Finding #3: a fresh GitHub login from the same machine/IP did not
+      challenge). Drive: observe → find the code field → `POST …/mfa/challenge` (type `totp`/`sms`,
+      `target`=code ref) → **brake #2** assertion (mutation→409, read→200) → human opens the tokened
+      resolve URL from server stdout → enters the code → origin-unchanged check → code typed in → resume
+      → verify past the wall. Server: `FEATHER_MFA_TIMEOUT_MS=600000 npm run dev`. await-human body uses
+      **`reason`**; MFA challenge body uses **`prompt`** (both confirmed live).
 Gate A ✅, 5a Identity ✅ (but see Finding #1), **5b MFA ✅**; the **native API is the credential-safe
 driving surface.**
 **5c REFRAMED 2026-06-23 (Roi):** the spine's *safety* is delivered by the **native path** (5a warmed
