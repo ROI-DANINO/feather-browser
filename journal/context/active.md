@@ -6,7 +6,26 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 
 ## Current pointer
 
-- **NOW (2026-06-23 20:23 STOP — 5d RECONCILED to secure-only + the STEALTH+BEHAVIOR-MINE ARC set into
+- **NOW (2026-06-23 21:42 STOP — 5d.1 SHIPPED + 5d.2 MEASURED; the detectors DISAGREED on the CDP leak).**
+  Built **5d.1 stealth base** (TDD, 9 tasks, secure-only; `src/browser/stealth.ts` + `typeSequentially`
+  seam + `stealthWarnings`; 454u, rd-verify PASS; pushed `e26ef63..07bb4c1`). Then ran **5d.2 measure
+  reality** live, operate-by-hand (disposable headed-CDP, no login). **Static axis PASS** across sannysoft,
+  browserscan (incl. CDP), **Fingerprint Pro commercial** (`bot: not_detected`, **`tampering_ml_score: 0`**
+  → verify-don't-spoof validated). **Behavioral gap = mouse-motion** (incolumitas score never computes;
+  clicks teleport). Roi chose to **harden the tests before 5d.3**: closed the confound (score stayed `...`
+  even with full cadenced interaction), ran a **research pass** (`research/2026-06-23-bot-detection-landscape-research.md`
+  — adversarially corrected me: gap is trajectory *shape* not provenance; mouse-motion is DataDome/HUMAN-only,
+  ~zero for Cloudflare), then two CDP-leak detectors: **rebrowser `runtimeEnableLeak` 🟢 clean** BUT
+  **Brotector `runtime.enabled` 🔴 1.00 DETECTED** (`nameLookupCount`) → **gate (b) RE-OPENED.** Report +
+  8 screenshots: `docs/testing/5d2-baseline/baseline-report.md` (Addenda A/B/C, gate decision v1→v4).
+  **RECOMMEND NEXT: isolate the Brotector CDP-runtime detection** — (1) does it fire with ZERO Feather
+  evaluates (navigate+idle)? (2) does rebrowser-patches-style `Runtime.enable` suppression defeat the
+  `nameLookupCount` method? If a CDP tell scores 1.00 regardless of behavior, it likely **outranks 5d.4
+  mouse-motion** → sequence CDP-hardening first. Also queued: real-Chrome static win (🔴 `useragent`,
+  install-gated), JS-dialog-handling gap (non-stealth). `Input.untrusted` PASS — don't spend there.
+  Handoff: `journal/ops/sessions/5d-stealth-build-measure-detectors-20260623-2142.md`. All commits on
+  `dev`, pushed. No blog (owed line filed).
+- **(prior) NOW (2026-06-23 20:23 STOP — 5d RECONCILED to secure-only + the STEALTH+BEHAVIOR-MINE ARC set into
   the roadmap; NO code yet).** Picked 5d Stealth; reconciled the 2026-06-07 spec/plan vs shipped reality
   (Gate A/5a/5b/perception) → the MFA mode-switch seam is **dead** (MFA uses a pause/hold +
   `HUMAN_IN_CONTROL` brake), build order inverted, and the model collapses to **SECURE-ONLY** (the

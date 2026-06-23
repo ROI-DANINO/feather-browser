@@ -127,3 +127,35 @@ only, NO source code.
 `docs/plans/2026-06-23-5d-stealth-reconciled.md`; arc `docs/specs/2026-06-23-stealth-behavior-arc-design.md`.
 **Commits (LOCAL on `dev`, NOT pushed):** 1c19a40, 03c0fc4, 2bb86e2, a8c2290.
 **Next:** BUILD 5d.1 (subagent-driven). Do not spec ahead; let 5d.2 drive 5d.3+.
+
+---
+
+## 2026-06-23 (21:42 STOP) — 5d.1 shipped, 5d.2 measured, the detectors disagreed
+
+**5d.1 stealth base SHIPPED** (TDD, 9 tasks, secure-only): `src/browser/stealth.ts` (classifySite /
+jitter / fingerprint-check L4 / env-check L2 / L1 doc-seam), `Actionable.typeSequentially` seam,
+secure-by-default cadence, `SessionRecord.stealthWarnings`, headed-CDP launch checks. 454u, rd-verify
+PASS, pushed `e26ef63..07bb4c1`.
+
+**5d.2 measure reality** (live, operate-by-hand, disposable headed-CDP, no login) — the gate that
+refined itself v1→v4 across rounds:
+- **Static axis PASS** across sannysoft, browserscan (incl. CDP: Normal), **Fingerprint Pro commercial**:
+  `bot: not_detected`, **`tampering_ml_score: 0`** ⇒ verify-don't-spoof validated by a commercial ML
+  detector (not spoofing = measurably right). CreepJS trust = high.
+- **Behavioral gap = mouse-motion**: incolumitas behavioral score never computes (`...`) even with full
+  cadenced form interaction — clicks teleport, no cursor trajectory. Confound closed.
+- **Research** (`research/2026-06-23-bot-detection-landscape-research.md`) adversarially corrected: gap is
+  trajectory *shape* not provenance (Feather already passes `isTrusted`); mouse-motion is
+  DataDome/HUMAN-decisive, **~zero for Cloudflare** → 5d.4 value is vendor-dependent.
+- **CDP-leak — TWO DETECTORS DISAGREE (the key finding):** rebrowser `runtimeEnableLeak` 🟢 clean BUT
+  **Brotector `runtime.enabled` 🔴 score 1.00 DETECTED** via `nameLookupCount:3`. Same surface, different
+  technique, opposite verdict ⇒ **gate (b) NOT cleanly closed; CDP-runtime hardening RE-OPENED**, possibly
+  outranking 5d.4 (a CDP tell scoring 1.00 makes mouse-motion moot on that detector). `Input.untrusted`
+  PASS. Lesson: never trust a single detector.
+- Side findings: 🔴 `useragent` (bundled Chromium not Google Chrome — static win, run real Chrome,
+  install-gated); **no JS-dialog handling** (`confirm`/`alert`/`prompt` auto-dismissed) — non-stealth gap.
+
+**Docs:** `docs/testing/5d2-baseline/baseline-report.md` (Addenda A/B/C, gate v1→v4) + 8 screenshots;
+research in `research/`. **Commits on `dev` (pushed):** d276170, 96818c3, d92b598, b8e19bc, + Brotector
+commit. **Next:** isolate Brotector's CDP-runtime detection (fire with zero evaluates? does
+rebrowser-patches defeat `nameLookupCount`?) → decide CDP-hardening vs 5d.4 sequencing.

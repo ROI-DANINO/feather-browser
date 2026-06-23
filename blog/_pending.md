@@ -18,3 +18,4 @@ If this list is empty, nothing is owed.
 <!-- Cleared 2026-06-09: the owed E1–E3 fork→fresh beat was folded into blog/0016-ten-errands.md. Nothing owed. -->
 <!-- Cleared 2026-06-11 via /blog: native-capabilities + observe-bug-fixes + skills-asserts-iframe-dismiss (all 2026-06-10) folded into blog/0019-the-reviews-that-caught-me-lying.md; fable-workflow-v1-acquittal (2026-06-11) written as blog/0020-feather-on-trial.md. Nothing owed. -->
 <!-- Cleared 2026-06-23 at /stop: the banner / human-in-control-guard beat (2026-06-15) was folded into blog/0021-the-door-i-didnt-build.md as "the brake I forgot I had." Nothing owed. -->
+- `journal/ops/sessions/5d-stealth-build-measure-detectors-20260623-2142.md` — built 5d.1 stealth, then the measurement that kept correcting me: a commercial detector proved *not spoofing* wins (tampering ML = 0), then two CDP detectors gave opposite verdicts on the same leak — the single PASS that lied — 2026-06-23
