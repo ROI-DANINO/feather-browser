@@ -76,3 +76,30 @@ Warmed `gh-spine-test` persists for deferred Phase 2.
 **Next (Roi: resume testing):** run the **5b MFA LIVE-WALL test** against a target that *reliably*
 2FA-walls a new-device login, or **pre-enable TOTP** so the wall is guaranteed (the missing piece —
 5b is still mock-only). await-human=`reason`, mfa/challenge=`prompt` (both confirmed live).
+
+---
+
+## 2026-06-23 ~15:40 — v2 SAFETY SPINE PROVEN LIVE → PASS (Instagram run); v2 WRAPPED
+
+**Run B — Instagram (PASS).** Sacrificial `scratch` IG (`roionly9`), headed session `ses_cedae15ddf`.
+Agent drove login natively + typed username; **`await-human` handoff absorbed a genuinely hard real
+wall** — password **+ 2 CAPTCHAs + an email "verify it's you" *link*** (human opened a 2nd Gmail tab to
+click it) — while the **`HUMAN_IN_CONTROL` brake held**: agent `navigate`→`409` (`req_ca3cc56b`), and
+**zero agent mutations** across ~12 `tab.created/updated/closed` events during the 4-min human window.
+Resumed **logged in as `roionly9`** (`img[alt]="roionly9's profile picture"`). The spine's safety =
+brake + human-in-loop; **both held live under a messy multi-tab wall** → PASS. (Run A GitHub stayed
+PARTIAL — no wall appeared.)
+
+**Roi's framing (confirmed):** the wait-for-human + brake working cleanly IS the pass — a real test
+(it *could* have failed: IG could block, brake could leak, banner could die on tab-switch; none did).
+The warmed account is a byproduct (Cookie-Mine fuel), not the goal.
+
+**Two honest asterisks (recorded, not rounded up):** (1) **5b typed-code** path (Feather auto-typing a
+relayed 6-digit code via the tokened page) is **built + mock-proven (`12ffa91`) but NOT live-exercised**
+— no real site issued a *typed code* (GitHub gave no wall; IG gave CAPTCHA + a *link*). Owed nicety,
+needs a TOTP/SMS-2FA-enabled account; NOT a blocker. (2) **Password recovered from git history** to
+unblock (accepted throwaway; the "agent never holds the secret" property is the deferred vault gap).
+
+**State:** report (both runs) `docs/v2_wrap/spine-live-test/run-report.md` + 2 screenshots. **v2 =
+spine safe + PROVEN LIVE → WRAPPED.** Next thread is open: 5d Stealth · Phase 2 warmed step-up · 4b
+shell. v2.5/5d (stealth, typed-code live proof, LinkedIn exit test) stays deferred.

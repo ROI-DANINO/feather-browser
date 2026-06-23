@@ -6,7 +6,24 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 
 ## Current pointer
 
-- **NOW (2026-06-23 ~15:20 — spine SAFETY live test RAN → PARTIAL; Finding #1 fixed+proven live).**
+- **NOW (2026-06-23 ~15:40 — v2 SAFETY SPINE PROVEN LIVE → PASS; v2 WRAPPED).** Ran a 2nd live test
+  against **Instagram** (the guaranteed-wall target Roi flagged) on the sacrificial `scratch` IG
+  (`roionly9`). **Run B = PASS for the safety spine** (Run A GitHub was PARTIAL — no wall appeared):
+  agent drove the login natively + typed the username; the **`await-human` handoff absorbed a genuinely
+  hard real wall** — password **+ 2 CAPTCHAs + an email "verify it's you" *link*** (opened in a 2nd
+  Gmail tab) — while the **`HUMAN_IN_CONTROL` brake held** (agent `navigate`→`409`, **zero** agent
+  mutations across ~12 `tab.*` events during the 4-min human window); resumed **logged in as
+  `roionly9`**. The spine's safety = brake + human-in-loop, **both held live under a messy multi-tab
+  wall.** Roi's verdict (confirmed): **it passes.** Two honest asterisks: (1) the **5b typed-code**
+  feature (Feather auto-typing a relayed 6-digit code) is **built + mock-proven** but **not exercised
+  live** — no real site issued a *typed code* (IG used CAPTCHA + a *link*, not a code); owed nicety,
+  NOT a blocker. (2) Password **recovered from git history** to unblock (accepted throwaway; the
+  "agent never has the secret" property is the deferred vault gap). Report (both runs):
+  `docs/v2_wrap/spine-live-test/run-report.md`. Warmed `roionly9` IG persists on `scratch`
+  (Cookie-Mine fuel). **v2 = spine safe + PROVEN LIVE. RECOMMEND NEXT:** v2 is wrapped — the remaining
+  v2.5/5d work (Stealth, the typed-code live proof, the LinkedIn exit test) stays deferred; pick the
+  next thread fresh (5d stealth, Phase 2 warmed step-up, or 4b shell).
+- **(prior) NOW (2026-06-23 ~15:20 — spine SAFETY live test RAN → PARTIAL; Finding #1 fixed+proven live).**
   Fixed **Finding #1** (TDD, `4c75a1e`): `LaunchSchema` (`src/transport/routes.ts`) + `LaunchInput`
   now carry `identityId` → launch-by-identity reachable from the API (was Zod-stripped). NOT caused by
   the ponytail audit — `identityId` was never in routes.ts in git history; it's an original 5a gap

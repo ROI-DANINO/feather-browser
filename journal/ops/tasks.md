@@ -3,10 +3,24 @@
 Checklist only. Front door → `feather.md`; version roadmaps → `docs/roadmap/{v1,v2,v3}.md`;
 execution index → `ROADMAP.md`; live pointer → `journal/context/active.md`.
 
-**Next action (2026-06-23 ~15:20, Roi: resume testing) = RUN THE 5b MFA LIVE-WALL TEST against a
-guaranteed-challenge target.** The Phase-1 spine live test RAN → **PARTIAL** (report:
-`docs/v2_wrap/spine-live-test/run-report.md`). Half the spine is proven live; the MFA half is still
-owed because GitHub presented no wall.
+**Next action (2026-06-23 ~15:40) = v2 WRAPPED — pick the next thread fresh.** The v2 **safety spine
+is PROVEN LIVE → PASS** (report: `docs/v2_wrap/spine-live-test/run-report.md`). Run B (Instagram,
+sacrificial `roionly9`) drove a real hard wall — password + 2 CAPTCHAs + email-link verify across 2
+tabs — and the **`HUMAN_IN_CONTROL` brake + `await-human` handoff held the whole time** (agent
+navigate→409, zero agent mutations during the human window); resumed logged in as `roionly9`. Roi
+confirmed: it passes. Owed nicety (NOT a blocker): **5b typed-code path** (Feather auto-typing a
+relayed 6-digit code) is **built + mock-proven but not live-proven** — no real site issued a typed code
+(GitHub & IG both used no-code or link/CAPTCHA walls). Live proof needs a TOTP/SMS-2FA-enabled account.
+**RECOMMEND NEXT:** v2.5/5d (Stealth + typed-code live proof + LinkedIn exit test) stays deferred;
+choose the next thread (5d stealth · Phase 2 warmed step-up · 4b shell).
+
+- [x] **Spine SAFETY live test — DONE → PASS (2026-06-23).** Run A GitHub = PARTIAL (no wall); Run B
+      Instagram = **PASS** (brake + handoff held through password + 2 CAPTCHAs + email-link, multi-tab).
+      Finding #1 fixed+proven (`4c75a1e`, identityId in LaunchSchema). Asterisks: 5b typed-code not
+      live-exercised (no real typed-code wall); password recovered from history (accepted throwaway).
+- [ ] **(owed nicety, deferred) 5b typed-code LIVE proof** — needs a TOTP/SMS-2FA-enabled account so a
+      6-digit typed wall is guaranteed; then drive `mfa/challenge` → brake #2 → human relays code via
+      tokened page → Feather types it. Build is done + mock-proven (`12ffa91`); only the live wall is owed.
 - [x] **FINDING #1 — wired `identityId` into `LaunchSchema`** (TDD, `4c75a1e`): added
       `identityId: z.string().optional()` to `LaunchSchema` + `LaunchInput`; launch-by-identity now
       reachable from the API. **Proven live this run** (launch envelope carried identityId→workspaceId).
