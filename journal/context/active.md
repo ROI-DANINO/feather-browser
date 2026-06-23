@@ -6,7 +6,36 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 
 ## Current pointer
 
-- **NOW (2026-06-23 03:46 STOP — "The Door I Didn't Build"): the v2 spine's SAFETY is delivered by the
+- **NOW (2026-06-23 09:10 STOP — spine LIVE TEST designed + planned; run-prep caught Finding #1).**
+  Ran the deferred live-testing brainstorm. Settled (5 forks w/ Roi): **spine *safety* test** (not the
+  anti-bot/fingerprint track); **Phase 1 = fresh GitHub login + emailed device-code wall**, then Phase 2
+  warmed step-up; **throwaway GitHub** registered to scratch Gmail (`roionly9`); **operate-by-hand, no new
+  code**; **2 human touchpoints** (password + code) that *are* the machinery under test. Wrote+committed
+  **design** `docs/specs/2026-06-23-spine-live-test-design.md` (`b8e9745`) + **11-task run plan**
+  `…-spine-live-test-plan.md` (`f3c1ceb`). Started the run: server up, health green, identity
+  `gh-spine-test` created (cold) — then **Finding #1** surfaced before driving: **the HTTP launch route
+  can't bind a session to an identity** — `LaunchSchema` (`src/transport/routes.ts:49-61`) omits
+  `identityId`; Zod strips it → `launchHandler` never sees it. Manager supports launch-by-identity; the
+  transport was never wired → **launch-by-identity is unreachable from the API.** Server stopped; identity
+  persists cold. **RECOMMEND NEXT (Roi's call): FIX FINDING #1 FIRST** — add `identityId` to `LaunchSchema`
+  (TDD transport test) — **then** run the live test (Roi creates the GitHub throwaway → `roionly9`, no
+  app-2FA, shares username; restart server `FEATHER_MFA_TIMEOUT_MS=600000 npm run dev`; drive plan Tasks
+  4–11). Full handoff: `journal/ops/sessions/spine-live-test-design-20260623-0910.md`. No blog (owed line filed).
+- **(prior) NOW (2026-06-23 08:15 /next — over-engineering audit processed + thread CLOSED).** Side-quest,
+  NOT spine work — roadmap unchanged. Did the inbox "ponytail" audit's **safe, behavior-preserving
+  cuts** and shipped to `dev` (merge `48d4dbe`; cuts `b30d43a`+`e97951a`), **pushed to `origin/dev`**:
+  deleted dead `recordCommand`/`getDefaultPageId`/`WarmStatus "unknown"`; collapsed the two `wait.ts`
+  "stable" loops into one `pollUntilStable` helper (timing preserved). Gates green: typecheck,
+  **435u**, wait+debug-capture **9i** on real Chromium. **Held back as optional/not-owed** the
+  security-flagged items (`isLocked`, single-grant `revoke`, HTML-escape on approval/MFA pages,
+  approval double-check), the 26-file class→function flatten, and repo-weight; **KEPT** `measurement/`
+  (Roi's call — dev tool) and `holds.observe/has/count` (roadmap consumer, commit `f7afbb8`). Audit
+  thread **closed**: disposition annotated + archived to
+  `journal/raw/archive/2026-06-23-ponytail-audit-overengineering.md`; inbox back to README-only.
+  **RECOMMEND NEXT (unchanged): the deferred LIVE-TESTING BRAINSTORM** — prove the native spine live
+  (warmed identity through a real login/MFA wall, human-in-loop, brakes observed), Roi driving the
+  human steps; plan first before driving.
+- **(prior) NOW (2026-06-23 03:46 STOP — "The Door I Didn't Build"): the v2 spine's SAFETY is delivered by the
   NATIVE path; raw-CDP attach is interop, deferred to 5e. No spine build work remains.** The 5c design
   pass (brainstorm with Roi) re-read the architecture: Feather's **native API is the credential-safe
   driving surface** (Safe tier); **raw-CDP attach = interop, not a safety brick.** Traced the wrap exit

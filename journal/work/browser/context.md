@@ -19,6 +19,22 @@ no remaining build work — only the live test** (5b was proven with a MOCK brow
 `docs/specs/2026-06-23-5c-native-vs-cdp-attach-decision.md`. (5b MFA shipped `12ffa91`; 5a Identity
 shipped `3674d82`.)
 
+**Spine LIVE test designed + Finding #1: launch-by-identity is unreachable from the API (2026-06-23).**
+The deferred live-testing brainstorm produced a design + 11-task operate-by-hand run plan
+(`docs/specs/2026-06-23-spine-live-test-{design,plan}.md`, `b8e9745`/`f3c1ceb`): an agent drives a
+throwaway-GitHub login through a real **emailed device-code** wall, human supplies password + code (2
+touchpoints = the machinery under test), the `HUMAN_IN_CONTROL` brake asserted, against the
+scratch-Gmail (`roionly9`) inbox. Run-prep immediately caught a real gap: **`LaunchSchema`
+(`src/transport/routes.ts:49-61`) omits `identityId`** — Zod strips it, so `launchHandler` never
+receives it, even though `SessionManager.launch` (`src/sessions/manager.ts:92-104`) resolves
+`identityId → identity.defaultWorkspaceId`. So you can create + `mark-warm` identities but **cannot
+launch a session bound to one over HTTP**; the 5a tests exercised the manager directly and missed it.
+Fix = add `identityId: z.string().optional()` to `LaunchSchema` + a transport test (Roi: do this
+before the live run). Workaround meanwhile: launch by `workspaceId` (same persistent profile dir).
+Grounded run facts: `MfaType` has no `email` (use `sms` for an emailed code); the default
+`ConsoleNotifier` prints the **tokened** MFA resolve URL to **server stdout**; default MFA timeout is
+5min (bump via `FEATHER_MFA_TIMEOUT_MS`).
+
 **Human-handoff hardened: navigation-survivable banner + human-in-control guard (2026-06-15, `dev`
 `2c7773a`).** Two durable `await-human` behaviors. (1) **The Resume banner now survives navigation** —
 re-injected on each new main-frame document via a `domcontentloaded` listener (detached on resolve;

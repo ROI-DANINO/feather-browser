@@ -22,3 +22,26 @@ brainstorm** (warmed identity through a real login/MFA challenge, human-in-loop,
 **Artifacts:** decision doc `docs/specs/2026-06-23-5c-native-vs-cdp-attach-decision.md`; ROADMAP +
 tasks + browser-desk reconciled; blog `0021-the-door-i-didnt-build.md`; memory
 `feather-security-first-framing`. This /stop consumed 3 pending /next entries (5a, v2-wrap, 5b).
+
+---
+## 2026-06-23 09:10 — Spine live test designed + planned; Finding #1 (identityId launch gap)
+
+**Decision:** the deferred live-testing brainstorm is DONE → produced a design + 11-task
+operate-by-hand run plan (`docs/specs/2026-06-23-spine-live-test-{design,plan}.md`, `b8e9745`/`f3c1ceb`).
+Shape: agent drives a **throwaway-GitHub** login through a real **emailed device-code** wall; human
+supplies password + code (2 touchpoints = the machinery under test); `HUMAN_IN_CONTROL` brake asserted;
+inbox = scratch Gmail (`roionly9`); operate-by-hand, zero source changes. Anti-bot/fingerprint track is
+SEPARATE (v2.5/5d) — its policy only governs target choice here.
+
+**Finding #1 (caught before the browser opened):** the HTTP launch route can't bind a session to an
+identity — `LaunchSchema` (`src/transport/routes.ts:49-61`) omits `identityId`, Zod strips it, so
+`launchHandler` never sees it, though `SessionManager.launch` resolves `identityId → defaultWorkspaceId`.
+Launch-by-identity is **unreachable from the API**; 5a tests hit the manager directly and missed it.
+
+**State:** spine still build-complete-on-paper; live test NOT yet run (blocked on Roi creating the
+GitHub throwaway). Server up→down this session; identity `gh-spine-test` persists cold.
+
+**Next (Roi's call):** FIX FINDING #1 FIRST — add `identityId: z.string().optional()` to `LaunchSchema`
++ transport test (TDD) — THEN run plan Tasks 4–11. Run facts grounded: no `email` MfaType (use `sms`);
+`ConsoleNotifier` prints the tokened MFA URL to server stdout; default MFA timeout 5min (bump via
+`FEATHER_MFA_TIMEOUT_MS=600000`).
