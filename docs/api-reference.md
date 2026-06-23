@@ -1198,12 +1198,70 @@ opted-in) or `GRANT_REQUIRED` (no usable grant — none approved, already spent,
 
 ---
 
+### Multi-Factor Authentication (MFA)
+
+When an agent hits a login wall it can't pass alone — a TOTP/SMS code, or a "tap yes on your phone"
+push — Feather pauses the agent, a human resolves the challenge on a local page, and Feather resumes
+the agent **without the agent ever seeing the raw code**. This is the typed-code/push sibling of
+`await-human`: use `await-human` when the human drives the real browser themselves; use MFA when the
+human relays a code that Feather types in.
+
+**The flow:**
+
+1. The agent detects the wall (an OTP field, or a "check your phone" screen) and creates a challenge:
+   `POST /v1/sessions/:sessionId/mfa/challenge`. Feather takes an `mfa` **session hold** + a pause —
+   while it's active, agent page-mutating commands are refused with `HUMAN_IN_CONTROL` (409); reads
+   stay allowed (page-scoped). The agent gets back a **token-less** `localUrl` (the bearer secret
+   never reaches the agent).
+2. Feather notifies the human out-of-band — the server console always, plus a Telegram message if
+   `FEATHER_TELEGRAM_BOT_TOKEN` + `FEATHER_TELEGRAM_CHAT_ID` are set — with a link carrying a
+   **single-use humanToken**.
+3. The human opens the link (`GET /v1/mfa/:challengeId?t=<humanToken>`); a hardened page (single-use
+   token, per-render CSRF nonce, strict CSP, global Origin/Host guard) shows a code field (totp/sms)
+   or a Done button (push) and submits (`POST /v1/mfa/:challengeId/submit`).
+4. Feather verifies the token, checks the **page origin is unchanged since challenge creation**
+   (anti-phishing — refuses to type otherwise), types the code for totp/sms (push types nothing),
+   releases the hold + pause, and the agent's next status poll sees `resolved`.
+
+If the human doesn't act within `timeoutMs` (default 5 min) the challenge goes `timed-out`, the hold
++ pause release, and the agent decides whether to retry or abort — Feather does not. Closing the
+session cancels any pending challenge. Lifecycle steps emit `mfa.challenge.created` /
+`mfa.challenge.resolved` / `mfa.challenge.expired` on `GET /v1/events`.
+
+> **Honest boundary:** "the agent never sees the code" keeps the reusable secret (TOTP seed /
+> one-time code) out of agent/LLM/log space and enforces the human gate — it does **not** make an
+> untrusted agent safe on an authenticated account.
+
+#### `POST /v1/sessions/:sessionId/mfa/challenge` — Create a challenge (agent-facing)
+
+**Request body:** `{ "type": "totp" | "sms" | "push", "target"?: Target, "prompt": string, "pageId"?: string, "timeoutMs"?: number }`
+— `target` is **required** for `totp`/`sms` (the field the code is typed into) and **rejected** for
+`push` (nothing is typed).
+
+**Response `data`:** `{ "challengeId", "localUrl", "expiresAt" }` — `localUrl` is deliberately
+token-less. Watch the server console / Telegram for the human link carrying the `humanToken`.
+
+#### `GET /v1/sessions/:sessionId/mfa/:challengeId` — Poll status (agent-facing)
+
+**Response `data`:** `{ "status": "pending" | "resolved" | "timed-out" }`. (Prefer the
+`mfa.challenge.*` SSE events; this poll is the fallback.)
+
+#### `GET` / `POST /v1/mfa/:challengeId` — Challenge page (human-facing)
+
+No API token. `GET …?t=<humanToken>` renders the code/Done page (404 without a valid token); `POST
+…/submit` (the page form posts `code?` + `humanToken` + `csrfNonce`) resolves it. Single-use.
+
+---
+
 ## Error Codes
 
 | Code | HTTP Status | Description |
 |------|-------------|-------------|
 | `DANGEROUS_DISABLED` | 403 | A Dangerous-tier capability was used but is not opted-in via `FEATHER_DANGEROUS_CAPABILITIES` |
 | `GRANT_REQUIRED` | 403 | A Dangerous-tier operation ran without an approved, unspent capability grant for the session |
+| `MFA_NOT_FOUND` | 404 | No MFA challenge exists with the requested `challengeId` |
+| `MFA_NOT_PENDING` | 409 | The MFA challenge is already resolved or timed-out |
+| `MFA_FORBIDDEN` | 403 | An MFA submit failed the humanToken / CSRF nonce / origin-unchanged check |
 | `FORBIDDEN_HOST` | 403 | `Host` header is not a recognized loopback address (DNS-rebind defense); applies to all routes |
 | `FORBIDDEN_ORIGIN` | 403 | Cross-origin `Origin`/`Referer` on a state-changing request (CSRF defense); applies to `POST`/`PUT`/`PATCH`/`DELETE` |
 | `UNAUTHORIZED` | 401 | `X-Feather-Token` header is missing or does not match the server token |

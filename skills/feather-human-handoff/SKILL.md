@@ -76,6 +76,29 @@ Then check `resumedBy === "human"` before continuing. After resume, **re-observe
 changed under you while you weren't looking; pre-pause refs are stale at best, and if the human's
 action navigated they are expired (`REF_EXPIRED`). Act only on fresh refs.
 
+## Typed codes & push — the MFA Handler (shipped, 5b)
+
+For a **TOTP/SMS code** or a **"tap yes on your phone" push**, there's a dedicated flow that's better
+than a bare `await-human`: the human relays the code on a small local page and Feather types it in —
+the agent never sees the raw code, and the agent is frozen (`HUMAN_IN_CONTROL`) until it resolves.
+
+```http
+POST /v1/sessions/:sessionId/mfa/challenge
+{ "type": "totp", "target": { "by": "css", "selector": "#otp" }, "prompt": "LinkedIn 2FA" }
+# push: { "type": "push", "prompt": "Approve the Google sign-in on your phone" }  (no target)
+```
+- `target` is **required** for `totp`/`sms` (where Feather types the code), **omitted** for `push`.
+- The response `localUrl` is token-less; the human gets the real link (with a `humanToken`) on the
+  **server console** or **Telegram** (`FEATHER_TELEGRAM_BOT_TOKEN` + `FEATHER_TELEGRAM_CHAT_ID`).
+- Poll `GET /v1/sessions/:sessionId/mfa/:challengeId` for `resolved` | `timed-out` (or watch the
+  `mfa.challenge.*` SSE events). Branch on `timed-out` — the human never acted.
+- Anti-phishing: Feather refuses to type if the page **origin changed** since you created the
+  challenge. Create the challenge on the page that actually shows the wall.
+
+**When to use which:** `await-human` = the human does the action in the real browser (CAPTCHA,
+consent). MFA challenge = the human just hands over a code/approval and Feather acts. Full contract in
+`docs/api-reference.md` → "Multi-Factor Authentication (MFA)".
+
 ## Checklist
 
 - [ ] Headed session (`chromium-headed-cdp`)?
