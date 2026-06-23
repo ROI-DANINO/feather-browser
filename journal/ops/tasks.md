@@ -3,10 +3,12 @@
 Checklist only. Front door → `feather.md`; version roadmaps → `docs/roadmap/{v1,v2,v3}.md`;
 execution index → `ROADMAP.md`; live pointer → `journal/context/active.md`.
 
-**Next action = v1 leftover cleanup**, then **5a — Identity Model**. (Security leak triaged + accepted
-as low-risk — unique throwaway, no history rewrite, rotation deferred to 5d. See Security section.)
-Gate A is DONE end-to-end (A0 + A1 + proven mined-AND-used). The navigation-survivable banner AND a
-new human-in-control guard shipped 2026-06-15 (`2c7773a`).
+**Next action = reconcile the 5b MFA plan against shipped Gate A reality, then build 5b TDD.** Gate A ✅,
+5a Identity ✅. **v2 wrap scope FIXED 2026-06-23 (Roi):** complete the security spine only
+(**5b MFA → 5c attach**); Stealth 5d + the LinkedIn exit test are **deferred to a later v2.5**.
+Decision doc: `docs/specs/2026-06-23-v2-spine-completion-plan.md`. Testing is a separate later
+brainstorm. (Security leak triaged + accepted as low-risk — unique throwaway, no history rewrite,
+rotation deferred to 5d. See Security section.)
 
 Latest (2026-06-15 04:46 STOP): **RESUME-BANNER FIX + HUMAN-IN-CONTROL GUARD SHIPPED** (`2c7773a`,
 TDD, proven live on scratch). Banner re-injects on `domcontentloaded` (survives navigation); a pause
@@ -96,6 +98,11 @@ stealth probe only once Stealth 5d + MFA 5b exist; running it now would give mud
 
 Security-first spine: `gate → Identity → MFA → warmed attach → Stealth last`. Do not start before Gate A.
 
+> **Wrap scope (2026-06-23):** finish the spine only — **5b MFA → 5c attach** — then stop. Stealth (5d)
+> + the un-flagged-LinkedIn exit test are **deferred to v2.5**. Spine-done = *safe but not yet stealthy*
+> (don't test against LinkedIn at the end). Decision: `docs/specs/2026-06-23-v2-spine-completion-plan.md`.
+> A v2-wrap retrospective (where the foundations stand, honest ledger) landed at `docs/v2_wrap/`.
+
 - [ ] **5.0.0 — Capability/safety gate** (implements ADR-0010) — Gate A — **IN PROGRESS.**
       Phase boundary done (planning-first). ADR-0010 **ACCEPTED** (#3) + Gate A design
       (`docs/specs/2026-06-11-gate-a-capability-system-design.md`); split into A0 + A1.
@@ -147,7 +154,10 @@ Security-first spine: `gate → Identity → MFA → warmed attach → Stealth l
       Gates: tsc clean, **399 unit** (+33), identity integration 4/4, full integration 96/96 (the lone
       red is the pre-existing niri `attach-cdp` viewport test — env-specific, untouched by 5a), manual
       curl CRUD round-trip green. Plan: `docs/specs/2026-06-07-identity-model-plan.md`.
-- [ ] **5b — MFA Handler** (plan: `docs/specs/2026-06-07-mfa-handler-plan.md`)
+- [ ] **5b — MFA Handler** (plan: `docs/specs/2026-06-07-mfa-handler-plan.md`) — **NEXT.**
+      ⚠️ Reconcile the plan against shipped Gate A first (predates it): wire onto `src/capability/holds.ts`
+      session-hold, `src/transport/middleware.ts` Origin/Host guard, single-use humanToken approval. MFA
+      creates an `mfa` hold — does NOT touch stealth. Then build TDD.
 - [ ] **5d — Stealth Stack** (verify-not-spoof; plan: `docs/specs/2026-06-07-stealth-stack-plan.md`)
       NB: M2 is NOT usable as 5d evidence or regression test (cause undetermined — META-ANALYSIS §1);
       M1 cold-profile search walls remain the evidence.

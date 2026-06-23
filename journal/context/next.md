@@ -69,3 +69,73 @@ proven → housekeeping + Headroom logged) was consumed at the 2026-06-15 04:46 
 ### Risks / blockers
 - One pre-existing integration failure (niri `attach-cdp` viewport) is expected red on this machine — not a regression.
 - MFA touches unauthenticated-ish local human routes → handle with Gate A discipline (Origin/Host + single-use humanToken + CSRF).
+
+---
+## 2026-06-23 03:34 — v2-wrap docs landed + v2 spine-completion scope decided
+
+### Session pointer
+- Roadmap/session pointer: Phase 4a wrap → v2 security spine. Gate A ✅ + 5a Identity ✅. Wrap scope now
+  fixed: **complete the spine (5b MFA → 5c attach), defer Stealth 5d + LinkedIn test to v2.5.**
+
+### Summary
+- Reviewed an agent-built **v2-wrap** doc set (docs-only retrospective); it was good + accurately cited
+  but sat **uncommitted/untracked** in the `v2-wrap` worktree (NOT merged, despite the premise). Landed it.
+- Brainstormed "truly wrap v2" with Roi → decided **security-spine-only** scope + **5b→5c** build order;
+  testing is a deliberately separate later brainstorm.
+
+### Completed
+- **v2-wrap docs reviewed + landed:** verified citations against live code (all accurate) + re-ran gates
+  myself (`tsc` clean, **vitest 399/399**, 62 files). Committed on `v2-wrap` (`d6cbf46`), fast-forward
+  **merged to `dev`**, **pushed to `origin/dev`**. Removed the `v2-wrap` worktree + deleted the merged branch.
+- **Scope-decision doc written + committed** (`42b0e36`, on `dev`, NOT yet pushed):
+  `docs/specs/2026-06-23-v2-spine-completion-plan.md`. Records spine-only scope, 5b→5c order +
+  justification, human-in-loop, testing-deferred, and the 5b Gate-A reconcile flag.
+
+### User decisions / quotes
+- Decision: **wrap v2 = security spine only.** Build 5b MFA then 5c attach; defer Stealth 5d + the
+  un-flagged-LinkedIn exit test to a later v2.5. Quote: "Finish the security spine only" / "i want to
+  build whats more importent for the functionality of v2."
+- Decision: **build order 5b MFA → 5c attach**, agent-recommended, Roi sanity-checked. Quote: "solid."
+- Decision: **testing is a separate later brainstorm**, after building. Quote: "i would want to brainstorm
+  the testing after we finish building whatever we need."
+- Correction (preserve): Roi did NOT confirm the agent mis-reported git; that was the agent over-reading
+  Roi's hazy memory. Quote: "dont call it a lier just cause of my poor memory." → drop any
+  agent-mischaracterization; observed fact is only that the work was uncommitted.
+
+### Agent decisions / assumptions / rationale
+- Landed v2-wrap via the branch it lived on (commit on `v2-wrap` → ff-merge to `dev`) vs committing
+  straight on dev — branch-rules-correct path, and Roi had said "verify gates first, then commit."
+- 5b-before-5c justified on: dependency (5c auto-revoke-on-MFA brake is built on the MFA hold),
+  functional value (login walls are the scary-site weapon), readiness (5b has a 14-task plan; 5c has none).
+- Proposed wrap exit criterion (mine, flagged to Roi as needing his okay): agent operates a named warmed
+  identity through a login/MFA challenge, human-in-loop, brakes live. Honest limit surfaced to Roi:
+  spine-done = safe-but-NOT-stealthy → still can't safely point at LinkedIn until 5d.
+
+### Files read or touched
+- Read: `docs/v2_wrap/{README,META-ANALYSIS,SECURITY-SURFACE}.md`, `journal/ops/tasks.md`,
+  `docs/roadmap/v2.md`, `src/capability/{grants,holds}.ts`, `src/identity/store.ts`,
+  `src/transport/identity-routes.ts`.
+- Touched (committed): `docs/v2_wrap/*` (merged to dev), `docs/specs/2026-06-23-v2-spine-completion-plan.md`.
+- Touched (this /next): `journal/context/next.md`, `journal/ops/tasks.md`, `journal/context/active.md`, `journal/log.md`.
+
+### Open threads / unresolved questions
+- Roi has NOT yet explicitly confirmed the proposed wrap exit criterion wording (flagged in review; he moved to /next).
+- `42b0e36` (scope doc) is committed locally but **not pushed** to `origin/dev`.
+- 5c warmed-attach has **no design doc yet** — needs a design pass before code (second half of the wrap is fuzzier).
+
+### Next action
+- **Reconcile the 5b MFA plan against shipped Gate A reality**, then execute it TDD. (Same reconcile pass
+  5a got: wire onto `src/capability/holds.ts` session-hold, `src/transport/middleware.ts` Origin/Host guard,
+  single-use humanToken approval channel. MFA creates an `mfa` hold — does NOT touch stealth.)
+
+### Next session should read
+- `docs/specs/2026-06-23-v2-spine-completion-plan.md` (the scope decision — start here)
+- `docs/specs/2026-06-07-mfa-handler-{design,plan}.md` (the 14-task plan to reconcile)
+- `docs/specs/adr-0010-local-control-plane-capability-model.md` (the capability spine MFA consumes)
+- `docs/v2_wrap/META-ANALYSIS.md` (where v2 stands, honest ledger)
+
+### Risks / blockers
+- Deferring Stealth 5d means the wrapped spine is **safe but not stealthy** — do NOT test against
+  locked-down sites (LinkedIn) at the end; use friendlier warmed accounts (Gmail/scratch IG).
+- 5b touches local human-approval routes → keep Gate A discipline (Origin/Host + single-use humanToken + CSRF).
+- Pre-existing niri `attach-cdp` viewport integration red is expected on this machine — not a regression.

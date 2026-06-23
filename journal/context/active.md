@@ -6,7 +6,16 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 
 ## Current pointer
 
-- **NOW (2026-06-15 04:46 STOP): RESUME-BANNER FIX + HUMAN-IN-CONTROL GUARD SHIPPED — committed
+- **NOW (2026-06-23 03:34 /next): v2-wrap DOCS LANDED + v2 WRAP SCOPE DECIDED.** (1) An agent-built
+  **v2-wrap** retrospective (docs-only) was reviewed — citations verified against live code, gates re-run
+  (`tsc` clean, **vitest 399/399**) — committed, **merged to `dev` + pushed** (`d6cbf46`); its `v2-wrap`
+  worktree/branch removed. (2) Brainstorm with Roi fixed the wrap scope: **complete the security spine
+  only — 5b MFA → 5c attach — defer Stealth 5d + the LinkedIn exit test to a later v2.5.** Spine-done =
+  *safe but not yet stealthy*. Decision doc committed `42b0e36` (NOT yet pushed):
+  `docs/specs/2026-06-23-v2-spine-completion-plan.md`. Testing the finished spine is a **separate later
+  brainstorm** (Roi in the loop). **RECOMMEND NEXT: reconcile the 5b MFA plan against shipped Gate A,
+  then build 5b TDD** (`docs/specs/2026-06-07-mfa-handler-{design,plan}.md`).
+- **(prior) 2026-06-15 04:46 STOP: RESUME-BANNER FIX + HUMAN-IN-CONTROL GUARD SHIPPED — committed
   `2c7773a`.** Two complementary `await-human` fixes (TDD, proven live on scratch):
   (1) **Navigation-survivable banner** — re-injects the Resume banner on each new document via a
   `domcontentloaded` listener, so it follows the human across page changes instead of vanishing
