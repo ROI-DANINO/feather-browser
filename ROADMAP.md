@@ -186,12 +186,15 @@ raw codes.
 
 ### 🔴 Phase 5d — Stealth Stack  *(was 5a; now LAST — most complex/breakable)*
 Secure-by-default stealth hygiene + verification for agent-driven sessions.
-- **Plan:** `docs/specs/2026-06-07-stealth-stack-plan.md` (the executable body).
-- **Spec:** `docs/specs/2026-06-07-stealth-stack-design.md`;
+- **Plan:** `docs/plans/2026-06-23-5d-stealth-reconciled.md` (the executable body).
+- **Spec:** `docs/specs/2026-06-23-5d-stealth-reconciled-design.md` (rev 3);
   research `research/2026-06-07-council-audit-stealth-stack.md`,
   `research/2026-06-05-anti-detection-self-test.md`.
-- **Constraint:** evaluate `fingerprint-generator` / `fingerprint-injector` / `idcac-playwright`
-  before custom injection; never import AGPL Maxun code; kinematic input is spike-first.
+- **Model:** secure-only — the rev-2 two-mode model + mode-switch endpoint were dropped
+  (2026-06-07 plan/design docs superseded).
+- **Constraint:** `fingerprint-generator` / `fingerprint-injector` / `idcac-playwright` are
+  reference-only (they spoof — contradicts verify-don't-spoof); never import AGPL Maxun code;
+  kinematic input is spike-first.
 
 ### 🔴 Phase 5e — Agent Runtime Surface And Ecosystem Interop  *(was 5d; cold storage)*
 Expose Feather as a standard local browser tool for external agents/frameworks.

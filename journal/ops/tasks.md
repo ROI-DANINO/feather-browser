@@ -211,7 +211,12 @@ Security-first spine: `gate → Identity → MFA → warmed attach → Stealth l
       integration 101p/1skip/1 pre-existing niri attach-cdp red. Docs: api-reference MFA section + 3 error
       codes + human-handoff skill. **⚠️ Proven with a MOCK browser only — live-MFA-wall test is the
       deferred testing brainstorm.** Pushed `origin/dev` (`12ffa91`).
-- [ ] **5d — Stealth Stack** (verify-not-spoof; plan: `docs/specs/2026-06-07-stealth-stack-plan.md`)
+- [ ] **5d — Stealth Stack** (verify-not-spoof; **secure-only + design reconciled rev 3** —
+      design: `docs/specs/2026-06-23-5d-stealth-reconciled-design.md`,
+      plan: `docs/plans/2026-06-23-5d-stealth-reconciled.md`).
+      NB: rev-2 two-mode model (secure/assisted enum) + the mode-switch endpoint are DROPPED
+      (dead — 5b MFA uses a pause/hold + HUMAN_IN_CONTROL brake; fast path = per-call `type`
+      override); the 2026-06-07 design/plan docs are SUPERSEDED.
       NB: M2 is NOT usable as 5d evidence or regression test (cause undetermined — META-ANALYSIS §1);
       M1 cold-profile search walls remain the evidence.
       - [ ] **Headed-CDP viewport pinning (durable fix for the niri finding, 2026-06-15).** On a tiling

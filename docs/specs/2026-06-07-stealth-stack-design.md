@@ -1,4 +1,7 @@
 # Stealth Stack Design
+
+> **⚠️ SUPERSEDED (2026-06-23) by rev 3 — secure-only reconciliation.** This rev-2 design's mode-model half is dead: the secure/assisted enum, mutable mode, `setStealthMode`, and the `POST /v1/sessions/:id/stealth` endpoint were dropped (the 5b MFA handler shipped using a pause/hold + `HUMAN_IN_CONTROL` brake, so the mutable-mode seam is obsolete; the fast path is the existing per-call `type` `mode`/`delayMs` override). Build order also inverted — stealth is now built **last**, not first. The verify-don't-spoof thesis, the always-on env/fingerprint checks, the no-font-guard call, and kinematic-input-spike-first all stand. Current design → `docs/specs/2026-06-23-5d-stealth-reconciled-design.md`; current plan → `docs/plans/2026-06-23-5d-stealth-reconciled.md`. Kept below as design history.
+
 **Date:** 2026-06-07 (rev 2 — post Opus/Gemini council audit)
 **Status:** 📐 Spec — ready for implementation planning
 **Phase:** Phase 5 input (Agent Browsing Stack — Feature 1 of 3)

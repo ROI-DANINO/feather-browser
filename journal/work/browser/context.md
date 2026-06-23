@@ -4,6 +4,21 @@ Use this desk for browser engine research, shell architecture, extension compati
 
 ## Current Focus
 
+**5d Stealth Stack — design reconciled to rev 3 (secure-only); spec + plan committed, NO code yet
+(2026-06-23).** The 2026-06-07 rev-2 stealth design/plan were reconciled against shipped Gate A / 5a
+Identity / 5b MFA. Result is **SECURE-ONLY**: the secure/assisted mode enum, mutable mode,
+`setStealthMode`, and the `POST /v1/sessions/:id/stealth` mode-switch endpoint are **DROPPED as dead** —
+the 5b MFA handler already shipped using a pause/hold + `HUMAN_IN_CONTROL` brake, so the mutable-mode
+seam is obsolete; the fast-typing path is the existing per-call `type` `mode`/`delayMs` override. **Build
+order inverted: stealth is now LAST.** Verify-don't-spoof + no-font-guard preserved;
+`fingerprint-injector` npm packages are **reference-only** (they spoof). Identity's opaque `stealthPolicy`
+slot stays dormant under one mode. The v1 build = always-on env + fingerprint **CHECKS** +
+secure-by-default typing cadence (routed through a new `Actionable.typeSequentially` seam so cadence
+reaches ref targets) + self-test hard assertions. Deferred/filed: kinematic input spike, observe-walk
+CDP-isolated-world swap, niri viewport-pin, live probes. Spec:
+`docs/specs/2026-06-23-5d-stealth-reconciled-design.md`; plan:
+`docs/plans/2026-06-23-5d-stealth-reconciled.md`.
+
 **v2 security spine — native API IS the safety surface; raw-CDP attach deferred to interop (2026-06-23,
 docs-only decision).** The "5c warmed-profile CDP attach" design pass concluded that **handing out raw
 CDP is interop, not a safety brick.** Feather's own command API (`observe`/`click`/`type`/`extract`) is
