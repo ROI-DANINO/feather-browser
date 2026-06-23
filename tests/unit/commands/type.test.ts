@@ -7,6 +7,7 @@ vi.mock("../../../src/browser/locators", () => ({ resolveLocator: vi.fn(), resol
 const fakeLoc = {
   fill: vi.fn().mockResolvedValue(undefined),
   pressSequentially: vi.fn().mockResolvedValue(undefined),
+  typeSequentially: vi.fn().mockResolvedValue(undefined),
   count: vi.fn().mockResolvedValue(1),
 };
 const probe = vi.fn().mockResolvedValue(1);
@@ -28,18 +29,30 @@ describe("TypeHandler", () => {
     mockManager.get.mockReturnValue(mockSession);
   });
 
-  it("uses fill by default with the default timeout", async () => {
+  it("secure default: types sequentially with a per-keystroke delay in [50,150]", async () => {
     const result = await new TypeHandler(mockManager as any).execute(
       { sessionId: "ses", target: { by: "placeholder", text: "Message" }, text: "hello world" }, ctx);
-    expect(fakeLoc.fill).toHaveBeenCalledWith("hello world", { timeout: 15000 });
-    expect(fakeLoc.pressSequentially).not.toHaveBeenCalled();
+    expect(fakeLoc.typeSequentially).toHaveBeenCalledTimes(1);
+    const [value, opts] = fakeLoc.typeSequentially.mock.calls[0];
+    expect(value).toBe("hello world");
+    expect(opts.delay).toBeGreaterThanOrEqual(50);
+    expect(opts.delay).toBeLessThanOrEqual(150);
+    expect(opts.timeout).toBe(15000);
+    expect(fakeLoc.fill).not.toHaveBeenCalled();
     expect(result).toEqual({ pageId: "page_001", typed: true });
   });
 
-  it('uses pressSequentially with delay when mode is "sequential"', async () => {
+  it("explicit mode:fill overrides the secure default (fast path)", async () => {
+    await new TypeHandler(mockManager as any).execute(
+      { sessionId: "ses", target: { by: "css", selector: "#e" }, text: "hi", mode: "fill" }, ctx);
+    expect(fakeLoc.fill).toHaveBeenCalledWith("hi", { timeout: 15000 });
+    expect(fakeLoc.typeSequentially).not.toHaveBeenCalled();
+  });
+
+  it('honors explicit mode:"sequential" + delayMs', async () => {
     await new TypeHandler(mockManager as any).execute(
       { sessionId: "ses", target: { by: "css", selector: "#e" }, text: "hi", mode: "sequential", delayMs: 20, timeoutMs: 5000 }, ctx);
-    expect(fakeLoc.pressSequentially).toHaveBeenCalledWith("hi", { delay: 20, timeout: 5000 });
+    expect(fakeLoc.typeSequentially).toHaveBeenCalledWith("hi", { delay: 20, timeout: 5000 });
     expect(fakeLoc.fill).not.toHaveBeenCalled();
   });
 });

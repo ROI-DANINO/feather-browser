@@ -1,8 +1,9 @@
 import type { CommandHandler, CommandContext } from "./handler";
 import type { TypeInput, TypeOutput } from "../sessions/types";
-import { resolveLocator, resolveActionable } from "../browser/locators";
+import { resolveActionable } from "../browser/locators";
 import { withActionErrors } from "./input-errors";
 import { assertPageNotPaused } from "./pause-registry";
+import { jitterDelayMs } from "../browser/stealth";
 
 interface IManager {
   get(sessionId: string): {
@@ -23,17 +24,19 @@ export class TypeHandler implements CommandHandler<TypeInput, TypeOutput> {
     if (!input.allowDuringHumanControl) assertPageNotPaused(sessionId, resolvedPageId);
     const timeout = timeoutMs ?? 15000;
 
-    if (mode === "sequential" && target.by !== "ref") {
-      // pressSequentially is Locator-specific; use resolveLocator directly for non-ref targets
-      const loc = resolveLocator(page, target);
-      await withActionErrors(() => loc.count(), "type", () =>
-        loc.pressSequentially(text, { delay: delayMs, timeout }),
-      );
-    } else {
-      const refLookup = (r: string) => session.getObserveCache(resolvedPageId)?.refs.get(r);
-      const { act, probe } = resolveActionable(page, target, refLookup);
-      await withActionErrors(probe, "type", () => act.fill(text, { timeout }));
-    }
+    // Secure by default: caller specified neither mode nor delay → human cadence (sequential + jitter).
+    // Explicit mode:"fill" or an explicit delay is the per-call fast escape hatch and always wins.
+    const secureDefault = mode === undefined && delayMs === undefined;
+    const useSequential = mode === "sequential" || secureDefault;
+    const delay = delayMs ?? (secureDefault ? jitterDelayMs() : undefined);
+
+    const refLookup = (r: string) => session.getObserveCache(resolvedPageId)?.refs.get(r);
+    const { act, probe } = resolveActionable(page, target, refLookup);
+    await withActionErrors(probe, "type", () =>
+      useSequential
+        ? act.typeSequentially(text, { delay, timeout })
+        : act.fill(text, { timeout }),
+    );
     return { pageId: resolvedPageId, typed: true };
   }
 }
