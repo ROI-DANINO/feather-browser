@@ -10,6 +10,7 @@ interface IManager {
 
 export interface LaunchInput {
   workspaceId?: string;
+  identityId?: string;        // Phase 5a: resolves to a workspaceId via the IdentityResolver
   profile: { kind: ProfileKind };
   browserMode?: BrowserMode;
   viewport?: { width: number; height: number };

@@ -46,8 +46,9 @@ import { renderChallengePage } from "../mfa/local-page";
 import { randomBytes } from "crypto";
 import { getBaseUrl } from "./server-info";
 
-const LaunchSchema = z.object({
+export const LaunchSchema = z.object({
   workspaceId: z.string().optional(),
+  identityId: z.string().optional(),
   profile: z.object({ kind: z.enum(["persistent", "disposable"]) }),
   browserMode: z.enum(["chromium-new-headless", "chromium-headless-shell", "chromium-headed-cdp"]).optional(),
   viewport: z.object({ width: z.number(), height: z.number() }).optional(),
