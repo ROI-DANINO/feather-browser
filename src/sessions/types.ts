@@ -37,6 +37,7 @@ export interface SessionRecord {
   startedAt: string;
   pages: PageInfo[];
   profileLocked: boolean;
+  stealthWarnings: string[];    // L2 + L4 consistency-check output (empty when clean)
 }
 
 export interface ExtractField {
@@ -202,4 +203,5 @@ export interface ISession {
   getObserveCache(pageId: string): import("./session").ObserveCacheEntry | undefined;
   setObserveCache(pageId: string, entry: import("./session").ObserveCacheEntry): void;
   clearObserveCache(pageId: string): void;
+  setStealthWarnings(warnings: string[]): void;
 }

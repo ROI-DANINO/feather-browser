@@ -72,6 +72,7 @@ export class FeatherSession implements ISession {
   private _observeCache: Map<string, ObserveCacheEntry> = new Map();
   private _childProcess: ChildProcess | null = null;
   private _debugCapture: DebugCapture | null = null;
+  private _stealthWarnings: string[] = [];
 
   constructor(opts: {
     workspaceId: string;
@@ -235,6 +236,10 @@ export class FeatherSession implements ISession {
     this._debugCapture = capture;
   }
 
+  setStealthWarnings(warnings: string[]): void {
+    this._stealthWarnings = warnings;
+  }
+
   getDebugCapture(): DebugCapture | null {
     return this._debugCapture;
   }
@@ -252,6 +257,7 @@ export class FeatherSession implements ISession {
       proxy: this.proxy,
       startedAt: this.startedAt,
       profileLocked: this.profileKind === "persistent",
+      stealthWarnings: this._stealthWarnings,
     };
   }
 }

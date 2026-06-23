@@ -39,6 +39,7 @@ vi.mock("../../../src/browser/modes", async (importOriginal) => {
 });
 
 import { SessionManager } from "../../../src/sessions/manager";
+import { FeatherSession } from "../../../src/sessions/session";
 import { FeatherPaths } from "../../../src/fs-layout";
 import { ProfileLock } from "../../../src/profiles/lock";
 import { WorkspaceMetadata } from "../../../src/profiles/workspace";
@@ -658,6 +659,21 @@ describe("SessionManager.close — disposable CDP race fix", () => {
     // rm should have been called despite child never exiting
     expect(rmSpy).toHaveBeenCalled();
     rmSpy.mockRestore();
+  });
+});
+
+describe("FeatherSession stealthWarnings", () => {
+  const opts = {
+    workspaceId: "w", profileKind: "disposable" as const, browserMode: "chromium-headed-cdp" as const,
+    profilePath: "", debugDir: "", proxy: null,
+  };
+  it("defaults to an empty array", () => {
+    expect(new FeatherSession(opts).toRecord().stealthWarnings).toEqual([]);
+  });
+  it("records collected warnings", () => {
+    const s = new FeatherSession(opts);
+    s.setStealthWarnings(["SwiftShader renderer detected"]);
+    expect(s.toRecord().stealthWarnings).toEqual(["SwiftShader renderer detected"]);
   });
 });
 
