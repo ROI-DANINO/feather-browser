@@ -232,9 +232,11 @@ Security-first spine: `gate → Identity → MFA → warmed attach → Stealth l
       human's browser use once, then motion/rhythm → stealth realism, steps → workflow replay; the
       Cookie Mine pattern, new payload). **Arc design owns the ordering:**
       `docs/specs/2026-06-23-stealth-behavior-arc-design.md`. Each step = its own design + plan.
-      - [ ] **5d.1 — Stealth base** (verify-not-spoof; **secure-only, reconciled rev 3** — design
+      - [x] **5d.1 — Stealth base — SHIPPED 2026-06-23 (TDD, 9 tasks, secure-only).**
+            `src/browser/stealth.ts` + `typeSequentially` seam + `stealthWarnings` + headed-CDP launch
+            checks; 454u, rd-verify PASS; pushed `e26ef63..07bb4c1`. Design
             `docs/specs/2026-06-23-5d-stealth-reconciled-design.md`, plan
-            `docs/plans/2026-06-23-5d-stealth-reconciled.md`). **Planned, ready to build.** NB: rev-2
+            `docs/plans/2026-06-23-5d-stealth-reconciled.md`. NB: rev-2
             two-mode model + mode-switch endpoint DROPPED (5b MFA uses a pause/hold + HUMAN_IN_CONTROL
             brake; fast path = per-call `type` override); 2026-06-07 docs SUPERSEDED.
             - [ ] **Headed-CDP viewport pinning (niri finding, 2026-06-15)** — `--window-size` ignored
