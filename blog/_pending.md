@@ -10,6 +10,7 @@ If this list is empty, nothing is owed.
 ## Owed
 
 - `journal/ops/sessions/spine-live-test-design-20260623-0910.md` — designed+planned the spine *live* test (GitHub throwaway, human-in-loop MFA); run-prep caught Finding #1 (the API can't launch-by-`identityId` — the identity door the public surface can't open) *before the browser even opened* — 2026-06-23
+- `journal/ops/sessions/stealth-arc-behavior-mine-20260623-2023.md` — the 5d plan that deleted a third of itself (secure-only reconciliation — the MFA seam I'd designed in was already dead), then set the stealth + "teach the agent human behavior" work into one roadmap arc: *the Cookie Mine pattern, new payload* — record the human once, motion feeds stealth, steps feed workflow replay — 2026-06-23
 
 <!-- One line per deferred session:
 - `journal/ops/sessions/<nickname>-<timestamp>.md` — <one-line hook> — <YYYY-MM-DD>

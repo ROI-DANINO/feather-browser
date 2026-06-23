@@ -6,7 +6,25 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 
 ## Current pointer
 
-- **NOW (2026-06-23 ~16:10 — 5b TYPED-CODE PROVEN LIVE; real bug found+fixed; v2 fully proven).**
+- **NOW (2026-06-23 20:23 STOP — 5d RECONCILED to secure-only + the STEALTH+BEHAVIOR-MINE ARC set into
+  the roadmap; NO code yet).** Picked 5d Stealth; reconciled the 2026-06-07 spec/plan vs shipped reality
+  (Gate A/5a/5b/perception) → the MFA mode-switch seam is **dead** (MFA uses a pause/hold +
+  `HUMAN_IN_CONTROL` brake), build order inverted, and the model collapses to **SECURE-ONLY** (the
+  per-call `type` `mode`/`delayMs` — already in `TypeSchema` — is the fast path, so no `assisted` mode).
+  Wrote **design rev 3** (`docs/specs/2026-06-23-5d-stealth-reconciled-design.md`, `1c19a40`) + a **9-task
+  TDD plan** (`docs/plans/2026-06-23-5d-stealth-reconciled.md`, `03c0fc4`); cadence routes through a new
+  **`Actionable.typeSequentially` seam** so it reaches **ref targets** (the main agent path), not just CSS
+  selectors. Fixed stale docs via **4 parallel agents** (`2bb86e2`: old spec/plan banner-superseded;
+  ROADMAP/tasks/browser-desk repointed; fingerprint-injector pkgs reference-only). Then **set the roadmap
+  to the full stealth arc** (`a8c2290`): arc design `docs/specs/2026-06-23-stealth-behavior-arc-design.md`
+  + ROADMAP/v2/tasks encode the ordered **5d.1→5d.5** — *one foundation / two payoffs* (**the Behavior
+  Mine**: record human browser use once → motion/rhythm feeds stealth realism, steps feed workflow replay;
+  **the Cookie Mine pattern, new payload**). **5d.2 measure is a real gate** (can shrink/defer 5d.4). The
+  4 commits are **LOCAL on `dev`, NOT pushed**. **RECOMMEND NEXT (Roi's call): BUILD 5d.1** task-by-task
+  (`docs/plans/2026-06-23-5d-stealth-reconciled.md`, subagent-driven); **do NOT spec the rest ahead** —
+  let 5d.2's measurement drive the 5d.3+ specs. Full handoff:
+  `journal/ops/sessions/stealth-arc-behavior-mine-20260623-2023.md`. No blog (owed line filed).
+- **(prior) NOW (2026-06-23 ~16:10 — 5b TYPED-CODE PROVEN LIVE; real bug found+fixed; v2 fully proven).**
   Roi pushed to test the one feature still "built + mock-proven" — Feather typing a human-relayed code
   into a field (no real MFA wall needed: pointed `mfa/challenge` at a Wikipedia search box; no Telegram
   — a plain local resolve tab). Driving it live **exposed a real bug:** `MfaChallengeManager.resolveChallenge`

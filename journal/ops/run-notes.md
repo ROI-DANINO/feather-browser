@@ -103,3 +103,27 @@ unblock (accepted throwaway; the "agent never holds the secret" property is the 
 **State:** report (both runs) `docs/v2_wrap/spine-live-test/run-report.md` + 2 screenshots. **v2 =
 spine safe + PROVEN LIVE → WRAPPED.** Next thread is open: 5d Stealth · Phase 2 warmed step-up · 4b
 shell. v2.5/5d (stealth, typed-code live proof, LinkedIn exit test) stays deferred.
+
+---
+## 2026-06-23 20:23 — 5d reconciled (secure-only) + stealth/Behavior-Mine arc set (phase.md boundary)
+
+**State:** Phase 4a → opening v2.5 Phase 5d. v2 spine proven live (prior). This session = docs/planning
+only, NO source code.
+
+**Decisions (durable):**
+- **5d is SECURE-ONLY.** The 2026-06-07 rev-2 mode model is dead: no secure/assisted enum, no
+  `setStealthMode`, no `POST …/stealth` mode-switch endpoint — 5b MFA shipped using a pause/hold +
+  `HUMAN_IN_CONTROL` brake, so the mutable-mode seam is obsolete. Fast path = the per-call `type`
+  `mode`/`delayMs` already in `TypeSchema`. Verify-don't-spoof + no-font-guard preserved. Stealth built last.
+- **Cadence routes through a new `Actionable.typeSequentially` seam** (Locator.pressSequentially /
+  ElementHandle.type) so it reaches **ref targets**, not just CSS selectors.
+- **Identity `stealthPolicy` slot stays dormant** under one mode (nothing to resolve).
+- **The stealth + "teach-the-agent-human-behavior" work = one ordered arc, 5d.1→5d.5**, with a single
+  capture foundation ("the Behavior Mine"): record human browser use once → motion/rhythm feeds stealth
+  realism, steps feed workflow replay. *The Cookie Mine pattern, new payload.* **5d.2 (measure) is a real
+  gate** that can shrink/defer 5d.4. Spec each step just-in-time, not ahead.
+
+**Docs:** design `docs/specs/2026-06-23-5d-stealth-reconciled-design.md`; plan
+`docs/plans/2026-06-23-5d-stealth-reconciled.md`; arc `docs/specs/2026-06-23-stealth-behavior-arc-design.md`.
+**Commits (LOCAL on `dev`, NOT pushed):** 1c19a40, 03c0fc4, 2bb86e2, a8c2290.
+**Next:** BUILD 5d.1 (subagent-driven). Do not spec ahead; let 5d.2 drive 5d.3+.

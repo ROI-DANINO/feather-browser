@@ -4,6 +4,15 @@ Use this desk for browser engine research, shell architecture, extension compati
 
 ## Current Focus
 
+**5d expanded into the STEALTH + BEHAVIOR-MINE ARC — roadmap set (2026-06-23 20:23).** The stealth work
+and the "user teaches the agent human behavior" goal are now **one ordered arc, 5d.1→5d.5**, with a single
+capture foundation. The spine = **one foundation / two payoffs**: record the human's browser use once
+("the Behavior Mine"), then the *motion/rhythm* feeds stealth realism and the *steps* feed workflow replay
+— **the Cookie Mine pattern, new payload**. Steps: 5d.1 stealth base → 5d.2 measure (a real gate vs real
+detectors) → 5d.3 Behavior Mine (capture) → 5d.4 learned human-like input (stealth) → 5d.5 teach-a-workflow
+(efficiency). Each step is its own design + plan, specced just-in-time (5d.2's measurement drives 5d.3+).
+Arc design owns the ordering: `docs/specs/2026-06-23-stealth-behavior-arc-design.md`. **Next: build 5d.1.**
+
 **5d Stealth Stack — design reconciled to rev 3 (secure-only); spec + plan committed, NO code yet
 (2026-06-23).** The 2026-06-07 rev-2 stealth design/plan were reconciled against shipped Gate A / 5a
 Identity / 5b MFA. Result is **SECURE-ONLY**: the secure/assisted mode enum, mutable mode,
