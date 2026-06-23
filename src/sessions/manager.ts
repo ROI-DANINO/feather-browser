@@ -6,6 +6,7 @@ import { buildLaunchOptions, spawnAndConnect } from "../browser/modes";
 import { DebugCapture } from "../debug/capture";
 import { resolveChromiumExecutable } from "../config";
 import { redactProxy, redactUrl } from "../logs/redact";
+import { applyStealthEnvironment, applyFingerprintCheck, classifySite } from "../browser/stealth";
 import { FeatherLogger } from "../logs/logger";
 import { EVENTS } from "../logs/events";
 import type { FeatherPaths } from "../fs-layout";
@@ -169,6 +170,20 @@ export class SessionManager implements ISessionManager {
 
     session.setContext(context);
 
+    // Always-on stealth consistency CHECKS (verify, never spoof) on the real Cookie-Mine path.
+    // Best-effort: each check is .catch(() => null) so a flaky page.evaluate never blocks launch.
+    if (browserMode === "chromium-headed-cdp") {
+      const firstPage = context.pages()[0];
+      if (firstPage) {
+        const warnings: string[] = [];
+        const env = await applyStealthEnvironment(firstPage).catch(() => null);
+        if (env) warnings.push(...env.warnings);
+        const fp = await applyFingerprintCheck(firstPage).catch(() => null);
+        if (fp) warnings.push(...fp.warnings);
+        if (warnings.length) session.setStealthWarnings(warnings);
+      }
+    }
+
     if (input.debug) {
       const capture = new DebugCapture(context, debugDir, input.debug);
       await capture.start();
@@ -206,6 +221,8 @@ export class SessionManager implements ISessionManager {
         profileKind,
         browserMode,
         proxy: proxySummary,
+        stealthWarnings: session.toRecord().stealthWarnings,
+        siteClass: classifySite(context.pages()[0]?.url() ?? ""),
       },
     });
 
