@@ -195,15 +195,19 @@ reached; we commit to the *sequence* now.
 | Step | What | Status / body |
 |---|---|---|
 | **5d.1 — Stealth base** | always-on verify-don't-spoof checks + secure-by-default typing cadence + self-test | **planned, ready** — plan `docs/plans/2026-06-23-5d-stealth-reconciled.md`, design `docs/specs/2026-06-23-5d-stealth-reconciled-design.md` (rev 3, secure-only) |
-| **5d.2 — Measure reality** | point secure Feather at real detectors (sannysoft/CreepJS → real site); record the honest baseline | next design |
-| **5d.3 — Behavior Mine (capture)** | record human motion/rhythm + step sequence during warm/daily sessions; the shared ground | future design |
-| **5d.4 — Learned human-like input → STEALTH** | agent replays *your* captured dynamics; re-measure vs 5d.2 (spike-first) | future design |
+| **5d.2 — Measure reality** | point secure Feather at real detectors; record the honest baseline | **✅ DONE 2026-06-23** — `docs/testing/5d2-baseline/baseline-report.md`. Static axis PASS across 4 detectors (incl. commercial Fingerprint Pro + CDP-specific browserscan); verify-don't-spoof validated (`tampering_ml_score: 0`). **Gate → PROCEED, narrowed:** the one real gap is **mouse-motion** (behavioral classifiers can't score Feather — clicks/types teleport, no cursor path); keystroke cadence done, spoofing stays off |
+| **5d.3 — Behavior Mine (capture)** | record human motion/rhythm + step sequence during warm/daily sessions; the shared ground | future design — **5d.2 says prioritize the mouse-motion stream** (the axis that moves the needle) |
+| **5d.4 — Learned human-like input → STEALTH** | agent replays *your* captured dynamics; re-measure vs 5d.2 (spike-first) | future design — **5d.2 narrowed this to mouse-motion synthesis** (curved cursor trajectories), NOT keystroke math |
 | **5d.5 — Teach-a-workflow → EFFICIENCY** | agent replays captured *steps* as recipes (Anchor-inspired; Maxun reference-only) | future design |
 
 - **Model:** secure-only — the rev-2 two-mode model + mode-switch endpoint were dropped
   (2026-06-07 plan/design docs superseded).
-- **Gate:** 5d.2 is a real gate — if behavioral detection isn't biting, 5d.4 may shrink/defer. Let the
-  measurement decide.
+- **Gate:** 5d.2 is a real gate — **RAN 2026-06-23, decided: PROCEED, narrowed.** No detector
+  actively flagged Feather as a bot; static fingerprint is clean across 4 detectors. The one real gap
+  is **mouse-motion** (behavioral classifiers couldn't score Feather because clicks/types teleport —
+  no cursor trajectory). So 5d.4 narrows to mouse-motion synthesis and 5d.3 prioritizes the motion
+  stream. Keystroke cadence is done (5d.1); spoofing stays off (`tampering_ml_score: 0` proved it).
+  Report: `docs/testing/5d2-baseline/baseline-report.md`.
 - **Constraint:** `fingerprint-generator` / `fingerprint-injector` / `idcac-playwright` are
   reference-only (they spoof — contradicts verify-don't-spoof); never import AGPL Maxun code.
 - **Neighbor (later, optional):** active anti-bot self-detection (watch own behavior live, correct

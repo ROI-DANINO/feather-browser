@@ -232,9 +232,17 @@ Security-first spine: `gate → Identity → MFA → warmed attach → Stealth l
                   pin via CDP `Emulation.setDeviceMetricsOverride`, decoupled from OS window geometry,
                   flag-gated (window-vs-viewport mismatch is a mild fingerprint signal; default honest
                   "match the window"). Workaround: niri float-rule for the Feather Chromium window.
-      - [ ] **5d.2 — Measure reality** — point secure Feather at real detectors (sannysoft/CreepJS →
-            real site); record the honest baseline. **A real gate** — if behavioral detection isn't
-            biting, 5d.4 may shrink/defer.
+      - [x] **5d.2 — Measure reality — DONE 2026-06-23.** Operate-by-hand live run (disposable
+            headed-CDP, no login, public detectors). **Static axis PASS** across sannysoft, browserscan
+            (incl. **CDP: Normal**), and **commercial Fingerprint Pro** (`bot: not_detected`,
+            **`tampering_ml_score: 0`** → verify-don't-spoof validated); CreepJS PARTIAL (0% headless/0%
+            stealth, 44% "like headless", headline not capturable). 5d.1 launch self-check clean
+            (`stealthWarnings: []`). **The one real gap = mouse-motion:** incolumitas's behavioral
+            classifier never scored Feather (`Your Behavioral Score: ...`) because clicks/types teleport
+            (no cursor path). **Gate → PROCEED, narrowed:** 5d.4 = mouse-motion synthesis only (NOT
+            keystroke math — done; NOT spoofing — off); 5d.3 prioritizes the motion stream. Design
+            `docs/specs/2026-06-23-5d2-measure-reality-design.md`; report + screenshots
+            `docs/testing/5d2-baseline/`.
       - [ ] **5d.3 — Behavior Mine (capture)** — record human motion/rhythm + step sequence during
             warm/daily sessions; the shared ground. Credential-adjacent → same boundaries as the
             Cookie Mine (opt-in, redaction, no secrets into shared artifacts).
