@@ -71,3 +71,33 @@ export async function applyFingerprintCheck(page: Page): Promise<StealthCheckRes
   }
   return { ok: warnings.length === 0, warnings };
 }
+
+/**
+ * Layer 2 — environment consistency CHECK (never spoof). Spoofing locale/timezone without a
+ * matching geo-proxy introduces an Accept-Language / timezone-vs-IP mismatch that is itself a
+ * detection tell. On a real desktop the values already match the real IP. We verify and warn.
+ */
+export async function applyStealthEnvironment(page: Page): Promise<StealthCheckResult> {
+  const env = (await page.evaluate(() => ({
+    innerWidth: window.innerWidth,
+    innerHeight: window.innerHeight,
+    screenWidth: screen.width,
+    screenHeight: screen.height,
+    devicePixelRatio: window.devicePixelRatio,
+    languages: navigator.languages ? Array.from(navigator.languages) : [],
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  }))) as {
+    innerWidth: number; innerHeight: number; screenWidth: number; screenHeight: number;
+    devicePixelRatio: number; languages: string[]; timezone: string;
+  };
+
+  const warnings: string[] = [];
+  if (env.innerWidth > env.screenWidth || env.innerHeight > env.screenHeight) {
+    warnings.push(`viewport (${env.innerWidth}x${env.innerHeight}) exceeds screen (${env.screenWidth}x${env.screenHeight})`);
+  }
+  if (env.languages.length === 0) warnings.push("navigator.languages is empty (real browsers report at least one)");
+  if (!env.timezone) warnings.push("timezone is empty");
+  if (env.devicePixelRatio <= 0) warnings.push(`implausible devicePixelRatio: ${env.devicePixelRatio}`);
+
+  return { ok: warnings.length === 0, warnings };
+}

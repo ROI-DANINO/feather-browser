@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { classifySite, jitterDelayMs, applyFingerprintCheck } from "../../../src/browser/stealth";
+import { classifySite, jitterDelayMs, applyFingerprintCheck, applyStealthEnvironment } from "../../../src/browser/stealth";
 
 describe("classifySite (observability only)", () => {
   it("labels known bot-detecting apex domains tier-c", () => {
@@ -59,5 +59,31 @@ describe("applyFingerprintCheck", () => {
     } as any;
     await applyFingerprintCheck(page);
     expect(page.addInitScript).not.toHaveBeenCalled();
+  });
+});
+
+function envPage(values: Record<string, unknown>) {
+  return { evaluate: vi.fn().mockResolvedValue(values) } as any;
+}
+
+describe("applyStealthEnvironment", () => {
+  const consistent = {
+    innerWidth: 1280, innerHeight: 800, screenWidth: 1440, screenHeight: 900,
+    devicePixelRatio: 2, languages: ["en-US", "en"], timezone: "Asia/Jerusalem",
+  };
+  it("ok with no warnings when consistent", async () => {
+    const res = await applyStealthEnvironment(envPage(consistent));
+    expect(res.ok).toBe(true);
+    expect(res.warnings).toEqual([]);
+  });
+  it("warns when viewport exceeds screen", async () => {
+    const res = await applyStealthEnvironment(envPage({ ...consistent, innerWidth: 2000 }));
+    expect(res.ok).toBe(false);
+    expect(res.warnings.join(" ")).toMatch(/viewport.*screen/i);
+  });
+  it("warns when languages is empty", async () => {
+    const res = await applyStealthEnvironment(envPage({ ...consistent, languages: [] }));
+    expect(res.ok).toBe(false);
+    expect(res.warnings.join(" ")).toMatch(/languages/i);
   });
 });
