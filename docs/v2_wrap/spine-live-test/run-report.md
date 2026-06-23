@@ -1,12 +1,14 @@
 # Spine Live Test — Phase 1 Run Report
 
-**Date:** 2026-06-23 · **NET VERDICT: PASS (v2 safety spine proven live).** Two runs:
+**Date:** 2026-06-23 · **NET VERDICT: PASS (v2 safety spine proven live) + 5b typed-code PROVEN LIVE
+(real bug found & fixed).** Three runs:
 **Run A (GitHub) = PARTIAL** (no security wall appeared); **Run B (Instagram) = PASS** — the brake +
 human-handoff machinery held through a genuinely hard real wall (password + 2 CAPTCHAs + email-link
-verification across 2 tabs). The spine's safety is delivered by the `HUMAN_IN_CONTROL` brake +
-human-in-loop, and both held live. The only thing *not* exercised is 5b's **typed-code** convenience
-(Feather auto-typing a relayed 6-digit code) — built + mock-proven, but no real site issued a typed
-code to drive it. That is an owed nicety, **not** a blocker on the spine.
+verification across 2 tabs); **Run C (5b inject) = PASS after fix** — driving the typed-code flow live
+**exposed a real bug** (the MFA handler braked its *own* code-injection → `HUMAN_IN_CONTROL`), which we
+root-caused, fixed (TDD, regression test), and re-ran live: Feather injected the human-relayed code
+into the target field. The spine's safety is delivered by the `HUMAN_IN_CONTROL` brake + human-in-loop
+(both held live), and the 5b typed-code convenience is now **proven live**, not just mock-tested.
 
 **Plan:** [`../../specs/2026-06-23-spine-live-test-plan.md`](../../specs/2026-06-23-spine-live-test-plan.md) ·
 **Design:** [`../../specs/2026-06-23-spine-live-test-design.md`](../../specs/2026-06-23-spine-live-test-design.md)
@@ -159,3 +161,48 @@ but never met a real typed-code wall — neither GitHub nor IG issued one. Owed 
 
 - Warmed `roionly9` IG session persists on the `scratch` profile (logged in) — Cookie-Mine fuel.
 - Screenshot: `instagram-logged-in-feed.png`. Session log: `~/.local/state/feather/logs/sessions/ses_cedae15ddf.jsonl`.
+
+---
+
+## Run C — 5b typed-code inject (PASS after a real bug fix)
+
+**Sessions:** `ses_31cbd59921` (bug repro) → `ses_8044e9a5d5` (post-fix) · **Target:** Wikipedia search
+box (`#searchInput`) — a stable real-origin input, no real MFA wall needed to exercise the mechanism.
+**Why this run:** Roi pushed to actually test the one feature we kept calling "built + mock-proven" —
+Feather typing a human-relayed code into a field. His insight: no Telegram needed; the resolve page is
+a plain local tab. So we pointed an `mfa/challenge` at any field and drove the inject directly.
+
+### The bug (found live)
+1. Fired `mfa/challenge` (type `sms`, target `#searchInput`). Response carried only the **token-less**
+   localUrl; the **tokened** resolve URL appeared only on the server console (humanToken kept off the
+   agent-facing response — working as designed).
+2. **Brake #2 confirmed:** during the pending challenge, agent `type` → `409 HUMAN_IN_CONTROL`; agent
+   `observe` (read) → `200`; field stayed empty.
+3. Human opened the tokened resolve page, entered `123456`, submitted → **`ok:false`,
+   `HUMAN_IN_CONTROL`**: *"A human is in control of page … the agent cannot act until the pause is
+   resumed."* **Feather blocked its own code-injection.**
+
+**Root cause:** `MfaChallengeManager.resolveChallenge` (`src/mfa/manager.ts`) typed the code via the
+normal `TypeHandler` **while the MFA pause was still active**; `TypeHandler` runs
+`assertPageNotPaused` (`src/commands/type.ts`) → threw. The MFA pause that freezes the *agent* also
+froze the resolution's *own* type. The mock-browser unit tests missed it because they stubbed **both**
+the pause and the typeHandler, so the real interaction never ran.
+
+### The fix (TDD)
+- `TypeInput.allowDuringHumanControl?` (internal-only; absent from the HTTP `TypeSchema`, so an
+  external/agent caller can never set it). `type.ts` skips the pause guard only when it's set.
+- `resolveChallenge` sets `allowDuringHumanControl: true` on its sanctioned, origin-checked injection.
+  The agent stays frozen through the entire resolution; only this one type is exempt, and the pause is
+  released immediately after.
+- **Regression test** (`tests/unit/mfa/manager.test.ts`): uses the **real** pause registry + a type
+  stub enforcing the same guard — reproduces the exact `HumanInControlError` without the fix
+  (proven red→green). Gates: typecheck clean, **438 unit** (+1), MFA integration 5/5.
+
+### Re-run live (post-fix) → PASS
+Fresh server with the fix → new challenge → human submitted `123456` on the resolve page →
+**`#searchInput` value = `123456`**, challenge `status: "resolved"`, page un-braked
+(`observe` → 200), events `mfa.challenge.created` → `mfa.challenge.resolved`. The code went
+**separate tab → injected into the automated page**, agent frozen throughout, never seeing the code.
+
+**Verdict: 5b typed-code PROVEN LIVE.** No Telegram required — a plain local resolve tab, exactly as
+Roi predicted. The live test earned its keep: it found a real bug the mock tests could not.

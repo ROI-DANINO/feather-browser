@@ -141,6 +141,12 @@ export interface SelectOptionOutput {
 export interface TypeInput {
   sessionId: string; pageId?: string; target: Target; text: string;
   mode?: "fill" | "sequential"; delayMs?: number; timeoutMs?: number;
+  /**
+   * Internal-only: set ONLY by the MFA resolve path so its sanctioned, origin-checked code-injection
+   * isn't blocked by the MFA challenge's own HUMAN_IN_CONTROL pause. Absent from the HTTP TypeSchema
+   * (Zod strips unknown keys), so an external/agent caller can never set it — the agent stays frozen.
+   */
+  allowDuringHumanControl?: boolean;
 }
 export interface TypeOutput { pageId: string; typed: true; }
 

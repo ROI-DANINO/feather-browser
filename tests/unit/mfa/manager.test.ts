@@ -7,6 +7,7 @@ import {
   MfaValidationError,
 } from "../../../src/mfa/types";
 import { SessionHoldRegistry } from "../../../src/capability/holds";
+import { createPause, resumePause, discardPause, assertPageNotPaused, _resetForTests } from "../../../src/commands/pause-registry";
 
 const ctx = { requestId: "req_test" };
 
@@ -87,7 +88,7 @@ describe("MfaChallengeManager.resolveChallenge", () => {
     const token = tokenFromNotify(h.notifier);
     const resolved = await h.mgr.resolveChallenge(ch.challengeId, "123456", token, ctx);
     expect(h.typeHandler.execute).toHaveBeenCalledWith(
-      { sessionId: "ses_1", pageId: "page_1", target: { by: "css", selector: "#code" }, text: "123456", mode: "sequential" },
+      { sessionId: "ses_1", pageId: "page_1", target: { by: "css", selector: "#code" }, text: "123456", mode: "sequential", allowDuringHumanControl: true },
       ctx,
     );
     expect(resolved.status).toBe("resolved");
@@ -95,6 +96,40 @@ describe("MfaChallengeManager.resolveChallenge", () => {
     expect(h.holds.has("ses_1", "mfa")).toBe(false); // hold released
     expect(h.pause.resumePause).toHaveBeenCalledWith("pause_tok", "ses_1");
     expect(h.logger.log).toHaveBeenCalledWith(expect.objectContaining({ event: "mfa.challenge.resolved" }));
+  });
+
+  // Regression (found by the 2026-06-23 live inject test): the MFA challenge brakes the page with a
+  // real HUMAN_IN_CONTROL pause; resolveChallenge must type the human-relayed code THROUGH that pause,
+  // not be blocked by it. The mock-pause + mock-typeHandler harness above never exercised the real
+  // interaction. Here we use the REAL pause registry + a type stub that enforces the SAME guard as
+  // the real TypeHandler (type.ts) — so before the fix this reproduces the live 409.
+  it("types the code through its own HUMAN_IN_CONTROL pause (real pause + guard-enforcing type)", async () => {
+    _resetForTests();
+    const page = { url: () => "https://site.example/login" };
+    const session = { getPage: vi.fn().mockReturnValue({ pageId: "page_1", page }) };
+    const sessions = { get: vi.fn().mockReturnValue(session) };
+    const typeHandler = { execute: vi.fn(async (input: any) => {
+      if (!input.allowDuringHumanControl) assertPageNotPaused(input.sessionId, input.pageId ?? "page_1");
+      return { pageId: "page_1", typed: true };
+    }) } as any;
+    const notifier = { notify: vi.fn().mockResolvedValue(undefined) };
+    const logger = { log: vi.fn().mockResolvedValue(undefined) } as any;
+    const holds = new SessionHoldRegistry();
+    const pause: PauseDeps = { createPause, resumePause, discardPause }; // REAL pause registry
+    const mgr = new MfaChallengeManager(sessions as any, typeHandler, notifier, logger, holds, 300000, pause);
+    mgr.setBaseUrl("http://localhost:3333");
+
+    const ch = await mgr.createChallenge({ sessionId: "ses_1", type: "totp", target: { by: "css", selector: "#otp" }, prompt: "x" });
+    expect(() => assertPageNotPaused("ses_1", "page_1")).toThrow(); // page genuinely braked by the MFA pause
+    const token = tokenFromNotify(notifier);
+
+    const resolved = await mgr.resolveChallenge(ch.challengeId, "123456", token, ctx);
+    expect(resolved.status).toBe("resolved");
+    expect(typeHandler.execute).toHaveBeenCalledWith(
+      expect.objectContaining({ text: "123456", allowDuringHumanControl: true }), ctx,
+    );
+    expect(() => assertPageNotPaused("ses_1", "page_1")).not.toThrow(); // pause cleaned up after resolve
+    _resetForTests();
   });
 
   it("does not type for push challenges", async () => {

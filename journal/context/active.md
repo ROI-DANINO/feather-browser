@@ -6,7 +6,21 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 
 ## Current pointer
 
-- **NOW (2026-06-23 ~15:40 — v2 SAFETY SPINE PROVEN LIVE → PASS; v2 WRAPPED).** Ran a 2nd live test
+- **NOW (2026-06-23 ~16:10 — 5b TYPED-CODE PROVEN LIVE; real bug found+fixed; v2 fully proven).**
+  Roi pushed to test the one feature still "built + mock-proven" — Feather typing a human-relayed code
+  into a field (no real MFA wall needed: pointed `mfa/challenge` at a Wikipedia search box; no Telegram
+  — a plain local resolve tab). Driving it live **exposed a real bug:** `MfaChallengeManager.resolveChallenge`
+  typed the code via the normal `TypeHandler` **while its own MFA pause was active** → it braked its OWN
+  injection (`HUMAN_IN_CONTROL`); the mock unit tests missed it (stubbed both pause + typeHandler).
+  **Fixed (TDD):** `TypeInput.allowDuringHumanControl` (internal-only, absent from the HTTP TypeSchema →
+  unreachable externally) + `type.ts` honors it + `resolveChallenge` sets it on its sanctioned,
+  origin-checked injection; regression test uses the REAL pause registry (proven red→green). Gates:
+  typecheck clean, **438u** (+1), MFA integration 5/5. **Re-ran live → `123456` injected into the field,
+  challenge resolved, brake released.** Run C added to `docs/v2_wrap/spine-live-test/run-report.md`.
+  **v2 is now fully proven live** (safety spine PASS + 5b typed-code PASS). **RECOMMEND NEXT (unchanged):**
+  pick the next thread — 5d Stealth · Phase 2 warmed step-up · 4b shell. The speed/perception/toolbox
+  notes are captured in `research/2026-06-23-agent-speed-perception-toolbox-intake.md` (deferred).
+- **(prior) NOW (2026-06-23 ~15:40 — v2 SAFETY SPINE PROVEN LIVE → PASS; v2 WRAPPED).** Ran a 2nd live test
   against **Instagram** (the guaranteed-wall target Roi flagged) on the sacrificial `scratch` IG
   (`roionly9`). **Run B = PASS for the safety spine** (Run A GitHub was PARTIAL — no wall appeared):
   agent drove the login natively + typed the username; the **`await-human` handoff absorbed a genuinely

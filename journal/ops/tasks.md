@@ -18,9 +18,13 @@ choose the next thread (5d stealth · Phase 2 warmed step-up · 4b shell).
       Instagram = **PASS** (brake + handoff held through password + 2 CAPTCHAs + email-link, multi-tab).
       Finding #1 fixed+proven (`4c75a1e`, identityId in LaunchSchema). Asterisks: 5b typed-code not
       live-exercised (no real typed-code wall); password recovered from history (accepted throwaway).
-- [ ] **(owed nicety, deferred) 5b typed-code LIVE proof** — needs a TOTP/SMS-2FA-enabled account so a
-      6-digit typed wall is guaranteed; then drive `mfa/challenge` → brake #2 → human relays code via
-      tokened page → Feather types it. Build is done + mock-proven (`12ffa91`); only the live wall is owed.
+- [x] **5b typed-code LIVE proof — DONE (2026-06-23, Run C).** Drove the inject flow directly (no real
+      MFA wall needed — pointed `mfa/challenge` at a Wikipedia search box). **Found + fixed a real bug:**
+      `resolveChallenge` typed the code through the normal `TypeHandler` while the MFA pause was active →
+      it braked its OWN injection (`HUMAN_IN_CONTROL`); mock tests missed it (stubbed pause + type). Fix:
+      `TypeInput.allowDuringHumanControl` (internal-only, absent from HTTP schema) + `type.ts` honors it +
+      `resolveChallenge` sets it; regression test with the REAL pause registry (red→green). Re-ran live →
+      code `123456` injected into the field, challenge resolved, brake released. No Telegram needed.
 - [x] **FINDING #1 — wired `identityId` into `LaunchSchema`** (TDD, `4c75a1e`): added
       `identityId: z.string().optional()` to `LaunchSchema` + `LaunchInput`; launch-by-identity now
       reachable from the API. **Proven live this run** (launch envelope carried identityId→workspaceId).

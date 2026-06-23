@@ -210,6 +210,9 @@ export class MfaChallengeManager {
           target: challenge.target,
           text: code as string,
           mode: "sequential",
+          // This sanctioned, origin-checked injection is the ONE type allowed through the MFA pause's
+          // own HUMAN_IN_CONTROL guard; without it the handler brakes its own code-injection.
+          allowDuringHumanControl: true,
         },
         ctx,
       );

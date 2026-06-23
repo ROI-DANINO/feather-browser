@@ -18,7 +18,9 @@ export class TypeHandler implements CommandHandler<TypeInput, TypeOutput> {
     const { sessionId, pageId, target, text, mode, delayMs, timeoutMs } = input;
     const session = this.manager.get(sessionId);
     const { pageId: resolvedPageId, page } = session.getPage(pageId);
-    assertPageNotPaused(sessionId, resolvedPageId); // a human in control of this page blocks agent typing
+    // A human in control of this page blocks agent typing — EXCEPT the MFA resolve path, whose own
+    // pause would otherwise block Feather from typing the human-relayed code into the target field.
+    if (!input.allowDuringHumanControl) assertPageNotPaused(sessionId, resolvedPageId);
     const timeout = timeoutMs ?? 15000;
 
     if (mode === "sequential" && target.by !== "ref") {
