@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Feather pre-commit secret guard.
+#
+# Prefers gitleaks (real entropy-based scan) when installed; otherwise falls back
+# to a conservative pattern scan of the staged diff. Bypass a false positive with:
+#   git commit --no-verify
+#
+# ponytail: the grep fallback only catches KEY-SHAPED secrets (private keys, cloud
+#   tokens) — near-zero false positives. It deliberately does NOT grep for the word
+#   "password", because this repo's journals discuss credentials in prose constantly
+#   and that would cry wolf on every entry. The prose-password case (what leaked
+#   before) needs gitleaks's entropy+allowlist rules. Install gitleaks and this hook
+#   upgrades to catch that too — no edit required.
+set -euo pipefail
+
+if command -v gitleaks >/dev/null 2>&1; then
+  if ! gitleaks protect --staged --no-banner; then
+    echo "❌ gitleaks flagged a potential secret in staged changes." >&2
+    echo "   Remove it, or bypass with: git commit --no-verify  (only if it is a false positive)." >&2
+    exit 1
+  fi
+  exit 0
+fi
+
+# Fallback: no gitleaks — conservative key-shaped-secret scan of staged additions.
+added="$(git diff --cached --no-color -U0 | grep '^+' | grep -v '^+++' || true)"
+patterns='-----BEGIN [A-Z ]*PRIVATE KEY-----|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,}'
+if printf '%s' "$added" | grep -Eiq -e "$patterns"; then
+  echo "❌ pre-commit guard: staged changes look like they contain a key/token secret:" >&2
+  printf '%s\n' "$added" | grep -Ein -e "$patterns" >&2 || true
+  echo "   Remove it, or bypass with: git commit --no-verify  (only if it is a false positive)." >&2
+  echo "   Tip: install gitleaks for full entropy-based scanning (this hook uses it automatically)." >&2
+  exit 1
+fi
+exit 0

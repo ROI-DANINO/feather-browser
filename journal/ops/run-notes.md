@@ -159,3 +159,53 @@ refined itself v1→v4 across rounds:
 research in `research/`. **Commits on `dev` (pushed):** d276170, 96818c3, d92b598, b8e19bc, + Brotector
 commit. **Next:** isolate Brotector's CDP-runtime detection (fire with zero evaluates? does
 rebrowser-patches defeat `nameLookupCount`?) → decide CDP-hardening vs 5d.4 sequencing.
+
+---
+
+## 2026-06-24 — REORIENTATION: target locked, stealth CUT, v1 to ship
+
+**Trigger:** Roi flagged he'd been on autopilot ~a week and asked for a multi-angle audit + online
+research + a restructured roadmap (no code). Ran an **8-agent dynamic workflow** (security audit,
+code-health, test-suite, roadmap-drift + 2 web-research passes); the one critical security finding was
+adversarially re-verified.
+
+**Findings (verdict-backed):**
+- **Drift confirmed.** `phase.md` said `phase-4a/v1` while ~9 days of work were v2.5/5d **stealth** +
+  anti-bot-detector cat-and-mouse. The stale phase pointer + doc-churn (35/52 recent commits docs, 9
+  specs in one day, `active.md` at 247 lines / 11 NOW entries) was how it hid.
+- **CRITICAL (confirmed):** the throwaway `roionly9` password is recoverable from **public** git history
+  AND was back in the working tree. Roi's call: he handles the account; **no history scrub** (throwaway,
+  low blast radius); add a commit-time guard only.
+- **Stealth is a treadmill.** Independent benchmark: rebrowser's CDP/`Runtime.enable` patches ==
+  vanilla Playwright on 31 real Cloudflare sites. Detector scores are a lower bound, not success;
+  warmed real account + real consumer IP already wins → 5d is orthogonal to the moat.
+- **The work itself is good:** clean `tsc`, 454u + 101i, security paths genuinely covered, new
+  credential code well-architected. Direction was wrong, not craft.
+
+**Decisions (Roi):** target = **HYBRID** (personal errand-runner → narrow local-first/privacy OSS);
+**stealth CUT/parked**; big visual-shell vision deferred. Warmed sessions ride consumer WiFi/hotspot
+IPs (not datacenter) → cut is final; roaming just means more "verify it's you" challenges, already
+handled by the MFA await-human handoff.
+
+**Done this session (docs/safety only, no product code):**
+- Plan of record → `docs/specs/2026-06-24-reorientation-and-roadmap-restructure.md` (5-phase roadmap:
+  0 security → 1 ship v1 → 2 adoptable → 3 harden moat → Later stealth parked; "done" definition;
+  test strategy; cut list).
+- Commit-time secret guard → `.githooks/pre-commit` (prefers gitleaks, else conservative key-shape
+  scan; tested — blocks keys/tokens, quiet on journal prose).
+- Tracking files reconciled: `phase.md` (truthful pointer + "no code ahead of the pointer" rule),
+  `active.md` (trimmed; old NOW stack → `journal/ops/archive/active-now-stack-20260624.md`),
+  `tasks.md` (Phase 0→3 checklist; old detail → `journal/ops/archive/tasks-20260624-reorientation.md`),
+  `ROADMAP.md` (top banner + 5-phase table; 5d heading marked PARKED; body kept as history).
+- Memory: `feather-target-and-stealth-cut` added (don't re-litigate / don't restart stealth).
+
+**Next:** Phase 1 — record & publish ONE hero demo (`npm run demo:hero`, `wf-recorder` installed).
+Not yet committed (left for `/stop`).
+
+**`/stop` addendum (2026-06-24):** Roi REORDERED the post-Phase-0 plan → **harden first** (security
+wins → close test gaps) → **then OSS envelope** → **a NEW stronger demo LAST** (the current
+`npm run demo:hero` works but is basic; the finale should show real capabilities). Plan of record,
+ROADMAP table, `tasks.md`, `active.md`, `phase.md` all reconciled to this order; `phase.md` blocking →
+Phase 1a security wins. Wrote **blog 0022 — "The Disguise I Didn't Need"** (folded the 3 owed stealth
+lines; `_pending.md` cleared). Handoff:
+`journal/ops/sessions/the-disguise-i-didnt-need-20260624-0126.md`. Committed at this `/stop`.

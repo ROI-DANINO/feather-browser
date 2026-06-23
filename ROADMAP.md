@@ -1,5 +1,27 @@
 # Roadmap (Index)
 
+> **🧭 RESTRUCTURED 2026-06-24 — plan of record is now
+> [`docs/specs/2026-06-24-reorientation-and-roadmap-restructure.md`](docs/specs/2026-06-24-reorientation-and-roadmap-restructure.md).**
+> Target = **HYBRID** (personal errand-runner → narrow local-first/privacy OSS). **Stealth (5d) is
+> CUT/parked.** The big visual-shell vision is deferred. The 5-phase plan below supersedes the
+> v1/v2/v3 × phase-letter taxonomy in the body, which is kept as historical reference.
+
+## Current plan (2026-06-24 reorientation)
+
+| Phase | Goal | Done when |
+|---|---|---|
+| **0 — Stop the bleed** | Public repo safe from credential leaks | Roi rotates/abandons the leaked throwaway account; commit-time secret guard installed (**done**, `.githooks/pre-commit`); history not scrubbed (Roi's call) |
+| **1 — Harden** (security wins + test gaps) | Code solid & trustworthy BEFORE showing it off | Defense-in-depth fixes (non-loopback host opt-in, MFA token URL off console, `0700` dirs, constant-time auth); coverage tooling + floor; consolidated abuse suite; session reuse/isolation tests; at-rest ADR |
+| **2 — Make it adoptable** (OSS envelope) | Stranger goes clone→success in minutes | 60-sec README quickstart; `SECURITY.md`; `CONTRIBUTING.md`; CI green + badge; API declared v1; reproducible success number incl. one logged-in task |
+| **3 — Show it off** (a NEW, stronger demo) | A finale demo of Feather's REAL capabilities | Current demo works but is basic — record & publish ONE strong hero demo (`wf-recorder`), done LAST; binary done-line per version in `feather.md` |
+| **Later — Stealth & visual shell** | **PARKED — do not start** | Reopen only if a real site blocks a warmed session (then adopt a maintained engine, don't hand-patch) |
+
+> _Sequencing (Roi, 2026-06-24 /stop): harden first, then make it adoptable, then a new stronger demo
+> last — get the code solid before showing it off._
+
+> _The body below is historical reference (the security-first spine, the phase-letter renumbering map,
+> the 5d arc). The plan of record above governs; don't act on the body without checking it._
+
 > **📍 Start at [`feather.md`](feather.md).** The product is now framed as **v1 → v2 → v3**, with one
 > roadmap per version in [`docs/roadmap/`](docs/roadmap/). Those version files own the *product
 > narrative* ("what you'll have"). **This file is the execution engine room** behind them: phase
@@ -184,7 +206,7 @@ raw codes.
 - **Read:** `docs/specs/2026-06-23-5c-native-vs-cdp-attach-decision.md` (the reframe),
   [[adr-0010-local-control-plane-capability-model]], `docs/specs/2026-06-04-attach-dont-launch-design.md`.
 
-### 🔴 Phase 5d — Stealth + Behavior-Mine Arc  *(was 5a; now LAST — most complex/breakable)*
+### ⏸️ Phase 5d — Stealth + Behavior-Mine Arc  *(CUT/PARKED 2026-06-24 — do not start; see the plan of record. Detail below is historical.)*
 A 5-step ordered arc: stealth hygiene → measure → capture human behavior → learn from it → teach
 workflows. **One foundation, two payoffs** — record the human's browser use once ("the Behavior
 Mine"), then the *motion/rhythm* feeds stealth realism and the *steps* feed workflow replay. The

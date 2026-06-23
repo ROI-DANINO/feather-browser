@@ -4,7 +4,20 @@ Use this desk for browser engine research, shell architecture, extension compati
 
 ## Current Focus
 
-**5d expanded into the STEALTH + BEHAVIOR-MINE ARC — roadmap set (2026-06-23 20:23).** The stealth work
+**REORIENTED 2026-06-24 — stealth CUT, target = HYBRID (personal → narrow local-first/privacy OSS).**
+A multi-angle audit + research pass (8-agent workflow) found ~9 days of drift into anti-bot stealth
+while v1 was never shipped and the phase pointer stayed stale. Decision (Roi): **CUT/park the whole 5d
+stealth + Behavior-Mine arc** — independent benchmark shows rebrowser's CDP patches == vanilla
+Playwright on 31 real Cloudflare sites; detector scores are a lower bound, not real success; a warmed
+real account on a real consumer IP already looks human → stealth is orthogonal to the moat. The moat =
+**warmed real logins driven locally, credentials never leaving the machine** (auth is the
+universally-unsolved problem cloud rivals only "solve" by uploading your creds). **Order (Roi /stop):
+harden first (security wins + close test gaps) → OSS envelope → a NEW stronger demo LAST.** Plan of
+record: `docs/specs/2026-06-24-reorientation-and-roadmap-restructure.md`. Everything in this
+"Current Focus" section BELOW (the 5d stealth arc, the spine-live-test next-actions) is **SUPERSEDED —
+historical reference, not the current direction.**
+
+**(SUPERSEDED 2026-06-24) 5d expanded into the STEALTH + BEHAVIOR-MINE ARC — roadmap set (2026-06-23 20:23).** The stealth work
 and the "user teaches the agent human behavior" goal are now **one ordered arc, 5d.1→5d.5**, with a single
 capture foundation. The spine = **one foundation / two payoffs**: record the human's browser use once
 ("the Behavior Mine"), then the *motion/rhythm* feeds stealth realism and the *steps* feed workflow replay
