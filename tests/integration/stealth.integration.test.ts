@@ -36,8 +36,11 @@ describe("stealth checks on headed-CDP launch", () => {
       try {
         const record = session.toRecord();
         expect(Array.isArray(record.stealthWarnings)).toBe(true);
-        // On a real GPU the headed-CDP path must not leak SwiftShader.
-        expect(record.stealthWarnings.join(" ")).not.toMatch(/swiftshader/i);
+        // On a real GPU the headed-CDP path must not leak SwiftShader. Skipped on CI: GPU-less
+        // runners fall back to SwiftShader, so the warning firing there is correct, not a regression.
+        if (!process.env.CI) {
+          expect(record.stealthWarnings.join(" ")).not.toMatch(/swiftshader/i);
+        }
 
         // Proves the checks actually ran on the real page (not just the record default):
         // the launch-completed log gains siteClass + stealthWarnings only via the manager wiring.
