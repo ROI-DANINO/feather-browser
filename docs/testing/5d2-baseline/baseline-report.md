@@ -194,3 +194,55 @@ The web-research pass **stress-tested "mouse-motion is THE behavioral gap" and f
 Verify-don't-spoof holds overall; the landscape rewards real profile + real IP + real fingerprint. The
 two places it bends are named: behavior (5d.4 = *generating* real input, not spoofing) and the
 `Runtime.enable` CDP leak (where a patch may be the only fix).
+
+---
+
+# Addendum B — Gate-check (b): rebrowser CDP-leak test (2026-06-23, session `ses_9b5bc11708`)
+
+Ran the higher-priority gating verification first: Feather (disposable headed-CDP) against
+`bot-detector.rebrowser.net`. Evidence: `screenshots/07-rebrowser-cdp-leak.png`.
+
+| Test | Result | Meaning |
+|---|---|---|
+| **`runtimeEnableLeak`** | **🟢 No leak detected** | **The decisive one — Feather's CDP attach does NOT leak `Runtime.enable`.** |
+| `navigatorWebdriver` | 🟢 No webdriver presented | clean |
+| `pwInitScripts` | 🟢 No `__pwInitScripts` | no Playwright init-script leak |
+| `exposeFunctionLeak` | 🟢 none | clean |
+| `viewport` | 🟢 differs from automation defaults | clean |
+| `bypassCsp` | 🟢 CSP enabled (expected) | clean |
+| **`useragent`** | **🔴 RED** | `navigator.userAgentData.brands` = `Chromium 148`, **no "Google Chrome" brand** — "you might be using Chrome for Testing, a red flag" |
+| `dummyFn` / `sourceUrlLeak` / `mainWorldExecution` | ⚪️ not triggered | not exercised by normal navigation (neutral, not failed) |
+
+**Board: 6 🟢 · 1 🔴 · 3 ⚪️.**
+
+## What it decided
+
+- **GATE (b) CLEARED.** No `Runtime.enable` leak → the CDP-attach architecture is clean on the
+  protocol-leak axis. **No `rebrowser-patches` needed, and no forced verify-don't-spoof exception.** The
+  static CDP tell does **not** outrank 5d.4 — mouse-motion stays the right next target. The "patch may
+  be the only fix" tension named in Gate v2 **does not arise** — good news.
+- **NEW static tell found — the Chromium-vs-Chrome brand.** Feather runs Playwright's **bundled
+  Chromium**, so `userAgentData.brands` lists `Chromium` but not `Google Chrome`. This is a **static**
+  giveaway (present before any behavior — mouse-motion can't touch it). *Caveat:* the UA *string* is
+  clean (`Chrome/148...`, not `HeadlessChrome` — sannysoft confirmed); the tell is only in the
+  structured `brands` field, so it's **mild**, not glaring — some detectors check brands, many don't.
+  - **Fix (verify-don't-spoof aligned): run Feather against real Google Chrome stable** via the
+    `executablePath` / `FEATHER_CHROMIUM_PATH` override Feather already supports — be a *genuinely*
+    real Chrome, not fake one. **Constraint:** Google Chrome stable is **not installed on this box**
+    (`google-chrome` not on PATH) → the fix needs a Chrome install first (Roi-gated, like the Xvfb item).
+  - This is a **cheap static win** (a binary swap, no new code) and arguably higher ROI on the *static*
+    axis than the 5d.4 kinematic build — file it as its own small hardening item.
+- **`mainWorldExecution` stayed ⚪️ (neutral), not 🔴** — relevant because Feather's observe-walk runs
+  in the page main world (the deferred "isolated-world swap" in 5d.1's deferred list). It did not fire
+  under normal navigation, but a *dedicated* probe (call the trigger while observing) is worth a later
+  look before assuming the walk is invisible.
+
+## Gate decision v3 (after gate-check b)
+
+1. **5d.4 mouse-motion: confirmed un-blocked** — proceed (still bounded by the DataDome/HUMAN-vs-Cloudflare
+   width caveat; yardstick = incolumitas @15s).
+2. **NEW cheap static hardening: switch the default browser to real Google Chrome stable** to clear the
+   `useragent` red. Gated on a Chrome install. Higher static-axis ROI than 5d.4; smaller than it.
+3. Gate (a) — Chrome-136 attach — remains "spawn path OK; verify only for the future attach-to-stock-Chrome
+   ambition." Not pursued now.
+4. Still-queued capability gap (non-stealth): JS-dialog handling.

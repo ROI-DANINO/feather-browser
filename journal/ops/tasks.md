@@ -253,16 +253,24 @@ Security-first spine: `gate → Identity → MFA → warmed attach → Stealth l
             (incolumitas 0–1 score @15s). **NOT keystroke math (done), NOT spoofing (off), NOT isTrusted
             faking.** Width caveat (research 2026-06-23): high-leverage for DataDome/HUMAN/PerimeterX,
             ~zero for Cloudflare → scope to Feather's real target mix.
-            - [ ] **GATE before building 5d.4 (either could re-order it):** (a) verify CDP attach under
-                  Chrome 136+ (spawn path OK — non-default `--user-data-dir`, modes.ts:80; risk is only
-                  the future attach-to-stock-Chrome ambition); (b) run Feather vs `bot-detector.rebrowser.net`
-                  for the **`Runtime.enable` leak** — if it leaks, that static tell outranks motion (only
-                  fix = rebrowser-patches, a narrow verify-don't-spoof exception). Neighbor: active
-                  anti-bot self-detection. Research: `research/2026-06-23-bot-detection-landscape-research.md`.
+            - [x] **GATE (b) — rebrowser `Runtime.enable` leak — DONE 2026-06-23 → 🟢 NO LEAK.** Ran
+                  Feather (headed-CDP) vs `bot-detector.rebrowser.net`: 6🟢/1🔴/3⚪️. `runtimeEnableLeak`,
+                  `navigatorWebdriver`, `pwInitScripts`, `exposeFunctionLeak`, `viewport`, `bypassCsp` all
+                  clean → **CDP-attach architecture clean; NO rebrowser-patches / NO forced spoof exception;
+                  5d.4 not outranked.** Evidence: baseline-report Addendum B + screenshot 07.
+            - [ ] **GATE (a) — Chrome 136+ attach** — spawn path OK (non-default `--user-data-dir`,
+                  modes.ts:80); verify only for the future attach-to-stock-Chrome ambition. Not pursued now.
       - [ ] **(harden 5d.2 suite, next pass)** add `bot-detector.rebrowser.net` (CDP leak),
             **Brotector** (`isTrusted` behavioral + canvas cursor-path **visualizer** = free 5d.4
             debugger), deviceandbrowserinfo, pixelscan, iphey, browserleaks, FCaptcha (self-host). The
             real-blocking-site test (DataDome/Cloudflare-fronted, footprint/risk) stays Roi's call.
+      - [ ] **(cheap static-stealth win, NEW 2026-06-23) run default against real Google Chrome stable.**
+            rebrowser flagged 🔴 `useragent`: bundled Chromium → `userAgentData.brands` has `Chromium` but
+            no `Google Chrome` (static tell mouse-motion can't fix; UA *string* is fine). Fix =
+            `executablePath`/`FEATHER_CHROMIUM_PATH` → real Chrome stable (verify-don't-spoof aligned: be a
+            real Chrome). **Gated: Chrome not installed on this box** (Roi-gated install). Higher static-axis
+            ROI than 5d.4, smaller. Also worth a later dedicated `mainWorldExecution` probe (observe-walk
+            runs in the page main world; stayed ⚪️ neutral here).
       - [ ] **(Feather capability gap, NOT stealth)** no JS-dialog handling — `confirm`/`alert`/`prompt`
             are auto-dismissed (no `page.on("dialog")` in `src/`); blocks flows gated behind a confirm
             pop-up (surfaced by the incolumitas challenge 2026-06-23).
