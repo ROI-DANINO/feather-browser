@@ -63,6 +63,14 @@ export class MfaValidationError extends Error {
   }
 }
 
+export class MfaForbiddenError extends Error {
+  readonly code = "MFA_FORBIDDEN";
+  constructor(message: string) {
+    super(message);
+    this.name = "MfaForbiddenError";
+  }
+}
+
 const NEEDS_CODE = new Set<MfaType>(["totp", "sms"]);
 
 export function requireTargetForType(type: MfaType, target?: Target): void {

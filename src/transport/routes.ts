@@ -38,6 +38,12 @@ import { DangerousModePolicy } from "../capability/policy";
 import type { CapabilityName } from "../capability/grants";
 import { ExportCookiesHandler } from "../commands/export-cookies";
 import { approvalPage, approvedPage, deniedPage, expiredApprovalPage, APPROVAL_CSP } from "./approval-page";
+import { CreateMfaChallengeHandler, GetMfaChallengeHandler } from "../commands/mfa-challenge";
+import { MfaChallengeManager } from "../mfa/manager";
+import { buildNotifier } from "../mfa/notifier";
+import { loadMfaConfig } from "../mfa/config";
+import { renderChallengePage } from "../mfa/local-page";
+import { randomBytes } from "crypto";
 import { getBaseUrl } from "./server-info";
 
 const LaunchSchema = z.object({
@@ -188,6 +194,30 @@ const GrantRequestSchema = z.object({
   ttlMs: z.number().int().positive().optional(),
 });
 
+const MfaChallengeSchema = z
+  .object({
+    pageId: z.string().optional(),
+    type: z.enum(["totp", "sms", "push"]),
+    target: TargetSchema.optional(),
+    prompt: z.string().min(1),
+    timeoutMs: z.number().int().positive().optional(),
+  })
+  .superRefine((val, ctx) => {
+    const needsTarget = val.type === "totp" || val.type === "sms";
+    if (needsTarget && !val.target) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `type "${val.type}" requires a target`, path: ["target"] });
+    }
+    if (val.type === "push" && val.target) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `type "push" must not include a target`, path: ["target"] });
+    }
+  });
+const MfaSubmitSchema = z.object({
+  code: z.string().optional(),
+  humanToken: z.string().optional(),
+  csrfNonce: z.string().optional(),
+});
+const MFA_CSP = "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'";
+
 export function registerRoutes(
   app: FastifyInstance,
   manager: ISessionManager,
@@ -227,6 +257,22 @@ export function registerRoutes(
     policy: DangerousModePolicy.fromEnv(process.env),
     auditFile: paths.grantAuditLog(),
   });
+
+  // 5b MFA (reconciled onto Gate A): shares the capability service's hold registry, so the policy
+  // layer + the session-close revoke hammer already see `mfa` holds. Reuses the typeHandler built
+  // above for code entry. Base URL is set per-request from the (loopback, guard-validated) Host
+  // header. See docs/specs/2026-06-23-mfa-5b-reconciliation.md.
+  const mfaConfig = loadMfaConfig();
+  const mfaManager = new MfaChallengeManager(
+    manager,
+    typeHandler,
+    buildNotifier(mfaConfig),
+    new FeatherLogger(paths),
+    capabilities.holds,
+    mfaConfig.defaultTimeoutMs,
+  );
+  const createMfaHandler = new CreateMfaChallengeHandler(mfaManager);
+  const getMfaHandler = new GetMfaChallengeHandler(mfaManager);
 
   // Per-action trace in the session JSONL: the H3 forensics took an investigation because 7.5
   // minutes of observe/click/type left no per-action record. Action name + status code ONLY —
@@ -549,9 +595,65 @@ export function registerRoutes(
       const { sessionId } = request.params as { sessionId: string };
       const input = CloseSchema.parse(request.body ?? {});
       const closeResult = await closeHandler.execute({ sessionId, ...input }, { requestId });
-      // Revoke hammer: a closed session's grants/holds die with it (auto-revoke on close, ADR-0010).
+      // Cancel pending MFA challenges (marks timed-out, discards the pause, releases the mfa hold +
+      // logs) before the revoke hammer tears down any remaining grants/holds (auto-revoke on close).
+      await mfaManager.cancelForSession(sessionId);
       await capabilities.revokeSession(sessionId);
       await reply.status(200).send(ok(requestId, closeResult));
+    } catch (err) { await handleRouteError(err, request, reply); }
+  });
+
+  // ── 5b MFA routes ────────────────────────────────────────────────────────
+  app.post("/v1/sessions/:sessionId/mfa/challenge", { preHandler: [tokenAuth] }, async (request, reply) => {
+    const requestId = getRequestId(request);
+    try {
+      const { sessionId } = request.params as { sessionId: string };
+      const input = MfaChallengeSchema.parse(request.body);
+      if (request.headers.host) mfaManager.setBaseUrl(`http://${request.headers.host}`);
+      const result = await createMfaHandler.execute({ sessionId, ...input }, { requestId });
+      await reply.status(200).send(ok(requestId, result));
+    } catch (err) { await handleRouteError(err, request, reply); }
+  });
+
+  app.get("/v1/sessions/:sessionId/mfa/:challengeId", { preHandler: [tokenAuth] }, async (request, reply) => {
+    const requestId = getRequestId(request);
+    try {
+      const { sessionId, challengeId } = request.params as { sessionId: string; challengeId: string };
+      const result = await getMfaHandler.execute({ sessionId, challengeId }, { requestId });
+      await reply.status(200).send(ok(requestId, result));
+    } catch (err) { await handleRouteError(err, request, reply); }
+  });
+
+  // Local human page — no token auth (loopback-only; the global Origin/Host guard + the single-use
+  // humanToken in the query are the protections). Strict CSP, no external resources, no scripts.
+  app.get("/v1/mfa/:challengeId", async (request, reply) => {
+    const { challengeId } = request.params as { challengeId: string };
+    const { t } = (request.query ?? {}) as { t?: string };
+    const challenge = mfaManager.getChallenge(challengeId);
+    if (!challenge || !mfaManager.verifyHumanToken(challengeId, t)) {
+      await reply.status(404).type("text/html").header("content-security-policy", MFA_CSP).send("<h1>Challenge not found</h1>");
+      return;
+    }
+    const csrfNonce = randomBytes(16).toString("hex");
+    mfaManager.setCsrfNonce(challengeId, csrfNonce);
+    await reply
+      .status(200)
+      .type("text/html")
+      .header("content-security-policy", MFA_CSP)
+      .send(renderChallengePage(challenge, { humanToken: t, csrfNonce }));
+  });
+
+  app.post("/v1/mfa/:challengeId/submit", async (request, reply) => {
+    const requestId = getRequestId(request);
+    try {
+      const { challengeId } = request.params as { challengeId: string };
+      const { code, humanToken, csrfNonce } = MfaSubmitSchema.parse(request.body ?? {});
+      if (!mfaManager.verifyCsrfNonce(challengeId, csrfNonce)) {
+        await reply.status(403).send(fail(requestId, "MFA_FORBIDDEN", "Bad or missing CSRF nonce."));
+        return;
+      }
+      await mfaManager.resolveChallenge(challengeId, code, humanToken, { requestId });
+      await reply.status(200).send({ ok: true, message: "Submitted. You can close this page." });
     } catch (err) { await handleRouteError(err, request, reply); }
   });
 

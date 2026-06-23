@@ -18,6 +18,9 @@ const ERROR_STATUS: Record<string, number> = {
   HUMAN_IN_CONTROL: 409,
   IDENTITY_NOT_FOUND: 404,
   IDENTITY_ALREADY_EXISTS: 409,
+  MFA_NOT_FOUND: 404,
+  MFA_NOT_PENDING: 409,
+  MFA_FORBIDDEN: 403,
 };
 
 export function errorStatus(code: string): number { return ERROR_STATUS[code] ?? 500; }

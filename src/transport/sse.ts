@@ -25,6 +25,9 @@ const LIFECYCLE_EVENTS = new Set<EventName>([
   "grant.revoked",
   "identity.created",
   "identity.warmed",
+  "mfa.challenge.created",
+  "mfa.challenge.resolved",
+  "mfa.challenge.expired",
 ]);
 
 async function* sseSource(

@@ -35,10 +35,14 @@ export async function startHttpServer(
   // Runs after injectRequestId so its 403 envelopes carry a requestId. See middleware.ts.
   app.addHook("onRequest", createOriginHostGuard());
 
-  // Accept (and ignore) urlencoded bodies so the resume page's same-origin form POST is not rejected
-  // with 415. (The on-page pause banner sets a CDP-polled DOM flag and makes no network request, so
-  // it is not the consumer here.) No other route consumes urlencoded.
-  app.addContentTypeParser("application/x-www-form-urlencoded", { parseAs: "string" }, (_req, _body, done) => done(null, {}));
+  // Parse urlencoded bodies: the MFA local-page <form> submits code/humanToken/csrfNonce this way,
+  // and the resume page's same-origin form POST (empty body) must not be rejected with 415. (The
+  // on-page pause banner sets a CDP-polled DOM flag and makes no network request, so it is not a
+  // consumer here.)
+  app.addContentTypeParser("application/x-www-form-urlencoded", { parseAs: "string" }, (_req, body, done) => {
+    try { done(null, Object.fromEntries(new URLSearchParams(body as string))); }
+    catch (e) { done(e as Error, undefined); }
+  });
 
   // Allow DELETE (and other verb) requests that include Content-Type: application/json but no body.
   // Without this override Fastify rejects them with FST_ERR_CTP_EMPTY_JSON_BODY.
