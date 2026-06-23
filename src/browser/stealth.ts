@@ -40,3 +40,34 @@ const MAX_JITTER_MS = 150;
 export function jitterDelayMs(): number {
   return MIN_JITTER_MS + Math.floor(Math.random() * (MAX_JITTER_MS - MIN_JITTER_MS + 1));
 }
+
+/**
+ * Layer 4 — fingerprint consistency CHECK. No spoofing, no canvas noise, NO font guard.
+ * Real Chromium on a real GPU already has a genuine, stable fingerprint; detectors look for
+ * *tampering* first. This verifies the real WebGL renderer is intact and flags SwiftShader,
+ * which means the headless GPU leaked through and the session is already detectable.
+ */
+export async function applyFingerprintCheck(page: Page): Promise<StealthCheckResult> {
+  const gpu = (await page.evaluate(() => {
+    try {
+      const c = document.createElement("canvas");
+      const gl = (c.getContext("webgl") || c.getContext("experimental-webgl")) as WebGLRenderingContext | null;
+      const dbg = gl && gl.getExtension("WEBGL_debug_renderer_info");
+      return {
+        webglVendor: dbg ? String(gl!.getParameter(dbg.UNMASKED_VENDOR_WEBGL)) : "no-ext",
+        webglRenderer: dbg ? String(gl!.getParameter(dbg.UNMASKED_RENDERER_WEBGL)) : "no-ext",
+      };
+    } catch (e) {
+      return { webglVendor: "err", webglRenderer: String(e) };
+    }
+  })) as { webglVendor: string; webglRenderer: string };
+
+  const warnings: string[] = [];
+  if (/swiftshader/i.test(gpu.webglRenderer)) {
+    warnings.push(`SwiftShader renderer detected (${gpu.webglRenderer}) — headless GPU leaked through; session is detectable`);
+  }
+  if (gpu.webglRenderer === "no-ext" || gpu.webglVendor === "err") {
+    warnings.push("WebGL renderer info unavailable — possible hardened/atypical GPU context");
+  }
+  return { ok: warnings.length === 0, warnings };
+}

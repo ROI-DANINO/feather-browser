@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { classifySite, jitterDelayMs } from "../../../src/browser/stealth";
+import { describe, it, expect, vi } from "vitest";
+import { classifySite, jitterDelayMs, applyFingerprintCheck } from "../../../src/browser/stealth";
 
 describe("classifySite (observability only)", () => {
   it("labels known bot-detecting apex domains tier-c", () => {
@@ -24,5 +24,40 @@ describe("jitterDelayMs", () => {
       expect(d).toBeGreaterThanOrEqual(50);
       expect(d).toBeLessThanOrEqual(150);
     }
+  });
+});
+
+describe("applyFingerprintCheck", () => {
+  it("passes when a real GPU renderer is reported", async () => {
+    const page = {
+      evaluate: vi.fn().mockResolvedValue({
+        webglVendor: "Google Inc. (Intel)",
+        webglRenderer: "ANGLE (Intel, Mesa Intel(R) Iris(R) Xe Graphics, OpenGL 4.6)",
+      }),
+    } as any;
+    const res = await applyFingerprintCheck(page);
+    expect(res.ok).toBe(true);
+    expect(res.warnings).toEqual([]);
+  });
+
+  it("warns when SwiftShader (software/headless) renderer is detected", async () => {
+    const page = {
+      evaluate: vi.fn().mockResolvedValue({
+        webglVendor: "Google Inc. (Google)",
+        webglRenderer: "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device))",
+      }),
+    } as any;
+    const res = await applyFingerprintCheck(page);
+    expect(res.ok).toBe(false);
+    expect(res.warnings.join(" ")).toMatch(/swiftshader/i);
+  });
+
+  it("does NOT call addInitScript (no font guard / no spoofing)", async () => {
+    const page = {
+      addInitScript: vi.fn(),
+      evaluate: vi.fn().mockResolvedValue({ webglVendor: "Google Inc. (Intel)", webglRenderer: "ANGLE (Intel)" }),
+    } as any;
+    await applyFingerprintCheck(page);
+    expect(page.addInitScript).not.toHaveBeenCalled();
   });
 });
