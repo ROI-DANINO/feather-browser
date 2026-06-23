@@ -244,11 +244,28 @@ Security-first spine: `gate → Identity → MFA → warmed attach → Stealth l
             `docs/specs/2026-06-23-5d2-measure-reality-design.md`; report + screenshots
             `docs/testing/5d2-baseline/`.
       - [ ] **5d.3 — Behavior Mine (capture)** — record human motion/rhythm + step sequence during
-            warm/daily sessions; the shared ground. Credential-adjacent → same boundaries as the
+            warm/daily sessions; the shared ground. **5d.2 says: prioritize the mouse-MOTION stream**
+            (the axis that moves the needle). Credential-adjacent → same boundaries as the
             Cookie Mine (opt-in, redaction, no secrets into shared artifacts).
-      - [ ] **5d.4 — Learned human-like input → STEALTH** — agent replays *your* captured dynamics
-            (not generic math); re-measure vs 5d.2 (spike-first). Neighbor: active anti-bot
-            self-detection (watch own behavior live, correct when robotic).
+      - [ ] **5d.4 — Learned human-like input → STEALTH** — synthesize *curved/overshoot/human-timed*
+            mouse trajectories via CDP `Input.dispatchMouseEvent` (keeps `isTrusted: true` — Feather
+            already passes that check; the gap is trajectory SHAPE, not provenance). Re-measure vs 5d.2
+            (incolumitas 0–1 score @15s). **NOT keystroke math (done), NOT spoofing (off), NOT isTrusted
+            faking.** Width caveat (research 2026-06-23): high-leverage for DataDome/HUMAN/PerimeterX,
+            ~zero for Cloudflare → scope to Feather's real target mix.
+            - [ ] **GATE before building 5d.4 (either could re-order it):** (a) verify CDP attach under
+                  Chrome 136+ (spawn path OK — non-default `--user-data-dir`, modes.ts:80; risk is only
+                  the future attach-to-stock-Chrome ambition); (b) run Feather vs `bot-detector.rebrowser.net`
+                  for the **`Runtime.enable` leak** — if it leaks, that static tell outranks motion (only
+                  fix = rebrowser-patches, a narrow verify-don't-spoof exception). Neighbor: active
+                  anti-bot self-detection. Research: `research/2026-06-23-bot-detection-landscape-research.md`.
+      - [ ] **(harden 5d.2 suite, next pass)** add `bot-detector.rebrowser.net` (CDP leak),
+            **Brotector** (`isTrusted` behavioral + canvas cursor-path **visualizer** = free 5d.4
+            debugger), deviceandbrowserinfo, pixelscan, iphey, browserleaks, FCaptcha (self-host). The
+            real-blocking-site test (DataDome/Cloudflare-fronted, footprint/risk) stays Roi's call.
+      - [ ] **(Feather capability gap, NOT stealth)** no JS-dialog handling — `confirm`/`alert`/`prompt`
+            are auto-dismissed (no `page.on("dialog")` in `src/`); blocks flows gated behind a confirm
+            pop-up (surfaced by the incolumitas challenge 2026-06-23).
       - [ ] **5d.5 — Teach-a-workflow / action cache → EFFICIENCY** — agent replays captured *steps*
             as recipes (Anchor-inspired; Maxun `where/what` reference-only). Last — doesn't serve
             "look human". Inputs: `research/2026-06-23-agent-speed-perception-toolbox-intake.md`,

@@ -103,10 +103,94 @@ What the measurement decided:
 
 ---
 
-## Done
+## Done (first pass)
 
 - [x] 5 targets driven; behavioral targets received real secure-cadence input.
 - [x] Per-target verdicts + screenshots recorded (PARTIAL/GAP recorded honestly, not smoothed).
 - [x] 5d.1 launch self-check captured (`stealthWarnings: []`).
 - [x] Gate decision written: **proceed, narrowed to mouse-motion (5d.4); capture prioritizes motion (5d.3).**
-- [ ] Reflect the gate decision into ROADMAP/tasks (done in the same commit as this report).
+- [x] Reflected the gate decision into ROADMAP/tasks.
+
+---
+
+# Addendum — Hardening pass + landscape research (2026-06-23, same day)
+
+Roi's call: don't move to 5d.3 yet — *learn more from these tests, harden them, research the
+landscape*. Two workstreams ran: a harder live re-run (close my own confounds) and an adversarial
+web-research pass (`research/2026-06-23-bot-detection-landscape-research.md`). **Both corrected the
+first-pass conclusions — recorded here, not smoothed.**
+
+## A. Harder live re-run (session `ses_468e5f7baa`)
+
+- **CreepJS upgraded:** captured **trust grade = `high`** (a 2nd verify-don't-spoof corroboration —
+  high CreepJS trust ⇒ few/no detected lies/tampering), alongside `0% headless / 0% stealth / 44%
+  like headless`. *Honest residual:* the exact CreepJS **lies integer** is not extractable through
+  Feather's cleaned snapshot or class-selector extract (CreepJS renders it in a stripped form).
+- **incolumitas confound CLOSED — and the finding got stronger.** I completed the full Bot Challenge
+  form (text + email typed with secure cadence, dropdown selected, checkbox + radio clicked, Submit)
+  and waited through every scoring window. **`Your Behavioral Score: ...` never computed** — even
+  *with* real cadenced keystrokes and multiple clicks. So the first-pass "no score" was **not** a
+  keyboard or challenge-completion artifact: keyboard interaction is present and still insufficient.
+  The missing input is continuous **mouse-movement trajectories** (Feather's clicks teleport).
+- **NEW capability finding (separate from stealth): Feather has no JS-dialog handling.** The
+  incolumitas challenge gates its basket-table step behind a `window.confirm()` pop-up. Feather
+  registers **no `page.on("dialog")` handler** (grep-confirmed across `src/`), so Playwright's default
+  auto-dismiss fires → `confirm()` returns false → the challenge can't proceed. This blocks any
+  real-world flow gated behind `confirm`/`alert`/`prompt`, agent or not. **Filed as a Feather gap,
+  not a stealth item.**
+- Minor: incolumitas's own suite logged a `Permissions.query` `GenericSensorExtraClasses` TypeError —
+  an environment quirk in *their* test, noted not weighted.
+- Evidence: `screenshots/06-incolumitas-rerun-behavioral.png`.
+
+## B. Research corrections to the first-pass gate (the important part)
+
+The web-research pass **stress-tested "mouse-motion is THE behavioral gap" and found it half-right.**
+
+1. **The gap is trajectory SHAPE, not event provenance — narrower than I wrote.** Feather drives input
+   via CDP `Input.*`, which is OS-level and reports **`isTrusted: true`** — so Feather *already passes*
+   the cheapest universal behavioral check (the one naive Playwright `dispatchEvent` and Brotector's
+   `Input.untrusted` fail). My "behavioral classifiers get nothing" overstated it: they get trusted
+   events with no *human-shaped path*. 5d.4 only needs curved/overshoot/variable-velocity/human-timed
+   motion — a smaller, bounded job than "become believable from zero."
+2. **Mouse-motion is vendor-specific, NOT universal.** Decisive for **DataDome / HUMAN / PerimeterX**;
+   **Cloudflare Bot Management does not use mouse server-side at all** (heuristics + ML on request
+   features + headless-JS); Kasada/Akamai lead with proof-of-work / TLS-JA3. So 5d.4 is a big win on
+   some sites and ~worthless on others — **its value depends on the target mix.**
+3. **Two prerequisites should GATE 5d.4 (either could reshape or outrank it):**
+   - **(a) Chrome 136+ CDP-attach hardening.** Chrome 136 (Apr 2025) stopped honoring
+     `--remote-debugging-port` against the *default* user-data-dir. Feather's `spawnAndConnect` already
+     passes a **non-default** `--user-data-dir=${profilePath}` (grounded: `src/browser/modes.ts:80`), so
+     today's **spawn-and-connect path sidesteps this.** The risk is confined to the *future* "attach to
+     the user's running stock Chrome / default profile" ambition — which Feather does not do today.
+     Verify there, not in the current path.
+   - **(b) The `Runtime.enable` / CDP leak.** Detection is on the *protocol event*, so **attaching does
+     not inherently avoid it** — Feather must be run against `bot-detector.rebrowser.net`. If it leaks,
+     that's a **static** giveaway no mouse-motion can fix, plausibly higher priority than 5d.4, and the
+     only known fix (rebrowser-patches) is a genuine — if narrow — exception to "patch nothing." Name
+     that tension in the 5d.4 design.
+4. **Harder targets to add to the suite** (next hardening pass): `bot-detector.rebrowser.net` (CDP
+   leak, authoritative), Brotector (`isTrusted` behavioral + a canvas cursor-path **visualizer** =
+   free 5d.4 debugger), deviceandbrowserinfo, pixelscan, iphey, browserleaks, and FCaptcha (self-host;
+   targets Feather's exact class). Genuinely *behavioral* public targets are scarce (~3).
+5. **Yardstick for 5d.4:** the incolumitas behavioral score read at the **15s** mark — baseline
+   (teleport) vs synthesized motion — backed by Brotector's visualizer and an internal path-efficiency
+   metric (humans ~0.3–0.4 with overshoot; bots ~0.05–0.2 straight-line).
+
+## Gate decision v2 (refines, does not reverse, the first-pass call)
+
+**Still PROCEED toward 5d.4 mouse-motion — but the scope is now bounded and gated:**
+
+- **Aim:** synthesize *curved, overshoot-y, human-timed* mouse trajectories via CDP
+  `Input.dispatchMouseEvent` (keeps `isTrusted: true`). NOT keystroke math (done, 5d.1). NOT spoofing
+  (off; `tampering_ml_score: 0` proved it). NOT `isTrusted` faking (already passes).
+- **Width caveat:** high-leverage for DataDome/HUMAN-class sites, near-zero for Cloudflare-class. The
+  honest size of the win depends on Feather's real target mix — decide that before committing 5d.4's
+  full scope.
+- **Two gating verifications before 5d.4 build** (cheap, could re-order the work): the Chrome-136
+  attach check and the `Runtime.enable`-leak test against rebrowser. If Feather leaks `Runtime.enable`,
+  fixing that static tell likely outranks motion.
+- **Also queued (separate from stealth):** JS-dialog handling — a real capability gap surfaced today.
+
+Verify-don't-spoof holds overall; the landscape rewards real profile + real IP + real fingerprint. The
+two places it bends are named: behavior (5d.4 = *generating* real input, not spoofing) and the
+`Runtime.enable` CDP leak (where a patch may be the only fix).
