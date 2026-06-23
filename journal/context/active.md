@@ -6,7 +6,38 @@ index) + `docs/sessions/<id>.md`; operational checklist -> `journal/ops/tasks.md
 
 ## Current pointer
 
-- **NOW (2026-06-23 03:34 /next): v2-wrap DOCS LANDED + v2 WRAP SCOPE DECIDED.** (1) An agent-built
+- **NOW (2026-06-23 03:46 STOP — "The Door I Didn't Build"): the v2 spine's SAFETY is delivered by the
+  NATIVE path; raw-CDP attach is interop, deferred to 5e. No spine build work remains.** The 5c design
+  pass (brainstorm with Roi) re-read the architecture: Feather's **native API is the credential-safe
+  driving surface** (Safe tier); **raw-CDP attach = interop, not a safety brick.** Traced the wrap exit
+  criterion against shipped reality — **5a warmed identity + native API + 5b MFA pause/`HUMAN_IN_CONTROL`
+  brake already satisfy it** → the spine's safety is **build-complete on paper; only the live test
+  remains.** Decision: defer the welded filtering-proxy (block Network/Storage, allow Runtime.evaluate,
+  origin-pin, single-connection, hold-owns-socket, auto-kill-on-MFA) to **5e**, rebuild on real
+  external-tool demand; Gate A's `cdp-attach` door stays built-but-dormant. Decision doc:
+  `docs/specs/2026-06-23-5c-native-vs-cdp-attach-decision.md`. ROADMAP + tasks + browser-desk
+  reconciled; memory `feather-security-first-framing` added; **blog `0021-the-door-i-didnt-build.md`**
+  written (folded the owed banner/human-in-control beat). This /stop also **consumed the 3 pending
+  `/next` entries** (5a Identity, v2-wrap scope, 5b MFA). Full handoff:
+  `journal/ops/sessions/the-door-i-didnt-build-20260623-0646.md`. **Committed at this /stop.**
+  **RECOMMEND NEXT: the deferred TESTING BRAINSTORM** — prove the native spine live (warmed identity
+  through a real login/MFA challenge, human-in-loop, brakes observed), Roi driving the human steps.
+- **(prior) NOW (2026-06-23 02:01 /next): 5b MFA Handler SHIPPED (TDD) + v2.5 testing-grounds docs landed.**
+  (1) Built **5b MFA Handler** end-to-end TDD, reconciled onto Gate A (decision: reuse primitives, keep
+  MFA distinct): new `src/mfa/*` + `src/commands/mfa-challenge.ts` + 4 routes + 3 `mfa.challenge.*` SSE
+  events. Create takes an `mfa` hold + banner-free pause (free HUMAN_IN_CONTROL agent-suspension)
+  replacing the dead `setStealthMode`; 256-bit single-use humanToken kept off the agent URL; CSRF/CSP +
+  origin-unchanged anti-phishing; shares `CapabilityService.holds`; session-close cancels pending. Gates:
+  tsc clean, **435u**, mfa integration 5/5, full integration 101p/1skip/1 pre-existing niri red. Docs:
+  api-reference MFA section + human-handoff skill. **All pushed to `origin/dev` (`12ffa91`).** Honest
+  limit: proven with a **mock browser** — the live-MFA-wall human-in-loop test is the deferred testing
+  brainstorm. (2) Also landed **v2.5 anti-bot/session-identity testing-grounds docs** (`928cdbb`):
+  `docs/testing/anti-bot-testing-policy.md` + `docs/specs/2026-06-23-session-identity-testing-design.md`
+  — design now, **code gated behind the finished spine**. Reconciliation doc: `docs/specs/2026-06-23-mfa-5b-reconciliation.md`.
+  **RECOMMEND NEXT: 5c — warmed-profile CDP attach — design pass first (NO spec exists yet):** read
+  `docs/specs/2026-06-04-attach-dont-launch-design.md` + adr-0010, reconcile against shipped Gate A
+  (grants + `cdp-attach` capability + hold-teardown seam), brainstorm scope with Roi. 5c = the LAST spine piece.
+- **(prior) NOW (2026-06-23 03:34 /next): v2-wrap DOCS LANDED + v2 WRAP SCOPE DECIDED.** (1) An agent-built
   **v2-wrap** retrospective (docs-only) was reviewed — citations verified against live code, gates re-run
   (`tsc` clean, **vitest 399/399**) — committed, **merged to `dev` + pushed** (`d6cbf46`); its `v2-wrap`
   worktree/branch removed. (2) Brainstorm with Roi fixed the wrap scope: **complete the security spine

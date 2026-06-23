@@ -4,6 +4,21 @@ Use this desk for browser engine research, shell architecture, extension compati
 
 ## Current Focus
 
+**v2 security spine — native API IS the safety surface; raw-CDP attach deferred to interop (2026-06-23,
+docs-only decision).** The "5c warmed-profile CDP attach" design pass concluded that **handing out raw
+CDP is interop, not a safety brick.** Feather's own command API (`observe`/`click`/`type`/`extract`) is
+the **Safe tier** — it drives a warmed session and the agent never touches a raw credential — so the
+spine's *safety* is delivered by **5a Identity (warmed handle) + the native API + the 5b MFA
+pause/`HUMAN_IN_CONTROL` brake**, all shipped. Raw-CDP attach (the old 5c, and the "expose the CDP/WS
+endpoint for Browser-Use/Crawl4AI" idea in the OSS-research notes below) is **deferred to 5e**, built
+only on real external-tool demand. The full welded filtering-proxy design (block `Network`/`Storage` →
+HttpOnly crown-jewel cookies always safe; allow `Runtime.evaluate` → tools work; origin-pin;
+single-connection; `cdp-attach` hold owns the socket; auto-kill-on-MFA) is **preserved for rebuild**,
+not lost. Gate A's `cdp-attach` capability stays **built-but-dormant.** Net: **the v2 safety spine has
+no remaining build work — only the live test** (5b was proven with a MOCK browser only). Decision doc:
+`docs/specs/2026-06-23-5c-native-vs-cdp-attach-decision.md`. (5b MFA shipped `12ffa91`; 5a Identity
+shipped `3674d82`.)
+
 **Human-handoff hardened: navigation-survivable banner + human-in-control guard (2026-06-15, `dev`
 `2c7773a`).** Two durable `await-human` behaviors. (1) **The Resume banner now survives navigation** —
 re-injected on each new main-frame document via a `domcontentloaded` listener (detached on resolve;

@@ -69,6 +69,11 @@ first, interop *through* that model.** This re-ordered Phase 5 and re-scoped Ses
 
 **Build order:** `capability gate → Identity → MFA → warmed CDP attach → Stealth (last)`.
 
+> **Update 2026-06-23:** "warmed CDP attach" (5c) was **reframed to interop and deferred to 5e** —
+> the spine's *safety* is delivered by the native credential-safe API + the 5b MFA brake, not by
+> handing out raw CDP. See `docs/specs/2026-06-23-5c-native-vs-cdp-attach-decision.md`. The safety
+> spine (gate → Identity → MFA) is **build-complete; only the live test remains.**
+
 Two dependency-breaking decisions make that order possible (both from ADR-0010 / the council):
 
 1. **The session-hold primitive (built in 5.0.0) replaces MFA's direct `setStealthMode` toggle.** MFA
@@ -167,14 +172,17 @@ raw codes.
   strict CSP; origin-verify-before-typing; uses the **session-hold primitive** (not `setStealthMode`);
   consumes the existing SSE bus (polling is fallback only).
 
-### 🔴 Phase 5c — Warmed-Profile CDP Attach  *(new; the deferred half of old 4a.7)*
-Expose CDP/WS attach for **warmed/persistent** profiles, behind Gate A.
-- **Read:** [[adr-0010-local-control-plane-capability-model]],
-  `research/2026-06-07-open-source-integration-research.md`,
-  `docs/specs/2026-06-04-attach-dont-launch-design.md`.
-- **Gate:** requires a `cdp-attach` capability grant — one-time/short-TTL token, human approval,
-  audit, auto-revoke on MFA/close. Optionally a filtering proxy that strips `Network`/`Storage`
-  domains. Never default-on.
+### ↩ Phase 5c — Warmed-Profile CDP Attach  *(REFRAMED 2026-06-23 → deferred to 5e/interop)*
+> **Decision (Roi, 2026-06-23): raw-CDP attach is interop, NOT a safety brick.** The v2 spine's
+> safety is delivered by the **native, credential-safe API** (Safe tier), so raw-CDP attach for
+> *external* tools is deferred to **5e** and built only on real external-tool demand. The full welded
+> filtering-proxy design (block `Network`/`Storage`, allow `Runtime.evaluate`, origin-pin,
+> single-connection, `cdp-attach` hold owns the socket, auto-kill-on-MFA) is preserved for rebuild in
+> `docs/specs/2026-06-23-5c-native-vs-cdp-attach-decision.md`. Gate A's `cdp-attach` capability stays
+> built-but-dormant, ready the day interop is wanted.
+- Original intent: expose CDP/WS attach for **warmed/persistent** profiles behind Gate A.
+- **Read:** `docs/specs/2026-06-23-5c-native-vs-cdp-attach-decision.md` (the reframe),
+  [[adr-0010-local-control-plane-capability-model]], `docs/specs/2026-06-04-attach-dont-launch-design.md`.
 
 ### 🔴 Phase 5d — Stealth Stack  *(was 5a; now LAST — most complex/breakable)*
 Secure-by-default stealth hygiene + verification for agent-driven sessions.
