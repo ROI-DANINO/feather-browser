@@ -28,7 +28,6 @@ const mockSession = {
   proxy: null,
   startedAt: "2026-05-31T00:00:00.000Z",
   getPage: vi.fn().mockReturnValue({ pageId: "page_001", page: mockPage }),
-  getDefaultPageId: vi.fn().mockReturnValue("page_001"),
   getPageInfoList: vi.fn().mockResolvedValue([{ pageId: "page_001", url: "https://example.com", title: "Example" }]),
   getState: vi.fn().mockReturnValue("running"),
   toRecord: vi.fn().mockReturnValue({ sessionId: "ses_test_001", state: "running" }),

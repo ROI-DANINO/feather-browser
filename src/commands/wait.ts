@@ -30,31 +30,14 @@ export class WaitHandler implements CommandHandler<WaitInput, WaitOutput> {
       const timeoutMs = input.timeoutMs ?? 15000;
 
       if (input.until === "stable") {
-        const quietMs = input.quietMs ?? 1500;
-        const pollMs = input.pollMs ?? 250;
-        const startedAt = Date.now();
-        let lastValue = "";
-        let lastChangedAt = Date.now();
-        for (;;) {
-          const now = Date.now();
-          if (now - startedAt > timeoutMs) {
-            throw new WaitTimeoutError(`Element text did not settle within ${timeoutMs}ms.`);
-          }
-          let current: string;
-          try {
-            current = (await handle.textContent()) ?? "";  // ElementHandle.textContent takes no options
-          } catch {
-            current = lastValue;
-          }
-          if (current !== lastValue) {
-            lastValue = current;
-            lastChangedAt = now;
-          }
-          if (current.trim().length > 0 && now - lastChangedAt >= quietMs) {
-            return { pageId: resolvedPageId, settled: true, elapsedMs: now - startedAt, text: current.trim().slice(0, 20000) };
-          }
-          await sleep(pollMs);
-        }
+        // ElementHandle.textContent takes no options.
+        return this.pollUntilStable(() => handle.textContent(), {
+          pageId: resolvedPageId,
+          startedAt: Date.now(),
+          quietMs: input.quietMs ?? 1500,
+          pollMs: input.pollMs ?? 250,
+          timeoutMs,
+        });
       }
 
       try {
@@ -82,34 +65,17 @@ export class WaitHandler implements CommandHandler<WaitInput, WaitOutput> {
     const loc = resolveLocator(page, input.target);
 
     if (input.until === "stable") {
-      const quietMs = input.quietMs ?? 1500;
-      const pollMs = input.pollMs ?? 250;
       const timeoutMs = input.timeoutMs ?? 30000;
       const startedAt = Date.now();
+      // Budget includes the attached-wait: startedAt is captured before it (unchanged semantics).
       await loc.waitFor({ state: "attached", timeout: timeoutMs });
-
-      let lastValue = "";
-      let lastChangedAt = Date.now();
-      for (;;) {
-        const now = Date.now();
-        if (now - startedAt > timeoutMs) {
-          throw new WaitTimeoutError(`Element text did not settle within ${timeoutMs}ms.`);
-        }
-        let current: string;
-        try {
-          current = (await loc.textContent({ timeout: 1000 })) ?? "";
-        } catch {
-          current = lastValue; // transient read failure (e.g. mid-re-render) → treat as unchanged
-        }
-        if (current !== lastValue) {
-          lastValue = current;
-          lastChangedAt = now;
-        }
-        if (current.trim().length > 0 && now - lastChangedAt >= quietMs) {
-          return { pageId: resolvedPageId, settled: true, elapsedMs: now - startedAt, text: current.trim().slice(0, 20000) };
-        }
-        await sleep(pollMs);
-      }
+      return this.pollUntilStable(() => loc.textContent({ timeout: 1000 }), {
+        pageId: resolvedPageId,
+        startedAt,
+        quietMs: input.quietMs ?? 1500,
+        pollMs: input.pollMs ?? 250,
+        timeoutMs,
+      });
     }
 
     // flavour A — element state
@@ -122,5 +88,38 @@ export class WaitHandler implements CommandHandler<WaitInput, WaitOutput> {
       throw err;
     }
     return { pageId: resolvedPageId, matched: true };
+  }
+
+  /**
+   * Poll a text read until it stops changing for `quietMs`, or throw on `timeoutMs`. Shared by the
+   * ref (ElementHandle) and locator branches — they differ only in how the text is read and in the
+   * pre-poll setup, both supplied by the caller. A transient read failure is treated as "unchanged".
+   */
+  private async pollUntilStable(
+    read: () => Promise<string | null>,
+    opts: { pageId: string; startedAt: number; quietMs: number; pollMs: number; timeoutMs: number },
+  ): Promise<WaitOutput> {
+    let lastValue = "";
+    let lastChangedAt = Date.now();
+    for (;;) {
+      const now = Date.now();
+      if (now - opts.startedAt > opts.timeoutMs) {
+        throw new WaitTimeoutError(`Element text did not settle within ${opts.timeoutMs}ms.`);
+      }
+      let current: string;
+      try {
+        current = (await read()) ?? "";
+      } catch {
+        current = lastValue; // transient read failure (e.g. mid-re-render) → treat as unchanged
+      }
+      if (current !== lastValue) {
+        lastValue = current;
+        lastChangedAt = now;
+      }
+      if (current.trim().length > 0 && now - lastChangedAt >= opts.quietMs) {
+        return { pageId: opts.pageId, settled: true, elapsedMs: now - opts.startedAt, text: current.trim().slice(0, 20000) };
+      }
+      await sleep(opts.pollMs);
+    }
   }
 }

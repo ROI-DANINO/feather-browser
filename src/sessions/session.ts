@@ -127,10 +127,6 @@ export class FeatherSession implements ISession {
     return { pageId, page };
   }
 
-  getDefaultPageId(): string | undefined {
-    return Array.from(this._pages.keys())[0];
-  }
-
   async getPageInfoList(): Promise<PageInfo[]> {
     const results: PageInfo[] = [];
     for (const [pageId, page] of this._pages.entries()) {

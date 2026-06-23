@@ -22,15 +22,10 @@ interface ErrorEntry {
   ts: string;
 }
 
-interface CommandEntry {
-  [key: string]: unknown;
-}
-
 export class DebugCapture {
   private networkEvents: NetworkEntry[] = [];
   private consoleMessages: ConsoleEntry[] = [];
   private errorEvents: ErrorEntry[] = [];
-  private commands: CommandEntry[] = [];
 
   constructor(
     private readonly context: BrowserContext,
@@ -80,10 +75,6 @@ export class DebugCapture {
     }
   }
 
-  recordCommand(cmd: CommandEntry): void {
-    this.commands.push(cmd);
-  }
-
   async finalize(): Promise<void> {
     await fs.promises.mkdir(this.debugDir, { recursive: true });
 
@@ -93,7 +84,6 @@ export class DebugCapture {
       await fs.promises.writeFile(filePath, lines ? lines + "\n" : "", "utf8");
     };
 
-    await writeJsonl("commands.jsonl", this.commands);
     await writeJsonl("network-summary.jsonl", this.networkEvents);
     await writeJsonl("console.jsonl", this.consoleMessages);
     await writeJsonl("errors.jsonl", this.errorEvents);
