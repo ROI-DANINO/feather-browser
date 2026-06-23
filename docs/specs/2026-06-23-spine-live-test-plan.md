@@ -131,7 +131,7 @@ curl -s "$BASE/v1/sessions/$SESSION_ID/navigate" -H "X-Feather-Token: $TOKEN" -H
 
 ```bash
 curl -s "$BASE/v1/sessions/$SESSION_ID/await-human" -H "X-Feather-Token: $TOKEN" -H "content-type: application/json" \
-  -d '{"prompt":"Type the GitHub password and click Sign in, then click Resume."}'
+  -d '{"reason":"Type the GitHub password and click Sign in, then click Resume."}'
 ```
 
 This call **blocks** until the human resumes; the on-page **Resume banner** appears.
