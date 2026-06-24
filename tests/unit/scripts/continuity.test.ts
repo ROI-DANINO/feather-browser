@@ -25,41 +25,47 @@ describe("ensureHumanAuth", () => {
     );
   });
 
-  it("polls current page until login is detected", async () => {
+  it("hands off to the human with the on-page banner, then resumes after login", async () => {
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     const api: IFeatherApi = {
       request: vi.fn()
-        .mockResolvedValueOnce({})                   // navigate — initial
+        .mockResolvedValueOnce({})                   // navigate
         .mockRejectedValueOnce(new Error("timeout")) // fast probe — not logged in
-        .mockResolvedValueOnce({}),                  // poll probe — authenticated
+        .mockResolvedValueOnce({})                   // await-human — human/signal resumed
+        .mockResolvedValueOnce({}),                  // post-check probe — authenticated
     };
 
     await expect(
       ensureHumanAuth(api, "sid", {
         targetUrl: "https://gmail.com",
         checkTargets: [{ by: "css", selector: ".compose" }],
-        pollIntervalMs: 0,
       }),
     ).resolves.toBeUndefined();
 
-    expect(api.request).toHaveBeenCalledTimes(3);
-    // Polling probes the current page instead of re-navigating, so it does not
-    // interrupt OAuth/login redirects while the human is completing auth.
+    expect(api.request).toHaveBeenCalledTimes(4);
     expect(api.request).toHaveBeenNthCalledWith(
-      3, "POST", "/v1/sessions/sid/wait", expect.objectContaining({ until: "visible", timeoutMs: 0 }),
+      3, "POST", "/v1/sessions/sid/await-human",
+      expect.objectContaining({
+        banner: true,
+        resumeOn: { target: { by: "css", selector: ".compose" }, until: "visible" },
+      }),
+    );
+    expect(api.request).toHaveBeenNthCalledWith(
+      4, "POST", "/v1/sessions/sid/wait", expect.objectContaining({ until: "visible", timeoutMs: 5000 }),
     );
 
     logSpy.mockRestore();
   });
 
-  it("throws after timeout when login is never detected", async () => {
+  it("throws when resumed but login never completed", async () => {
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     const api: IFeatherApi = {
       request: vi.fn(async (_method: string, route: string) => {
         if (route.endsWith("/navigate")) return {};
-        throw new Error("element not found");
+        if (route.endsWith("/await-human")) return {};
+        throw new Error("element not found"); // every probe fails
       }),
     };
 
@@ -67,10 +73,9 @@ describe("ensureHumanAuth", () => {
       ensureHumanAuth(api, "sid", {
         targetUrl: "https://gmail.com",
         checkTargets: [{ by: "css", selector: ".compose" }],
-        pollIntervalMs: 0,
         timeoutMs: 50,
       }),
-    ).rejects.toThrow("Authentication timed out");
+    ).rejects.toThrow("not authenticated");
 
     logSpy.mockRestore();
   });

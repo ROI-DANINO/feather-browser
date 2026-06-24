@@ -7,13 +7,11 @@ export type Target =
   | ({ by: "css"; selector: string } & { at?: "first" | "last" | number });
 
 export interface ContinuityConfig {
-  /** URL to check for authentication and to navigate to on each poll. */
+  /** URL to check for authentication and to navigate to first. */
   targetUrl: string;
   /** Elements that indicate a successful login — any one match = authenticated. */
   checkTargets: Target[];
-  /** Sleep between poll attempts (default: 10 000 ms). */
-  pollIntervalMs?: number;
-  /** Total time to wait for login before giving up (default: 300 000 ms = 5 min). */
+  /** Total time to wait for the human handoff before giving up (default: 300 000 ms = 5 min). */
   timeoutMs?: number;
 }
 
@@ -24,10 +22,11 @@ export interface IFeatherApi {
 /**
  * Ensures the session is authenticated before proceeding.
  *
- * Navigates to targetUrl, checks for a logged-in signal, and if absent waits
- * for the human to complete login by polling targetUrl until the signal appears.
- * The site's own redirect (e.g. Gmail → accounts.google.com → Gmail) handles the
- * login page — we never navigate away to a separate login URL.
+ * Navigates to targetUrl and checks for a logged-in signal. If absent, hands off to the human using
+ * Feather's shipped await-human mechanism: an on-page Resume banner appears (and re-injects across the
+ * login redirect chain), the human logs in — completing any 2-step / 2FA in the same window — and the
+ * handoff resolves either via the `resumeOn` signal (the inbox loads) or a manual Resume click.
+ * The Cookie-Mine pattern: the agent piggybacks on the human's trust.
  */
 export async function ensureHumanAuth(
   api: IFeatherApi,
@@ -35,10 +34,8 @@ export async function ensureHumanAuth(
   config: ContinuityConfig,
 ): Promise<void> {
   const timeoutMs = config.timeoutMs ?? 300000;
-  const pollIntervalMs = config.pollIntervalMs ?? 10000;
 
   console.log(`\n[Continuity] Checking authentication at ${config.targetUrl}...`);
-
   await navigateTo(api, sessionId, config.targetUrl);
 
   if (await probeTargets(api, sessionId, config.checkTargets, 3000)) {
@@ -46,30 +43,25 @@ export async function ensureHumanAuth(
     return;
   }
 
-  // Not logged in — the site redirected the browser to its own login page.
-  // Tell the human; then poll by re-navigating to targetUrl each iteration.
-  // Once login completes the site redirects back, and the probe finds the signal.
-  console.log("\n  ⚠️  [CONTINUITY] Authentication required.");
-  console.log("  → Log in in the browser window (it should be showing the login page now).");
-  console.log(`  → Checking every ${Math.round(pollIntervalMs / 1000)}s — up to ${Math.round(timeoutMs / 1000 / 60)} minutes.\n`);
+  // Not logged in — hand off to the human with Feather's on-page Resume banner.
+  console.log("\n  ⏸  [CONTINUITY] Login required — Feather is paused.");
+  console.log("  → Log into Google in the browser window (finish any 2-step / 2FA).");
+  console.log("  → Feather resumes automatically once you're in (or click Resume on the page).\n");
 
-  // Poll by probing the CURRENT page — do NOT re-navigate while the human is
-  // logging in. Re-navigating mid-login interrupts Google's OAuth redirect
-  // chain, which bounces the tab to the workspace.google.com marketing page and
-  // makes it look like the login "wasn't remembered" (forcing a second login).
-  // After login, Google's own `continue=` redirect lands on the inbox, and this
-  // probe detects the compose button. `wait until visible` returns as soon as
-  // the element appears, so detection is near-instant — pollIntervalMs is only
-  // the per-attempt ceiling.
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    if (await probeTargets(api, sessionId, config.checkTargets, pollIntervalMs)) {
-      console.log("[Continuity] ✓ Authenticated. Resuming demo.\n");
-      return;
-    }
+  await api.request("POST", `/v1/sessions/${sessionId}/await-human`, {
+    reason: "Log into Google here — finish any 2-step / 2FA — then I'll continue (or click Resume)",
+    resumeOn: { target: config.checkTargets[0], until: "visible" },
+    banner: true,
+    timeoutMs,
+  });
+
+  // A premature Resume click — or a server-side timeout — resolves the handoff before login finishes.
+  if (!(await probeTargets(api, sessionId, config.checkTargets, 5000))) {
+    throw new Error(
+      "[Continuity] Resumed but Google is not authenticated yet — log in fully, then re-run.",
+    );
   }
-
-  throw new Error(`[Continuity] Authentication timed out after ${timeoutMs}ms.`);
+  console.log("[Continuity] ✓ Authenticated. Resuming demo.\n");
 }
 
 async function navigateTo(api: IFeatherApi, sessionId: string, url: string): Promise<void> {
