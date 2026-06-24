@@ -4,11 +4,16 @@
 
 Feather Browser exposes a localhost HTTP JSON API for controlling headless Chromium browser sessions.
 
-> **API stability — v1.** This is the **v1** surface. Stability promise: within `v1`, existing
-> endpoints, request fields, and the response envelope won't change in a breaking way without a
-> version-prefix bump (`/v2`). Additive changes — new endpoints, new *optional* request fields, new
-> response fields — can land in `v1` and are not breaking, so clients must ignore unknown response
-> fields. Endpoints marked Dangerous-tier or human-facing carry their own caveats inline.
+> **API stability — `/v1` URL surface.**
+> "`v1`" here is the **HTTP API URL version** (the `/v1` prefix on every endpoint). It is a *separate*
+> counter from the **product version** (Feather v1 → v2 → v3, tracked in [`feather.md`](../feather.md))
+> — the product can advance to v2/v3 while the API stays `/v1`.
+>
+> Stability promise for the `/v1` URL surface: existing endpoints, request fields, and the response
+> envelope won't change in a breaking way without bumping the URL prefix to `/v2`. Additive changes —
+> new endpoints, new *optional* request fields, new response fields — can land under `/v1` and are not
+> breaking, so clients must ignore unknown response fields. Endpoints marked Dangerous-tier or
+> human-facing carry their own caveats inline.
 
 - **Base URL:** `http://<host>:<port>` — the exact address is written to the endpoint file on startup (see `endpointFile` in the service paths layout)
 - **API version prefix:** `/v1`
