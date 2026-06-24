@@ -272,3 +272,38 @@ Durable fact now lives in the docs (not promoted to file-memory — repo already
 
 **Next:** Phase 3 — a NEW, stronger hero demo (LAST), needs Roi driving + `wf-recorder`. No blog (owed
 line filed). Handoff: `journal/ops/sessions/the-two-version-numbers-20260624-0427.md`.
+
+---
+
+## 2026-06-24 — Phase 3 "Show it off": hero demo v2 (visible human handoff)  [STOP, commits 4e0ad81..8aedbbe, pushed]
+
+**Phases 0–3 of the reorientation roadmap are now COMPLETE.**
+
+- **Core change (`57b0b37`):** `scripts/demo/continuity.ts::ensureHumanAuth` — replaced the silent
+  console login-poll with the shipped `await-human` handoff: `POST /v1/sessions/:id/await-human`
+  `{reason, resumeOn:{target:checkTargets[0],until:"visible"}, banner:true, timeoutMs}` + a post-check
+  guard for premature Resume. Dropped `pollIntervalMs`. ~15 lines; TDD; no `src/` change (reused the
+  existing feature). The handoff is now *visible on camera* (on-page Resume banner).
+- **`feather.md` (`fb58457`+`5b3a09f`):** binary "Done when" column per product version. Cold review
+  caught the v2 line smuggling a "no verify-challenge" promise → contradicts the cut-stealth decision;
+  rewrote so a one-time challenge resolved via the handoff is a PASS, only a *persistent block* fails v2.
+- **Live gate PASS (narrowed):** banner appeared on `accounts.google.com`, **survived email→password**,
+  auto-resumed on inbox-visible. Log- + frame-verified. Report `docs/v1_wrap/hero-demo-v2/gate-report.md`.
+  **Unproven:** 2FA-challenge-*page* survival — none fired same-machine.
+- **Video (`62dab64`):** `demo-hero-mfa.mp4` ~49s/2.4M (trimmed head/tail, downscaled 2880→1280,
+  CRF-compressed from 23M — quality-locked NOT size-capped). Replaces `demo-final.mp4`. README repointed;
+  `scripts/demo/RECORDING.md` runbook written.
+- **Final review (`8aedbbe`):** fixed 2 honesty gaps — committed the gate report; softened README 2FA
+  wording (it wasn't demonstrated).
+
+**Durable fact promoted to automation desk** (NOT global file-memory — repo records it): the
+"banner dies on navigation" worry is RESOLVED + proven live (re-inject on `domcontentloaded` + `resumeOn`
+survives Google's real login redirects). See `journal/work/automation/context.md`.
+
+**Decisions:** show handoff on the human Google leg (not an agent-driven 2nd login); agent mouse/cursor
+→ v3 (no faked cursor); CRF compression not size-cap; honesty — recording proves normal-login survival,
+NOT 2FA-page survival (said so, didn't let the video imply it).
+
+**Next:** real-account 2FA take (Roi's actual Google → phone-tap verify) to prove banner survival across
+a real 2FA challenge page. Test real / publish scratch. Blog 0024 written. Handoff:
+`journal/ops/sessions/the-demo-that-shows-its-hands-20260624-0554.md`.

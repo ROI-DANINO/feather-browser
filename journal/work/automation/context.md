@@ -41,6 +41,13 @@ assigns them and cuts tasks into work sessions.
 - **Banner dies on navigation.** CDP-injected DOM banner is wiped on any full page navigation (e.g.
   Google password submit). For the v2 MFA Handler: must re-inject on `framenavigated` while a pause is
   active, OR use `resumeOn` end-state polling, OR an off-page persistent resume surface.
+  - **RESOLVED + PROVEN LIVE (2026-06-24).** `await-human` (`src/commands/await-human.ts`) re-injects
+    the Resume banner on every `domcontentloaded` (not `framenavigated` — fires once per new document
+    with `document.body` present) AND races a `resumeOn` end-state signal. Hero demo v2 ran it against
+    **Google's real login** (throwaway acct): banner appeared on `accounts.google.com`, **survived the
+    email→password navigation**, auto-resumed on inbox-visible. Log- + frame-verified
+    (`docs/v1_wrap/hero-demo-v2/gate-report.md`). **Still unproven:** survival across a 2FA challenge
+    *page* (none fired same-machine) — real-account run is the next test.
 - **Confirmation code inputs on IG ignore `fill` + `type` modes.** Workaround: Shift+Tab to move
   keyboard focus to the input, then individual `press` per digit. Root cause: custom React input
   handling. Pattern to remember for any code-entry step.

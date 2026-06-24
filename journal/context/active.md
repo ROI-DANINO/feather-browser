@@ -6,21 +6,25 @@ operational checklist → `journal/ops/tasks.md`; machine pointer → `journal/o
 
 ## Current pointer
 
-- **NOW (2026-06-24 STOP — PHASE 2 "OSS ENVELOPE" SHIPPED & PUSHED; commits `5c5f0fa` + `182b4e0`,
-  pushed `06cd2e8..182b4e0`, no blog — owed line filed).** Worked straight down the Phase 2 checklist,
-  everything verified live not asserted: README + `examples/README.md` clone→fail fix
-  (`npx playwright install chromium`); CI badge; README showcase section surfacing **8 PASS / 2 PARTIAL**
-  (`showcase.sh easy` re-run → 3/3 PASS); new `CONTRIBUTING.md`; HTTP API **`/v1`** declared + stability
-  promise in `docs/api-reference.md` + runnable curl for action/grants/MFA (all 3 shapes hit the live
-  server). **Roi caught a version collision** ("we wrapping v2 not v1"): there are TWO counters —
-  **product v1→v2→v3** (at v2) vs the **HTTP API URL `/v1`** prefix (unchanged since the start). My work
-  was the API one (the checklist item literally says "declare the HTTP API v1"); `182b4e0` makes the docs
-  name them apart so no reader confuses them. Handoff:
-  `journal/ops/sessions/the-two-version-numbers-20260624-0427.md`.
-- **RECOMMEND NEXT: Phase 3 — a NEW, stronger hero demo (LAST, needs Roi driving).** Record a real
-  logged-in errand (e.g. the H1 calendar errand) as the new hero demo with `wf-recorder` (installed).
-  NOT a solo-agent task — Roi drives the human steps. The current `npm run demo:hero` works but is basic.
-  Also add a one-line binary "done" per version row in `feather.md`. Full checklist: `journal/ops/tasks.md`.
+- **NOW (2026-06-24 STOP — PHASE 3 "SHOW IT OFF" SHIPPED & PUSHED; commits `4e0ad81..8aedbbe`,
+  pushed `182b4e0..8aedbbe`, blog 0024).** Reorientation roadmap **Phases 0–3 now COMPLETE.**
+  Hero demo v2: rewired `scripts/demo/continuity.ts` from a silent console login-poll to Feather's
+  shipped `await-human` handoff (on-page Resume banner + `resumeOn` auto-resume), so the agent↔human
+  handoff is **visible on camera** (~15 lines, TDD, no `src/` change). Added a binary "Done when" column
+  per version in `feather.md` (a cold review caught the v2 line smuggling a "no-verify-challenge" promise
+  that contradicts the cut-stealth decision; rewrote → only a *persistent block* fails v2). Recorded with
+  Roi driving → **live gate PASS (narrowed):** banner appeared on `accounts.google.com`, survived
+  email→password, auto-resumed; log- + frame-verified (`docs/v1_wrap/hero-demo-v2/gate-report.md`).
+  Recorded `demo-hero-mfa.mp4` (~49s/2.4M, trimmed + CRF-compressed from 23M; replaces `demo-final.mp4`);
+  README repointed; `scripts/demo/RECORDING.md` written. Final review fixed 2 honesty gaps (committed the
+  gate report; softened README 2FA wording — it wasn't demonstrated). Handoff:
+  `journal/ops/sessions/the-demo-that-shows-its-hands-20260624-0554.md`.
+- **RECOMMEND NEXT: real-account 2FA take.** Run `npm run demo:hero` on Roi's *actual* Google account
+  (expected to trigger phone-tap verification) to prove the banner survives a real 2FA challenge **page**
+  — the one thing this session's recording did NOT exercise (no challenge fired same-machine). Test real /
+  publish scratch. Optional after: launch-grade re-record (opaque terminal, calm background, full terminal
+  on screen — gaps in `RECORDING.md`). With Phases 0–3 done, the other open thread is picking the next
+  real workstream (v2.5/4b are deferred; nothing forced).
 - **Roi's open item (outside the repo):** rotate/abandon the leaked `roionly9` throwaway account; the
   password stays in public git history (no scrub — Roi's call, low blast radius).
 
@@ -38,9 +42,14 @@ operational checklist → `journal/ops/tasks.md`; machine pointer → `journal/o
 
 ## Recent completed context
 
-- **2026-06-24 Phase 2 OSS ENVELOPE** (this session): clone→fail fix + CI badge + showcase number +
+- **2026-06-24 Phase 3 SHOW IT OFF** (this session): hero demo v2 — `continuity.ts` console-poll →
+  `await-human` banner handoff (visible on camera); `feather.md` per-version "Done when" column; live
+  gate PASS (narrowed); `demo-hero-mfa.mp4` recorded/trimmed/compressed; RECORDING.md + gate-report.md.
+  `4e0ad81..8aedbbe`. Handoff: `journal/ops/sessions/the-demo-that-shows-its-hands-20260624-0554.md`.
+  Blog 0024. **Phases 0–3 complete.**
+- **2026-06-24 Phase 2 OSS ENVELOPE**: clone→fail fix + CI badge + showcase number +
   `CONTRIBUTING.md` + HTTP API `/v1` declared + curl examples; product-vs-API version disambiguation.
-  `5c5f0fa` + `182b4e0`. Handoff: `journal/ops/sessions/the-two-version-numbers-20260624-0427.md`. No blog.
+  `5c5f0fa` + `182b4e0`. Handoff: `journal/ops/sessions/the-two-version-numbers-20260624-0427.md`. Blog 0024 (folded).
 - **2026-06-24 Phase 1 HARDEN**: 1a security fixes + 1b test gaps + the verifier-found
   cookie-jar perms fix + local MFA resolve-banner + 2 residuals. `06cd2e8`. Handoff:
   `journal/ops/sessions/every-door-but-the-vault-20260624-0314.md`. Blog 0023.
