@@ -4,6 +4,12 @@
 
 Feather Browser exposes a localhost HTTP JSON API for controlling headless Chromium browser sessions.
 
+> **API stability — v1.** This is the **v1** surface. Stability promise: within `v1`, existing
+> endpoints, request fields, and the response envelope won't change in a breaking way without a
+> version-prefix bump (`/v2`). Additive changes — new endpoints, new *optional* request fields, new
+> response fields — can land in `v1` and are not breaking, so clients must ignore unknown response
+> fields. Endpoints marked Dangerous-tier or human-facing carry their own caveats inline.
+
 - **Base URL:** `http://<host>:<port>` — the exact address is written to the endpoint file on startup (see `endpointFile` in the service paths layout)
 - **API version prefix:** `/v1`
 - **Content-Type:** All request and response bodies are `application/json`
@@ -830,6 +836,29 @@ locator strategy; use `{ "by": "ref" }` when you have a ref from a recent `obser
 The `at` field (`"first"` \| `"last"` \| number) selects among multiple matches (default `"first"`).
 It is not valid with `by="ref"` (refs are already single elements).
 
+**Worked example** — all input commands share the `target` shape, so click/type/press differ only in
+the verb and the extra field (`text`, `key`):
+
+```bash
+BASE=$(node -e "console.log(require('$XDG_RUNTIME_DIR/feather/run/endpoint.json').baseUrl)")
+TOK=$(cat "$XDG_RUNTIME_DIR/feather/run/control-token")
+
+# type into a field located by CSS  ->  {"ok":true,"data":{"pageId":"page_…","typed":true}}
+curl -s -X POST "$BASE/v1/sessions/$SID/type" \
+  -H "X-Feather-Token: $TOK" -H "Content-Type: application/json" \
+  -d '{"target":{"by":"css","selector":"input[name=q]"},"text":"feather browser"}'
+
+# click a link located by role + accessible name
+curl -s -X POST "$BASE/v1/sessions/$SID/click" \
+  -H "X-Feather-Token: $TOK" -H "Content-Type: application/json" \
+  -d '{"target":{"by":"role","role":"link","name":"More information"}}'
+
+# press Enter on the focused element (no target needed)
+curl -s -X POST "$BASE/v1/sessions/$SID/press" \
+  -H "X-Feather-Token: $TOK" -H "Content-Type: application/json" \
+  -d '{"key":"Enter"}'
+```
+
 **Legacy field-by-field view** (for reference):
 
 | Field | Type | Required | Description |
@@ -1185,6 +1214,15 @@ bus.
 — deliberately **no** approval URL or token. Watch the server console / `GET /v1/events` for the
 approval link.
 
+```bash
+# Request a grant. With nothing opted-in, this returns 403:
+#   {"ok":false,"error":{"code":"DANGEROUS_DISABLED","message":"Capability 'cookie-export' is not enabled. …"}}
+# Opt in first: start the server with FEATHER_DANGEROUS_CAPABILITIES=cookie-export
+curl -s -X POST "$BASE/v1/sessions/$SID/grants" \
+  -H "X-Feather-Token: $TOK" -H "Content-Type: application/json" \
+  -d '{"capability":"cookie-export"}'
+```
+
 #### `GET` / `POST /v1/approvals/:humanToken` — Approval page (human-facing)
 
 No API token (a browser click can't send the header). `GET` renders the approve/deny page; `POST`
@@ -1240,6 +1278,15 @@ session cancels any pending challenge. Lifecycle steps emit `mfa.challenge.creat
 
 **Response `data`:** `{ "challengeId", "localUrl", "expiresAt" }` — `localUrl` is deliberately
 token-less. Watch the server console / Telegram for the human link carrying the `humanToken`.
+
+```bash
+# Push challenge (no target — nothing is typed). For totp/sms, add the field target:
+#   -d '{"type":"totp","prompt":"Enter the 6-digit code","target":{"by":"css","selector":"#otp"}}'
+# Returns: {"ok":true,"data":{"challengeId":"mfa_…","localUrl":"http://127.0.0.1:<port>/v1/mfa/mfa_…","expiresAt":"…"}}
+curl -s -X POST "$BASE/v1/sessions/$SID/mfa/challenge" \
+  -H "X-Feather-Token: $TOK" -H "Content-Type: application/json" \
+  -d '{"type":"push","prompt":"Approve the sign-in on your phone"}'
+```
 
 #### `GET /v1/sessions/:sessionId/mfa/:challengeId` — Poll status (agent-facing)
 

@@ -8,6 +8,7 @@ Runs the full Feather session loop against a live server:
 ### Prerequisites
 
 - Node.js 20+ and `curl`
+- Dependencies installed: `npm install && npx playwright install chromium`
 - Feather running in another terminal:
 
   ```bash

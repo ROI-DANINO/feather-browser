@@ -1,5 +1,7 @@
 # Feather Browser
 
+[![CI](https://github.com/ROI-DANINO/feather-browser/actions/workflows/ci.yml/badge.svg)](https://github.com/ROI-DANINO/feather-browser/actions/workflows/ci.yml)
+
 **Feather is a local Chromium runtime for AI agents.**
 
 It gives agents (and you) controlled, real Chromium sessions over a small local HTTP API —
@@ -23,6 +25,7 @@ persistent, authenticated sessions an agent can drive.
 
 ```bash
 npm install
+npx playwright install chromium   # fetch the Chromium binary (npm install doesn't)
 npm run dev          # starts the server; prints its address + token/endpoint file paths
 ```
 
@@ -53,6 +56,18 @@ The server binds to `127.0.0.1` on an **OS-assigned port** (set `FEATHER_PORT` t
 The exact address and the auth token path are written to `endpoint.json` at startup and
 printed on the `Endpoint:` / `Token file:` lines — the demo reads them automatically. See
 `examples/README.md`.
+
+### 3. Showcase suite (10 agent-style errands)
+
+`examples/showcase.sh` drives 10 realistic errands over the HTTP API, asserts each result, and
+prints a results table. On the v1 eval run it scored **8 PASS / 2 PARTIAL** — both partials were
+later reclassified as environmental (a transient CDN bot-mitigation window that cleared on rerun),
+not Feather defects. See [`docs/v1_wrap/META-ANALYSIS.md`](docs/v1_wrap/META-ANALYSIS.md).
+
+```bash
+./examples/showcase.sh easy        # easy tier — runs from a clean checkout, no login
+./examples/showcase.sh             # all tiers — the HARD tier needs headed + warmed scratch sessions
+```
 
 ## What works today
 
