@@ -58,6 +58,20 @@ Reorientation roadmap Phases 0–3 now complete.
 - "can you watch it and give me a review? so it will look more proffesional"
 - "demo-hero-mfa.mp4 looks fine"
 
+## Post-/stop addendum — README demo GIF (commits `0ed7a1e`, `5b0b846`, `3bfa1c2`, pushed)
+GitHub markdown can't inline an mp4 (shows as a link), so the README hero section now **embeds an
+autoplay GIF**, with the mp4 kept as a full-quality download link. Iterated to the final form:
+- v1 (`0ed7a1e`): full 49s @720px/10fps, 4.2M — banner text too small.
+- v2 (`5b0b846`): 13.5s login-handoff highlight @1080px/12fps, 2.0M — banner sharp, ended on resume.
+- **final (`3bfa1c2`): stitched highlight, 15s @1080px/12fps, 3.4M.** Two beats with one hard cut —
+  banner→login→auto-resume, then the agent composing the ChatGPT reply in Gmail, **ending on the
+  finished draft** (the payoff). `demo-hero-mfa.gif` (3.4M) + `demo-hero-mfa.mp4` (2.4M) = 6.0M media.
+- GIF recipe (durable): two-pass palette — `palettegen=stats_mode=diff` then
+  `paletteuse=dither=bayer:bayer_scale=3`, `fps=12,scale=1080:-1:flags=lanczos`. Stitch via
+  `filter_complex` trim+concat. `*.gif` is NOT gitignored (normal `git add`); `*.mp4` is (force-added).
+- Open nicety (Roi may flag): the banner→Gmail hard cut skips the ChatGPT step; could add a fade or a
+  2s ChatGPT-reply beat if it reads as jarring.
+
 ## Key facts for next session
 - Demo: `npm run demo:hero` (RAM burner profile `/run/user/1000/feather-demo`, wiped on reboot).
   Wipe cookies for a fresh login-on-camera: `rm -rf /run/user/$(id -u)/feather-demo` (safety hook

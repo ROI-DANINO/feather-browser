@@ -307,3 +307,11 @@ NOT 2FA-page survival (said so, didn't let the video imply it).
 **Next:** real-account 2FA take (Roi's actual Google → phone-tap verify) to prove banner survival across
 a real 2FA challenge page. Test real / publish scratch. Blog 0024 written. Handoff:
 `journal/ops/sessions/the-demo-that-shows-its-hands-20260624-0554.md`.
+
+### Post-/stop addendum (2026-06-24) — README demo GIF [0ed7a1e→3bfa1c2, pushed]
+GitHub markdown can't inline mp4 → embed an autoplay GIF in the README hero section (mp4 kept as a
+full-quality link). Final = stitched highlight loop, **15s/1080px/3.4M**: banner→login→auto-resume,
+one hard cut, then the agent composing the ChatGPT reply in Gmail, **ending on the finished draft**.
+Recipe (durable): two-pass palette (`palettegen=stats_mode=diff` → `paletteuse=dither=bayer:bayer_scale=3`,
+`fps=12,scale=1080:-1:lanczos`); stitch beats via `filter_complex` trim+concat. `*.gif` not gitignored
+(`*.mp4` is, force-added). Media total `demo-hero-mfa.gif`(3.4M)+`.mp4`(2.4M)=6.0M.

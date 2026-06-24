@@ -17,7 +17,10 @@ operational checklist → `journal/ops/tasks.md`; machine pointer → `journal/o
   email→password, auto-resumed; log- + frame-verified (`docs/v1_wrap/hero-demo-v2/gate-report.md`).
   Recorded `demo-hero-mfa.mp4` (~49s/2.4M, trimmed + CRF-compressed from 23M; replaces `demo-final.mp4`);
   README repointed; `scripts/demo/RECORDING.md` written. Final review fixed 2 honesty gaps (committed the
-  gate report; softened README 2FA wording — it wasn't demonstrated). Handoff:
+  gate report; softened README 2FA wording — it wasn't demonstrated). **Post-/stop (`0ed7a1e`→`3bfa1c2`):**
+  README hero section now embeds an autoplay **GIF** (`demo-hero-mfa.gif`, 15s/1080px/3.4M — stitched
+  highlight: banner→login→auto-resume, hard-cut to the agent composing the Gmail draft, ending on the
+  finished draft) + mp4 kept as full-quality link. Handoff:
   `journal/ops/sessions/the-demo-that-shows-its-hands-20260624-0554.md`.
 - **RECOMMEND NEXT: real-account 2FA take.** Run `npm run demo:hero` on Roi's *actual* Google account
   (expected to trigger phone-tap verification) to prove the banner survives a real 2FA challenge **page**
