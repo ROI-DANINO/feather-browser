@@ -13,7 +13,9 @@ const code: MfaChallenge = {
   expiresAt: "t",
 };
 const push: MfaChallenge = { ...code, type: "push", target: undefined, prompt: "Google sign-in" };
-const URL = "http://localhost:3333/v1/mfa/mfa_abc";
+const AGENT_URL = "http://localhost:3333/v1/mfa/mfa_abc";
+const HUMAN_URL = `${AGENT_URL}?t=secrettoken123`;
+const URLS = { agentUrl: AGENT_URL, humanUrl: HUMAN_URL };
 
 describe("TelegramNotifier", () => {
   let fetchMock: ReturnType<typeof vi.fn>;
@@ -23,19 +25,19 @@ describe("TelegramNotifier", () => {
   });
   afterEach(() => vi.unstubAllGlobals());
 
-  it("POSTs to the Telegram sendMessage endpoint with chat id and the local url", async () => {
-    await new TelegramNotifier({ botToken: "BOT", chatId: "42" }).notify(code, URL);
+  it("POSTs to the Telegram sendMessage endpoint with chat id and the human (token-bearing) url", async () => {
+    await new TelegramNotifier({ botToken: "BOT", chatId: "42" }).notify(code, URLS);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe("https://api.telegram.org/botBOT/sendMessage");
     const body = JSON.parse((init as any).body);
     expect(body.chat_id).toBe("42");
-    expect(body.text).toContain(URL);
+    expect(body.text).toContain(HUMAN_URL);
     expect(body.text).toContain("code");
   });
 
   it("uses approve phrasing for push challenges", async () => {
-    await new TelegramNotifier({ botToken: "BOT", chatId: "42" }).notify(push, URL);
+    await new TelegramNotifier({ botToken: "BOT", chatId: "42" }).notify(push, URLS);
     const body = JSON.parse((fetchMock.mock.calls[0][1] as any).body);
     expect(body.text.toLowerCase()).toContain("approve");
   });

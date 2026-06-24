@@ -40,6 +40,7 @@ import { ExportCookiesHandler } from "../commands/export-cookies";
 import { approvalPage, approvedPage, deniedPage, expiredApprovalPage, APPROVAL_CSP } from "./approval-page";
 import { CreateMfaChallengeHandler, GetMfaChallengeHandler } from "../commands/mfa-challenge";
 import { MfaChallengeManager } from "../mfa/manager";
+import { makeResolveBannerController } from "../mfa/resolve-banner";
 import { buildNotifier } from "../mfa/notifier";
 import { loadMfaConfig } from "../mfa/config";
 import { renderChallengePage } from "../mfa/local-page";
@@ -272,6 +273,9 @@ export function registerRoutes(
     capabilities.holds,
     mfaConfig.defaultTimeoutMs,
   );
+  // Local resolve channel: an in-browser banner that opens the token-bearing resolve tab over CDP, so
+  // a solo operator can resolve MFA without Telegram. See docs/specs/2026-06-24-mfa-resolve-banner-design.md.
+  mfaManager.setBannerController(makeResolveBannerController(manager as any));
   const createMfaHandler = new CreateMfaChallengeHandler(mfaManager);
   const getMfaHandler = new GetMfaChallengeHandler(mfaManager);
 

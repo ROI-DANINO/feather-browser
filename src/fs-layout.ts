@@ -84,7 +84,9 @@ export async function ensureDirs(dirs: FeatherDirs | string): Promise<void> {
     path.join(d.state, "measurements"),
     path.join(d.data, "identities"),
   ];
+  // Owner-only (0700): these dirs hold warmed profiles, identity records, session/audit logs, and the
+  // control token — all credential-adjacent. 0700 has no group/other bits, so it survives any umask.
   for (const dir of toCreate) {
-    await fs.promises.mkdir(dir, { recursive: true });
+    await fs.promises.mkdir(dir, { recursive: true, mode: 0o700 });
   }
 }

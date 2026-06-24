@@ -1,25 +1,28 @@
-import type { MfaChallenge, MfaConfig, MfaNotifier, TelegramNotifierConfig } from "./types";
+import type { MfaChallenge, MfaConfig, MfaNotifier, MfaNotifyUrls, TelegramNotifierConfig } from "./types";
 
 export class ConsoleNotifier implements MfaNotifier {
-  async notify(challenge: MfaChallenge, localUrl: string): Promise<void> {
-    console.log(`[mfa] ${challenge.type} challenge for "${challenge.prompt}" — resolve at: ${localUrl}`);
+  // Console output is a shared/logged sink, so it gets the token-less agentUrl only — never the bearer.
+  async notify(challenge: MfaChallenge, urls: MfaNotifyUrls): Promise<void> {
+    console.log(`[mfa] ${challenge.type} challenge for "${challenge.prompt}" — resolve at: ${urls.agentUrl}`);
   }
 }
 
 export class CompositeNotifier implements MfaNotifier {
   constructor(private readonly notifiers: MfaNotifier[]) {}
-  async notify(challenge: MfaChallenge, localUrl: string): Promise<void> {
-    await Promise.allSettled(this.notifiers.map((n) => n.notify(challenge, localUrl)));
+  async notify(challenge: MfaChallenge, urls: MfaNotifyUrls): Promise<void> {
+    await Promise.allSettled(this.notifiers.map((n) => n.notify(challenge, urls)));
   }
 }
 
 export class TelegramNotifier implements MfaNotifier {
   constructor(private readonly config: TelegramNotifierConfig) {}
-  async notify(challenge: MfaChallenge, localUrl: string): Promise<void> {
+  // Telegram is a private DM to the human, so it carries the actionable humanUrl (with the bearer token).
+  async notify(challenge: MfaChallenge, urls: MfaNotifyUrls): Promise<void> {
+    const link = urls.humanUrl;
     const text =
       challenge.type === "push"
-        ? `Feather needs you to approve "${challenge.prompt}" on your phone, then confirm here: ${localUrl}`
-        : `Feather needs a 2FA code for "${challenge.prompt}". Enter it here: ${localUrl}`;
+        ? `Feather needs you to approve "${challenge.prompt}" on your phone, then confirm here: ${link}`
+        : `Feather needs a 2FA code for "${challenge.prompt}". Enter it here: ${link}`;
     await fetch(`https://api.telegram.org/bot${this.config.botToken}/sendMessage`, {
       method: "POST",
       headers: { "content-type": "application/json" },

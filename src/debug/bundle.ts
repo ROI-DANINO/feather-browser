@@ -46,7 +46,7 @@ export class DebugBundle {
 
   async finalize(closeReason: string): Promise<string> {
     const debugDir = this.session.debugDir;
-    await fs.promises.mkdir(debugDir, { recursive: true });
+    await fs.promises.mkdir(debugDir, { recursive: true, mode: 0o700 });
 
     let artifacts: string[] = [];
     try {
@@ -72,7 +72,7 @@ export class DebugBundle {
     };
 
     const manifestPath = path.join(debugDir, "manifest.json");
-    await fs.promises.writeFile(manifestPath, JSON.stringify(manifest, null, 2), "utf8");
+    await fs.promises.writeFile(manifestPath, JSON.stringify(manifest, null, 2), { encoding: "utf8", mode: 0o600 });
     return manifestPath;
   }
 }

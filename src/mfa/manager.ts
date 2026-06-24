@@ -15,6 +15,8 @@ import {
   requireTargetForType,
   requireCodeForType,
 } from "./types";
+import type { ResolveBannerController, ResolveBannerHandle } from "./resolve-banner";
+import { constantTimeEqual } from "../util/constant-time";
 
 // Minimal structural view of what the manager needs from a session (mirrors await-human's IManager).
 // The real SessionManager.get() returns a FeatherSession, which satisfies this at runtime.
@@ -42,6 +44,7 @@ interface ChallengeInternals {
   createOrigin: string;
   pageId?: string;
   timer?: ReturnType<typeof setTimeout>;
+  bannerHandle?: ResolveBannerHandle;
 }
 
 const newChallengeId = (): string => `mfa_${randomBytes(8).toString("hex")}`; // 128-bit identifier
@@ -76,6 +79,13 @@ export class MfaChallengeManager {
     private readonly pause: PauseDeps = defaultPauseDeps,
   ) {}
 
+  private banner?: ResolveBannerController;
+
+  /** Wire the optional local resolve-banner channel (set at routes time; absent in unit tests). */
+  setBannerController(banner: ResolveBannerController): void {
+    this.banner = banner;
+  }
+
   setBaseUrl(baseUrl: string): void {
     this.baseUrl = baseUrl.replace(/\/$/, "");
   }
@@ -94,10 +104,10 @@ export class MfaChallengeManager {
     return this.challenges.get(challengeId);
   }
 
-  /** Routes verify the bearer secret here (constant-ish length compare). */
+  /** Routes verify the bearer secret here, in constant time. */
   verifyHumanToken(challengeId: string, humanToken: string | undefined): boolean {
     const internal = this.internals.get(challengeId);
-    return !!internal && !!humanToken && internal.humanToken === humanToken;
+    return !!internal && constantTimeEqual(internal.humanToken, humanToken);
   }
 
   /** The local page mints a per-render CSRF nonce; submit verifies it. Defense-in-depth atop the
@@ -113,7 +123,7 @@ export class MfaChallengeManager {
     // page render stored — so a forged nonce is rejected.
     if (nonce === undefined) return true;
     const internal = this.internals.get(challengeId);
-    return !!internal && internal.csrfNonce !== undefined && internal.csrfNonce === nonce;
+    return !!internal && constantTimeEqual(internal.csrfNonce, nonce);
   }
 
   async createChallenge(input: CreateChallengeInput): Promise<MfaChallenge> {
@@ -147,14 +157,15 @@ export class MfaChallengeManager {
     const timer = setTimeout(() => {
       void this.expire(challengeId);
     }, timeoutMs);
-    this.internals.set(challengeId, {
+    const internals: ChallengeInternals = {
       hold,
       pauseToken: pause.token,
       humanToken,
       createOrigin,
       pageId,
       timer,
-    });
+    };
+    this.internals.set(challengeId, internals);
 
     await this.logger.log({
       ts: challenge.createdAt,
@@ -165,9 +176,21 @@ export class MfaChallengeManager {
     });
 
     try {
-      await this.notifier.notify(challenge, this.humanUrlFor(challengeId, humanToken));
+      await this.notifier.notify(challenge, {
+        agentUrl: this.localUrlFor(challengeId),
+        humanUrl: this.humanUrlFor(challengeId, humanToken),
+      });
     } catch {
       /* notification failure must not fail challenge creation */
+    }
+
+    // Local resolve channel (best-effort): an in-browser banner that, on click, makes Feather open the
+    // token-bearing resolve tab over CDP — the token never enters the watched page. A headless/no-page
+    // session just no-ops. See docs/specs/2026-06-24-mfa-resolve-banner-design.md.
+    if (this.banner) {
+      internals.bannerHandle = await this.banner
+        .show(input.sessionId, pageId, input.prompt, this.humanUrlFor(challengeId, humanToken))
+        .catch(() => undefined);
     }
 
     return challenge;
@@ -253,6 +276,7 @@ export class MfaChallengeManager {
       this.pause.resumePause(internal.pauseToken, challenge?.sessionId ?? internal.hold.sessionId);
       this.pause.discardPause(internal.pauseToken);
       await this.holds.release(internal.hold);
+      if (internal.bannerHandle) await internal.bannerHandle.dispose().catch(() => {});
     }
     if (challenge) {
       await this.logger.log({

@@ -56,10 +56,31 @@ export function resolveChromiumExecutable(fallback: string): string {
   return override && override.trim() !== "" ? override.trim() : fallback;
 }
 
+const LOOPBACK_HOSTS = new Set(["127.0.0.1", "::1", "localhost"]);
+
+/**
+ * Resolve the bind host, refusing a non-loopback address unless explicitly opted in. Binding the
+ * control plane (which drives a logged-in browser) to a routable interface exposes it to the local
+ * network, so a non-loopback `FEATHER_HOST` is a deliberate, dangerous choice that must be made
+ * out loud via `FEATHER_ALLOW_NONLOOPBACK=1`. A blank value falls back to the loopback default.
+ */
+export function resolveHost(): string {
+  const raw = process.env.FEATHER_HOST;
+  const host = raw && raw.trim() !== "" ? raw.trim() : "127.0.0.1";
+  if (!LOOPBACK_HOSTS.has(host) && process.env.FEATHER_ALLOW_NONLOOPBACK !== "1") {
+    throw new Error(
+      `FEATHER_HOST="${host}" is not a loopback address. Binding Feather's control plane to a ` +
+        `non-loopback interface exposes a logged-in browser to your network. ` +
+        `Set FEATHER_ALLOW_NONLOOPBACK=1 to override if you really mean it.`
+    );
+  }
+  return host;
+}
+
 export function loadConfig(): FeatherConfig {
   return {
     port: process.env.FEATHER_PORT ? parseInt(process.env.FEATHER_PORT, 10) : 0,
-    host: process.env.FEATHER_HOST ?? "127.0.0.1",
+    host: resolveHost(),
     dirs: resolveDirs(),
   };
 }

@@ -5,6 +5,7 @@ import { DangerousModePolicy } from "./policy";
 import { GrantAuditSink } from "./audit";
 import { emitBusEvent } from "../logs/bus";
 import type { EventName } from "../logs/events";
+import { constantTimeEqual } from "../util/constant-time";
 
 // ── Capability service (Gate A / A1) ─────────────────────────────────────────
 // The server-owned facade that composes the slice-1/2/3 pieces into the live Gate-A flow:
@@ -66,7 +67,7 @@ export class CapabilityService {
   resolveApproval(humanToken: string, csrfNonce: string, action: "approve" | "deny"): ResolveResult {
     const peek = this.approvals.peek(humanToken);
     if (!peek) return { ok: false, reason: "unknown-token" };
-    if (peek.csrfNonce !== csrfNonce) return { ok: false, reason: "bad-csrf" };
+    if (!constantTimeEqual(peek.csrfNonce, csrfNonce)) return { ok: false, reason: "bad-csrf" };
     const grant = this.grants.get(peek.grantId);
     if (!grant || grant.status !== "requested") {
       this.approvals.consume(humanToken, csrfNonce);

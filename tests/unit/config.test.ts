@@ -17,6 +17,7 @@ const XDG_VARS = [
   "XDG_RUNTIME_DIR",
   "FEATHER_PORT",
   "FEATHER_HOST",
+  "FEATHER_ALLOW_NONLOOPBACK",
   "FEATHER_CHROMIUM_PATH",
 ];
 
@@ -89,6 +90,28 @@ describe("config", () => {
     process.env.FEATHER_DIR = "/tmp/feather-test";
     const cfg = loadConfig();
     expect(cfg.dirs).toEqual(singleRootDirs("/tmp/feather-test"));
+  });
+
+  it("loadConfig defaults host to 127.0.0.1 when FEATHER_HOST is unset", () => {
+    expect(loadConfig().host).toBe("127.0.0.1");
+  });
+
+  it("loadConfig accepts loopback hosts without opt-in", () => {
+    for (const h of ["127.0.0.1", "::1", "localhost"]) {
+      process.env.FEATHER_HOST = h;
+      expect(loadConfig().host).toBe(h);
+    }
+  });
+
+  it("loadConfig throws on a non-loopback FEATHER_HOST without the opt-in env", () => {
+    process.env.FEATHER_HOST = "0.0.0.0";
+    expect(() => loadConfig()).toThrow(/loopback/i);
+  });
+
+  it("loadConfig allows a non-loopback FEATHER_HOST when FEATHER_ALLOW_NONLOOPBACK=1", () => {
+    process.env.FEATHER_HOST = "0.0.0.0";
+    process.env.FEATHER_ALLOW_NONLOOPBACK = "1";
+    expect(loadConfig().host).toBe("0.0.0.0");
   });
 
   it("resolveChromiumExecutable returns the fallback when FEATHER_CHROMIUM_PATH is unset", () => {

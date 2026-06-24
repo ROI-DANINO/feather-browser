@@ -1,4 +1,5 @@
 import { randomBytes } from "crypto";
+import { constantTimeEqual } from "../util/constant-time";
 
 // ── Approval store (Gate A / A1) ─────────────────────────────────────────────
 // Backs the human approval page, reusing the MFA local-page security stack (S1): the URL carries an
@@ -36,7 +37,7 @@ export class ApprovalStore {
   consume(humanToken: string, csrfNonce: string): ConsumeResult {
     const pending = this.byToken.get(humanToken);
     if (!pending) return { ok: false, reason: "unknown-token" };
-    if (pending.csrfNonce !== csrfNonce) return { ok: false, reason: "bad-csrf" };
+    if (!constantTimeEqual(pending.csrfNonce, csrfNonce)) return { ok: false, reason: "bad-csrf" };
     this.byToken.delete(humanToken);
     return { ok: true, grantId: pending.grantId };
   }

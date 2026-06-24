@@ -11,7 +11,7 @@ import { createPause, resumePause, discardPause, assertPageNotPaused, _resetForT
 
 const ctx = { requestId: "req_test" };
 
-function harness() {
+function harness(opts?: { banner?: { show: any } }) {
   let pageUrl = "https://site.example/login";
   const page = { url: () => pageUrl };
   const session = { getPage: vi.fn().mockReturnValue({ pageId: "page_1", page }) };
@@ -30,14 +30,15 @@ function harness() {
     discardPause: vi.fn(),
   };
   const mgr = new MfaChallengeManager(sessions as any, typeHandler, notifier, logger, holds, 300000, pause);
+  if (opts?.banner) mgr.setBannerController(opts.banner as any);
   mgr.setBaseUrl("http://localhost:3333");
   return { mgr, sessions, typeHandler, notifier, logger, holds, pause, setPageUrl: (u: string) => (pageUrl = u) };
 }
 
-// Pull the single-use humanToken out of the URL the notifier was handed.
+// Pull the single-use humanToken out of the human-facing url the notifier was handed.
 function tokenFromNotify(notifier: { notify: any }): string {
-  const url = notifier.notify.mock.calls[0][1] as string;
-  return new URL(url).searchParams.get("t")!;
+  const { humanUrl } = notifier.notify.mock.calls[0][1] as { humanUrl: string };
+  return new URL(humanUrl).searchParams.get("t")!;
 }
 
 describe("MfaChallengeManager.createChallenge", () => {
@@ -54,9 +55,11 @@ describe("MfaChallengeManager.createChallenge", () => {
     expect(h.holds.has("ses_1", "mfa")).toBe(true);
     expect(h.holds.count("ses_1", "mfa")).toBe(1);
     expect(h.pause.createPause).toHaveBeenCalledWith("ses_1", "mfa", "page_1");
-    // notifier got the human-facing url carrying a token; that token verifies
-    const url = h.notifier.notify.mock.calls[0][1] as string;
-    expect(url).toContain(`/v1/mfa/${ch.challengeId}`);
+    // notifier got both urls: a token-less agentUrl and a human-facing url carrying the token
+    const urls = h.notifier.notify.mock.calls[0][1] as { agentUrl: string; humanUrl: string };
+    expect(urls.agentUrl).toContain(`/v1/mfa/${ch.challengeId}`);
+    expect(urls.agentUrl).not.toContain("?t=");
+    expect(urls.humanUrl).toContain(`/v1/mfa/${ch.challengeId}`);
     expect(h.mgr.verifyHumanToken(ch.challengeId, tokenFromNotify(h.notifier))).toBe(true);
     expect(h.logger.log).toHaveBeenCalledWith(expect.objectContaining({ event: "mfa.challenge.created" }));
     expect(h.mgr.getChallenge(ch.challengeId)).toBe(ch);
@@ -74,6 +77,28 @@ describe("MfaChallengeManager.createChallenge", () => {
     await expect(h.mgr.createChallenge({
       sessionId: "ses_1", type: "push", target: { by: "css", selector: "#x" }, prompt: "x",
     })).rejects.toBeInstanceOf(MfaValidationError);
+  });
+});
+
+describe("MfaChallengeManager — resolve banner", () => {
+  it("shows the banner with the token URL on create, and disposes it on resolve", async () => {
+    const dispose = vi.fn().mockResolvedValue(undefined);
+    const banner = { show: vi.fn().mockResolvedValue({ dispose }) };
+    const h = harness({ banner });
+
+    const ch = await h.mgr.createChallenge({ sessionId: "ses_1", type: "push", prompt: "Google sign-in" });
+    // shown with (sessionId, pageId, prompt, token-bearing humanUrl)
+    expect(banner.show).toHaveBeenCalledWith("ses_1", "page_1", "Google sign-in", expect.stringContaining("?t="));
+
+    await h.mgr.resolveChallenge(ch.challengeId, undefined, tokenFromNotify(h.notifier), ctx);
+    expect(dispose).toHaveBeenCalled();
+  });
+
+  it("works with no banner controller wired (banner is optional)", async () => {
+    const h = harness(); // no banner
+    const ch = await h.mgr.createChallenge({ sessionId: "ses_1", type: "push", prompt: "x" });
+    await expect(h.mgr.resolveChallenge(ch.challengeId, undefined, tokenFromNotify(h.notifier), ctx))
+      .resolves.toMatchObject({ status: "resolved" });
   });
 });
 

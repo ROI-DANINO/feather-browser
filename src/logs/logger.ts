@@ -25,7 +25,7 @@ export class FeatherLogger {
 
     const logPath = this.paths.sessionLog(event.sessionId);
     const logDir = path.dirname(logPath);
-    await fs.promises.mkdir(logDir, { recursive: true });
+    await fs.promises.mkdir(logDir, { recursive: true, mode: 0o700 });
 
     const record: Record<string, unknown> = {
       ts: event.ts,
@@ -36,6 +36,6 @@ export class FeatherLogger {
     if (event.requestId !== undefined) record["requestId"] = event.requestId;
     if (event.data !== undefined) record["data"] = event.data;
 
-    await fs.promises.appendFile(logPath, JSON.stringify(record) + "\n", "utf8");
+    await fs.promises.appendFile(logPath, JSON.stringify(record) + "\n", { encoding: "utf8", mode: 0o600 });
   }
 }

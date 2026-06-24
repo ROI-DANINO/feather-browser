@@ -129,7 +129,10 @@ export class SessionManager implements ISessionManager {
     Object.defineProperty(session, "profilePath", { value: profilePath });
     Object.defineProperty(session, "debugDir", { value: debugDir });
 
-    await fs.promises.mkdir(profilePath, { recursive: true });
+    // 0o700 on the profile dir: it IS the Cookie Mine — Chromium writes Cookies / Login Data / Local
+    // Storage here, the most credential-bearing dir in the system. Owner-only on its own inode, not
+    // just via an ancestor's mode. (Applies to both persistent and disposable profile paths.)
+    await fs.promises.mkdir(profilePath, { recursive: true, mode: 0o700 });
     await fs.promises.mkdir(debugDir, { recursive: true });
 
     if (profileKind === "persistent") {
@@ -385,7 +388,8 @@ export class SessionManager implements ISessionManager {
       const sessionDir = this.paths.disposableSessionDir(sessionId);
       if (opts?.quarantineDisposableProfile) {
         const quarantineDir = this.paths.quarantinedProfileDir(sessionId);
-        await fs.promises.mkdir(path.dirname(quarantineDir), { recursive: true });
+        // Owner-only: a quarantined profile is still a real cookie jar (kept for forensics).
+        await fs.promises.mkdir(path.dirname(quarantineDir), { recursive: true, mode: 0o700 });
         try {
           await fs.promises.rename(session.profilePath, quarantineDir);
         } catch (err) {

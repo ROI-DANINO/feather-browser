@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from "vitest";
 import * as os from "os";
 import * as path from "path";
 import * as fs from "fs";
@@ -59,6 +59,7 @@ let server: FastifyInstance;
 let token: string;
 let port: number;
 let consoleLines: string[];
+let telegramSends: string[] = []; // message texts captured from the private Telegram channel
 const origLog = console.log;
 
 function authed(extra?: Record<string, string>) {
@@ -68,10 +69,11 @@ function form() {
   return { "content-type": "application/x-www-form-urlencoded" };
 }
 
-/** The human's real channel: pull the humanToken from the URL the ConsoleNotifier printed. */
+/** The human's real channel is now the PRIVATE Telegram DM (the console is token-less by design):
+ *  pull the humanToken from the URL Telegram was sent. */
 function lastHumanUrl(): string {
-  const line = [...consoleLines].reverse().find((l) => l.includes("/v1/mfa/"));
-  if (!line) throw new Error("no mfa URL printed");
+  const line = [...telegramSends].reverse().find((l) => l.includes("/v1/mfa/"));
+  if (!line) throw new Error("no mfa URL sent to the private channel");
   return line.match(/(http:\/\/[^\s]+\/v1\/mfa\/[^\s]+)/)![1];
 }
 
@@ -90,6 +92,14 @@ beforeAll(async () => {
   tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "feather-mfa-test-"));
   await ensureDirs(tmpDir);
   const paths = new FeatherPaths(tmpDir);
+  // Enable the private Telegram channel so the humanToken has a non-console destination, and capture
+  // what it sends. The bearer token is deliberately NOT printed to the console anymore.
+  process.env.FEATHER_TELEGRAM_BOT_TOKEN = "test-bot";
+  process.env.FEATHER_TELEGRAM_CHAT_ID = "test-chat";
+  vi.stubGlobal("fetch", async (_url: unknown, init: any) => {
+    try { telegramSends.push(JSON.parse(init.body).text); } catch { /* not a telegram send */ }
+    return { ok: true } as Response;
+  });
   const started = await startHttpServer("127.0.0.1", 0, makeMockManager(), paths);
   server = started.server;
   token = started.token;
@@ -99,11 +109,14 @@ beforeAll(async () => {
 
 afterAll(async () => {
   console.log = origLog;
+  vi.unstubAllGlobals();
+  delete process.env.FEATHER_TELEGRAM_BOT_TOKEN;
+  delete process.env.FEATHER_TELEGRAM_CHAT_ID;
   await server.close();
   await fs.promises.rm(tmpDir, { recursive: true, force: true });
 });
 
-beforeEach(() => { consoleLines = []; });
+beforeEach(() => { consoleLines = []; telegramSends = []; });
 
 describe("MFA over HTTP — push happy path", () => {
   it("create returns a token-less agent localUrl (the humanToken never reaches the agent)", async () => {
@@ -117,6 +130,10 @@ describe("MFA over HTTP — push happy path", () => {
     const { challengeId } = await createPush();
     const humanUrl = lastHumanUrl();
     const humanToken = new URL(humanUrl).searchParams.get("t")!;
+
+    // the bearer token reaches the private channel but NEVER the console (which is shared/loggable)
+    expect(consoleLines.join("\n")).toContain(`/v1/mfa/${challengeId}`);
+    expect(consoleLines.join("\n")).not.toContain(humanToken);
 
     // wrong/missing token → 404, no page
     const denied = await request({ path: `/v1/mfa/${challengeId}` });

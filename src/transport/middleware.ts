@@ -1,5 +1,6 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
 import { randomUUID } from "crypto";
+import { constantTimeEqual } from "../util/constant-time";
 
 export function injectRequestId(request: FastifyRequest): void {
   (request as any).requestId = `req_${randomUUID().slice(0, 8)}`;
@@ -106,8 +107,9 @@ export function createOriginHostGuard() {
 
 export function createTokenAuth(token: string) {
   return async function tokenAuth(request: FastifyRequest, reply: FastifyReply): Promise<void> {
-    const provided = request.headers["x-feather-token"];
-    if (provided !== token) {
+    // Constant-time compare (no timing side channel). A missing header (undefined) or a duplicated
+    // header (Fastify yields string[]) is non-string → rejected by constantTimeEqual, never trusted.
+    if (!constantTimeEqual(request.headers["x-feather-token"], token)) {
       return reply.status(401).send({
         ok: false,
         requestId: (request as any).requestId ?? "unknown",

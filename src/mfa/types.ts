@@ -25,8 +25,19 @@ export interface CreateChallengeInput {
   timeoutMs?: number;
 }
 
+/**
+ * Two URLs for the same challenge, split by channel trust level. `agentUrl` is token-less and safe for
+ * shared/logged sinks (console, log files); `humanUrl` carries the single-use bearer token and must
+ * only go to a private channel (e.g. a Telegram DM to the human). Keeping them separate means the
+ * secret structurally never reaches a notifier that logs.
+ */
+export interface MfaNotifyUrls {
+  agentUrl: string;
+  humanUrl: string;
+}
+
 export interface MfaNotifier {
-  notify(challenge: MfaChallenge, localUrl: string): Promise<void>;
+  notify(challenge: MfaChallenge, urls: MfaNotifyUrls): Promise<void>;
 }
 
 export interface TelegramNotifierConfig {

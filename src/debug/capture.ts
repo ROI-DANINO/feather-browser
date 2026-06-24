@@ -76,12 +76,13 @@ export class DebugCapture {
   }
 
   async finalize(): Promise<void> {
-    await fs.promises.mkdir(this.debugDir, { recursive: true });
+    // Owner-only: network/console captures can carry Set-Cookie / Authorization / tokens-in-URL.
+    await fs.promises.mkdir(this.debugDir, { recursive: true, mode: 0o700 });
 
     const writeJsonl = async (filename: string, entries: object[]): Promise<void> => {
       const filePath = path.join(this.debugDir, filename);
       const lines = entries.map((e) => JSON.stringify(e)).join("\n");
-      await fs.promises.writeFile(filePath, lines ? lines + "\n" : "", "utf8");
+      await fs.promises.writeFile(filePath, lines ? lines + "\n" : "", { encoding: "utf8", mode: 0o600 });
     };
 
     await writeJsonl("network-summary.jsonl", this.networkEvents);

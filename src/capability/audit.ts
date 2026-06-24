@@ -20,7 +20,7 @@ export class GrantAuditSink {
   /** Append one redacted event line. Synchronous append-only write — never truncates prior history. */
   record(event: GrantEvent): void {
     const line: AuditLine = { ts: new Date().toISOString(), type: event.type, grant: event.grant };
-    fs.mkdirSync(path.dirname(this.file), { recursive: true });
-    fs.appendFileSync(this.file, JSON.stringify(line) + "\n");
+    fs.mkdirSync(path.dirname(this.file), { recursive: true, mode: 0o700 });
+    fs.appendFileSync(this.file, JSON.stringify(line) + "\n", { mode: 0o600 });
   }
 }
