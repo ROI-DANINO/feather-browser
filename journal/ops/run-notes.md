@@ -209,3 +209,66 @@ ROADMAP table, `tasks.md`, `active.md`, `phase.md` all reconciled to this order;
 Phase 1a security wins. Wrote **blog 0022 — "The Disguise I Didn't Need"** (folded the 3 owed stealth
 lines; `_pending.md` cleared). Handoff:
 `journal/ops/sessions/the-disguise-i-didnt-need-20260624-0126.md`. Committed at this `/stop`.
+
+---
+
+## 2026-06-24 — Phase 1 (Harden) SHIPPED + local MFA resolve-banner (commit 06cd2e8, pushed)
+
+**Decision/state:** Phase 1 of the reorientation roadmap is built and pushed to `origin/dev`. Order held
+(Roi): harden first → OSS envelope → demo last. v1-vs-v2 settled: it's a **v1 wrap**; the historically-
+"v2" safety spine (Gate A + Identity + MFA) is already built/proven and IS v1's foundation.
+
+**Shipped (all TDD):**
+- 1a: constant-time auth (`timingSafeEqual`), non-loopback host opt-in (`FEATHER_ALLOW_NONLOOPBACK`),
+  MFA token off console (notifier split agentUrl/humanUrl), owner-only `0700/0600` perms.
+- 1b: `@vitest/coverage-v8` + per-area floor, `tests/integration/security/` abuse-fuzz surface,
+  warmed-session reuse/persistence/isolation tests, `adr-0012` (at-rest plaintext intentional for v1).
+- **Verifier-found MAJOR fixed:** the warmed-profile cookie jar (`sessions/manager.ts`) + quarantine dir
+  were still `0755` — the perms fix had hit only the index dirs. Now `0700`, with a leaf-perms test.
+- **Local MFA resolve-banner** (`docs/specs/2026-06-24-mfa-resolve-banner-design.md`): banner button
+  carries NO token; Feather opens the resolve tab over CDP → token never on the watched page. Closes the
+  MFA-without-Telegram gap the console fix opened.
+- 2 residuals: all bearer-secret/CSRF compares → one `constantTimeEqual` (`src/util/constant-time.ts`);
+  debug-bundle writes → `0600/0700`.
+- `SECURITY.md` reconciled to the shipped posture (outsider-first threat model; §3 down to plaintext-at-
+  rest + the accepted git-history leak).
+
+**Method note:** two dynamic workflows drove the session — a 12-agent wrap-gap assessment (verified the
+distance-to-wrap, resolved v1/v2, drafted SECURITY.md + adr-0012) and a 3-lens adversarial diff-verify
+(caught the cookie-jar miss). Coverage gotcha: `resolve-banner.ts` (integration-tested Playwright) is
+excluded from the unit floor, not lowered.
+
+**Gate:** tsc clean · 471 unit (floor enforced) · 164 integration / 1 skip / 1 pre-existing attach-cdp
+viewport red (niri tiling-WM; unrelated).
+
+**Next:** Phase 2 — OSS envelope. Start with the README clone→fail blocker (missing
+`npx playwright install chromium`), then CONTRIBUTING.md, CI badge, declare API v1 + stability line,
+surface the success number. Blog 0023 — "Every Door But the Vault". Handoff:
+`journal/ops/sessions/every-door-but-the-vault-20260624-0314.md`.
+
+---
+
+## 2026-06-24 — Phase 2 OSS envelope (commits `5c5f0fa` + `182b4e0`, pushed)
+
+Worked straight down the Phase 2 checklist; every claim verified live, not asserted.
+
+- **Clone→fail blocker:** `npx playwright install chromium` added to `README.md` + `examples/README.md`
+  (npm install doesn't fetch the binary → stranger's first launch failed). Root-caused: no `postinstall`;
+  chose the documented line over a silent ~150MB CI auto-download.
+- **README:** CI badge (`ci.yml`); "Showcase suite" section surfacing **8 PASS / 2 PARTIAL** (both
+  reclassified environmental). Re-ran `showcase.sh easy` live → **3/3 PASS**.
+- **`CONTRIBUTING.md`:** setup, exact CI verification gate, branch rules, scope/security.
+- **HTTP API `/v1` declared** + SemVer-style stability promise in `docs/api-reference.md` Overview;
+  runnable curl for action (click/type/press, shared `target`), grants, MFA-challenge. All 3 shapes hit
+  the live server: type→`ok:true`, grants→`403 DANGEROUS_DISABLED` (nothing opted-in), mfa→`ok:true`.
+
+**Version-collision catch (Roi):** "we wrapping v2 not v1." TWO counters — **product v1→v2→v3** (at v2)
+vs the **HTTP API URL `/v1`** prefix (unchanged since the start). The work was the API one; `182b4e0`
+makes api-reference name them apart so a `/v2` there reads as an API-prefix bump, not product-v2.
+Durable fact now lives in the docs (not promoted to file-memory — repo already records it).
+
+**Decision:** API `/v1` stability = no breaking change to existing endpoints/fields/envelope without a
+`/v2` URL bump; additive (new endpoints / optional fields) is non-breaking → clients ignore unknown fields.
+
+**Next:** Phase 3 — a NEW, stronger hero demo (LAST), needs Roi driving + `wf-recorder`. No blog (owed
+line filed). Handoff: `journal/ops/sessions/the-two-version-numbers-20260624-0427.md`.

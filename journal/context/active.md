@@ -6,23 +6,21 @@ operational checklist → `journal/ops/tasks.md`; machine pointer → `journal/o
 
 ## Current pointer
 
-- **NOW (2026-06-24 STOP — REORIENTED: target locked, stealth CUT, docs reconciled, blog 0022 shipped).**
-  A multi-angle audit + research pass (8-agent workflow) found ~9 days of drift into anti-bot **stealth**
-  while v1 was never shipped and the phase pointer stayed stale. Roi settled: **HYBRID target — personal
-  errand-runner → narrow local-first/privacy OSS**; **stealth CUT/parked** (independent benchmark:
-  rebrowser's CDP patches == vanilla Playwright on 31 real sites; the warmed-session moat already wins);
-  big visual-shell vision deferred. This session: wrote the plan of record
-  (`docs/specs/2026-06-24-reorientation-and-roadmap-restructure.md`), installed a commit-time secret
-  guard (`.githooks/pre-commit`), reconciled all tracking files (old NOW stack →
-  `journal/ops/archive/active-now-stack-20260624.md`), and wrote **blog 0022 — The Disguise I Didn't
-  Need** (folded 3 owed stealth lines). Handoff:
-  `journal/ops/sessions/the-disguise-i-didnt-need-20260624-0126.md`.
-- **RECOMMEND NEXT (Roi's reorder, 2026-06-24): HARDEN FIRST → adoptable → a NEW stronger demo LAST.**
-  Start with **Phase 1a — security wins**: write `SECURITY.md` + the defense-in-depth fixes (reject
-  non-loopback host unless opted in; MFA token URL off console; `0700` dirs; constant-time auth). Then
-  **1b — test gaps** (coverage + floor, abuse suite, session-reuse tests, at-rest ADR) → **Phase 2 — OSS
-  envelope** → **Phase 3 — a NEW stronger demo** (the current `npm run demo:hero` works but is basic).
-  **Do NOT restart stealth.** Full checklist: `journal/ops/tasks.md`.
+- **NOW (2026-06-24 STOP — PHASE 2 "OSS ENVELOPE" SHIPPED & PUSHED; commits `5c5f0fa` + `182b4e0`,
+  pushed `06cd2e8..182b4e0`, no blog — owed line filed).** Worked straight down the Phase 2 checklist,
+  everything verified live not asserted: README + `examples/README.md` clone→fail fix
+  (`npx playwright install chromium`); CI badge; README showcase section surfacing **8 PASS / 2 PARTIAL**
+  (`showcase.sh easy` re-run → 3/3 PASS); new `CONTRIBUTING.md`; HTTP API **`/v1`** declared + stability
+  promise in `docs/api-reference.md` + runnable curl for action/grants/MFA (all 3 shapes hit the live
+  server). **Roi caught a version collision** ("we wrapping v2 not v1"): there are TWO counters —
+  **product v1→v2→v3** (at v2) vs the **HTTP API URL `/v1`** prefix (unchanged since the start). My work
+  was the API one (the checklist item literally says "declare the HTTP API v1"); `182b4e0` makes the docs
+  name them apart so no reader confuses them. Handoff:
+  `journal/ops/sessions/the-two-version-numbers-20260624-0427.md`.
+- **RECOMMEND NEXT: Phase 3 — a NEW, stronger hero demo (LAST, needs Roi driving).** Record a real
+  logged-in errand (e.g. the H1 calendar errand) as the new hero demo with `wf-recorder` (installed).
+  NOT a solo-agent task — Roi drives the human steps. The current `npm run demo:hero` works but is basic.
+  Also add a one-line binary "done" per version row in `feather.md`. Full checklist: `journal/ops/tasks.md`.
 - **Roi's open item (outside the repo):** rotate/abandon the leaked `roionly9` throwaway account; the
   password stays in public git history (no scrub — Roi's call, low blast radius).
 
@@ -40,7 +38,13 @@ operational checklist → `journal/ops/tasks.md`; machine pointer → `journal/o
 
 ## Recent completed context
 
-- **2026-06-24 reorientation** (this session): audit + research → hybrid target, stealth cut, tracking
-  reconciled, secret guard added. See the plan of record + `journal/ops/archive/active-now-stack-20260624.md`.
+- **2026-06-24 Phase 2 OSS ENVELOPE** (this session): clone→fail fix + CI badge + showcase number +
+  `CONTRIBUTING.md` + HTTP API `/v1` declared + curl examples; product-vs-API version disambiguation.
+  `5c5f0fa` + `182b4e0`. Handoff: `journal/ops/sessions/the-two-version-numbers-20260624-0427.md`. No blog.
+- **2026-06-24 Phase 1 HARDEN**: 1a security fixes + 1b test gaps + the verifier-found
+  cookie-jar perms fix + local MFA resolve-banner + 2 residuals. `06cd2e8`. Handoff:
+  `journal/ops/sessions/every-door-but-the-vault-20260624-0314.md`. Blog 0023.
+- **2026-06-24 reorientation:** audit + research → hybrid target, stealth cut, tracking reconciled, secret
+  guard added. Plan of record + `journal/ops/archive/active-now-stack-20260624.md`.
 - **v2 safety spine PROVEN LIVE (2026-06-23):** Gate A + 5a Identity + 5b MFA + await-human handoff held
   through a real Instagram login wall. Detail in `journal/ops/archive/tasks-20260624-reorientation.md`.

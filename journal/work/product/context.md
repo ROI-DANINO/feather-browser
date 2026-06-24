@@ -29,6 +29,13 @@ Current focus: preserve the original intent while narrowing the first buildable 
   split, shipped live to the default branch (`dev`). The README's structure (what it is / who it's
   for / see it work / honest "what it doesn't do yet" / built-in-the-open) is the canonical public
   framing; reuse it. Phase 4 splits **4a (Core, done) → 4b (Shell, next)**.
+  **OSS ENVELOPE COMPLETED (Phase 2, 2026-06-24, `5c5f0fa`+`182b4e0`):** clone→fail fix
+  (`npx playwright install chromium`), CI badge, `CONTRIBUTING.md`, README success number (8 PASS/2
+  PARTIAL), and the **HTTP API declared `/v1`** with a SemVer-style stability promise + runnable curl.
+  **TWO version counters — keep them named apart:** the **product version** is Feather **v1→v2→v3**
+  (at v2); the **HTTP API URL version** is the **`/v1`** prefix (separate, unchanged since the start —
+  a `/v2` there is an API-prefix bump, not product-v2). Caused real confusion this session; disambiguated
+  in `docs/api-reference.md`.
 - **Native Capabilities Router / Connector Registry — placed at 5.0.1, after Gate A** (2026-06-10,
   Roi confirmed; input `research/2026-06-10-native-capabilities-router.md`). Feather as an execution
   router (native API / MCP / generated connector / browser observe-act / human handoff, browser =

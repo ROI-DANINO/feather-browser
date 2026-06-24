@@ -9,7 +9,7 @@ If this list is empty, nothing is owed.
 
 ## Owed
 
-_Nothing owed._
+- `journal/ops/sessions/the-two-version-numbers-20260624-0427.md` — Phase 2 OSS envelope shipped; Roi caught the product-v2-vs-API-/v1 collision ("we wrapping v2 not v1") — 2026-06-24
 
 <!-- One line per deferred session:
 - `journal/ops/sessions/<nickname>-<timestamp>.md` — <one-line hook> — <YYYY-MM-DD>
