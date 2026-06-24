@@ -6,28 +6,25 @@ operational checklist → `journal/ops/tasks.md`; machine pointer → `journal/o
 
 ## Current pointer
 
-- **NOW (2026-06-24 STOP — PHASE 3 "SHOW IT OFF" SHIPPED & PUSHED; commits `4e0ad81..8aedbbe`,
-  pushed `182b4e0..8aedbbe`, blog 0024).** Reorientation roadmap **Phases 0–3 now COMPLETE.**
-  Hero demo v2: rewired `scripts/demo/continuity.ts` from a silent console login-poll to Feather's
-  shipped `await-human` handoff (on-page Resume banner + `resumeOn` auto-resume), so the agent↔human
-  handoff is **visible on camera** (~15 lines, TDD, no `src/` change). Added a binary "Done when" column
-  per version in `feather.md` (a cold review caught the v2 line smuggling a "no-verify-challenge" promise
-  that contradicts the cut-stealth decision; rewrote → only a *persistent block* fails v2). Recorded with
-  Roi driving → **live gate PASS (narrowed):** banner appeared on `accounts.google.com`, survived
-  email→password, auto-resumed; log- + frame-verified (`docs/v1_wrap/hero-demo-v2/gate-report.md`).
-  Recorded `demo-hero-mfa.mp4` (~49s/2.4M, trimmed + CRF-compressed from 23M; replaces `demo-final.mp4`);
-  README repointed; `scripts/demo/RECORDING.md` written. Final review fixed 2 honesty gaps (committed the
-  gate report; softened README 2FA wording — it wasn't demonstrated). **Post-/stop (`0ed7a1e`→`3bfa1c2`):**
-  README hero section now embeds an autoplay **GIF** (`demo-hero-mfa.gif`, 15s/1080px/3.4M — stitched
-  highlight: banner→login→auto-resume, hard-cut to the agent composing the Gmail draft, ending on the
-  finished draft) + mp4 kept as full-quality link. Handoff:
-  `journal/ops/sessions/the-demo-that-shows-its-hands-20260624-0554.md`.
-- **RECOMMEND NEXT: real-account 2FA take.** Run `npm run demo:hero` on Roi's *actual* Google account
-  (expected to trigger phone-tap verification) to prove the banner survives a real 2FA challenge **page**
-  — the one thing this session's recording did NOT exercise (no challenge fired same-machine). Test real /
-  publish scratch. Optional after: launch-grade re-record (opaque terminal, calm background, full terminal
-  on screen — gaps in `RECORDING.md`). With Phases 0–3 done, the other open thread is picking the next
-  real workstream (v2.5/4b are deferred; nothing forced).
+- **NOW (2026-06-24 STOP — NEW DIRECTION CHOSEN: the BOT GYMNASIUM; no code, blog 0025).**
+  Reorientation Phases 0–3 are COMPLETE; this session picked what comes *after*. Roi came in (12h
+  after the stealth-cut) wanting to remake Feather around stealth + Firefox/Gecko; a grounded,
+  adversarially-verified research pass (14 agents) refuted the premises (Firefox-stealth is a myth —
+  it's Camoufox's patches not Gecko, DataDome detects Camoufox by name; solo can't win the evasion
+  arms race; frontier is up-stack). Roi resolved it himself → a **self-hosted bot gymnasium**: his
+  own sandbox, his own deployed detectors, his own bots, watch them learn to pass. NOT evasion on
+  sites that don't want bots (that stays cut). **Goals = learning / portfolio / a job / joy, NOT
+  commercial.** Also mapped the **"one harness"**: iroh philosophy → White Lotus (cockpit) →
+  fable/iroh (brain) → **Feather as a DRIVEN body, not a limb** (integrate by driving, never merge).
+  Captured → `docs/specs/2026-06-24-gymnasium-and-harness-vision.md` + 3 memories. Handoff:
+  `journal/ops/sessions/my-own-gym-20260624-1217.md`.
+- **RECOMMEND NEXT: design Step 1 of the gym.** The smallest-alive version — one agent → Feather →
+  ONE real detector → an honest PASS/FAIL Roi can *see* (reframes the 5d.2 "measure reality" work he
+  loved). Design pass: pick the first detector (cheap, real, internals-not-controlled, **can-fail**),
+  define what "pass" means, decide where it lives in the repo, keep it small + watchable. Step 2 is
+  the scoreboard wire to fable's eval harness (`project-fable/evals/`). **Guardrail:** test against
+  detectors Roi does NOT control; design tests that can fail (else the sandbox becomes
+  rig-your-own-green-checkmarks). **Parked behind the pivot:** the prior "real-account 2FA take".
 - **Roi's open item (outside the repo):** rotate/abandon the leaked `roionly9` throwaway account; the
   password stays in public git history (no scrub — Roi's call, low blast radius).
 
@@ -45,7 +42,12 @@ operational checklist → `journal/ops/tasks.md`; machine pointer → `journal/o
 
 ## Recent completed context
 
-- **2026-06-24 Phase 3 SHOW IT OFF** (this session): hero demo v2 — `continuity.ts` console-poll →
+- **2026-06-24 "My Own Gym" — direction pivot** (this session, no code): refuted a stealth/Firefox
+  remake impulse with a verified research pass; chose the **self-hosted bot gymnasium**; clarified
+  goals (learn/portfolio/job/joy, not commercial); mapped the **one-harness** shape (Feather = driven
+  body, not a limb). Capture `docs/specs/2026-06-24-gymnasium-and-harness-vision.md`; memories
+  `feather-gymnasium-direction` + `the-harness-shape`. Blog 0025. Next = design Step 1 of the gym.
+- **2026-06-24 Phase 3 SHOW IT OFF**: hero demo v2 — `continuity.ts` console-poll →
   `await-human` banner handoff (visible on camera); `feather.md` per-version "Done when" column; live
   gate PASS (narrowed); `demo-hero-mfa.mp4` recorded/trimmed/compressed; RECORDING.md + gate-report.md.
   `4e0ad81..8aedbbe`. Handoff: `journal/ops/sessions/the-demo-that-shows-its-hands-20260624-0554.md`.

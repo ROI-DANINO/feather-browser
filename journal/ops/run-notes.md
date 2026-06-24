@@ -315,3 +315,29 @@ one hard cut, then the agent composing the ChatGPT reply in Gmail, **ending on t
 Recipe (durable): two-pass palette (`palettegen=stats_mode=diff` → `paletteuse=dither=bayer:bayer_scale=3`,
 `fps=12,scale=1080:-1:lanczos`); stitch beats via `filter_complex` trim+concat. `*.gif` not gitignored
 (`*.mp4` is, force-added). Media total `demo-hero-mfa.gif`(3.4M)+`.mp4`(2.4M)=6.0M.
+
+### 2026-06-24 /stop — "My Own Gym": direction pivot (no code) [blog 0025]
+**Context:** 12h after the reorientation CUT stealth, Roi came in wanting to remake Feather around
+stealth + Firefox/Gecko. Held the mirror (reversing his own fresh evidence on excitement), then ran a
+14-agent adversarially-verified research pass. Refuted the premises: **Firefox-stealth is a myth**
+(it's Camoufox's C++ patches, not Gecko; DataDome detects Camoufox by name; "~90% of bots are Chromium"
+is inflated → ~40%); **solo can't win the evasion arms race**; frontier is **up-stack** (orchestration/
+HITL/eval, immature-not-empty); broad "bot gymnasium/benchmark" niche occupied BUT **authenticated/
+warmed-session eval under-served**; scraping case law (hiQ/Bright Data) protects logged-OFF and
+**inverts** against logged-in automation.
+
+**Decisions:** (1) Don't remake around stealth — **extend** the cut. (2) **Bot gymnasium = the
+direction** — Roi's OWN sandbox/detectors/bots; NOT evasion on sites that don't want bots. (3) Goals =
+**learning/portfolio/job/joy, not commercial**. (4) **Don't stop White Lotus — change its job** (use as
+cockpit; extend only when the gym needs it). (5) **Integrate by driving, not merging** — the gym IS the
+integration. (6) **Don't do fable→iroh merge first**. (7) Honest-testing guardrail: test against
+detectors Roi does NOT control; design tests that can fail.
+
+**One-harness shape (durable):** iroh philosophy (constitution) → White Lotus (framework/cockpit) →
+fable/iroh (orchestration brain) → **Feather = DRIVEN body, not a limb**. Promoted to global file-memory:
+`feather-gymnasium-direction`, `the-harness-shape`; nuance added to `feather-target-and-stealth-cut`
+(gym ≠ restarting stealth). Capture doc: `docs/specs/2026-06-24-gymnasium-and-harness-vision.md`.
+
+**Next:** design **Step 1** of the gym — one agent → Feather → ONE real detector → honest, can-fail
+PASS/FAIL Roi can *see* (reframes the 5d.2 work). Then Step 2 = scoreboard wire to `project-fable/evals/`.
+**Parked behind pivot:** real-account 2FA take. Handoff: `journal/ops/sessions/my-own-gym-20260624-1217.md`.
