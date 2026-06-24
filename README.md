@@ -39,12 +39,12 @@ In another terminal, run the quickstart demo — it drives a full session loop e
 ### 2. Hero Demo (ChatGPT → Gmail)
 This demo showcases the "Cookie Mine" foundation: an agent piggybacks on your existing human-warmed sessions to perform cross-site tasks.
 
-![Feather's on-page Resume banner during the Google login handoff, then the agent resuming automatically](demo-hero-mfa.gif)
+![Feather's on-page Resume banner during Google login, then the agent drafting the ChatGPT reply in Gmail](demo-hero-mfa.gif)
 
-*The login-handoff highlight:* Feather's on-page **Resume banner** appears during Google login — you
-log in (completing any 2-step / 2FA yourself, if Google challenges you), and the agent resumes
-automatically once you're in. Full ~49s run end to end (ChatGPT → Gmail draft):
-[`demo-hero-mfa.mp4`](demo-hero-mfa.mp4).
+*Highlight:* Feather's on-page **Resume banner** appears during Google login — you log in (completing
+any 2-step / 2FA yourself, if Google challenges you), the agent resumes automatically once you're in,
+then drafts the ChatGPT reply into your Gmail (the finished draft is the last frame). Full ~49s run
+end to end: [`demo-hero-mfa.mp4`](demo-hero-mfa.mp4).
 
 ```bash
 npm run demo:hero
