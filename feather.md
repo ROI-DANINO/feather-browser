@@ -25,11 +25,11 @@ also the main reason Feather is hard to detect — it *is* a real person's brows
 
 ## Where it's going: v1 → v2 → v3
 
-| | The goal, one line | Status | Roadmap |
-|---|---|---|---|
-| **v1 — "It runs errands for me"** | Tell Feather a task → an agent navigates, figures out the steps, does it. Basic Claude-for-Chrome. | mostly there | [v1.md](docs/roadmap/v1.md) |
-| **v2 — "It survives the scary sites"** | Agent works on locked-down, bot-detecting sites (LinkedIn, Instagram, portals) *as you*, safely, without getting blocked. | planned, native | [v2.md](docs/roadmap/v2.md) |
-| **v3 — "The polished product"** | A nice daily-driver browser window + opening Feather to other tools. Lowest priority. | vision | [v3.md](docs/roadmap/v3.md) |
+| | The goal, one line | Done when | Status | Roadmap |
+|---|---|---|---|---|
+| **v1 — "It runs errands for me"** | Tell Feather a task → an agent navigates, figures out the steps, does it. Basic Claude-for-Chrome. | A stranger clones the repo, follows the README, and watches a real logged-in errand finish — end to end, unassisted, under five minutes. | mostly there | [v1.md](docs/roadmap/v1.md) |
+| **v2 — "It survives the scary sites"** | Agent works on locked-down, bot-detecting sites (LinkedIn, Instagram, portals) *as you*, safely, without getting blocked. | A warmed Feather session completes a full agent task on a real bot-detecting site (e.g. LinkedIn or Instagram) without triggering a block or a human-verify challenge. | planned, native | [v2.md](docs/roadmap/v2.md) |
+| **v3 — "The polished product"** | A nice daily-driver browser window + opening Feather to other tools. Lowest priority. | A non-developer can browse the web in Feather's own window and a third-party tool drives Feather through the published interop seam — both on the same build. | vision | [v3.md](docs/roadmap/v3.md) |
 
 ---
 
