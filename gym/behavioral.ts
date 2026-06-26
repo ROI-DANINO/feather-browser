@@ -51,6 +51,8 @@ const navigate = (sid: string, url: string) =>
   feather("POST", `/v1/sessions/${sid}/navigate`, { url, waitUntil: "domcontentloaded", timeoutMs: 30000 });
 const snapshot = (sid: string) =>
   feather<{ markdown?: string; text?: string }>("POST", `/v1/sessions/${sid}/snapshot`, {});
+const move = (sid: string, body: Record<string, unknown>) =>
+  feather<{ x: number; y: number; steps: number }>("POST", `/v1/sessions/${sid}/move`, body);
 const close = (sid: string) =>
   feather("DELETE", `/v1/sessions/${sid}`, { force: false }).catch(() => {});
 
@@ -65,27 +67,39 @@ async function shoot(sid: string, label: string): Promise<string> {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+// MOTION — the trial knobs. Change these, re-run, read results.md to see motion -> score.
+const MOTION = {
+  label: "v1-bezier-varspeed",
+  opts: { steps: 30, curviness: 0.2, jitter: 0.35, overshoot: 0.05 },
+  // wander points across the 1280x800 viewport; ~6 moves over ~15s straddle the
+  // detector's 1.5/4/7/10/15s scoring windows (recon-findings.md §4).
+  waypoints: [
+    { x: 200, y: 180 }, { x: 950, y: 240 }, { x: 600, y: 600 },
+    { x: 300, y: 500 }, { x: 1050, y: 650 }, { x: 500, y: 300 },
+  ] as { x: number; y: number }[],
+};
+
 /** Pull the value after "Your Behavioral Score:" from the page snapshot (e.g. "..." or "0.83"). */
 function readBehavioralScore(markdown: string): string | null {
   const m = markdown.match(/Your Behavioral Score:\s*([^\n]*)/i);
   return m ? m[1].trim() : null;
 }
 
-function appendResult(v: Verdict, shot: string): void {
+function appendResult(v: Verdict, shot: string, motion: string): void {
   const file = join(__dirname, "results.md");
   if (!existsSync(file)) {
     writeFileSync(
       file,
       "# Gym — Behavioral Diagnostic Results\n\n" +
         "Honest record. UNSCORED counts as FAIL (an unscoreable session is itself a tell).\n\n" +
-        "| When (UTC) | State | Score | Verdict | Evidence | Notes |\n" +
-        "|---|---|---|---|---|---|\n",
+        "| When (UTC) | State | Score | Verdict | Motion | Evidence | Notes |\n" +
+        "|---|---|---|---|---|---|---|\n",
     );
   }
   const rel = relative(__dirname, shot);
   appendFileSync(
     file,
-    `| ${new Date().toISOString()} | ${v.state} | ${v.score ?? "—"} | ${v.outcome} | ${rel} | ${v.reason} |\n`,
+    `| ${new Date().toISOString()} | ${v.state} | ${v.score ?? "—"} | ${v.outcome} | ${motion} | ${rel} | ${v.reason} |\n`,
   );
 }
 
@@ -94,9 +108,13 @@ async function run(): Promise<void> {
   console.log(`[gym] session ${sid} — behavioral diagnostic vs bot.incolumitas.com (headed; watch it)`);
   try {
     await navigate(sid, "https://bot.incolumitas.com/");
-    // No synthetic interaction: the missing signal IS cursor motion (the upgrade under test).
-    // The score auto-updates at 1.5/4/7/10/15s — wait past the last window, then read.
-    await sleep(17000);
+    // Generate a real cursor trajectory — the signal the behavioral classifier needs to score us.
+    // Wander across the viewport, pausing to straddle the 1.5/4/7/10/15s scoring windows.
+    for (const wp of MOTION.waypoints) {
+      await move(sid, { x: wp.x, y: wp.y, opts: MOTION.opts });
+      await sleep(2500);
+    }
+    await sleep(2000); // settle past the final (15s) scoring window before reading
     const snap = await snapshot(sid);
     const raw = readBehavioralScore(snap.markdown ?? snap.text ?? "");
     const verdict = classify(raw, SCORE_CONFIG);
@@ -106,7 +124,7 @@ async function run(): Promise<void> {
     console.log(`[gym] ${verdict.state} ${verdict.score ?? ""} -> ${verdict.outcome}`);
     console.log(`[gym] ${verdict.reason}`);
     console.log(`[gym] evidence: ${shot}`);
-    appendResult(verdict, shot);
+    appendResult(verdict, shot, MOTION.label);
   } finally {
     await close(sid);
   }
@@ -118,4 +136,4 @@ run().catch((e) => {
 });
 
 // The gym's reusable Feather HTTP-client surface (for Step 2's scoreboard wire to reuse).
-export { feather, launchHeaded, navigate, snapshot, shoot, close, sleep };
+export { feather, launchHeaded, navigate, snapshot, shoot, close, sleep, move };
