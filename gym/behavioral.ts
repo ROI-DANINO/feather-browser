@@ -4,6 +4,7 @@ import {
   readFileSync, appendFileSync, existsSync, writeFileSync, copyFileSync, mkdirSync,
 } from "node:fs";
 import { join } from "node:path";
+import { classify, type ClassifyConfig, type Verdict } from "./classify";
 
 // --- locate the running Feather server (same precedence as examples/showcase.sh) ---
 function endpointFile(): string {
@@ -20,6 +21,10 @@ if (!existsSync(ep)) {
 }
 const { baseUrl, tokenFile } = JSON.parse(readFileSync(ep, "utf8")) as { baseUrl: string; tokenFile: string };
 const token = readFileSync(tokenFile, "utf8").trim();
+
+// CALIBRATION — confirmed live in docs/testing/gym-step1/recon-findings.md (Task 3).
+// incolumitas behavioralClassificationScore: 0 = bot .. 1 = human, below 0.5 = bot.
+const SCORE_CONFIG: ClassifyConfig = { humanThreshold: 0.5, direction: "higherIsHuman" };
 
 // --- envelope-unwrapping HTTP helper (Node 20 global fetch) ---
 async function feather<T = any>(method: string, path: string, body?: unknown): Promise<T> {
@@ -46,10 +51,6 @@ const navigate = (sid: string, url: string) =>
   feather("POST", `/v1/sessions/${sid}/navigate`, { url, waitUntil: "domcontentloaded", timeoutMs: 30000 });
 const snapshot = (sid: string) =>
   feather<{ markdown?: string; text?: string }>("POST", `/v1/sessions/${sid}/snapshot`, {});
-const extract = (sid: string, selector: string) =>
-  feather<Record<string, string>>("POST", `/v1/sessions/${sid}/extract`, {
-    recipe: { fields: { score: { selector, type: "text" } } },
-  }).then((d) => d.score ?? null);
 const close = (sid: string) =>
   feather("DELETE", `/v1/sessions/${sid}`, { force: false }).catch(() => {});
 
@@ -64,26 +65,57 @@ async function shoot(sid: string, label: string): Promise<string> {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-// --- RECON: discover what incolumitas exposes. Replaced by run() in Task 4. ---
-async function recon(): Promise<void> {
+/** Pull the value after "Your Behavioral Score:" from the page snapshot (e.g. "..." or "0.83"). */
+function readBehavioralScore(markdown: string): string | null {
+  const m = markdown.match(/Your Behavioral Score:\s*([^\n]*)/i);
+  return m ? m[1].trim() : null;
+}
+
+function appendResult(v: Verdict, shot: string): void {
+  const file = join(__dirname, "results.md");
+  if (!existsSync(file)) {
+    writeFileSync(
+      file,
+      "# Gym — Behavioral Diagnostic Results\n\n" +
+        "Honest record. UNSCORED counts as FAIL (an unscoreable session is itself a tell).\n\n" +
+        "| When (UTC) | State | Score | Verdict | Evidence | Notes |\n" +
+        "|---|---|---|---|---|---|\n",
+    );
+  }
+  const rel = shot.slice(shot.indexOf("runs/"));
+  appendFileSync(
+    file,
+    `| ${new Date().toISOString()} | ${v.state} | ${v.score ?? "—"} | ${v.outcome} | ${rel} | ${v.reason} |\n`,
+  );
+}
+
+async function run(): Promise<void> {
   const sid = await launchHeaded();
-  console.log(`[gym] session ${sid} — recon vs bot.incolumitas.com (headed; watch the window)`);
+  console.log(`[gym] session ${sid} — behavioral diagnostic vs bot.incolumitas.com (headed; watch it)`);
   try {
     await navigate(sid, "https://bot.incolumitas.com/");
-    await sleep(8000); // let the page settle + attempt to score
+    // No synthetic interaction: the missing signal IS cursor motion (the upgrade under test).
+    // The score auto-updates at 1.5/4/7/10/15s — wait past the last window, then read.
+    await sleep(17000);
     const snap = await snapshot(sid);
-    console.log("\n===== SNAPSHOT =====\n");
-    console.log((snap.markdown ?? snap.text ?? "").slice(0, 8000));
-    console.log(`\n[gym] recon screenshot: ${await shoot(sid, "recon")}`);
+    const raw = readBehavioralScore(snap.markdown ?? snap.text ?? "");
+    const verdict = classify(raw, SCORE_CONFIG);
+    const shot = await shoot(sid, verdict.outcome);
+
+    console.log(`\n[gym] raw score field: ${raw === null ? "(absent)" : JSON.stringify(raw)}`);
+    console.log(`[gym] ${verdict.state} ${verdict.score ?? ""} -> ${verdict.outcome}`);
+    console.log(`[gym] ${verdict.reason}`);
+    console.log(`[gym] evidence: ${shot}`);
+    appendResult(verdict, shot);
   } finally {
     await close(sid);
   }
 }
 
-recon().catch((e) => {
+run().catch((e) => {
   console.error(e);
   process.exit(1);
 });
 
 // Re-exported so Task 4's edits keep the helpers reachable and lint-clean.
-export { feather, launchHeaded, navigate, snapshot, extract, shoot, close, sleep };
+export { feather, launchHeaded, navigate, snapshot, shoot, close, sleep };
