@@ -3,7 +3,7 @@
 import {
   readFileSync, appendFileSync, existsSync, writeFileSync, copyFileSync, mkdirSync,
 } from "node:fs";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 import { classify, type ClassifyConfig, type Verdict } from "./classify";
 
 // --- locate the running Feather server (same precedence as examples/showcase.sh) ---
@@ -82,7 +82,7 @@ function appendResult(v: Verdict, shot: string): void {
         "|---|---|---|---|---|---|\n",
     );
   }
-  const rel = shot.slice(shot.indexOf("runs/"));
+  const rel = relative(__dirname, shot);
   appendFileSync(
     file,
     `| ${new Date().toISOString()} | ${v.state} | ${v.score ?? "—"} | ${v.outcome} | ${rel} | ${v.reason} |\n`,
@@ -117,5 +117,5 @@ run().catch((e) => {
   process.exit(1);
 });
 
-// Re-exported so Task 4's edits keep the helpers reachable and lint-clean.
+// The gym's reusable Feather HTTP-client surface (for Step 2's scoreboard wire to reuse).
 export { feather, launchHeaded, navigate, snapshot, shoot, close, sleep };
