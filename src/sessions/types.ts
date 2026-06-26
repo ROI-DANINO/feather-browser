@@ -1,4 +1,5 @@
 import type { Page } from "playwright";
+import type { MousePathOpts } from "../browser/mouse-path";
 
 export type BrowserMode = "chromium-new-headless" | "chromium-headless-shell" | "chromium-headed-cdp";
 export type ProfileKind = "persistent" | "disposable";
@@ -125,6 +126,13 @@ export interface DismissOutput {
 
 export interface ClickInput { sessionId: string; pageId?: string; target: Target; timeoutMs?: number; }
 export interface ClickOutput { pageId: string; clicked: true; navigated?: true; newPageId?: string; }
+
+export interface MoveInput {
+  sessionId: string; pageId?: string;
+  target?: Target; x?: number; y?: number;
+  opts?: MousePathOpts; timeoutMs?: number;
+}
+export interface MoveOutput { pageId: string; x: number; y: number; steps: number; navigated?: true; }
 
 export interface SelectOptionInput {
   sessionId: string;
