@@ -6,24 +6,27 @@ operational checklist → `journal/ops/tasks.md`; machine pointer → `journal/o
 
 ## Current pointer
 
-- **NOW (2026-06-26 STOP — GYM STEP 1 BUILT & SHIPPED; blog 0026).** The bot gymnasium has its first
-  working station. Built end-to-end (brainstorm → spec → plan → subagent-driven exec → final review →
-  push `origin/dev` `305b8b1..5e2f037`): a new top-level **`gym/`** that drives Feather **over HTTP
-  only** (never imports `src/`). `gym/classify.ts` (pure verdict logic, 5 tests, **"no score = FAIL"**)
-  + `gym/behavioral.ts` (headed run → `bot.incolumitas.com` → parse `Your Behavioral Score:` from the
-  snapshot → classify → verdict-labelled screenshot → row in `gym/results.md`) + `npm run
-  gym:behavioral`. **First honest run, live: `UNSCORED → FAIL`** vs a detector Roi doesn't control —
-  the behavioral classifier can't score Feather at all (clicks teleport, no cursor path). Final review
-  traced the field names to `src/` to confirm the FAIL is **genuine**, not a misread-empty. Suite
-  476/476, typecheck clean. Design `docs/specs/2026-06-26-gym-step1-behavioral-diagnostic-design.md`;
-  plan `docs/plans/2026-06-26-...`; recon `docs/testing/gym-step1/recon-findings.md`. Handoff:
-  `journal/ops/sessions/the-detector-that-couldnt-see-me-20260626-1935.md`.
-- **RECOMMEND NEXT: Step 2 — wire fable's eval harness (`project-fable/evals/`) as the scoreboard.**
-  The first thin White Lotus ↔ Feather integration (a wire, not a merge); the gym's HTTP client
-  (`gym/behavioral.ts` exports `feather`/`launchHeaded`/…) is built to be reused. **Surfaced upgrade
-  target = mouse-motion** (what flips Feather from UNSCORED to a real score — do it before or after
-  Step 2, Roi's call). **Guardrail holds:** detectors Roi does NOT control, tests that can fail.
-  **Parked behind the pivot:** the prior "real-account 2FA take".
+- **NOW (2026-06-27 STOP — MOUSE-MOTION BUILT & VERIFIED; PREMISE DEBUNKED; GYM `BLOCKED` STATE SHIPPED).**
+  Built the mouse-motion upgrade end-to-end (brainstorm → spec → plan → subagent-driven exec, sonnet
+  impl / opus review; final whole-branch review READY TO MERGE): `src/browser/mouse-path.ts` (pure
+  tunable curved+variable-velocity generator), `boundingBox` on `Actionable`, `MoveHandler` +
+  `POST /v1/sessions/:id/move` (target XOR `{x,y}`), gym wander + trial log. Live `/move` smoke PASS.
+  **Then the live gym run STILL read `UNSCORED`** → ran systematic-debugging instead of tuning knobs.
+  **Root cause (external):** bot.incolumitas's behavioral score is computed **server-side on
+  `abs.incolumitas.com`, which is fully DOWN — 502 on /lib.js,/get,/classify,/store2.** An independent
+  probe proved Feather **DID deliver 156 trusted `mousemove` events** → the 5d.2 "no cursor path"
+  diagnosis was **wrong**; the path arrives, the grader is dead. **Shipped gym `BLOCKED` state**
+  (`0576723`): `classify()` BLOCKED outcome + `detectorDown` (pure); `behavioral.ts` `absDetectorDown()`
+  (timeout-guarded lib.js probe, gated to unscored); corrected the misleading `results.md` rows.
+  rd-verify PASS; 491 suite + typecheck green. Commits `fbea1d7..0576723` on `dev`, **NOT pushed**.
+  Handoff: `journal/ops/sessions/the-grader-was-down-20260627-0009.md`.
+- **RECOMMEND NEXT (Roi's call):**
+  1. **Validate `BLOCKED` live** — `abs.incolumitas` is down NOW, so a headed `npm run gym:behavioral`
+     should print `BLOCKED` (not FAIL) + cite the 502. Quick win, needs Roi's headed terminal.
+  2. **Retry for a real motion score when `abs.incolumitas` recovers** — only then can the verified
+     motion capability actually be graded by this detector.
+  3. **Step 2 — fable evals scoreboard** (still pending; thin HTTP wire, not a merge).
+  **Guardrail holds:** detectors Roi does NOT control, tests that can fail. **Parked:** "real-account 2FA take".
 - **Roi's open item (outside the repo):** rotate/abandon the leaked `roionly9` throwaway account; the
   password stays in public git history (no scrub — Roi's call, low blast radius).
 
@@ -41,6 +44,13 @@ operational checklist → `journal/ops/tasks.md`; machine pointer → `journal/o
 
 ## Recent completed context
 
+- **2026-06-27 Mouse-motion + gym BLOCKED state**: built the mouse-motion upgrade (mouse-path.ts pure
+  generator + MoveHandler + `/move` route + gym wander; TDD, subagent-driven, final review READY TO
+  MERGE). Live gym run still `UNSCORED` → systematic-debugging found bot.incolumitas's behavioral
+  score is server-side on `abs.incolumitas.com`, **fully DOWN (502 everywhere)**; independent probe
+  proved Feather delivers **156 trusted mousemove events** → "no cursor path" (5d.2) was a misdiagnosis.
+  Shipped gym `BLOCKED` state (detector-down ≠ bot-FAIL), corrected results.md. Commits `fbea1d7..0576723`
+  on dev, NOT pushed. rd-verify PASS, 491 green. Handoff `the-grader-was-down-20260627-0009.md`. No blog (owed).
 - **2026-06-26 Gym Step 1 — BUILT & SHIPPED**: the bot gymnasium's first station. Top-level `gym/`
   drives Feather over HTTP only (classify.ts pure+tested, behavioral.ts headed drive of
   bot.incolumitas → parse score → verdict → screenshot + results.md row). First live run `UNSCORED →

@@ -9,7 +9,7 @@ If this list is empty, nothing is owed.
 
 ## Owed
 
-_Empty — nothing owed._
+- `journal/ops/sessions/the-grader-was-down-20260627-0009.md` — the mouse-motion upgrade worked (156 trusted events delivered) but couldn't be graded: debugging the premise revealed the detector's own backend was down (502); shipped a gym BLOCKED state so an outage stops masquerading as a bot-FAIL — 2026-06-27
 
 <!-- One line per deferred session:
 - `journal/ops/sessions/<nickname>-<timestamp>.md` — <one-line hook> — <YYYY-MM-DD>

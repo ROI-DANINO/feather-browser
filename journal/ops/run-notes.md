@@ -349,3 +349,16 @@ PASS/FAIL Roi can *see* (reframes the 5d.2 work). Then Step 2 = scoreboard wire 
   bot.incolumitas → parse snapshot `Your Behavioral Score:` → classify → screenshot + `gym/results.md`).
 - First live run: **UNSCORED → FAIL** (genuine, field-verified vs `src/`). Gap = mouse-motion (clicks teleport).
 - NEXT = Step 2 scoreboard wire to `project-fable/evals/` (thin, not merge) and/or the mouse-motion upgrade.
+
+## 2026-06-27 — Mouse-motion built & verified; premise debunked; gym BLOCKED state
+- Built mouse-motion (TDD, subagent-driven, sonnet impl/opus review): `src/browser/mouse-path.ts`
+  (pure tunable curved+var-velocity), `boundingBox` on `Actionable`, `MoveHandler`, `POST /v1/sessions/:id/move`
+  (target XOR x,y), gym wander/trial-log. Final review READY TO MERGE; live `/move` smoke PASS.
+- **Debug (systematic-debugging, not knob-tuning):** live gym still UNSCORED. Independent probe →
+  Feather DELIVERS 156 trusted `mousemove` events. bot.incolumitas's score is SERVER-SIDE on
+  `abs.incolumitas.com` → **fully DOWN (502 on /lib.js,/get,/classify,/store2)**. So 5d.2's
+  "no cursor path" was a MISDIAGNOSIS; UNSCORED here = external outage.
+- **Decision (Roi):** keep motion code (verified), add gym `BLOCKED` state (down ≠ bot-FAIL), retry abs later.
+- Shipped `0576723`: classify BLOCKED + `detectorDown` (pure); `absDetectorDown()` timeout-guarded probe
+  gated to unscored; results.md corrected. rd-verify PASS; 491 green. Commits `fbea1d7..0576723` on dev, NOT pushed.
+- NEXT: (1) validate BLOCKED live (abs down now, needs headed); (2) retry real score when abs recovers; (3) Step 2 fable evals.

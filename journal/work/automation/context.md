@@ -14,16 +14,32 @@ headed-capable shell). Design `docs/specs/2026-06-26-gym-step1-behavioral-diagno
 - **Diagnostic, not trophy:** target detectors that can *teach* (a weakness), not ones Feather already
   passes. **Test against detectors Roi does NOT control; design tests that can fail** (honest-test
   guardrail — else the sandbox becomes rig-your-own-green-checkmarks).
-- **"No score = FAIL":** an unscoreable session is itself a detection tell, never a skip/n-a.
+- **"No score = FAIL" — but only when the detector is UP** (corrected 2026-06-27). An unscoreable
+  session is a tell *when the grader works*; a grader whose backend is DOWN can't score anyone, so
+  that's **`BLOCKED`**, not FAIL. `gym/classify.ts` carries a `BLOCKED` outcome + `detectorDown` signal
+  (pure); `gym/behavioral.ts` `absDetectorDown()` probes the backend (timeout-guarded, gated to unscored).
 
-**`bot.incolumitas.com` behavioral detector facts (verified live 2026-06-26):**
+**`bot.incolumitas.com` behavioral detector facts (verified live 2026-06-26, CORRECTED 2026-06-27):**
 - Score `behavioralClassificationScore` runs **0 (bot) … 1 (human); below 0.5 = bot** → calibration
   `{ humanThreshold: 0.5, direction: "higherIsHuman" }`. Auto-updates at 1.5/4/7/10/15s of browsing.
 - Read it from the **page snapshot text** after `Your Behavioral Score:` (no fragile DOM-id needed) —
-  unscored reads the literal `...` (no digit). No form interaction needed (5d.2 proved filling the
-  challenge form doesn't change it).
-- **Feather result = `UNSCORED → FAIL`** (genuine, field-verified vs `src/`): clicks teleport, no
-  cursor path, so the behavioral classifier never computes. **Upgrade that flips it = mouse-motion.**
+  unscored reads the literal `...` (no digit).
+- **The score is computed SERVER-SIDE** by `abs.incolumitas.com`: `lib.js` builds `window.bd_client`
+  (collects frames) → `getBehavioralClassification()` POSTs them to
+  `https://abs.incolumitas.com/classify?key=public123`. **If `abs.incolumitas.com` is down, the score
+  reads `...` for EVERYONE — human or bot.** (Verified down 2026-06-27: 502 on /lib.js,/get,/classify,/store2.)
+- **MISDIAGNOSIS CORRECTED:** the 2026-06-26 claim "UNSCORED because clicks teleport / no cursor path,
+  upgrade = mouse-motion" was **wrong**. An independent Playwright probe proved a Feather-style path
+  delivers **156 trusted `mousemove` events** (isTrusted, with movement deltas) and the score *still*
+  read `...` — because the grader was offline. Feather's `/move` capability (below) IS built and
+  verified; it just can't be graded by this detector until `abs.incolumitas` recovers.
+
+**Feather `/move` cursor capability (durable, 2026-06-27 — on `dev`, NOT pushed):**
+- `POST /v1/sessions/:id/move` (`{target}` XOR `{x,y}`, optional `opts`) drives `page.mouse.move`
+  waypoint-by-waypoint along a curved, variable-velocity path (`src/browser/mouse-path.ts`, pure +
+  seedable + tunable; `MoveHandler` tracks last cursor pos in a `WeakMap<Page>`, pause-aware). Native
+  `page.mouse` only (no CDP). Verified to deliver real trusted mousemove events. `opts` knobs
+  (steps/curviness/jitter/overshoot) are the trial dials for the gym.
 
 ## Graphify code-wiring map (durable, 2026-06-10 — graduated to `dev`)
 
