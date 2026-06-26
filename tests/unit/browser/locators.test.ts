@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
-import { resolveLocator } from "../../../src/browser/locators";
+import { resolveLocator, resolveActionable } from "../../../src/browser/locators";
 
 const loc = {
   first: vi.fn().mockReturnValue("FIRST"),
@@ -59,5 +59,27 @@ describe("resolveLocator", () => {
     const r = resolveLocator(page as any, { by: "css", selector: ".x", at: 2 });
     expect(loc.nth).toHaveBeenCalledWith(2);
     expect(r).toBe("NTH");
+  });
+});
+
+describe("resolveActionable boundingBox", () => {
+  it("locator branch delegates boundingBox to the locator", async () => {
+    const loc = {
+      first: () => loc, last: () => loc, nth: () => loc,
+      boundingBox: vi.fn().mockResolvedValue({ x: 10, y: 20, width: 30, height: 40 }),
+      count: vi.fn().mockResolvedValue(1),
+    } as any;
+    const page = { locator: () => loc } as any;
+    const { act } = resolveActionable(page, { by: "css", selector: "#x" });
+    await expect(act.boundingBox({ timeout: 1000 })).resolves.toEqual({ x: 10, y: 20, width: 30, height: 40 });
+    expect(loc.boundingBox).toHaveBeenCalledWith({ timeout: 1000 });
+  });
+
+  it("ref branch delegates boundingBox to the element handle", async () => {
+    const handle = { boundingBox: vi.fn().mockResolvedValue({ x: 1, y: 2, width: 3, height: 4 }) } as any;
+    const refLookup = (_r: string) => handle;
+    const { act } = resolveActionable({} as any, { by: "ref", ref: "e1" }, refLookup);
+    await expect(act.boundingBox()).resolves.toEqual({ x: 1, y: 2, width: 3, height: 4 });
+    expect(handle.boundingBox).toHaveBeenCalled();
   });
 });

@@ -11,6 +11,7 @@ export interface Actionable {
   // handle uses the deprecated-but-present .type(). Upgrade path: drop the handle branch when refs
   // carry a Locator instead of an ElementHandle.
   typeSequentially(value: string, options?: { delay?: number; timeout?: number }): Promise<void>;
+  boundingBox(options?: { timeout?: number }): Promise<{ x: number; y: number; width: number; height: number } | null>;
 }
 
 export type RefLookup = (ref: string) => ElementHandle | undefined;
@@ -58,6 +59,7 @@ export function resolveActionable(
         press: (k, o) => handle.press(k, o),
         selectOption: (v, o) => handle.selectOption(v, o),
         typeSequentially: (v, o) => handle.type(v, o),
+        boundingBox: () => handle.boundingBox(),
       },
       probe: () => handle.evaluate((e: Element) => (e.isConnected ? 1 : 0)).catch(() => 0),
     };
@@ -70,6 +72,7 @@ export function resolveActionable(
       press: (k, o) => loc.press(k, o),
       selectOption: (v, o) => loc.selectOption(v, o),
       typeSequentially: (v, o) => loc.pressSequentially(v, o),
+      boundingBox: (o) => loc.boundingBox(o),
     },
     probe: () => loc.count(),
   };
