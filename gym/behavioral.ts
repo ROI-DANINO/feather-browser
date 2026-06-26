@@ -67,6 +67,26 @@ async function shoot(sid: string, label: string): Promise<string> {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * The behavioral score is computed SERVER-SIDE by abs.incolumitas.com (lib.js collects frames,
+ * /classify grades them). When that backend is down it returns no score for ANYONE — that's
+ * BLOCKED (can't grade us), not a Feather FAIL. Verified live 2026-06-26: a full 502 outage made
+ * every run read "..." even though Feather delivered 156 trusted mousemove events. Probe lib.js:
+ * 5xx/unreachable ⇒ down. Only called when we're otherwise UNSCORED, so it adds nothing to a real score.
+ * Probing lib.js is a proxy for the whole abs service (the verified outage 502'd every endpoint); a
+ * partial outage where lib.js is up but /classify is down could still mislabel — acceptable residual.
+ * Timeout is load-bearing: a dead backend often HANGS rather than 502s fast — that hang is the exact
+ * case this exists to catch, so a timeout counts as down.
+ */
+async function absDetectorDown(): Promise<boolean> {
+  try {
+    const res = await fetch("https://abs.incolumitas.com/lib.js", { method: "GET", signal: AbortSignal.timeout(5000) });
+    return res.status >= 500; // 5xx = backend down; reachable (2xx/4xx) = up
+  } catch {
+    return true; // network error, DNS failure, or timeout (hung dead backend) ⇒ treat as down
+  }
+}
+
 // MOTION — the trial knobs. Change these, re-run, read results.md to see motion -> score.
 const MOTION = {
   label: "v1-bezier-varspeed",
@@ -91,7 +111,8 @@ function appendResult(v: Verdict, shot: string, motion: string): void {
     writeFileSync(
       file,
       "# Gym — Behavioral Diagnostic Results\n\n" +
-        "Honest record. UNSCORED counts as FAIL (an unscoreable session is itself a tell).\n\n" +
+        "Honest record. UNSCORED is a FAIL when the detector is UP (unscoreable is a tell), " +
+        "but BLOCKED when the detector's backend is DOWN (it can't grade anyone).\n\n" +
         "| When (UTC) | State | Score | Verdict | Motion | Evidence | Notes |\n" +
         "|---|---|---|---|---|---|---|\n",
     );
@@ -117,7 +138,10 @@ async function run(): Promise<void> {
     await sleep(2000); // settle past the final (15s) scoring window before reading
     const snap = await snapshot(sid);
     const raw = readBehavioralScore(snap.markdown ?? snap.text ?? "");
-    const verdict = classify(raw, SCORE_CONFIG);
+    // If we're unscored, find out WHY: detector backend down (BLOCKED) vs genuinely unscoreable (FAIL).
+    const hasNumber = raw != null && /-?\d/.test(raw);
+    const detectorDown = hasNumber ? false : await absDetectorDown();
+    const verdict = classify(raw, SCORE_CONFIG, detectorDown);
     const shot = await shoot(sid, verdict.outcome);
 
     console.log(`\n[gym] raw score field: ${raw === null ? "(absent)" : JSON.stringify(raw)}`);

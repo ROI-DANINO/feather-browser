@@ -32,4 +32,19 @@ describe("classify", () => {
     expect(classify("0.10", lower).outcome).toBe("PASS");
     expect(classify("0.90", lower).outcome).toBe("FAIL");
   });
+
+  it("returns BLOCKED (not FAIL) when unscored because the detector is down", () => {
+    const v = classify("...", higher, true);
+    expect(v.state).toBe("UNSCORED");
+    expect(v.outcome).toBe("BLOCKED");
+    expect(v.score).toBeNull();
+    expect(v.reason).toMatch(/down/i);
+  });
+
+  it("a real score is unaffected by the detectorDown flag", () => {
+    // a backend that answered with a number was clearly up, regardless of the flag.
+    expect(classify("0.83", higher, true).outcome).toBe("PASS");
+    // and the bot-like side too: a real low score stays FAIL, never BLOCKED.
+    expect(classify("0.10", higher, true).outcome).toBe("FAIL");
+  });
 });

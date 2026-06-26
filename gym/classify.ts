@@ -1,8 +1,11 @@
 // Pure verdict logic for the behavioral diagnostic. No I/O, no Feather.
 // Load-bearing honesty rule (Roi, 2026-06-26): "no score" is a FAIL, not neutral —
 // a session the detector cannot score at all is itself a detection tell.
+// Honesty corollary (2026-06-26, after the abs.incolumitas outage): "no score" is only
+// a FAIL when the detector is actually UP. A detector whose backend is DOWN can't grade
+// anyone, so that's BLOCKED (not our failure) — the caller supplies `detectorDown`.
 
-export type Outcome = "PASS" | "FAIL";
+export type Outcome = "PASS" | "FAIL" | "BLOCKED";
 export type ScoreState = "SCORED" | "UNSCORED";
 
 export interface Verdict {
@@ -19,17 +22,35 @@ export interface ClassifyConfig {
   direction: "higherIsHuman" | "lowerIsHuman";
 }
 
-/** @param raw text read from the detector's behavioral-score field (or null if absent). */
-export function classify(raw: string | null | undefined, cfg: ClassifyConfig): Verdict {
+/**
+ * @param raw text read from the detector's behavioral-score field (or null if absent).
+ * @param detectorDown true if the detector's scoring backend was found unreachable/5xx.
+ *   When unscored: down ⇒ BLOCKED (can't grade us), up ⇒ FAIL (genuinely unscoreable).
+ */
+export function classify(
+  raw: string | null | undefined,
+  cfg: ClassifyConfig,
+  detectorDown = false,
+): Verdict {
   const score = parseScore(raw);
   if (score === null) {
+    if (detectorDown) {
+      return {
+        state: "UNSCORED",
+        score: null,
+        outcome: "BLOCKED",
+        reason:
+          "detector backend (abs.incolumitas.com) is down — it returned no score for anyone, " +
+          "so this run could not be graded. NOT a Feather failure; retry when the service is back up.",
+      };
+    }
     return {
       state: "UNSCORED",
       score: null,
       outcome: "FAIL",
       reason:
-        "no behavioral score — the detector could not score this session (no cursor path). " +
-        "Being unscoreable is itself a tell: real users always emit behavioral signal.",
+        "detector is reachable but returned no behavioral score — the session produced no scoreable " +
+        "signal. Being unscoreable while the detector works is itself a tell.",
     };
   }
   const human =
