@@ -42,3 +42,6 @@ examples/showcase-output/*
 # commit them. Keep only the README that explains the dir.
 journal/raw/_inbox/*
 !journal/raw/_inbox/README.md
+
+# gym run artifacts (the results.md scoreboard IS committed; the PNGs are not)
+gym/runs/
