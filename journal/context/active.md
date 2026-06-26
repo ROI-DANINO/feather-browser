@@ -6,25 +6,24 @@ operational checklist → `journal/ops/tasks.md`; machine pointer → `journal/o
 
 ## Current pointer
 
-- **NOW (2026-06-24 STOP — NEW DIRECTION CHOSEN: the BOT GYMNASIUM; no code, blog 0025).**
-  Reorientation Phases 0–3 are COMPLETE; this session picked what comes *after*. Roi came in (12h
-  after the stealth-cut) wanting to remake Feather around stealth + Firefox/Gecko; a grounded,
-  adversarially-verified research pass (14 agents) refuted the premises (Firefox-stealth is a myth —
-  it's Camoufox's patches not Gecko, DataDome detects Camoufox by name; solo can't win the evasion
-  arms race; frontier is up-stack). Roi resolved it himself → a **self-hosted bot gymnasium**: his
-  own sandbox, his own deployed detectors, his own bots, watch them learn to pass. NOT evasion on
-  sites that don't want bots (that stays cut). **Goals = learning / portfolio / a job / joy, NOT
-  commercial.** Also mapped the **"one harness"**: iroh philosophy → White Lotus (cockpit) →
-  fable/iroh (brain) → **Feather as a DRIVEN body, not a limb** (integrate by driving, never merge).
-  Captured → `docs/specs/2026-06-24-gymnasium-and-harness-vision.md` + 3 memories. Handoff:
-  `journal/ops/sessions/my-own-gym-20260624-1217.md`.
-- **RECOMMEND NEXT: design Step 1 of the gym.** The smallest-alive version — one agent → Feather →
-  ONE real detector → an honest PASS/FAIL Roi can *see* (reframes the 5d.2 "measure reality" work he
-  loved). Design pass: pick the first detector (cheap, real, internals-not-controlled, **can-fail**),
-  define what "pass" means, decide where it lives in the repo, keep it small + watchable. Step 2 is
-  the scoreboard wire to fable's eval harness (`project-fable/evals/`). **Guardrail:** test against
-  detectors Roi does NOT control; design tests that can fail (else the sandbox becomes
-  rig-your-own-green-checkmarks). **Parked behind the pivot:** the prior "real-account 2FA take".
+- **NOW (2026-06-26 STOP — GYM STEP 1 BUILT & SHIPPED; blog 0026).** The bot gymnasium has its first
+  working station. Built end-to-end (brainstorm → spec → plan → subagent-driven exec → final review →
+  push `origin/dev` `305b8b1..5e2f037`): a new top-level **`gym/`** that drives Feather **over HTTP
+  only** (never imports `src/`). `gym/classify.ts` (pure verdict logic, 5 tests, **"no score = FAIL"**)
+  + `gym/behavioral.ts` (headed run → `bot.incolumitas.com` → parse `Your Behavioral Score:` from the
+  snapshot → classify → verdict-labelled screenshot → row in `gym/results.md`) + `npm run
+  gym:behavioral`. **First honest run, live: `UNSCORED → FAIL`** vs a detector Roi doesn't control —
+  the behavioral classifier can't score Feather at all (clicks teleport, no cursor path). Final review
+  traced the field names to `src/` to confirm the FAIL is **genuine**, not a misread-empty. Suite
+  476/476, typecheck clean. Design `docs/specs/2026-06-26-gym-step1-behavioral-diagnostic-design.md`;
+  plan `docs/plans/2026-06-26-...`; recon `docs/testing/gym-step1/recon-findings.md`. Handoff:
+  `journal/ops/sessions/the-detector-that-couldnt-see-me-20260626-1935.md`.
+- **RECOMMEND NEXT: Step 2 — wire fable's eval harness (`project-fable/evals/`) as the scoreboard.**
+  The first thin White Lotus ↔ Feather integration (a wire, not a merge); the gym's HTTP client
+  (`gym/behavioral.ts` exports `feather`/`launchHeaded`/…) is built to be reused. **Surfaced upgrade
+  target = mouse-motion** (what flips Feather from UNSCORED to a real score — do it before or after
+  Step 2, Roi's call). **Guardrail holds:** detectors Roi does NOT control, tests that can fail.
+  **Parked behind the pivot:** the prior "real-account 2FA take".
 - **Roi's open item (outside the repo):** rotate/abandon the leaked `roionly9` throwaway account; the
   password stays in public git history (no scrub — Roi's call, low blast radius).
 
@@ -42,6 +41,12 @@ operational checklist → `journal/ops/tasks.md`; machine pointer → `journal/o
 
 ## Recent completed context
 
+- **2026-06-26 Gym Step 1 — BUILT & SHIPPED**: the bot gymnasium's first station. Top-level `gym/`
+  drives Feather over HTTP only (classify.ts pure+tested, behavioral.ts headed drive of
+  bot.incolumitas → parse score → verdict → screenshot + results.md row). First live run `UNSCORED →
+  FAIL` (genuine, field-verified vs src/). "No score = FAIL." 476/476, pushed `305b8b1..5e2f037`. Blog
+  0026. Handoff `journal/ops/sessions/the-detector-that-couldnt-see-me-20260626-1935.md`. NEXT = Step 2
+  scoreboard wire to `project-fable/evals/`; upgrade target = mouse-motion.
 - **2026-06-24 "My Own Gym" — direction pivot** (this session, no code): refuted a stealth/Firefox
   remake impulse with a verified research pass; chose the **self-hosted bot gymnasium**; clarified
   goals (learn/portfolio/job/joy, not commercial); mapped the **one-harness** shape (Feather = driven

@@ -1,28 +1,36 @@
-# Current Tasks — The Bot Gymnasium  (2026-06-24 direction pivot)
+# Current Tasks — The Bot Gymnasium  (Step 1 SHIPPED 2026-06-26)
 
 Checklist only. **Direction capture → `docs/specs/2026-06-24-gymnasium-and-harness-vision.md`.**
-Prior plan-of-record (reorientation) → `docs/specs/2026-06-24-reorientation-and-roadmap-restructure.md`.
+Step 1 design → `docs/specs/2026-06-26-gym-step1-behavioral-diagnostic-design.md`; plan →
+`docs/plans/2026-06-26-gym-step1-behavioral-diagnostic.md`.
 Front door → `feather.md`; live pointer → `journal/context/active.md`; machine pointer → `journal/ops/phase.md`.
-Pre-pivot task history archived → `journal/ops/archive/tasks-20260624-1217.md` (and `-0554.md`, `-reorientation.md`).
+Pre-Step-1 task history archived → `journal/ops/archive/tasks-20260626-1935.md`.
 
-**Direction (2026-06-24 /stop):** Reorientation Phases 0–3 are DONE. The next chapter = a **self-hosted
-bot gymnasium** — Roi's own arena/detectors/bots, watch them learn to pass. **NOT** evasion on sites
-that don't want bots (stays cut). **Goals = learning / portfolio / job / joy, not commercial.**
-Integrate the harness **by driving, not merging** (Feather = driven body). The gym IS the integration.
+**Direction (2026-06-24):** a **self-hosted bot gymnasium** — Roi's own arena/detectors/bots, watch them
+learn to pass. **NOT** evasion on sites that don't want bots (stays cut). **Goals = learning / portfolio /
+job / joy, not commercial.** Integrate the harness **by driving, not merging** (Feather = driven body).
 
-## NEXT — design Step 1 of the gym (the fun part; needs a brainstorm/design pass)
-- [ ] **Design the smallest-alive gym:** one agent → Feather → ONE real detector → an honest PASS/FAIL
-      Roi can *see* (reframes the 5d.2 "measure reality" work he loved). Decide: which detector first
-      (cheap, real, internals-NOT-controlled, **can-fail**); what "pass" means; where it lives in the
-      repo; keep it small + watchable. **Guardrail:** test against detectors Roi does NOT control;
-      design tests that can fail — else the sandbox becomes rig-your-own-green-checkmarks.
-- [ ] **Step 2 (after):** wire fable's eval harness (`project-fable/evals/`) as the scoreboard — the
-      first real White Lotus ↔ Feather integration (a thin wire, not a merge).
+## NEXT — Step 2 + the upgrade Step 1 surfaced
+- [ ] **Step 2 — scoreboard wire:** connect fable's eval harness (`project-fable/evals/`) to score gym
+      runs. The first real White Lotus ↔ Feather integration — a **thin HTTP wire, not a merge**. The
+      gym's client (`gym/behavioral.ts` exports `feather`/`launchHeaded`/`navigate`/`snapshot`/…) is
+      built to be reused. **Guardrail holds:** detectors Roi does NOT control; tests that can fail.
+- [ ] **Mouse-motion upgrade (the thing Step 1 surfaced):** clicks/types teleport → no cursor path →
+      `bot.incolumitas` can't score Feather (UNSCORED→FAIL). Add real cursor trajectory so the score
+      computes (flips UNSCORED → a real number = the gym's first live dial to watch climb). Before or
+      after Step 2 — Roi's call. (Ties to roadmap 5d.3/5d.4 mouse-motion synthesis via CDP `Input.dispatchMouseEvent`.)
+
+## Shipped Step 1 (2026-06-26)
+- [x] **Gym Step 1 — behavioral diagnostic BUILT & SHIPPED.** Top-level `gym/` (HTTP client, never
+      imports `src/`): `classify.ts` pure+tested ("no score = FAIL"), `behavioral.ts` headed drive of
+      `bot.incolumitas.com` → parse `Your Behavioral Score:` from snapshot → classify → verdict-labelled
+      screenshot → row in `gym/results.md`; `npm run gym:behavioral`. First live run **`UNSCORED → FAIL`**
+      (genuine, field-verified vs `src/`). 476/476, typecheck clean. Pushed `origin/dev` `…5e2f037`.
+      Blog 0026. Handoff `journal/ops/sessions/the-detector-that-couldnt-see-me-20260626-1935.md`.
 
 ## Parked behind the pivot (not deleted)
 - [ ] **Real-account 2FA take** — prove the on-page Resume banner survives a real 2FA challenge **page**
-      (no challenge fired same-machine in the Phase-3 recording). Needs Roi driving; test real / publish
-      scratch. Pull forward only if the demo thread is reopened.
+      (no challenge fired same-machine in the Phase-3 recording). Needs Roi driving.
 - [ ] **(Roi, outside repo)** Rotate/abandon the leaked `roionly9` throwaway account.
 
 ## Later — PARKED (do not start)
@@ -30,13 +38,3 @@ Integrate the harness **by driving, not merging** (Feather = driven body). The g
       Reopen only if a real site blocks a warmed session — then adopt a maintained engine, don't hand-patch.
 - [ ] **Visual desktop shell (4b)** + the big stealth-agent / Hybrid vision — deferred.
 - [ ] **fable→iroh merge** — decided on paper, NOT to be done first. Only when the gym makes it worth it.
-
-## Shipped (history — detail in archive)
-- [x] **"My Own Gym" direction pivot (2026-06-24, no code)** — refuted the stealth/Firefox remake with a
-      verified research pass; chose the bot gymnasium; mapped the one-harness shape. Blog 0025. Handoff
-      `journal/ops/sessions/my-own-gym-20260624-1217.md`. Capture
-      `docs/specs/2026-06-24-gymnasium-and-harness-vision.md`.
-- [x] **Reorientation Phases 0–3 (2026-06-24)** — Phase 0 secret guard · Phase 1 Harden (`06cd2e8`) ·
-      Phase 2 OSS envelope (`5c5f0fa..182b4e0`) · Phase 3 Show it off (`4e0ad81..8aedbbe`). Blogs 0022–0024.
-- [x] **v1 built & proven** + **v2 safety spine** (Gate A + 5a Identity + 5b MFA + await-human), proven
-      live through a real Instagram login wall (2026-06-23).

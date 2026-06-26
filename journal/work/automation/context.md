@@ -2,6 +2,29 @@
 
 Use this desk for Playwright integration, agent control, permission boundaries, replay/debug tooling, and profile isolation.
 
+## Bot gymnasium — Step 1 (durable, 2026-06-26 — shipped to `dev`)
+
+Top-level **`gym/`** is the gym: an HTTP **client** of a running Feather server — drives Feather only
+over the local API, **never imports `src/`** (so the harness stays a driven body; Step 2's fable wire
+reuses the same client). `gym/classify.ts` = pure verdict logic (tested); `gym/behavioral.ts` = the
+runner; `gym/results.md` = the scoreboard. Run: `npm run gym:behavioral` (needs `npm run dev` up in a
+headed-capable shell). Design `docs/specs/2026-06-26-gym-step1-behavioral-diagnostic-design.md`.
+
+**Durable conventions:**
+- **Diagnostic, not trophy:** target detectors that can *teach* (a weakness), not ones Feather already
+  passes. **Test against detectors Roi does NOT control; design tests that can fail** (honest-test
+  guardrail — else the sandbox becomes rig-your-own-green-checkmarks).
+- **"No score = FAIL":** an unscoreable session is itself a detection tell, never a skip/n-a.
+
+**`bot.incolumitas.com` behavioral detector facts (verified live 2026-06-26):**
+- Score `behavioralClassificationScore` runs **0 (bot) … 1 (human); below 0.5 = bot** → calibration
+  `{ humanThreshold: 0.5, direction: "higherIsHuman" }`. Auto-updates at 1.5/4/7/10/15s of browsing.
+- Read it from the **page snapshot text** after `Your Behavioral Score:` (no fragile DOM-id needed) —
+  unscored reads the literal `...` (no digit). No form interaction needed (5d.2 proved filling the
+  challenge form doesn't change it).
+- **Feather result = `UNSCORED → FAIL`** (genuine, field-verified vs `src/`): clicks teleport, no
+  cursor path, so the behavioral classifier never computes. **Upgrade that flips it = mouse-motion.**
+
 ## Graphify code-wiring map (durable, 2026-06-10 — graduated to `dev`)
 
 Standalone read-only **MCP query layer** over a deterministic code graph (`graphify-out/graph.json`,

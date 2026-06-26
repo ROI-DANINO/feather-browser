@@ -341,3 +341,11 @@ fable/iroh (orchestration brain) → **Feather = DRIVEN body, not a limb**. Prom
 **Next:** design **Step 1** of the gym — one agent → Feather → ONE real detector → honest, can-fail
 PASS/FAIL Roi can *see* (reframes the 5d.2 work). Then Step 2 = scoreboard wire to `project-fable/evals/`.
 **Parked behind pivot:** real-account 2FA take. Handoff: `journal/ops/sessions/my-own-gym-20260624-1217.md`.
+
+## 2026-06-26 — Gym Step 1 shipped (phase-boundary note)
+- Bot gymnasium's first brick BUILT & SHIPPED (origin/dev ..5e2f037). Top-level `gym/` = HTTP client of
+  Feather, never imports `src/` (keeps Feather a driven body; Step 2 fable wire reuses the client).
+- `gym/classify.ts` (pure, 5 tests, "no score = FAIL") + `gym/behavioral.ts` (headed drive of
+  bot.incolumitas → parse snapshot `Your Behavioral Score:` → classify → screenshot + `gym/results.md`).
+- First live run: **UNSCORED → FAIL** (genuine, field-verified vs `src/`). Gap = mouse-motion (clicks teleport).
+- NEXT = Step 2 scoreboard wire to `project-fable/evals/` (thin, not merge) and/or the mouse-motion upgrade.
