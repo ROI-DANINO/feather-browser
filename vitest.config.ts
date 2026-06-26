@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     globals: true,
     testTimeout: 10000,
-    include: ["tests/unit/**/*.test.ts"],
+    include: ["tests/unit/**/*.test.ts", "gym/**/*.test.ts"],
     coverage: {
       provider: "v8",
       include: ["src/capability/**", "src/identity/**", "src/mfa/**", "src/transport/**"],
