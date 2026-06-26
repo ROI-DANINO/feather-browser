@@ -23,10 +23,11 @@ import { EVENTS } from "../logs/events";
 import { ObserveHandler } from "../commands/observe";
 import { DismissHandler } from "../commands/dismiss";
 import { ClickHandler } from "../commands/click";
+import { MoveHandler } from "../commands/move";
 import { TypeHandler } from "../commands/type";
 import { PressHandler } from "../commands/press";
 import { WaitHandler } from "../commands/wait";
-import type { WaitInput } from "../sessions/types";
+import type { WaitInput, MoveInput } from "../sessions/types";
 import { AwaitHumanHandler } from "../commands/await-human";
 import { SelectOptionHandler } from "../commands/select-option";
 import type { AwaitHumanInput } from "../sessions/types";
@@ -135,6 +136,30 @@ const ClickSchema = z.object({
   target: TargetSchema,
   timeoutMs: z.number().int().positive().optional(),
 });
+
+const MousePathOptsSchema = z.object({
+  steps: z.number().int().positive().optional(),
+  curviness: z.number().min(0).optional(),
+  jitter: z.number().min(0).optional(),
+  overshoot: z.number().min(0).optional(),
+  minDelayMs: z.number().int().nonnegative().optional(),
+  maxDelayMs: z.number().int().nonnegative().optional(),
+  seed: z.number().int().optional(),
+});
+
+const MoveSchema = z
+  .object({
+    pageId: z.string().optional(),
+    target: TargetSchema.optional(),
+    x: z.number().optional(),
+    y: z.number().optional(),
+    opts: MousePathOptsSchema.optional(),
+    timeoutMs: z.number().int().positive().optional(),
+  })
+  .refine(
+    (d) => (d.target !== undefined) !== (d.x !== undefined && d.y !== undefined),
+    { message: "provide either `target` or both `x` and `y` (exactly one)" },
+  );
 
 const TypeSchema = z.object({
   pageId: z.string().optional(),
@@ -245,6 +270,7 @@ export function registerRoutes(
   const observeHandler = new ObserveHandler(manager);
   const dismissHandler = new DismissHandler(manager);
   const clickHandler = new ClickHandler(manager);
+  const moveHandler = new MoveHandler(manager);
   const typeHandler = new TypeHandler(manager);
   const pressHandler = new PressHandler(manager);
   const waitHandler = new WaitHandler(manager);
@@ -427,6 +453,16 @@ export function registerRoutes(
       const { sessionId } = request.params as { sessionId: string };
       const input = ClickSchema.parse(request.body);
       const result = await clickHandler.execute({ sessionId, ...input }, { requestId });
+      await reply.status(200).send(ok(requestId, result));
+    } catch (err) { await handleRouteError(err, request, reply); }
+  });
+
+  app.post("/v1/sessions/:sessionId/move", { preHandler: [tokenAuth] }, async (request: FastifyRequest, reply: FastifyReply) => {
+    const requestId = getRequestId(request);
+    try {
+      const { sessionId } = request.params as { sessionId: string };
+      const input = MoveSchema.parse(request.body);
+      const result = await moveHandler.execute({ sessionId, ...input } as MoveInput, { requestId });
       await reply.status(200).send(ok(requestId, result));
     } catch (err) { await handleRouteError(err, request, reply); }
   });
