@@ -11,9 +11,11 @@ learn to pass. **NOT** evasion on sites that don't want bots (stays cut). **Goal
 job / joy, not commercial.** Integrate the harness **by driving, not merging** (Feather = driven body).
 
 ## NEXT (Roi's call)
-- [ ] **Validate the gym `BLOCKED` path live.** `abs.incolumitas.com` is DOWN now (502) — a headed
-      `npm run dev` + `npm run gym:behavioral` should print **`BLOCKED`** (not FAIL) and cite the 502.
-      Quick win; needs Roi's headed terminal.
+- [x] **Validate the gym `BLOCKED` path live — DONE 2026-06-27.** Headed run vs the genuinely-down
+      detector (abs still 502) printed `UNSCORED → BLOCKED` + the 502 reason, labelled the screenshot
+      `BLOCKED`, wrote the row (`gym/results.md` 2026-06-27T13:05). First attempt died on a `page.screenshot
+      fullPage` 8s timeout (bot.incolumitas is a long page) → **hardened `shoot()` to be non-fatal** so a
+      screenshot failure can never throw away a verdict again; retry succeeded.
 - [ ] **Retry for a REAL motion score when `abs.incolumitas` recovers.** Only then can the verified
       `/move` cursor capability actually be graded by this detector. (Re-run the gym; read results.md.)
 - [ ] **Step 2 — scoreboard wire:** connect fable's eval harness (`project-fable/evals/`) to score gym

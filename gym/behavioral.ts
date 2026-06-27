@@ -56,13 +56,21 @@ const move = (sid: string, body: Record<string, unknown>) =>
 const close = (sid: string) =>
   feather("DELETE", `/v1/sessions/${sid}`, { force: false }).catch(() => {});
 
-async function shoot(sid: string, label: string): Promise<string> {
-  const { path } = await feather<{ path: string }>("POST", `/v1/sessions/${sid}/screenshot`, { fullPage: true });
-  const runs = join(__dirname, "runs");
-  mkdirSync(runs, { recursive: true });
-  const dest = join(runs, `${label}-${new Date().toISOString().replace(/[:.]/g, "-")}.png`);
-  copyFileSync(path, dest);
-  return dest;
+// Non-fatal: a fullPage screenshot of bot.incolumitas (a very long page) can exceed Feather's 8s
+// screenshot timeout. The verdict is the result that matters — a missing screenshot must never throw
+// it away (it did once, 2026-06-27). On failure, warn and return null; the row still gets written.
+async function shoot(sid: string, label: string): Promise<string | null> {
+  try {
+    const { path } = await feather<{ path: string }>("POST", `/v1/sessions/${sid}/screenshot`, { fullPage: true });
+    const runs = join(__dirname, "runs");
+    mkdirSync(runs, { recursive: true });
+    const dest = join(runs, `${label}-${new Date().toISOString().replace(/[:.]/g, "-")}.png`);
+    copyFileSync(path, dest);
+    return dest;
+  } catch (e) {
+    console.warn(`[gym] screenshot failed (non-fatal): ${e instanceof Error ? e.message : String(e)}`);
+    return null;
+  }
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -105,7 +113,7 @@ function readBehavioralScore(markdown: string): string | null {
   return m ? m[1].trim() : null;
 }
 
-function appendResult(v: Verdict, shot: string, motion: string): void {
+function appendResult(v: Verdict, shot: string | null, motion: string): void {
   const file = join(__dirname, "results.md");
   if (!existsSync(file)) {
     writeFileSync(
@@ -117,7 +125,7 @@ function appendResult(v: Verdict, shot: string, motion: string): void {
         "|---|---|---|---|---|---|---|\n",
     );
   }
-  const rel = relative(__dirname, shot);
+  const rel = shot ? relative(__dirname, shot) : "(screenshot failed)";
   appendFileSync(
     file,
     `| ${new Date().toISOString()} | ${v.state} | ${v.score ?? "—"} | ${v.outcome} | ${motion} | ${rel} | ${v.reason} |\n`,
@@ -147,7 +155,7 @@ async function run(): Promise<void> {
     console.log(`\n[gym] raw score field: ${raw === null ? "(absent)" : JSON.stringify(raw)}`);
     console.log(`[gym] ${verdict.state} ${verdict.score ?? ""} -> ${verdict.outcome}`);
     console.log(`[gym] ${verdict.reason}`);
-    console.log(`[gym] evidence: ${shot}`);
+    console.log(`[gym] evidence: ${shot ?? "(screenshot failed)"}`);
     appendResult(verdict, shot, MOTION.label);
   } finally {
     await close(sid);

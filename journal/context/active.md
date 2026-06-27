@@ -20,12 +20,13 @@ operational checklist → `journal/ops/tasks.md`; machine pointer → `journal/o
   (timeout-guarded lib.js probe, gated to unscored); corrected the misleading `results.md` rows.
   rd-verify PASS; 491 suite + typecheck green. Commits `fbea1d7..0576723` on `dev`, **NOT pushed**.
   Handoff: `journal/ops/sessions/the-grader-was-down-20260627-0009.md`.
+- **BLOCKED path LIVE-VALIDATED 2026-06-27** (headed run vs abs-down-502 → `UNSCORED → BLOCKED` + 502
+  reason + BLOCKED-labelled screenshot + row). Also hardened `shoot()` non-fatal (a fullPage screenshot
+  8s timeout once threw away a verdict; now warns + writes "(screenshot failed)").
 - **RECOMMEND NEXT (Roi's call):**
-  1. **Validate `BLOCKED` live** — `abs.incolumitas` is down NOW, so a headed `npm run gym:behavioral`
-     should print `BLOCKED` (not FAIL) + cite the 502. Quick win, needs Roi's headed terminal.
-  2. **Retry for a real motion score when `abs.incolumitas` recovers** — only then can the verified
+  1. **Retry for a real motion score when `abs.incolumitas` recovers** — only then can the verified
      motion capability actually be graded by this detector.
-  3. **Step 2 — fable evals scoreboard** (still pending; thin HTTP wire, not a merge).
+  2. **Step 2 — fable evals scoreboard** (still pending; thin HTTP wire, not a merge).
   **Guardrail holds:** detectors Roi does NOT control, tests that can fail. **Parked:** "real-account 2FA take".
 - **Roi's open item (outside the repo):** rotate/abandon the leaked `roionly9` throwaway account; the
   password stays in public git history (no scrub — Roi's call, low blast radius).
