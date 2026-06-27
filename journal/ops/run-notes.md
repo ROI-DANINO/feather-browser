@@ -362,3 +362,34 @@ PASS/FAIL Roi can *see* (reframes the 5d.2 work). Then Step 2 = scoreboard wire 
 - Shipped `0576723`: classify BLOCKED + `detectorDown` (pure); `absDetectorDown()` timeout-guarded probe
   gated to unscored; results.md corrected. rd-verify PASS; 491 green. Commits `fbea1d7..0576723` on dev, NOT pushed.
 - NEXT: (1) validate BLOCKED live (abs down now, needs headed); (2) retry real score when abs recovers; (3) Step 2 fable evals.
+
+---
+## 2026-06-28 00:27 — Tower research-and-design loop COMPLETE (Session 2)
+Self-paced `/loop` fired one adversarially-verified Workflow per strand (sweep → 3-vote refutation →
+synthesis) + a final synthesis (draft → completeness-critic → reconciled). ~140 agents, ~5M subagent
+tokens, **no product code**. Designed the whole Tower bench on paper; the honesty pass killed ~half the
+scoring decisions by design.
+
+**Locked (D2):** open, self-hostable, tool-agnostic TS/Node bench scoring ANY agentic web tool on ALL
+angles — capability (gate) / detectability (signature = warmed-vs-cold session delta) / security — →
+per-tool cap/det/sec **profile** → boss tower. Broad framework, NOT a niche (Roi: "too niche"). Multi-tower
+= design intention, not built.
+
+**Chosen build (D4):** Design B — thin TS/Node core **extending `tower/`** (not re-platform). Capability
+measured *through* a normalizing adapter; detectability measured *around* it (tool drives its own browser,
+Tower off the data path, **no-attach rule**, passive JA3 tap). Beat Python-BrowserGym (A) + Docker-per-tool
+(C), both buildability 3/10 for a solo TS builder.
+
+**Other load-bearing decisions:** D3 capability=gate + driver-transparent detectability + ASR any-of-3;
+D5 JSONL-in-git=truth + SQLite read-index + stay-on-grep (no RAG) + radar-conflict-resolved (small-multiples
+not polygon); D6 12 borrowed attack classes + purpose-owned victim app + own-arena ethics.
+
+**Output:** `tower/research/2026-06-27-0{0..5}-*.md` (00 = synthesis capstone) + verbatim receipts
+`tower/research/raw/*.json` + decisions log D1–D6 `tower/research/raw/README.md`. Commits `9ff93de`
+(Stage-1 reorg) + `4e69b2e` (loop) on `dev`, **NOT pushed**.
+
+**Durable facts promoted to memory:** `research-documentation-preference` (copy verbatim, don't rewrite);
+`feather-gymnasium-direction` broadened to the all-angles framework.
+
+**NEXT:** doc-hygiene batch (<1hr: `tower/decisions.md` + GLOSSARY + finish gym→tower rename + docs-map),
+THEN build PR-1 MVP (2 adapters, 1 detectability + 1 security level, aggregator v0 with CIs).

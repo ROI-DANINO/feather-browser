@@ -1,46 +1,51 @@
-# Current Tasks — The Bot Gymnasium  (mouse-motion built; premise debunked 2026-06-27)
+# Current Tasks — The Tower (research loop COMPLETE 2026-06-28; ready to build)
 
-Checklist only. **Direction capture → `docs/specs/2026-06-24-gymnasium-and-harness-vision.md`.**
-Mouse-motion design → `docs/specs/2026-06-26-gym-mouse-motion-design.md`; plan →
-`docs/plans/2026-06-26-gym-mouse-motion.md`.
-Front door → `feather.md`; live pointer → `journal/context/active.md`; machine pointer → `journal/ops/phase.md`.
-Pre-mouse-motion task history archived → `journal/ops/archive/tasks-20260627-0009.md`.
+Checklist only. **Plan of record → the loop's synthesis `tower/research/2026-06-27-00-SYNTHESIS.md`**
+(buildable plan) + the loop spec `docs/specs/2026-06-27-bench-reframe-and-research-loop-design.md`.
+Decisions D1–D6 + verbatim receipts → `tower/research/raw/README.md`. Front door → `feather.md`;
+live pointer → `journal/context/active.md`; machine pointer → `journal/ops/phase.md`.
+Pre-loop task history archived → `journal/ops/archive/tasks-20260628-0027.md`.
 
-**Direction (2026-06-24):** a **self-hosted bot gymnasium** — Roi's own arena/detectors/bots, watch them
-learn to pass. **NOT** evasion on sites that don't want bots (stays cut). **Goals = learning / portfolio /
-job / joy, not commercial.** Integrate the harness **by driving, not merging** (Feather = driven body).
+**Scope (D2, locked):** an open, self-hostable, **tool-agnostic** TS/Node bench scoring ANY agentic web
+tool on ALL angles (capability=gate / detectability-signature=warmed-vs-cold / security) → cap/det/sec
+profile → boss tower. Broad framework, NOT a niche. Build = Design B (thin TS/Node core extending `tower/`).
 
-## NEXT (Roi's call)
-- [x] **Validate the gym `BLOCKED` path live — DONE 2026-06-27.** Headed run vs the genuinely-down
-      detector (abs still 502) printed `UNSCORED → BLOCKED` + the 502 reason, labelled the screenshot
-      `BLOCKED`, wrote the row (`gym/results.md` 2026-06-27T13:05). First attempt died on a `page.screenshot
-      fullPage` 8s timeout (bot.incolumitas is a long page) → **hardened `shoot()` to be non-fatal** so a
-      screenshot failure can never throw away a verdict again; retry succeeded.
-- [ ] **Retry for a REAL motion score when `abs.incolumitas` recovers.** Only then can the verified
-      `/move` cursor capability actually be graded by this detector. (Re-run the gym; read results.md.)
-- [ ] **Step 2 — scoreboard wire:** connect fable's eval harness (`project-fable/evals/`) to score gym
-      runs. Thin HTTP wire, not a merge — `gym/behavioral.ts` exports `feather`/`launchHeaded`/`move`/… to reuse.
+## DONE — the research-and-design loop (2026-06-28, committed `9ff93de`+`4e69b2e`, NOT pushed)
+- [x] **Stage-1 monorepo orientation** — `gym/`→`tower/`, seams, hygiene (`9ff93de`).
+- [x] **5 research strands + final synthesis** — each an adversarially-verified Workflow; digests
+      `tower/research/2026-06-27-0{0..5}-*.md` + verbatim receipts `tower/research/raw/*.json`.
+- [x] **Decisions D1–D6** logged; scope corrected to D2 broad framework; radar conflict resolved.
+- [x] **Documentation pattern** (digest + verbatim receipts) + memory `research-documentation-preference`.
 
-## Shipped this session (2026-06-27) — on `dev`, NOT pushed (`fbea1d7..0576723`)
-- [x] **Mouse-motion upgrade BUILT & VERIFIED** (final review READY TO MERGE): `src/browser/mouse-path.ts`
-      (pure tunable curved+var-velocity generator) + `boundingBox` on `Actionable` + `MoveHandler` +
-      `POST /v1/sessions/:id/move` (target XOR x,y) + gym wander/trial-log. TDD, subagent-driven
-      (sonnet impl / opus review). Live `/move` smoke PASS. Delivers 156 trusted mousemove events (probe-verified).
-- [x] **Premise debunked (systematic-debugging):** bot.incolumitas behavioral score is server-side on
-      `abs.incolumitas.com`, **fully DOWN (502)** → UNSCORED is an outage, NOT "no cursor path" (5d.2 was wrong).
-- [x] **Gym `BLOCKED` state shipped** (`0576723`): classify BLOCKED + detectorDown (pure); behavioral.ts
-      `absDetectorDown()` (timeout-guarded, gated); results.md rows corrected. rd-verify PASS, 491 green.
+## NEXT — doc-hygiene batch (recommend FIRST; <1hr; Strand-4 flagged)
+- [ ] **Promote the decisions log → standalone `tower/decisions.md`** (D1…Dn index, grep-able by ID).
+      Apply the **D6 wording fix** the synthesis noted: WASP-intermediate → RedTeamCUA execution-marker probe.
+- [ ] **Add `docs/GLOSSARY.md`** mapping synonym clusters to canonical terms (gym/gymnasium/bench → tower;
+      stealth/evasion/fingerprint → detectability; warmed/cookie-mine/logged-in → authenticated).
+- [ ] **Finish the `gym→tower` rename** across `docs/specs`/`docs/plans`/`blog`/`AGENTS.md` (functional +
+      prose; leave true historical refs).
+- [ ] **Index `tower/` in `journal/docs-map.md`** (the research digests + decisions log as authoritative surfaces).
 
-## Shipped earlier — Gym Step 1 (2026-06-26, pushed `…5e2f037`)
-- [x] **Gym Step 1 — behavioral diagnostic.** Top-level `gym/` (HTTP-only): `classify.ts` + `behavioral.ts`
-      + `npm run gym:behavioral`. Blog 0026. Handoff `journal/ops/sessions/the-detector-that-couldnt-see-me-20260626-1935.md`.
+## THEN — the BUILD PHASE (PR-1 MVP, per the synthesis; ~1 week solo)
+- [ ] **`tower-core` skeleton** extending `tower/`: Fastify control plane, Zod `TowerTask`/`TowerResult`/
+      `DetectorReport`, 4 manifest registries, sequential runner, **JSONL-in-git result log + SQLite read-index**.
+- [ ] **2 adapters:** `adapter.feather` (HTTP-driven, never imports `src/`) + `adapter.browser-use`
+      (subprocess-CLI, ~60-line Python stdin/stdout shim — proves the no-import polyglot seam).
+- [ ] **1 detectability level — L2 `runtime_enable`:** vendor + pin rebrowser-bot-detector; both tools load
+      it under task pretext; page **self-posts its `{ok|gated|blocked}` ordinal by `nonce`** to an out-of-band
+      sink; **NO Playwright/CDP attach to the measured browser** (the correctness property to demonstrate).
+- [ ] **1 security level — `comment_injection`:** WASP-style GitLab-comment IPI in a purpose-owned victim
+      app implementing `SecurityHooks` (canary exfil + state diff + injection marker); grade ASR **any-of-3 (k=3)**.
+- [ ] **Aggregator v0:** LPR → ASS (cap-gate stubbed) → BTS (versioned weights) → `RunRecord` with
+      Clopper-Pearson CI; **overlapping-CI → `tie`**. Render the **cap/det/sec profile as small-multiples /
+      parallel-coords with CI bands (NOT a radar polygon)** + a flat HTML.
+- [ ] **Build sequence after PR-1** (see synthesis §"Build this first"): PR-2 honest wire (passive JA3 tap) +
+      real capability gate + nodriver differential guard; PR-3 the warmed-vs-cold signature harness; PR-4+ breadth.
 
-## Parked behind the pivot (not deleted)
-- [ ] **Real-account 2FA take** — prove the on-page Resume banner survives a real 2FA challenge **page**. Needs Roi driving.
-- [ ] **(Roi, outside repo)** Rotate/abandon the leaked `roionly9` throwaway account.
+## Housekeeping
+- [ ] **Push** `9ff93de..4e69b2e` to `origin/dev` when Roi wants it public.
 
-## Later — PARKED (do not start)
-- [ ] **Stealth on real sites (5d arc) — CUT 2026-06-24.** Distinct from the gym. Reopen only if a real
-      site blocks a warmed session — then adopt a maintained engine, don't hand-patch.
-- [ ] **Visual desktop shell (4b)** + the big stealth-agent / Hybrid vision — deferred.
-- [ ] **fable→iroh merge** — decided on paper, NOT first. Only when the gym makes it worth it.
+## Parked (not deleted)
+- [ ] **Prior gym thread:** retry a real motion score when `abs.incolumitas` recovers; fable-evals scoreboard wire.
+- [ ] **Real-account 2FA take** — prove the Resume banner survives a real 2FA challenge page (needs Roi driving).
+- [ ] **(Roi, outside repo)** rotate/abandon the leaked `roionly9` throwaway account.
