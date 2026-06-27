@@ -1,0 +1,206 @@
+[
+  {
+    "topic": "Tower Bench Results Store — Storage Architecture for RunRecord Data",
+    "summary": "The RunRecord data is small, append-only, and analytically simple: a handful of tools times dozens of levels times N_rep=10 produces tens to low thousands of rows over the project's life. The \"tool × level × score OVER TIME + per-tool radar with CIs\" query pattern is vanilla GROUP BY with window functions — work that any SQL engine does trivially at this scale. Strand 3's proposal of an append-only SQLite RunRecord store with artifacts on the filesystem by path is validated. The right move is to implement it with two concrete additions: (1) a JSONL sidecar export committed to git for durability and human-readable diffs, because SQLite binaries diff badly, and (2) JSON1-typed columns for the complex provenance fields (grader_versions, env_fingerprint) so they are queryable without parsing in TS. DuckDB, Postgres/Timescale, and document stores are all over-engineered at this scale and solve problems the Tower does not have.",
+    "recommendation": "Implement SQLite (better-sqlite3, WAL mode) as the RunRecord store. Store grader_versions and env_fingerprint as JSON1 TEXT columns. Keep ci_95_lo/ci_95_hi as plain REAL columns — Clopper-Pearson math runs in TypeScript, SQLite just holds the outputs. Add non_reproducible INTEGER and provenance_violation INTEGER as indexed columns so leaderboard exclusion is a cheap WHERE clause. On every append, emit a JSONL sidecar (one object per line, human-readable) into tower/results/ and commit it to git — that is the durable backup and audit trail; the .db file lives in tower/data/ gitignored. Graduate to DuckDB only if the project ever reaches roughly 50k rows AND GROUP BY analytics become measurably slow — which, at a handful of tools times dozens of levels times N_rep=10, is implausible within the project's life. Do not reach for DuckDB, Postgres, or a document store to solve a data-volume problem that does not exist yet.",
+    "keyDecisions": [
+      "The RunRecord query pattern (GROUP BY tool + level + score OVER TIME, CI comparison at render time) is OLTP-shaped at this scale — tens to low thousands of rows — not OLAP-shaped, so a row-oriented SQLite store is the correct fit and DuckDB's columnar vectorized engine is solving the wrong problem.",
+      "Clopper-Pearson CI math belongs in TypeScript as pure functions (ci_lo, ci_hi stored as REAL columns), not in SQL — this means the choice of DB engine has zero bearing on statistical correctness and the leaderboard fold is a straightforward SQL GROUP BY feeding TS aggregation.",
+      "The durability story splits by data type: the .db binary is gitignored and backed up via SQLite .backup API; a JSONL export (one row per line, committed to git in tower/results/) is the human-readable, diff-friendly, reproducible audit trail — this dual-format pattern is how serious research bench projects (Metriq, AgentLab result dirs) handle append-only scored data."
+    ],
+    "options": [
+      {
+        "name": "SQLite (better-sqlite3, WAL, JSON1) — RECOMMENDED",
+        "fitFor": "Tens to low-thousands of RunRecord rows; solo Node/TS builder; append-only with analytical reads; self-hostable with zero server ops",
+        "tradeoffs": "Row-oriented engine is slightly slower than DuckDB for wide column scans, but irrelevant under ~100k rows. Binary file diffs badly in git — mitigated by the JSONL sidecar. No native CI math (correct: that belongs in TS). better-sqlite3 is synchronous which fits Fastify's non-blocking model cleanly with worker threads if needed. WAL mode gives concurrent readers without blocking writes. JSON1 built in by default since SQLite 3.38.0 (Feb 2022). The @types/better-sqlite3 package provides full TypeScript types.",
+        "sizing": "Correct from 1 row to ~100k rows. SQLite with proper indexes handles 2000+ queries/second on 60 GB databases — this project will never approach that ceiling. Graduate to DuckDB at roughly 50k+ rows with measurably slow GROUP BY analytics (implausible at Tower scale).",
+        "url": "https://github.com/WiseLibs/better-sqlite3"
+      },
+      {
+        "name": "JSONL flat files + git (sidecar / supplementary role)",
+        "fitFor": "Git-committed audit trail, human-readable diffs, reproducibility evidence — NOT as the primary query store",
+        "tradeoffs": "No indexing, no SQL, no ad-hoc aggregation without loading the full file. The leaderboard fold (GROUP BY tool × level, CI comparison, non_reproducible exclusion) requires parsing all rows in TS every time. Works fine as a sidecar format committed alongside each run, giving git blame on every result. Becomes the primary store only at sub-dozen rows (current state: 3 rows in results.md). Research bench precedents (Metriq, AgentLab result dirs, the reproducibility survey at arXiv:2505.02854) all use structured JSONL for per-run records committed to git, with a separate query layer on top.",
+        "sizing": "Primary store: works at <50 rows, painful at >200 rows when the leaderboard fold requires multiple passes. Sidecar role: correct at all scales."
+      },
+      {
+        "name": "DuckDB / Parquet (columnar analytics)",
+        "fitFor": "5M-50M row OLAP workloads; ad-hoc data science; BI dashboards summarizing millions of rows",
+        "tradeoffs": "Vectorized columnar engine is 10-100x faster than SQLite for wide table scans at 1M+ rows — irrelevant under 10k rows where the difference is sub-millisecond. The original duckdb Node.js bindings are deprecated; the new @duckdb/node-api (Neo) replaces them with native TypeScript support. Additional toolchain complexity and a heavier binary. DuckDB's own benchmarks and PostHog's analysis confirm SQLite is competitive or faster for tiny datasets and OLTP-shaped queries. No operational advantage at Tower scale.",
+        "sizing": "Overkill under ~50k rows. Consider if the Tower ever expands to 10+ tools × 100+ levels × N_rep=50+ (roughly 50k rows) and GROUP BY analytics are measurably slow. At that point, a DuckDB read layer over Parquet exports is a natural migration — but the SQLite write store can remain.",
+        "url": "https://posthog.com/blog/duckdb-vs-sqlite"
+      },
+      {
+        "name": "Postgres / Timescale (time-series)",
+        "fitFor": "Multi-user, concurrent-write, high-throughput time-series with server ops budget",
+        "tradeoffs": "Requires a running server daemon — violates the self-hostable, zero-ops constraint. Timescale's hypertable partitioning and continuous aggregates are designed for sensor/telemetry data at millions of points per day; the Tower produces at most a few rows per run. All the capability (window functions, GROUP BY, JSON operators) exists in SQLite without a server. Gross overkill. Do not use.",
+        "sizing": "Wrong tier entirely for this project. Only relevant if the Tower becomes a multi-tenant hosted service with many concurrent writers — a decision that would involve a full architecture change, not a storage upgrade."
+      },
+      {
+        "name": "Document store (MongoDB, etc.)",
+        "fitFor": "Flexible-schema document collections with server infrastructure already present",
+        "tradeoffs": "Requires a server process, no SQL for the leaderboard fold, no WAL-style append durability without configuration. JSON1 in SQLite already provides the flexible-schema benefit for the complex provenance fields (grader_versions, env_fingerprint). No advantage at this scale or for this query pattern.",
+        "sizing": "Wrong tier. Not competitive with SQLite for this use case at any scale the Tower will reach."
+      }
+    ],
+    "auditData": [
+      "Current Tower results store: manual Markdown table in tower/results.md (3 rows, all BLOCKED due to detector outage)",
+      "Projected volume: 2 tools x 5 levels x N_rep=10 = 100 rows MVP; 10 tools x 20 levels x N_rep=10 = 2000 rows year-1; 10k rows is the plausible lifetime ceiling for a solo project",
+      "DuckDB sweet spot per PostHog analysis: 5M-50M rows; SQLite competitive or faster below ~100k rows",
+      "SQLite JSON1 built in by default since 3.38.0 (Feb 2022); jsonb binary format available since 3.45.0; 28 scalar functions + table-valued json_each/json_tree — sufficient for grader_versions and env_fingerprint storage and querying",
+      "SQLite window functions (OVER, ROWS BETWEEN, LAG/LEAD) available since 3.25.0 (2018) — the tool x level x score OVER TIME query is a single window function query",
+      "better-sqlite3 is synchronous; WAL mode enables concurrent readers without blocking writers; recommended pragma: journal_mode=WAL + synchronous=NORMAL (default) for performance, FULL for durability",
+      "DuckDB Node bindings: original duckdb npm package deprecated as of 1.4.x (~Fall 2025); @duckdb/node-api (Neo) is the replacement with native TypeScript support",
+      "RunRecord provenance fields that must be queryable for leaderboard exclusion: non_reproducible (L4 live track), provenance_violation (mismatched wire fingerprint) — both stored as INTEGER 0/1 with index, not inside JSON blobs",
+      "Clopper-Pearson CI is a pure math function (beta distribution quantiles); storing only the computed lo/hi as REAL columns is correct — no SQL engine computes it natively, TS does",
+      "Research bench precedent: Metriq stores per-result JSON files in a git repo structured directory; AgentLab stores per-run result dirs with JSON manifests; both use a separate query/aggregation layer on top"
+    ]
+  },
+  {
+    "topic": "Tower Scoreboard & Visualization — Architecture Survey",
+    "summary": "The Tower needs two money-shot views: (1) `tool × level × score over time` (line chart) and (2) per-tool cap/det/sec radar with confidence intervals. Data volume is permanently small (tens → low-thousands of RunRecord rows). The scoreboard must be a pure read-projection over the SQLite results store — the store is truth, the UI never owns data. Six approaches surveyed with primary-source grounding; one clear winner for a solo TS/Node-first builder at this scale.",
+    "recommendation": "Observable Framework + Observable Plot, deployed to GitHub Pages. Concretely: add a `tower/scoreboard/` directory to the monorepo with its own `package.json` (`@observablehq/framework`). Write a TypeScript data loader (`data/runs.json.ts`) that reads the SQLite RunRecord store and exports the JSON snapshot at build time — Framework runs it automatically during `npm run build`. Render (a) a line/area chart per `tool × level` using Plot.lineY over time, and (b) the radar using Plot's azimuthal-equidistant projection trick for the three-axis cap/det/sec view. CIs render as shaded area bands behind the radar line. `npm run build` → `dist/` → push to GitHub Pages on every new run batch. Zero server, zero daemon, zero HuggingFace dependency. Framework v1.13.4 (March 2026), actively maintained, TypeScript-primary codebase, DuckDB-WASM and SQLite are built-in first-class data sources. The resulting site looks credibly data-professional — Observable Framework is recognizable in the data-science/open-source community and reads as serious portfolio work, not a student project. The single tradeoff: if Observable Plot's radar CI bands feel fragile (the projection trick is a workaround, not a native primitive), swap only the radar component to an inline Apache ECharts instance while keeping all other Framework infrastructure unchanged.",
+    "keyDecisions": [
+      "The scoreboard must be a pure build-time projection over the SQLite RunRecord store — the store is truth, the site is a read-only snapshot — which makes static-site generation (not a live-query server) the correct architecture for this data volume and maintenance budget.",
+      "Observable Framework is the right host for this projection because it is TypeScript-native (same toolchain as Tower), has SQLite/DuckDB-WASM as built-in first-class data sources for data loaders, and deploys to GitHub Pages with a single npm run build — no server, no Python runtime, no HuggingFace dependency.",
+      "Observable Plot covers the time-series view natively and handles the radar via the azimuthal-equidistant projection workaround; if that workaround's fragility is unacceptable for CI bands on the radar specifically, Apache ECharts (6.0, July 2025) can replace the radar component only — its radar series natively supports area bands for CIs and bundles to a ~200 KB static chunk."
+    ],
+    "options": [
+      {
+        "name": "Observable Framework + Observable Plot",
+        "fitFor": "Solo TS/Node-first builder; small append-only SQLite store; static GitHub Pages deploy; two-chart scoreboard (line + radar); portfolio visibility",
+        "tradeoffs": "Radar is a projection-trick workaround, not a native Plot primitive — CI bands on radar require extra work. Observable Cloud hosting deprecated April 2025 (self-host to GitHub Pages is now the canonical path, which is fine here). 3.5k stars, v1.13.4 March 2026, actively maintained.",
+        "sizing": "Right-sized for tens → low-thousands of run rows; DuckDB-WASM handles up to ~hundreds of MB of Parquet/SQLite in-browser if data ever grows",
+        "url": "https://observablehq.com/framework/"
+      },
+      {
+        "name": "Apache ECharts (standalone) + TypeScript build script",
+        "fitFor": "Maximum radar quality including native CI area bands; full control over HTML; no framework dependency",
+        "tradeoffs": "Requires custom data pipeline (SQLite → JSON → Jinja2/template or hand-rolled HTML); no batteries-included dev server or hot-reload; more manual wiring than Observable Framework. Best used as the radar component inside Observable Framework rather than as a full replacement.",
+        "sizing": "Single ~200 KB bundle (radar + line modules via online builder); scales to any data volume since data is injected at build time",
+        "url": "https://echarts.apache.org/en/builder.html"
+      },
+      {
+        "name": "Evidence.dev",
+        "fitFor": "Traditional SQL/BI dashboards — table, bar, line, scatter; SQL-in-Markdown workflow",
+        "tradeoffs": "No built-in radar/spider chart type — the primary money-shot view is not supported without a custom component. Adds a heavier abstraction layer (npm workspace, VSCode extension, source-query config) than is warranted for two chart types over small data. Better fit if the scoreboard were purely tabular.",
+        "sizing": "Supports SQLite as a named data source; static deploy to Netlify/Vercel; fine at this data volume",
+        "url": "https://docs.evidence.dev/"
+      },
+      {
+        "name": "HuggingFace Spaces (Gradio / Streamlit)",
+        "fitFor": "Large community leaderboards with 300k+ monthly users (Open LLM Leaderboard pattern); Python-first teams",
+        "tradeoffs": "Requires a live Python process — not static, not self-hostable without HF account or a Python server. Gradio/Streamlit are Python-centric, not TS/Node. The scoreboard becomes dependent on HF infrastructure staying free and available. Overkill for small data and a solo builder. Does not stay a pure projection without deliberate discipline.",
+        "sizing": "Used at massive scale (Open LLM Leaderboard: 2M unique visitors over 10 months); wrong tier for the Tower's data volume",
+        "url": "https://huggingface.co/spaces/open-llm-leaderboard/open_llm_leaderboard"
+      },
+      {
+        "name": "Committed static HTML/SVG (SWE-bench pattern)",
+        "fitFor": "Absolute minimum maintenance; pure table leaderboards; projects where interactivity is not needed",
+        "tradeoffs": "SWE-bench uses Python build.py + Jinja2 + leaderboards.json → GitHub Pages. Works well for ranked tables but not for interactive radar comparison or time-series filtering across tools. Adding CI bands or a filter UI requires hand-rolling JavaScript. Scores as 'simple' not 'polished' in a portfolio context.",
+        "sizing": "Works at any data volume since the JSON data file is pre-built; the leaderboards.json pattern is correct and could be adopted as the Tower's data export format regardless of rendering choice",
+        "url": "https://github.com/SWE-bench/swe-bench.github.io"
+      },
+      {
+        "name": "Vega-Lite (via full Vega) + vega-embed",
+        "fitFor": "Grammar-of-graphics approach; projects that want declarative JSON specs; academic/research presentation style",
+        "tradeoffs": "Vega-Lite does NOT natively support radar charts (GitHub issue #3805, still open as of 2025) — must use full Vega which is more verbose. vega-embed enables self-contained static HTML. Bundle is ~2 MB (Vega + Vega-Lite + vega-embed) vs ~200 KB for ECharts radar-only. More config overhead than Observable Plot for a solo builder. Less portfolio-legible than Observable Framework for a data-engineering context.",
+        "sizing": "Handles this data volume easily; all data can be inlined in the Vega spec JSON",
+        "url": "https://vega.github.io/vega/examples/radar-chart/"
+      },
+      {
+        "name": "Grafana",
+        "fitFor": "Ops/infrastructure teams with running servers; time-series monitoring at scale",
+        "tradeoffs": "Requires a running Grafana daemon — not static, not zero-maintenance. Radar charts available via plugin but not built-in. Solo maintenance cost is the highest of all options surveyed. Correct for ops dashboards, wrong for a portfolio benchmark scoreboard.",
+        "sizing": "Designed for continuous high-volume metric streams; massively over-engineered for bench run data",
+        "url": "https://grafana.com/"
+      },
+      {
+        "name": "SkillsBench (real-world radar leaderboard reference)",
+        "fitFor": "Reference implementation — the only publicly live agent leaderboard found with an actual interactive radar chart comparing multiple agents across skill domains",
+        "tradeoffs": "Interactive radar allows hovering an axis to inspect a domain and comparing up to 4 agents simultaneously. Architecture is not public, but the UX pattern is the closest existing analogue to the Tower's per-tool cap/det/sec radar. The Tower's three axes (capability / detectability / security) map directly to this pattern.",
+        "sizing": "84 tasks across 11 domains — comparable scale to the Tower's planned level/angle taxonomy",
+        "url": "https://www.skillsbench.ai/leaderboard"
+      }
+    ]
+  },
+  {
+    "topic": "Corpus Audit — Feather-Browser Knowledge and Data Store",
+    "summary": "Concrete measurement of the feather-browser repo corpus across all doc categories. Total markdown repo-wide: 77,825 lines. Curated docs: 185 files (~48K lines, ~310K words). Unstructured raw artifacts: 130 files (session handoffs + archives, ~102K words). Borderline test-log artifacts: 36 files (v1_wrap, v2_wrap, docs/testing). The ~50-doc nominal threshold is exceeded 3.7x in the curated layer alone, but the corpus is well-partitioned by directory and grep within named paths stays efficient. Two triggers are measurably firing: terminology drift (gym/tower/bench/gymnasium synonym scatter across 31+ curated docs) and the 3-grep rule for cross-concept searches. Context overflow and unstructured-volume triggers are NOT firing. No RunRecord bench data exists yet — tower/runs holds 4 screenshot PNGs only, no structured run rows.",
+    "recommendation": "Stay on grep + a one-file terminology glossary (docs/GLOSSARY.md or a flat JSON map) as the immediate next step. Do NOT reach for embeddings-RAG, DuckDB, or a full-text-search index — none of the scale triggers that justify those have fired, and the overhead is disproportionate for a solo builder. The two concrete actions: (1) Complete the gym to tower rename in the curated layer (docs/specs, docs/plans, blog, AGENTS.md) so a single grep for tower finds everything — right now a complete search requires gym + tower + bench + gymnasium (4 variants). (2) Add a 20-line docs/GLOSSARY.md that maps each synonym cluster to its canonical term. That resolves the only active trigger (terminology drift) at zero infrastructure cost. For bench results (RunRecords): SQLite is correct as proposed in Strand 3 — volume will stay in the tens-to-low-thousands range for this project's life, needs append-only writes + time-series views + CI confidence intervals, and artifacts stay on the filesystem referenced by path. SQLite handles all that with a single file and zero ops burden. Do not introduce DuckDB or Parquet until run count exceeds ~10K and analytical fan-out queries become the bottleneck, which is years away at this pace.",
+    "keyDecisions": [
+      "The curated corpus (185 files, 310K words) has exceeded the nominal 50-doc threshold, but it is well-partitioned into named directories — the threshold exists to flag when grep becomes a probabilistic hunt, which has not happened yet for single-concept searches within a known path.",
+      "Terminology drift is the only trigger that has measurably fired: gym (31 docs) + gymnasium (19) + tower (13) + bench (12) = 75 doc-hits for one concept across the curated layer, meaning a search for tower alone misses 80% of the signal — a glossary and rename pass resolves this without a richer store.",
+      "RunRecord bench data does not exist yet (tower/runs has 4 PNGs, zero structured rows), so the bench results data problem is entirely forward-looking and SQLite is the correct first and likely only store needed for this volume."
+    ],
+    "auditData": [
+      "Curated docs total: 185 files (docs/specs: 74, docs/plans: 19, research/: 21, blog/: 28, docs/superpowers: 10, tower/research/: 7, docs/roadmap: 3, docs/commands: 5, journal/context: 2, journal/work: 3, journal/raw/_inbox: 2, journal/ops non-sessions: 3, top-level *.md: 8)",
+      "Unstructured/raw artifacts: 130 files (journal/ops/sessions: 70, journal/raw/archive: 33, journal/archive: 19, docs/sessions: 8)",
+      "Borderline test-log artifacts: 36 files (docs/v1_wrap + v2_wrap + docs/testing)",
+      "Total markdown repo-wide: 77,825 lines; curated layer: ~48K lines / ~310K words; session+archive layer: ~102K words",
+      "tower/runs: 4 files — all PNG screenshots, zero structured run rows (RunRecord schema does not exist yet)",
+      "Terminology drift — gym/tower cluster: 'gym' 31 docs, 'gymnasium' 19 docs, 'tower' 13 docs, 'bench' 12 docs — all four terms are live in curated specs, plans, and blog as of 2026-06-27",
+      "Terminology drift — stealth/detection cluster: 'stealth' 165 files (56 curated), 'bot-detection' 64 files, 'detectability' 16 files, 'evasion' 14 files, 'fingerprint' 75 files — stealth is dominant legacy term; detectability is newer framing used in tower/research",
+      "Terminology drift — auth-state cluster: 'warmed' 166 files, 'cookie mine' 115 files, 'logged-in' 85 files, 'authenticated' 55 files — all four live across curated layer; warmed+cookie mine are Feather-canonical but not globally enforced",
+      "3-grep rule: FIRING for gym/tower concept (requires 4 variants for full coverage); BORDERLINE for stealth/detection (3 variants); NOT firing for point lookups within a known directory",
+      "Context overflow: NOT firing — active.md is 102 lines, tasks.md is 60 lines, phase.md is 17 lines",
+      "Unstructured volume / raw-transcript querying: NOT firing — 70 session files total 5,305 lines; 33 raw archive files total 5,525 lines; neither layer is being queried in agent context"
+    ]
+  },
+  {
+    "topic": "Retrieval Without Relying on the LLM Context Window — Tower/Feather Knowledge Architecture",
+    "summary": "The feather-browser project has ~74 curated docs/specs, 206 journal markdown files, 12 tower/research files, and 5 JSON receipt files. The existing infrastructure — docs-map.md, docs/specs/README.md, active.md, AGENTS.md, and the tower/research/raw/README.md decisions log — already implements the correct pattern for this scale. The retrieval problem is one of navigation, not semantics: future agents need to land on the right file in one or two grep steps, not discover unknown concepts. At this corpus size, structured indexes + ripgrep are deterministic and zero-maintenance. The threshold for upgrading to SQLite FTS5 or embeddings/RAG has not been crossed and is unlikely to be crossed during the Tower build. The key gap to close is extending the existing patterns to cover the growing tower/ research corpus with the same indexed-surface discipline already applied to docs/specs/.",
+    "recommendation": "Adopt the Tiered Structured-Index + ripgrep stack now; defer SQLite FTS5 to when the 3-grep trigger fires; never build embeddings/RAG at this scale. Concretely: (1) Extend journal/docs-map.md with a 'tower/' section covering the tower/research/*.md digests and the decisions log as first-class authoritative surfaces. (2) Add tower/decisions.md as a standalone decisions log (currently buried in tower/research/raw/README.md) — one row per decision, keyed by ID, with a pointer to the digest and the raw receipts. This gives any future agent a single grep-able D1–DN index without reading the full raw JSON. (3) Establish the 'ripgrep-first' retrieval contract: agents use 'rg -l keyword tower/ docs/ journal/context/' to find candidate files, then read only those. Document this in AGENTS.md as the standard search protocol. (4) Defer SQLite FTS5 to the explicit trigger: when a session routinely runs 3+ rg variants to find one thing, or when the tower/research raw/ directory exceeds ~50 JSON files. The FTS5 table plugs into the existing RunRecord SQLite DB as a second virtual table — same file, zero extra dependency. (5) Never build embeddings, a vector DB, or a formal knowledge graph for this corpus. Embeddings fail on exact ADR numbers, decision IDs (D3, WD, ASS_cap), and structured terminology — exactly the vocabulary this corpus is dense with. The docs-map + decisions log + ADR README IS the knowledge graph at this scale; formalizing it as a node/edge store would add maintenance cost for zero retrieval gain until the corpus exceeds ~200 decisions with multi-hop query needs.",
+    "keyDecisions": [
+      "The correct retrieval primitive for this corpus (<100 curated docs, structured filenames, exact technical vocabulary) is ripgrep over a maintained surface index — NOT embeddings — because embeddings predictably fail on exact identifiers like 'ADR-0004', 'D3', 'WD delta', and 'ASS_cap', which are precisely the terms agents need to retrieve by.",
+      "The upgrade path from grep to SQLite FTS5 is keyed to the project's own stated 3-grep trigger (routinely needing 3+ grep variants for one concept), which maps to the industry-validated threshold of ~1,000 files / terminology drift — neither of which applies today; FTS5 should be added to the existing RunRecord SQLite DB (same file, different virtual table) only when that trigger fires.",
+      "A formal knowledge graph (nodes = decisions/specs/artifacts, edges = supersedes/depends/cites) is not warranted at this scale because the docs-map.md + ADR README + tower/decisions.md patterns already encode the same graph as flat markdown, at lower maintenance cost and with deterministic grep-retrieval — the crossover point where a graph beats flat indexes requires multi-hop relational queries over 200+ interconnected nodes, which this corpus does not have."
+    ],
+    "options": [
+      {
+        "name": "Tier 0 — Structured Surface Index (what already exists, extend now)",
+        "fitFor": "All knowledge navigation at this scale (<100 curated docs). The right answer for the whole Tower build.",
+        "tradeoffs": "Zero infrastructure cost; deterministic; no drift if phase-end reconciliation protocol is followed. Requires manual curation discipline — the index only stays accurate if 'leave the docs true' is enforced at every phase boundary. Already present: docs-map.md, docs/specs/README.md, active.md. Gap: tower/research/ not yet indexed as a first-class surface in docs-map.md; decisions log buried in tower/research/raw/README.md rather than a standalone tower/decisions.md.",
+        "sizing": "Handles the project's full lifetime corpus. No size ceiling for curated/structured docs."
+      },
+      {
+        "name": "Tier 1 — ripgrep as the search primitive (add as standard protocol now)",
+        "fitFor": "Exact-term retrieval across all markdown files: ADR numbers, decision IDs, technical terms, file names. First-pass search for any agent that doesn't know which file owns a concept.",
+        "tradeoffs": "Already installed system-wide; zero overhead; deterministic results; zero API cost. Doesn't rank by relevance — all matches equal. Fails on synonym/terminology drift (searching 'detection' vs 'detectability score' vs 'FDS' returns different files). The 3-grep rule from the loop spec is the exact signal that this tier is stressed. Document the standard invocation in AGENTS.md: 'rg -l keyword tower/ docs/ journal/context/'.",
+        "sizing": "Sub-second on this entire repo. Still fast at 10x the file count. No ceiling that applies here.",
+        "url": "https://yage.ai/share/why-coding-agents-still-use-grep-en-20260327.html"
+      },
+      {
+        "name": "Tier 2 — SQLite FTS5 full-text search (defer until trigger fires)",
+        "fitFor": "When terminology drift becomes a real problem — the same concept appears under 3+ names in different docs and ripgrep routinely misses hits. Also the right choice once the tower/research/raw/ JSON receipt files exceed ~50 and agents need to query raw transcript content, not just the digest markdown.",
+        "tradeoffs": "FTS5 is built into SQLite and already used by the project for the RunRecord store — zero extra dependency, just a second virtual table. BM25 ranking ships built in. The Node.js sync API adds ~200-300ms per write (noted risk for concurrent server use, not relevant for a batch indexer). Does NOT handle: negation, exact numeric comparisons, embedding-level semantic similarity. Better than embeddings for exact technical vocabulary. Add as a batch indexer that ingests markdown files on a post-commit hook — same hook that refreshes graphify.",
+        "sizing": "Practical ceiling ~10,000 files (well above this project's horizon). Trigger: 3-grep rule fires, OR tower/research/raw/ exceeds 50 files.",
+        "url": "https://sqlite.org/fts5.html"
+      },
+      {
+        "name": "Embeddings / Vector RAG (do not build at this scale)",
+        "fitFor": "Multilingual corpora, corpora with OCR misspellings, or genuinely unstructured high-volume content where exact terminology is unknown. NOT this project.",
+        "tradeoffs": "Honest failure modes at this corpus: embeddings are bad at exact identifiers ('ADR-0004', 'D3', 'bm25()', 'WD delta', 'ASS_cap') — the exact vocabulary this corpus is dense with. They blur domain-specific codes (e.g. 'pool' in an insurance corpus ranked above the correct definition). They add: embedding API cost or a local model to host, vector store infrastructure (Chroma/pgvector/sqlite-vec), chunking decisions, embedding drift when model versions change, and a build step. For <100 curated docs, the embedding overhead strictly dominates the recall benefit. The only scenario where embeddings add value here is synonym discovery — finding that 'FDS' and 'fingerprinting detection score' and 'ordinal verdict' are the same thing. Use embeddings as a one-time vocabulary bootstrap, then encode the aliases in the surface index. Do not deploy them as the production retriever.",
+        "sizing": "Becomes valuable at >10,000 files or when genuine semantic search (conceptual queries, cross-lingual) is needed. Industry-reported hybrid (FTS5 + vector) achieves 89% recall vs 76% vector-only and 68% BM25-only — but the delta only matters when the baseline retrieval is already stressed.",
+        "url": "https://towardsdatascience.com/embeddings-arent-magic-the-predictable-failure-modes-of-rag-retrieval-enterprise-document-intelligence-vol-1-2/"
+      },
+      {
+        "name": "Knowledge Graph (nodes = decisions/specs, edges = supersedes/depends/cites) — do not build",
+        "fitFor": "Multi-hop relational queries over 200+ interconnected decisions where 'what does ADR-0004 depend on and what supersedes it' requires graph traversal, not a grep. Enterprise data lineage, regulated compliance audits, customer-360 contexts.",
+        "tradeoffs": "At <100 docs, the knowledge graph already exists in flat markdown form: docs-map.md encodes authority; ADRs reference each other with prose; the tower/research/raw/README.md decisions log lists D1-D4 with explicit 'SUPERSEDED by D2' markers. Formalizing this as a node/edge store (RDF, Neo4j, or even a JSON adjacency list) adds: ontology design time, a graph query layer, and ongoing sync discipline — for zero retrieval gain over 'grep for D3 in tower/decisions.md and follow the pointer.' The crossover: a formal graph earns its keep when queries require 3+ hops across 200+ nodes, and when the relationship type (not just the document name) determines the result. That is not this project. Graphify already handles code-wiring at the symbol level; the docs graph is intentionally fenced out.",
+        "sizing": "Becomes worth it at ~200+ decisions with multi-hop query patterns. The 35% precision improvement cited in literature applies to enterprise regulated domains (AWS testing), not a ~50-doc technical knowledge base.",
+        "url": "https://atlan.com/know/knowledge-graphs-vs-rag-for-ai/"
+      }
+    ],
+    "auditData": [
+      "Curated decision docs (docs/specs/): 74 markdown files, including 12 ADRs (ADR-0001 through ADR-0012)",
+      "Journal files: 206 markdown files across context/, ops/, raw/, archive/, work/",
+      "Tower research: 7 markdown digests + 5 verbatim JSON receipt files + 1 README decisions log (D1-D4)",
+      "Existing surface indexes: journal/docs-map.md (23 rows), docs/specs/README.md (12 ADRs + 8 design specs), tower/research/raw/README.md (4 decisions D1-D4)",
+      "Gap identified: tower/research/*.md digests and tower/decisions.md are NOT yet listed in journal/docs-map.md — new authoritative surfaces not indexed",
+      "Gap identified: decisions log D1-D4 is buried inside tower/research/raw/README.md (a receipts directory README), making it invisible to a 'rg decisions-log' search at the repo level",
+      "The 3-grep trigger (from the loop spec) has NOT fired yet — the corpus is well-organized with date-prefixed filenames and predictable naming patterns",
+      "Graphify is already installed and covers code-wiring; .graphifyignore explicitly fences out all markdown/docs — correct; do not change",
+      "The project's existing RunRecord store is SQLite — FTS5 can be added as a second virtual table in the same DB file when the trigger fires, at zero infrastructure cost"
+    ]
+  }
+]

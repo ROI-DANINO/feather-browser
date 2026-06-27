@@ -1,0 +1,45 @@
+{
+  "dodCoverage": [
+    {
+      "item": "(a) Locked reframed identity in D2 terms",
+      "covered": true,
+      "gap": "Present and crisp, but one phrase is imprecise — see inconsistency #2 (claims every angle is graded by graders 'the Tower does not own', which is false for the Tower-owned security victim app)."
+    },
+    {
+      "item": "(b) Ranked, buildable tower design (both level families + capability-as-gate + Design B + A/C grafts + driver-transparent adapter)",
+      "covered": true,
+      "gap": "Decisive and complete (B>C>A, two boundaries, four adapter shapes, all three angles). One inherited methodology hole dropped: the L4-commercial-double-counts-L1-L3 caveat (Strand 2 Refutation 2)."
+    },
+    {
+      "item": "(c) Sized data & knowledge arch with corpus-audit reading",
+      "covered": true,
+      "gap": "JSONL-truth+SQLite-index, static scoreboard, stay-on-grep+glossary+tower/decisions.md, resolved rendering — all present and faithful to Strand 4."
+    },
+    {
+      "item": "(d) First-build MVP (PR-1) + build sequence after",
+      "covered": true,
+      "gap": "Concrete PR-1 + PR-2/3/4 sequence + explicit cut-line. The ~1-week-solo estimate is ambitious (core + 2 adapters + ~400 LOC victim app + L2 vendoring + aggregator + render) but that estimate is inherited verbatim from Strands 3/5, not a synthesis error."
+    }
+  ],
+  "radarConflictResolved": true,
+  "scopeIsD2": true,
+  "mvpCoherent": true,
+  "inconsistencies": [
+    "CAPABILITY-AS-GATE vs CAPABILITY = 0.50 OF BTS (the strongest dangling tension). The synthesis repeats both 'capability is never a ranked leaderboard axis / never the differentiator' (Tension #3) AND 'BTS = 0.50*ASS_cap + 0.30*ASS_det + 0.20*ASS_sec'. Since BTS *is* a ranking scalar, capability dominating it at 0.50 reads as a direct contradiction of 'never ranked'. Strand 2 (line 227) supplies the reconciling rationale — capability is weighted primary as a counterweight to the stealth-by-inaction anticorrelation (a hesitant agent that barely acts scores high ASS_det), and BTS is explicitly *secondary* to the profile — but the synthesis OMITS that rationale, leaving the 0.50 looking unjustified next to the gate framing.",
+    "LOCKED-IDENTITY grader claim is imprecise for the security axis. The identity paragraph says every angle is graded by 'outsourced/objective graders the Tower does not own.' That is false for security: the victim app (tower-victim-app) and its SecurityHooks are Tower-OWNED and Tower-written. The correct invariant — carried correctly later in the body ('graders you don't control OR on objective state') — is non-ownership OR objective-state. The headline identity paragraph overstates the non-ownership half.",
+    "The WASP-intermediate -> RedTeamCUA-execution-marker swap is a genuine cross-strand contradiction that the synthesis resolves SILENTLY. Strand 2 (line 162) and Strand 3 (line 92) both say 'reuse WASP end-to-end + intermediate'; the README decisions log D6 says 'mandatory WASP intermediate injection-obeyed probe'. Strand 5 corrects this: do NOT import WASP's human-labeled/LLM intermediate; substitute a RedTeamCUA-style execution marker. The synthesis correctly adopts Strand 5's version, but — unlike the radar, which it explicitly flags as superseding Strands 2&3 — it does not flag this as a supersession, leaving the D6 README wording dangling and contradictory for any reader who cross-references the decisions log."
+  ],
+  "fixes": [
+    "Add one sentence reconciling capability-as-gate with its 0.50 BTS weight: capability is weighted primary in BTS as a counterweight to the capability-detectability anticorrelation (stealth-by-inaction), AND because BTS is explicitly secondary to the cap/det/sec profile, its 0.50 share does not make capability 'the headline' — the profile, not BTS, is the published artifact. Without this, Tension #3 and the BTS formula read as a contradiction.",
+    "Correct the Locked-identity sentence from 'outsourced/objective graders the Tower does not own' to 'outsourced graders the Tower does not control OR objective-state graders' — explicitly note the security victim app is Tower-owned but graded on objective state (secret-crossed-boundary / state-mutated / marker-fired), not third-party ownership. This makes the identity paragraph consistent with the cross-angle invariant stated later in the body.",
+    "Flag the WASP-intermediate -> RedTeamCUA-execution-marker swap as an explicit supersession (parallel to how the radar supersession is handled): state that the synthesis overrides the 'reuse WASP intermediate' wording of Strands 2 & 3 and the D6 README, because WASP's intermediate is human/LLM-labeled and violates the objective-grader invariant. Note that tower/decisions.md (D6) must be updated to the execution-marker wording when the decisions log is promoted.",
+    "Restore the dropped L4-commercial-double-counts-L1-L3 caveat (Strand 2, Refutation 2) to either the detectability section or the open questions: L4 vendors (Cloudflare/DataDome) already fuse JA3/TLS + IP + behavioral, so additively weighting L4 as a peer layer alongside L1-L3 double-counts; the build phase must treat L4 as a composite or consciously accept the double-count. It is a known methodology hole that currently vanishes from the synthesis.",
+    "(Optional, lower priority) Mention check-rot detection + reporting the deterministic-vs-WebJudge fraction of the capability board (Strand 2's capability refutation) where the capability gate is described — currently only the WebJudge ~85% ceiling survives into open question #5; the check-rot and board-fraction reporting requirements are dropped."
+  ],
+  "missingPieces": [
+    "The L4-commercial-detector double-counts-L1-L3 caveat (Strand 2 Refutation 2) — dropped entirely; should appear in the detectability section or open questions.",
+    "Capability check-rot detection (a pinned live-site selector silently returning a confidently wrong verdict when the site changes) and reporting the deterministic-vs-WebJudge fraction of the leaderboard (Strand 2) — dropped.",
+    "AgentRewardBench per-judge offset/calibration + the 'J' flag on judge-graded scores (Strand 2) — dropped (minor; acceptable compression)."
+  ],
+  "overallVerdict": "Strong, faithful, and DoD-complete. Both mandated tensions are genuinely resolved: the RADAR CONFLICT is explicitly killed (profile-concept kept as headline, radar-polygon dropped for small-multiples/parallel-coords with native CI bands, and the synthesis correctly states this supersedes Strands 2&3), and the scope speaks in D2 all-angles terms (warmed-session = signature LEVEL not identity; multi-tower = design intention, architecturally provisioned, not built). Capability-as-gate, JSONL-truth store, objective security grader, and stay-on-grep are all consistent with source. The MVP (PR-1) is concrete, buildable, and consistent with Design B's driver-transparent adapter (HTTP-driven Feather + subprocess-CLI browser-use, L2 self-post-by-nonce, no-attach rule). Not a flattering pass: there is ONE real dangling tension (capability-as-gate vs its 0.50 BTS weight — fix by carrying forward Strand 2's omitted rationale), ONE imprecision in the identity paragraph (security graders ARE Tower-owned, graded on objective state — not 'graders the Tower does not own'), ONE silently-resolved cross-strand contradiction that should be flagged like the radar (WASP-intermediate -> RedTeamCUA-marker), and ONE dropped methodology caveat (L4 double-counts L1-L3). Apply those four targeted fixes and the synthesis is ready to drive the build session."
+}

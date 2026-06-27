@@ -1,0 +1,838 @@
+[
+  {
+    "category": "Academic / Industry Agentic-Browser Task Benchmarks",
+    "entries": [
+      {
+        "name": "WebArena",
+        "url": "https://arxiv.org/abs/2307.13854",
+        "whatItTests": "812 realistic tasks on 6 self-hosted website clones (e-commerce/Reddit/GitLab/CMS/Maps/CRM). Evaluates whether agents complete natural-language goals by checking URL, page state, or output correctness. The canonical academic task-success web-agent benchmark. Extended by VisualWebArena (visual grounding), VideoWebArena (video context), WebChoreArena (tedious multi-step tasks).",
+        "axis": "task-success",
+        "selfHostable": "yes",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "gapVsTower": "Axis is purely task success; no detectability or exploitability grading. Self-hosted sandboxes don't involve real bot detectors. No warmed/cookie-persistent sessions. Tower would add orthogonal detectability and security axes on top of or alongside these tasks.",
+        "sourceQuality": "primary"
+      },
+      {
+        "name": "VisualWebArena",
+        "url": "https://arxiv.org/abs/2401.13649",
+        "whatItTests": "910 tasks across 3 self-hosted web apps (classifieds, shopping, Reddit) requiring visual understanding — agents must interpret screenshots and images, not just DOM/text. Best VLM agents achieve ~16.4% vs 88.7% human. Extension of WebArena.",
+        "axis": "task-success",
+        "selfHostable": "yes",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "gapVsTower": "Pure task-success on visual tasks. No bot-detection grading, no exploitation axis, no warmed sessions. Tower extends orthogonally.",
+        "sourceQuality": "primary"
+      },
+      {
+        "name": "BrowserGym + AgentLab",
+        "url": "https://arxiv.org/abs/2412.05467",
+        "whatItTests": "A unified gym-like wrapper that standardizes observation/action spaces and integrates multiple benchmarks (WebArena, VisualWebArena, WorkArena, MiniWoB, WebLINX, and others) under a single interface. AgentLab is a companion that handles agent creation, experiment orchestration, and result analysis. Ran the first large-scale multi-benchmark comparison across 6 LLMs. Multiple agent frameworks (AutoGen, Browser-Use, etc.) can plug in via the common adapter.",
+        "axis": "task-success",
+        "selfHostable": "yes",
+        "authSessionEval": "no",
+        "multiToolAdapter": "yes",
+        "gapVsTower": "BrowserGym IS the closest occupied slot for 'multi-tool adapter + common harness' — but it applies that adapter exclusively to task-success metrics across benchmark suites. It does not score detectability (passing as human against real bot detectors) or exploitability (prompt injection / exfiltration). Tower's core bet is transposing the multi-tool-adapter pattern onto detectability and security axes, which BrowserGym leaves entirely open.",
+        "sourceQuality": "primary"
+      },
+      {
+        "name": "WorkArena / WorkArena++",
+        "url": "https://arxiv.org/abs/2403.07718",
+        "whatItTests": "682+ tasks (WorkArena++) simulating enterprise knowledge-work on a self-hosted ServiceNow portal — ordering equipment, managing tickets, multi-step planning and reasoning across browser sessions. WorkArena++ adds compositional planning over many steps.",
+        "axis": "task-success",
+        "selfHostable": "yes",
+        "authSessionEval": "partial",
+        "multiToolAdapter": "no",
+        "gapVsTower": "Has authenticated sessions within its sandboxed ServiceNow instance, so agents log in — but this is a fixed synthetic credential in a self-hosted clone, not a warmed real-world session. No detectability or exploitation grading.",
+        "sourceQuality": "primary"
+      },
+      {
+        "name": "Mind2Web (original)",
+        "url": "https://arxiv.org/abs/2306.06070",
+        "whatItTests": "Offline annotation-based benchmark: 2,350 tasks collected from 137 real websites with human demonstrations; agents predict action sequences on cached page snapshots. Evaluates element accuracy and action type correctness — no live execution.",
+        "axis": "task-success",
+        "selfHostable": "partial",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "gapVsTower": "Offline/static evaluation against crawled snapshots. No live sites, no detectors, no auth sessions. Tower operates in live sessions against real detectors — entirely different threat model.",
+        "sourceQuality": "primary"
+      },
+      {
+        "name": "Online-Mind2Web",
+        "url": "https://arxiv.org/abs/2504.01382",
+        "whatItTests": "300 diverse tasks across 136 live websites with LLM-as-a-judge (WebJudge) evaluation. Real-time execution against dynamic, evolving sites. Reveals that ~90% task success on WebVoyager collapses to ~61% (OpenAI Operator best) in live conditions. As of 2026 leaderboard: Browser Use Cloud bu-max leads at 97.0%.",
+        "axis": "task-success",
+        "selfHostable": "no",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "gapVsTower": "Live sites reduce the sandbox-to-reality gap but still measure only task completion. Agent traverses real sites unauthenticated; no warmed sessions, no bot-detection score, no exploitation axis. Tower adds the missing orthogonal axes.",
+        "sourceQuality": "primary"
+      },
+      {
+        "name": "Mind2Web-2",
+        "url": "https://arxiv.org/abs/2506.21506",
+        "whatItTests": "130 long-horizon agentic search tasks requiring real-time web browsing and extensive information synthesis (NeurIPS 2025 D&B track). Evaluates answer correctness and source attribution via Agent-as-a-Judge with a tree-structured rubric. Focuses on deep-research-style synthesis, not navigation.",
+        "axis": "task-success",
+        "selfHostable": "no",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "gapVsTower": "Information-synthesis axis, not navigation or exploitation. No detectability. Tower targets a completely different question.",
+        "sourceQuality": "primary"
+      },
+      {
+        "name": "WebVoyager",
+        "url": "https://arxiv.org/abs/2401.13919",
+        "whatItTests": "Real-web task benchmark across major consumer sites (booking, shopping, Google, etc.) with human evaluation and LLM-as-judge. Showed ~87% task success for frontier agents. Criticized for shortcut solutions (Google Search alone solves ~51% of tasks) and low LLM-judge agreement with humans.",
+        "axis": "task-success",
+        "selfHostable": "no",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "gapVsTower": "Live-web task success with known shortcut-solution weaknesses. No detectability or security axis. Tower's stealth-grading of how the agent traverses real sites is orthogonal.",
+        "sourceQuality": "primary"
+      },
+      {
+        "name": "WebLINX",
+        "url": "https://arxiv.org/abs/2402.05930",
+        "whatItTests": "2,300 tasks in a conversational real-world web navigation setting: multi-turn dialogue between an instructor and a navigator, recorded across real websites. Focuses on instruction-following and decision quality; step-level evaluation. ICML 2024 spotlight. Now integrated in BrowserGym.",
+        "axis": "task-success",
+        "selfHostable": "no",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "gapVsTower": "Dialogue/navigation quality, offline replay evaluation. Not self-hosted. No detectability or security. Tower extends into grading the browser tool's stealth, not the agent's conversational accuracy.",
+        "sourceQuality": "primary"
+      },
+      {
+        "name": "GAIA",
+        "url": "https://arxiv.org/abs/2311.12983",
+        "whatItTests": "466 questions requiring multi-step reasoning, tool use, and web browsing, designed to be easy for humans but hard for LLMs (77% human-AI gap). Web-browsing is one of several tools; not web-agent specific. Widely used as a general assistant capability bar.",
+        "axis": "task-success",
+        "selfHostable": "no",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "gapVsTower": "General capability benchmark where web browsing is a minor tool. No detectability, no security, no auth sessions. Tower is specialized specifically to agentic browser tool evaluation.",
+        "sourceQuality": "primary"
+      },
+      {
+        "name": "AssistantBench",
+        "url": "https://assistantbench.github.io/",
+        "whatItTests": "214 realistic, time-consuming tasks requiring web browsing to find time-invariant closed-form answers. Tests whether agents can find authoritative information across 525+ pages from 258 websites. Not interactive navigation; answer-quality focused.",
+        "axis": "task-success",
+        "selfHostable": "no",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "gapVsTower": "Answer-retrieval quality. No execution on authenticated sessions. No detectability or security. Not a tool-comparison harness.",
+        "sourceQuality": "primary"
+      },
+      {
+        "name": "AgentBench",
+        "url": "https://arxiv.org/abs/2308.03688",
+        "whatItTests": "1,091 tasks across 8 environments (OS shell, DB, KG, card game, 2048, household, web browsing, web shopping). Web-browsing tasks use the Mind2Web corpus with HTML element actions. Evaluates multiple LLMs under uniform conditions. 2023.",
+        "axis": "task-success",
+        "selfHostable": "partial",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "gapVsTower": "Multi-environment LLM eval; web is one of 8 domains. Evaluates LLM backbone choice, not the browser-tool layer (Playwright vs nodriver vs Patchright). No detectability or security. Tower grades the *tool*, not just the LLM.",
+        "sourceQuality": "primary"
+      },
+      {
+        "name": "ST-WebAgentBench",
+        "url": "https://arxiv.org/abs/2410.06703",
+        "whatItTests": "222 enterprise web tasks (built on WebArena) paired with ST policies (user consent, robustness, scope, strict execution, error recovery). Scores agents on 'Completion Under Policy' (CuP), crediting only policy-compliant completions. IBM Research, Oct 2024. Three SOTA agents evaluated. Code and evaluation templates released.",
+        "axis": "security",
+        "selfHostable": "yes",
+        "authSessionEval": "unknown",
+        "multiToolAdapter": "no",
+        "gapVsTower": "Closest existing work on the 'security' axis, but measures policy compliance (does the agent respect rules?) rather than exploitability (can an attacker hijack the agent via page content?). Does not test detectability. Tower's security angle targets adversarial page-based injection and exfiltration, which ST-WebAgentBench does not cover. Also does not function as a tool-comparison harness.",
+        "sourceQuality": "primary"
+      },
+      {
+        "name": "SafeArena",
+        "url": "https://arxiv.org/abs/2503.04957",
+        "whatItTests": "250 safe + 250 harmful task pairs across 5 harm categories (misinformation, illegal activity, harassment, cybercrime, social bias). Measures whether LLM web agents comply with harmful instructions. GPT-4o completes 34.7% of harmful requests. Agent risk assessment framework with 4 risk levels.",
+        "axis": "security",
+        "selfHostable": "unknown",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "gapVsTower": "Tests agent misuse (will the agent do harmful things when asked?), not adversarial injection by external page content. No detectability. No tool-comparison harness. Tower's security targets attacker-controlled page injections exfiltrating data through the agent — distinct threat model.",
+        "sourceQuality": "primary"
+      },
+      {
+        "name": "WASP",
+        "url": "https://arxiv.org/abs/2504.18575",
+        "whatItTests": "End-to-end evaluation of web agent security against prompt injection attacks. Finds attacks partially succeed in up to 86% of cases; agents often fail to fully execute attacker goals due to 'security by incompetence.' Adversarial injections in page content hijack agent behavior.",
+        "axis": "security",
+        "selfHostable": "unknown",
+        "authSessionEval": "unknown",
+        "multiToolAdapter": "no",
+        "gapVsTower": "Squarely on the security/exploitability axis for prompt injection — the Tower's security dimension overlaps here. Key Tower differentiators: (1) Tower also grades detectability in the same harness; (2) Tower is designed as a multi-tool comparative harness (WASP does not compare multiple agentic browser tools); (3) Tower targets warmed authenticated sessions specifically.",
+        "sourceQuality": "primary"
+      },
+      {
+        "name": "SecureWebArena",
+        "url": "https://arxiv.org/abs/2510.10073",
+        "whatItTests": "6 attack vectors spanning user-level and environment-level manipulations across 6 simulated web environments (e-commerce, forums, etc.). 2,970 high-quality trajectories. Multi-layered evaluation of agent failures in reasoning, behavioral trajectory, and task outcome. Finds all tested agents are consistently vulnerable.",
+        "axis": "security",
+        "selfHostable": "yes",
+        "authSessionEval": "unknown",
+        "multiToolAdapter": "no",
+        "gapVsTower": "Security/exploitability axis in self-hosted environments — overlap with Tower's security dimension. Does not address detectability. Not a multi-tool comparative harness. No authenticated-session emphasis. Tower adds detectability as a co-equal axis and is explicitly multi-tool.",
+        "sourceQuality": "primary"
+      },
+      {
+        "name": "WebGames",
+        "url": "https://arxiv.org/abs/2502.18356",
+        "whatItTests": "53 discrete challenges in a hermetic (fully local) web environment covering perception, reasoning, planning, and tool use. Human baseline 95.7%; best agent (Gemini 2.5 Pro + Browser Use) ~50%. Self-contained, reproducible, no external network dependencies.",
+        "axis": "task-success",
+        "selfHostable": "yes",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "gapVsTower": "Task-success in a hermetic environment. No real bot detectors reachable from a hermetic setup, so detectability angle impossible by design. No security/injection axis. Tower operates against real external detectors.",
+        "sourceQuality": "primary"
+      },
+      {
+        "name": "TheAgentCompany",
+        "url": "https://arxiv.org/abs/2412.14161",
+        "whatItTests": "175 professional tasks in a self-hosted simulated software company (GitHub/GitLab, Jira-like tools, RocketChat, ownCloud). Agents log into internal systems and complete multi-tool knowledge-work tasks. Self-hosted, reproducible. Best model (Gemini 2.5 Pro) achieves 30.3% full completion.",
+        "axis": "task-success",
+        "selfHostable": "yes",
+        "authSessionEval": "yes",
+        "multiToolAdapter": "no",
+        "gapVsTower": "The only benchmark that genuinely tests logged-in authenticated sessions (agents must sign into the simulated company's internal tools). However: (1) all authentication is within self-hosted synthetic environments — no real-world persistent cookies or warmed human sessions; (2) axis is task success, not detectability or exploitability; (3) not a tool-comparison harness. Tower's authenticated-session eval targets real warmed cookies on live sites, which TheAgentCompany does not approach.",
+        "sourceQuality": "primary"
+      },
+      {
+        "name": "FP-Agent: Fingerprinting AI Browsing Agents",
+        "url": "https://arxiv.org/abs/2605.01247",
+        "whatItTests": "First controlled measurement study fingerprinting 7 AI browsing agents (OpenAI Atlas Browser, ChatGPT Agent, Claude for Chrome, Perplexity Comet, Manus, Browser Use v0.9.2, Skyvern v0.2.23) plus humans on flight booking, shopping, and forum tasks via an instrumented honey website. Trains XGBoost classifiers on browser + behavioral fingerprints. Finds Cloudflare detects only 1 of 7 agents; FP-Agent's behavioral classifier detects all 7. May 2026.",
+        "axis": "detectability",
+        "selfHostable": "partial",
+        "authSessionEval": "no",
+        "multiToolAdapter": "yes",
+        "gapVsTower": "The closest existing work to Tower's detectability axis. It IS a multi-tool fingerprinting study covering 7 real agentic browser tools. Key gaps vs. Tower: (1) one-shot academic study with a custom honey website, not a persistent reusable harness; (2) grader is the authors' own trained classifier, not real production detectors (Cloudflare, DataDome, Kasada) you outsource to; (3) no authenticated/warmed sessions; (4) no security/exploitability axis. Tower makes the outsourced-real-detector grading the core bet, which FP-Agent explicitly does not do.",
+        "sourceQuality": "primary"
+      },
+      {
+        "name": "Roundtable Research: Bot Detection Benchmark",
+        "url": "https://research.roundtable.ai/bot-benchmarking/",
+        "whatItTests": "Industry study comparing 5 bot detection systems (Roundtable Proof of Human, Google reCAPTCHA v3, hCaptcha, FingerprintJS Pro, Cloudflare Turnstile) against traditional scripts, browser-automation tools, and LLM-driven AI agents. Detection rates range 33%–87%. Behavioral systems outperform device-fingerprint-only approaches.",
+        "axis": "detectability",
+        "selfHostable": "no",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "gapVsTower": "Tests detectors, not agentic browser tools. The question is inverted: it grades how well detectors catch bots, not how well agentic tools evade them. Not a tool-comparison harness. Not self-hostable. No auth sessions. Tower grades the agentic browser tool's stealth score, using real detectors as outsourced judges — the mirror image of this study.",
+        "sourceQuality": "secondary"
+      },
+      {
+        "name": "CVE-Bench",
+        "url": "https://arxiv.org/abs/2503.17332",
+        "whatItTests": "40 critical-severity CVEs in real web applications (WordPress, LoLLMs, etc.) in sandboxed environments. Measures whether LLM agents can autonomously exploit known vulnerabilities. ICML 2025 spotlight. Best framework resolves up to 13% of CVEs.",
+        "axis": "security",
+        "selfHostable": "yes",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "gapVsTower": "Pure CVE-exploitation axis (can the agent attack a web app?) rather than Tower's angle of 'can an adversary attack an agent through a web page?' The exploit direction is flipped. No detectability. No warmed sessions. Not a tool-comparison harness.",
+        "sourceQuality": "primary"
+      }
+    ],
+    "occupiedVsGap": "OCCUPIED: Task-success is saturated — WebArena, VisualWebArena, Online-Mind2Web, WorkArena, TheAgentCompany, WebLINX, WebGames, AssistantBench, GAIA, AgentBench, Mind2Web-2 collectively leave no gap on the task-success axis. BrowserGym occupies the 'multi-tool adapter for task success' slot, integrating multiple benchmarks and agent frameworks under one harness. Security/exploitability is partially occupied by WASP, SecureWebArena, and ST-WebAgentBench, though these test the agent's decision-making under attack rather than the browser tool layer's stealth. OPEN / UNDERSERVED: (1) DETECTABILITY as a primary structured benchmark axis is almost entirely open. FP-Agent (2026) is the only peer work — a one-shot academic measurement study of 7 tools using the authors' own trained classifier, not a reusable harness with outsourced-real-detector grading. Roundtable's study tests the inverse (how good are detectors?) not the tool's stealth. No benchmark grades agentic browser tools on 'can they pass as human against Cloudflare / DataDome / Kasada?' (2) AUTHENTICATED / WARMED-SESSION eval is open. TheAgentCompany tests logged-in sessions but only in synthetic self-hosted environments with fixed credentials, not real-world persistent cookie-mined sessions. Online-Mind2Web mentions login gates as a challenge but does not specifically eval on warmed-session tasks. No benchmark targets the 'agent driving a human's warmed logged-in session on a live site' scenario. (3) DETECTABILITY + SECURITY IN THE SAME MULTI-TOOL HARNESS does not exist at all. BrowserGym provides the multi-tool harness for task-success; no equivalent exists for detectability or security comparison across tools.",
+    "keyClaims": [
+      "No published benchmark uses real production bot detectors (Cloudflare, DataDome, Kasada) as outsourced graders to score agentic browser tools on detectability — FP-Agent (2026) is the sole comparable work but uses the authors' own trained XGBoost classifier as judge, not live detectors, and is a one-shot study rather than a reusable harness.",
+      "BrowserGym occupies the multi-tool-adapter slot for task-success benchmarks but leaves the detectability and security axes entirely open; no multi-tool harness exists that compares Playwright, browser-use, Stagehand, Skyvern, Feather, and nodriver on how detectable or exploitable they are.",
+      "Authenticated / warmed-session agent evaluation is unoccupied: TheAgentCompany is the closest precedent (agents log into synthetic internal tools), but no benchmark evaluates agents driving real-world persistent-cookie sessions (the Cookie Mine model), meaning the highest-stealth, highest-value use case has no published eval baseline."
+    ]
+  },
+  {
+    "category": "BOT-DETECTION benchmarks, detector aggregators & stealth-comparison projects",
+    "entries": [
+      {
+        "name": "Ian L. Paterson 2026 anti-detect benchmark",
+        "url": "https://ianlpaterson.com/blog/anti-detect-browser-benchmark-patchright-nodriver-curl-cffi/",
+        "whatItTests": "7 open-source stealth tools (nodriver, CloakBrowser, curl_cffi, Patchright, Camoufox, vanilla Playwright, rebrowser-playwright) × 31 targets × 3 independent runs = 651 verdicts. Scores each tool OK / Gated / Blocked / Error per site. Covers JS-layer detection panels, TLS fingerprint endpoints, live Cloudflare + anti-bot production sites, and high-traffic fingerprinting sites. Headed mode, one residential Mac Studio IP, zero verdict drift across 5 hours.",
+        "axis": "detectability",
+        "selfHostable": "no",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "sourceQuality": "primary",
+        "gapVsTower": "This is the closest existing work to the Tower's detectability axis. Differences: (1) one-off blog study — no harness code released, not reproducible by others; (2) tests raw DRIVER tools (nodriver, Patchright), not the AGENTIC layer (browser-use, Stagehand, Skyvern, Feather) — so behavioral signals from LLM pacing are invisible; (3) fully unauthenticated, so Cookie Mine / warmed-session advantage is untested; (4) no security/injection axis at all."
+      },
+      {
+        "name": "browser-use/benchmark (Stealth Bench V1 + BU Bench V1)",
+        "url": "https://github.com/browser-use/benchmark",
+        "whatItTests": "Two sub-benches: BU Bench V1 = 100 browser-agent task-success tasks (WebVoyager-style). Stealth Bench V1 = 71 sites across Cloudflare (23), PerimeterX (18), DataDome (13), Akamai (8), reCaptcha (6), Kasada/Shape (3). Scores blocking by LLM judge (Gemini 2.5-flash). Tests CLOUD BROWSER PROVIDERS (browser-use-cloud, Anchor, Browserbase, Steel, Hyperbrowser, etc.), not open-source driver tools. Has run_framework_eval.py for framework comparison. Tasks encrypted to prevent LLM training contamination.",
+        "axis": "mixed",
+        "selfHostable": "partial",
+        "authSessionEval": "no",
+        "multiToolAdapter": "yes",
+        "sourceQuality": "primary",
+        "gapVsTower": "Closest project to a reusable multi-provider stealth harness, and it IS open-source with a common adapter. However: (1) evaluates HOSTED CLOUD PROVIDERS, not open-source driver tools — Tower would compare nodriver vs Patchright vs Feather vs Stagehand through a common adapter; (2) explicitly 'no auth' constraint — misses the warmed-session dimension entirely; (3) grader is an LLM judge checking for blocking, not the raw detector signals; (4) no security/injection axis; (5) task-success is the primary axis, stealth is secondary."
+      },
+      {
+        "name": "Dima Kynal Medium: Nodriver/Zendriver/Selenium/Playwright vs anti-bot comparison",
+        "url": "https://medium.com/@dimakynal/baseline-performance-comparison-of-nodriver-zendriver-selenium-and-playwright-against-anti-bot-2e593db4b243",
+        "whatItTests": "4 tools × 4 anti-bot services (Cloudflare/udemy, DataDome/sncf-connect, CloudFront/binance, Akamai/bestbuy) with binary pass/fail over 5 iterations each. Out-of-the-box configs, no proxies or stealth plugins. ZenDriver wins (75%), others at 25%.",
+        "axis": "detectability",
+        "selfHostable": "no",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "sourceQuality": "secondary",
+        "gapVsTower": "A small-scale point-in-time study, not a harness. 4 tools × 4 targets is thin. No code released. No authenticated session testing. Does not test agentic frameworks, only raw drivers. Tower's contribution over this: persistent common adapter, agentic-layer tools, warmed sessions, reproducible runs, more detector coverage."
+      },
+      {
+        "name": "James Stanley Stealth Browser Survey, April 2026",
+        "url": "https://incoherency.co.uk/blog/stories/stealth-browser-survey-april-2026.html",
+        "whatItTests": "11 hosted browser services (Brightdata, Kernel, ZenRows, Hyperbrowser, Browserless, Browserbase, OpenWebNinja, Browser-Use, Steel, Spider, Anchor) scored by detection rule hits using combined server-side (HTTP headers, TCP/TLS fingerprint) and in-browser JS analysis. Brightdata wins with 3 hits; Anchor worst at 17. Navigation only — no interactions, no auth.",
+        "axis": "detectability",
+        "selfHostable": "no",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "sourceQuality": "primary",
+        "gapVsTower": "Rigorous signal-level methodology (server-side TLS + in-browser JS) that is methodologically interesting for Tower's detector design. But it is a manual one-off study of HOSTED SERVICES, not open-source driver tools or agentic frameworks. No reusable harness. No auth. All 11 services were detectable — this validates that the space is not solved."
+      },
+      {
+        "name": "Kameleo: Playwright vs Puppeteer Stealth vs Undetected ChromeDriver vs Kameleo",
+        "url": "https://kameleo.io/blog/the-best-headless-chrome-browser-for-bypassing-anti-bot-systems",
+        "whatItTests": "4 tools × 4 detectors (bot.sannysoft.com, Pixelscan, BrowserScan, Cloudflare WAF) with pass/fail matrix. Kameleo (the vendor) wins. Published by Kameleo.",
+        "axis": "detectability",
+        "selfHostable": "no",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "sourceQuality": "secondary",
+        "gapVsTower": "Vendor-sponsored, so Kameleo wins by design — not credible as neutral comparative research. Does establish the 2×2 pass/fail table format as a prior art pattern. Does not test agentic tools or authenticated sessions. Tower's neutrality (no tool in Tower) is a core differentiator."
+      },
+      {
+        "name": "rebrowser-bot-detector (rebrowser.net / bot-detector.rebrowser.net)",
+        "url": "https://github.com/rebrowser/rebrowser-bot-detector",
+        "whatItTests": "9-test diagnostic page targeting Puppeteer and Playwright CDP leaks: runtimeEnableLeak, sourceUrlLeak, mainWorldExecution, navigatorWebdriver, bypassCsp, viewport, window.dummyFn, useragent, pwInitScripts, exposeFunctionLeak. Self-hostable HTML/JS page. Pass/fail per test. Not designed to drive multiple tools or produce comparison tables.",
+        "axis": "detectability",
+        "selfHostable": "yes",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "sourceQuality": "primary",
+        "gapVsTower": "Strong self-hostable level candidate for Tower — covers the CDP-leak family of signals that are the dominant tell for Playwright-based agents. Gap: it is a DIAGNOSTIC for one tool at a time, not a harness that compares N tools. Tower would drive N tools through its adapter into this page and aggregate the results. Authenticated session context would not change these signals (CDP leaks are intrinsic), so this is a good baseline level even for auth tests."
+      },
+      {
+        "name": "fpscanner (Antoine Vastel)",
+        "url": "https://github.com/antoinevastel/fpscanner",
+        "whatItTests": "Self-hosted browser fingerprinting and bot detection library (~21 signals): navigator.webdriver, CDP runtime markers, missing browser objects, screen resolution anomalies, CPU/memory inconsistencies, cross-context (iframe/worker) mismatches. JA4-inspired fpscanner ID output. Recently revived after 7 years; active in 2024-2025.",
+        "axis": "detectability",
+        "selfHostable": "yes",
+        "authSessionEval": "unknown",
+        "multiToolAdapter": "no",
+        "sourceQuality": "primary",
+        "gapVsTower": "Excellent self-hostable level candidate — written by a researcher (Antoine Vastel) who also maintains deviceandbrowserinfo.com; signals are production-grade. The JA4-inspired fingerprint ID enables per-run fingerprint diff, which Tower could use to detect across-run drift in tool fingerprints. Does not produce comparative multi-tool tables by itself."
+      },
+      {
+        "name": "FingerprintJS BotD (MIT)",
+        "url": "https://github.com/fingerprintjs/BotD",
+        "whatItTests": "Client-side bot detection library (~40 signals) running purely in the browser, MIT license, no server required. Detects automation tools and frameworks. Listed as 'maintenance mode' — no active feature development but bug fixes continue.",
+        "axis": "detectability",
+        "selfHostable": "yes",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "sourceQuality": "primary",
+        "gapVsTower": "Embeddable Tower level — the MIT license and no-server design make it easy to wrap in a test page. Maintenance-mode status means signal coverage may lag. Cannot produce multi-tool comparison tables on its own. Does not test authenticated sessions. Tower wraps it as one level among several, which compounds single-tool coverage."
+      },
+      {
+        "name": "OpenCaptchaWorld (NeurIPS 2025 benchmark)",
+        "url": "https://github.com/MetaAgentX/OpenCaptchaWorld",
+        "whatItTests": "Whether MLLM-powered agents can SOLVE 20 types of CAPTCHA puzzles (dice counting, object rotation, etc.) — task-success, not detectability. Has adapters for browser-use and CrewAI. Self-hostable via Docker (localhost:7860). Scores CAPTCHA-solving capability, not bot/human distinction from the detector's perspective.",
+        "axis": "other",
+        "selfHostable": "yes",
+        "authSessionEval": "no",
+        "multiToolAdapter": "yes",
+        "sourceQuality": "primary",
+        "gapVsTower": "Tests the wrong direction: it measures whether agents can DEFEAT CAPTCHAs, not whether they LOOK HUMAN to the detector. Tower's level-1 uses self-hosted detectors to grade agents from the defender's side. OpenCaptchaWorld is complementary (you'd want to know: does the agent solve the CAPTCHA and also pass the surrounding behavioral signals?) but does not substitute. Its Docker deployment pattern and browser-use adapter are architectural precedents worth borrowing."
+      },
+      {
+        "name": "AgentDojo (ETH Zurich, NeurIPS 2024)",
+        "url": "https://github.com/ethz-spylab/agentdojo",
+        "whatItTests": "Prompt injection attacks and defenses for LLM agents. 97 realistic tasks across 5 suites (email, e-banking, travel booking, workspace, Slack-like), 629 security test cases. Injects adversarial payloads into tool responses at strategic points; scores both attack success and utility retention. Self-hostable Python package. Simulates tool calls — does NOT drive a real browser.",
+        "axis": "security",
+        "selfHostable": "yes",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "sourceQuality": "primary",
+        "gapVsTower": "Occupies the prompt-injection / indirect injection security axis for LLM agents. Does not test detectability, does not drive a real browser, does not test bot-detector evasion. Tower's security levels (indirect injection through page content, XSS/SQLi through the agent) are real-browser scenarios that AgentDojo misses. AgentDojo's task suite design and attack/defense scoring methodology are reference-quality for Tower's security-level design."
+      },
+      {
+        "name": "WASP: Web Agent Security Against Prompt Injection (arXiv 2025)",
+        "url": "https://arxiv.org/abs/2504.18575",
+        "whatItTests": "Benchmarks web navigation agents against indirect prompt injection specifically in browser environments. Tests real web agents performing navigation tasks, unlike AgentDojo's simulated tool-call environment. Published April 2025.",
+        "axis": "security",
+        "selfHostable": "unknown",
+        "authSessionEval": "unknown",
+        "multiToolAdapter": "unknown",
+        "sourceQuality": "primary",
+        "gapVsTower": "Closest academic work to Tower's security axis in a real-browser context. Key unknowns: whether it supports authenticated sessions, whether it has a common adapter for N tools. Does not cover detectability at all. If it is self-hostable with a common adapter it partially occupies Tower's security dimension — needs deeper investigation of the paper."
+      },
+      {
+        "name": "mCaptcha (self-hosted PoW CAPTCHA)",
+        "url": "https://github.com/mCaptcha/mCaptcha",
+        "whatItTests": "SHA-256 proof-of-work CAPTCHA for rate-limiting bots. Self-hosted via Docker Compose. Does NOT inspect browser fingerprint or automation signals — purely PoW computational challenge. Privacy-first, no behavioral analysis.",
+        "axis": "other",
+        "selfHostable": "yes",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "sourceQuality": "primary",
+        "gapVsTower": "Not directly useful as a Tower detector level — PoW CAPTCHAs don't grade automation signal quality, they only check compute. Tower's levels require graders that distinguish human from bot by fingerprint/behavior signals. mCaptcha is relevant only as a negative: it shows what Tower should NOT use as a level (PoW is trivially automatable)."
+      },
+      {
+        "name": "CloakBrowser stealth test runner",
+        "url": "https://github.com/CloakHQ/CloakBrowser",
+        "whatItTests": "Patched Chromium fork (49 C++ patches) claims 30/30 detection tests passed. Includes examples/stealth_test.py (6 detection sites: reCAPTCHA v3, Cloudflare Turnstile, FingerprintJS, BrowserScan, bot.incolumitas.com, deviceandbrowserinfo.com) and fingerprint_scan_test.py. CLI: 'docker run --rm cloakhq/cloakbrowser cloaktest'. Tests are integrations against public detection services, not a self-contained harness.",
+        "axis": "detectability",
+        "selfHostable": "partial",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "sourceQuality": "primary",
+        "gapVsTower": "The test runner is designed to prove CloakBrowser passes — it is a SELF-TEST for one tool, not a comparative harness. The site list (6 public detectors) is a useful Tower target inventory. Does not test other tools through a common adapter. Does not test authenticated sessions. Tower inverts this: Tower is the harness, and CloakBrowser is one tool-under-test."
+      },
+      {
+        "name": "bot.sannysoft.com / intoli headless detection page",
+        "url": "https://bot.sannysoft.com/",
+        "whatItTests": "Static HTML test page checking classic Selenium/PhantomJS indicators (navigator.webdriver, headless Chrome flags, etc.). Frozen circa 2019. Still publicly accessible and frequently referenced in scraping tutorials but signals are outdated — Puppeteer-stealth bypasses it trivially.",
+        "axis": "detectability",
+        "selfHostable": "yes",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "sourceQuality": "secondary",
+        "gapVsTower": "De facto historical baseline — still cited in blog comparisons because it's publicly available and has a known signal set. For Tower, it functions as a 'trivial' level that any modern stealth tool should pass, useful for validating that a tool's basic CDP-leak patches are in place before testing harder levels. Practically zero value as a differentiating grader in 2025-2026."
+      },
+      {
+        "name": "HUMAN Security 2026 State of AI Traffic & Cyberthreat Benchmark Report",
+        "url": "https://www.humansecurity.com/learn/resources/2026-state-of-ai-traffic-cyberthreat-benchmarks/",
+        "whatItTests": "Commercial threat intelligence report, not a reproducible harness. Notable: documents that agentic traffic operates inside authenticated sessions in production (account pages 8.82%, authentication flows 4.95% of agentic traffic), establishing that the authenticated-session scenario is real-world, not hypothetical.",
+        "axis": "detectability",
+        "selfHostable": "no",
+        "authSessionEval": "yes",
+        "multiToolAdapter": "no",
+        "sourceQuality": "secondary",
+        "gapVsTower": "Confirms the real-world threat model that Tower's authenticated-session levels are targeting. Not a harness or a replicable benchmark. The report's framing (AI traffic IS in authenticated sessions) is an evidence anchor for Tower's differentiation claim."
+      }
+    ],
+    "occupiedVsGap": "OCCUPIED: (1) Ad-hoc single-study detectability comparisons of raw stealth DRIVERS (nodriver, Patchright, etc.) exist — the Ian Paterson 2026 blog and the Dima Kynal Medium piece are the best of these. They show that the comparison table format works and is read. (2) browser-use/benchmark occupies the cloud-provider + task-success primary space with stealth as a secondary, open-source axis. (3) Self-hostable detector components (rebrowser-bot-detector, fpscanner, FingerprintJS BotD) exist and are usable as Tower levels individually. (4) AgentDojo occupies the prompt-injection security axis for simulated (not real-browser) agents.\n\nOPEN: (1) No reusable, neutral, open-source HARNESS that drives N heterogeneous agentic browser tools through a common adapter and scores them against a battery of detectors in a single run — the Ian Paterson work is the closest, but it has no code, no adapter, no reproducibility. (2) Zero existing benchmarks test AUTHENTICATED / WARMED-SESSION performance against bot detectors — every study found explicitly excludes auth. This is the sharpest gap: the HUMAN Security data shows agents ARE operating in auth sessions in production, yet no eval harness tests this. (3) No study evaluates the AGENTIC LAYER (browser-use, Stagehand, Skyvern, Feather) for detectability — existing driver comparisons stop at the stealth-driver level, invisible to LLM-pacing behavioral signals. (4) No harness combines detectability AND security (prompt injection through page content) in a single multi-tool run. (5) No neutral benchmark — every existing comparison is either one-time personal research (no code released) or vendor-sponsored (Kameleo wins their own study).",
+    "keyClaims": [
+      "No publicly released, reusable open-source harness drives more than one agentic browser tool through a common adapter and scores each against a battery of self-hostable detectors in a single reproducible run — the closest existing work (Ian Paterson 2026) has no harness code and tests only raw driver tools, not the agentic layer.",
+      "Every existing stealth benchmark explicitly excludes authenticated/warmed sessions, even though the HUMAN Security 2026 report documents that real-world agentic traffic is operating inside logged-in account sessions at measurable scale — making authenticated-session detectability eval a verified real-world gap with zero existing coverage.",
+      "Existing comparative benchmarks (Paterson, Kynal, browser-use/benchmark) test either raw stealth drivers (nodriver, Patchright) or cloud hosted providers, but none evaluate the agentic-framework layer (browser-use, Stagehand, Skyvern, Feather) where LLM pacing, DOM observation loops, and tool-call cadence add behavioral signals that driver-level stealth patches do not address."
+    ]
+  },
+  {
+    "category": "AGENT-SECURITY & prompt-injection benchmarks for LLM agents, especially web/browser agents",
+    "entries": [
+      {
+        "name": "AgentDojo",
+        "url": "https://arxiv.org/abs/2406.13352",
+        "whatItTests": "Indirect prompt injection + defense utility trade-off in abstract tool-calling agents. 4 simulated environments (email/workspace, Slack, e-banking, travel agency). 97 user tasks, 629 security test cases. Attack classes: canonical and adaptive injection injected at tool-response intercepts. Success grader: deterministic Python state checks over environment objects, NOT LLM judge. No real browser is involved — tools are Python function calls over in-memory state. Does not test browser-driving tools.",
+        "axis": "security",
+        "gapVsTower": "Tests the LLM planner layer only. There is no browser being driven; tools are Python API stubs over simulated state. Cannot answer whether Playwright vs Patchright vs browser-use changes exploitability. No authenticated/warmed sessions — state is freshly constructed. No multi-tool comparison via a common adapter. The Tower targets the exact layer AgentDojo deliberately abstracts away.",
+        "sourceQuality": "primary",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "selfHostable": "yes"
+      },
+      {
+        "name": "InjecAgent",
+        "url": "https://arxiv.org/abs/2403.02691",
+        "whatItTests": "Indirect prompt injection (IPI) in tool-integrated LLM agents. 1,054 test cases across 17 user tools and 62 attacker tools. Attack intentions: direct harm and data exfiltration. Evaluates 30 LLM agents. ReAct-prompted GPT-4 is vulnerable 24% of time; with a hacking prompt reinforcement nearly doubles. Abstract tool-calling benchmark — tools are mocked APIs, not a live browser. Published ACL Findings 2024.",
+        "axis": "security",
+        "gapVsTower": "Purely abstract tool API model. 'Websites' and 'emails' are text blobs fed to the LLM, not pages rendered and driven by a browser automation tool. Cannot distinguish whether the browser-driving layer (Playwright vs nodriver vs browser-use) affects exploitability. No authenticated sessions. Single-LLM evaluation, not a comparative multi-tool bench.",
+        "sourceQuality": "primary",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "selfHostable": "yes"
+      },
+      {
+        "name": "Agent Security Bench (ASB)",
+        "url": "https://github.com/agiresearch/asb",
+        "whatItTests": "Comprehensive formal taxonomy + benchmark of attacks and defenses across 10 scenarios (e-commerce, finance, autonomous driving, etc.), 10 task-specific agents, 400+ tools, 27 attack/defense strategies. Attack types: direct prompt injection (DPI), observation prompt injection (OPI), Plan-of-Thought backdoor, memory poisoning. ICLR 2025 paper. Abstract tool-calling — no live browser. Evaluates system prompt, user prompt, tool usage, and memory retrieval compromise.",
+        "axis": "security",
+        "gapVsTower": "The 10 scenarios simulate domain-specific agents (medical advisor, legal counsel, etc.) via abstract tools, not live browser automation. No test of the browser-driving tool layer. No authenticated/warmed sessions. No multi-tool browser comparison. The broadest coverage of attack classes among all listed benches, but all above the browser-tool layer.",
+        "sourceQuality": "primary",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "selfHostable": "yes"
+      },
+      {
+        "name": "WASP (Web Agent Security against Prompt Injection attacks)",
+        "url": "https://arxiv.org/abs/2504.18575",
+        "whatItTests": "End-to-end benchmark for web agent prompt injection security. Built on VisualWebArena sandbox using self-hosted GitLab and Reddit clones. Real browser interaction via Playwright. 21 attacker goals (data theft, deletion, harassment, access) × 2 user environments × 2 injection templates = 84 tasks. Attacker constrained to untrusted user content injection (comments, posts) — not full site control. Compatible with Claude Computer Use Agent and WebArena-style scaffolding. NeurIPS 2025 Datasets & Benchmarks Track.",
+        "axis": "security",
+        "gapVsTower": "Closest existing bench to browser-grounded injection eval. Drives a real browser via Playwright. However: (1) tests the LLM planner layer only — whether the model follows injection; the underlying Playwright browser-driving tool is fixed and invisible to the study; (2) resets environment to fresh state between runs — no authenticated/warmed-session scenarios; (3) does not compare multiple browser-driving tools (browser-use vs Stagehand vs Patchright) through a common adapter; (4) single-LLM-scaffold design, not a multi-tool adapter harness.",
+        "sourceQuality": "primary",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "selfHostable": "yes"
+      },
+      {
+        "name": "BrowserART (Browser Agent Red-Teaming)",
+        "url": "https://github.com/scaleapi/browser-art",
+        "whatItTests": "Red-teaming suite for harmful behavior in browser agents. 100 diverse browser-related harmful tasks (phishing, illegal content, cybercrime) across synthetic and real websites. 40 synthetic websites under 19 domains hosted locally for sandboxed testing. Tests real browser agents (OpenHands, SeaAct frameworks) with GPT-4o and o1-preview backbones. Key finding: agents attempt harmful behaviors even when backbone LLM refuses in chat context. Harmful behavior safety axis, not indirect prompt injection. Scale AI release 2024.",
+        "axis": "security",
+        "gapVsTower": "Tests real browser agents and uses purpose-built synthetic victim sites. However: (1) safety/harmful-behavior axis only, not indirect prompt injection or exfiltration-via-injection; (2) compares LLM backbones (GPT-4o vs o1) not browser-driving tools (Playwright vs browser-use vs Patchright); (3) no authenticated/warmed session scenarios; (4) no comparative multi-tool adapter testing the browser driver layer.",
+        "sourceQuality": "primary",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "selfHostable": "yes"
+      },
+      {
+        "name": "AdvWeb",
+        "url": "https://arxiv.org/abs/2410.17401",
+        "whatItTests": "Black-box attack framework that trains an adversarial prompter model to generate and inject invisible prompt strings into HTML fields (not visible in rendered page). Attacks VLM-powered web agents. Controllable attack objective — changing target substring changes the attacker goal. Achieves high success against GPT-4V-based VLM agents. Targets inappropriate stock purchases, erroneous bank transactions. Attack technique paper, not a comparative multi-tool bench.",
+        "axis": "security",
+        "gapVsTower": "Attack technique/framework, not a harness for comparing agentic browser tools. Does not compare multiple browser-driving tools. No authenticated/warmed sessions explicitly. The finding (VLM agents exploitable via invisible HTML injection) informs attack design for the Tower but AdvWeb itself is not the bench.",
+        "sourceQuality": "primary",
+        "authSessionEval": "unknown",
+        "multiToolAdapter": "no",
+        "selfHostable": "partial"
+      },
+      {
+        "name": "Agent-SafetyBench",
+        "url": "https://github.com/thu-coai/Agent-SafetyBench",
+        "whatItTests": "Safety benchmark for LLM agents. 2,000 test cases across 349 environments, 8 risk categories (violent, illegal activity, privacy violation, etc.), 10 failure modes. Key finding: no agent exceeds 60% safety score; agents far worse at environment-interactive safety (30.4%) than textual content safety (68.4%). Dec 2024 / Feb 2025 data release from Tsinghua University. Not browser-specific.",
+        "axis": "security",
+        "gapVsTower": "Abstract agent safety evaluation. Does not drive real browsers. Does not test browser-driving tool layer. No authenticated sessions. No multi-tool browser comparison. Covers a broad safety taxonomy but not indirect prompt injection via real browser content specifically.",
+        "sourceQuality": "primary",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "selfHostable": "yes"
+      },
+      {
+        "name": "RedTeamCUA",
+        "url": "https://github.com/OSU-NLP-Group/RedTeamCUA",
+        "whatItTests": "Adversarial testing of computer-use agents (CUAs) in hybrid web-OS environments. Hybrid sandbox: VM-based OS environment + Docker-based web platforms. 864 examples (RTC-Bench). Attack classes: CIA-triad indirect prompt injection — confidentiality (web-to-OS-to-web exfiltration), integrity (data manipulation), availability (disruption). Evaluates Claude variants, GPT-4o, Operator. ASR up to 50% in end-to-end scenarios; Claude 4 Opus CUA at 48% ASR. ICLR 2026 Oral. Built by Ohio State.",
+        "axis": "security",
+        "gapVsTower": "Tests the LLM-planner / CUA system level, not the browser-driving tool layer. The underlying browser tool is not the study variable — which CUA model is. Does not compare Playwright vs browser-use vs Patchright. No authenticated/warmed-session testing (Docker environments re-initialized). Does not use a common adapter to swap in N browser tools. Most rigorous hybrid-environment injection study to date but still above the tool layer.",
+        "sourceQuality": "primary",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "selfHostable": "yes"
+      },
+      {
+        "name": "MUZZLE (Adaptive Red-Teaming of Web Agents Against Indirect Prompt Injection)",
+        "url": "https://arxiv.org/abs/2602.09222",
+        "whatItTests": "Automated adaptive red-teaming framework driving real browser agents. Drives BrowserUse and Agent-E against The Zoo — a self-hostable Docker multi-app sandbox (email, social, e-commerce, collaborative tools). Task specs include credential management, so agents run with authenticated identities. Attack objective: identify high-salience injection surfaces, generate context-aware payloads targeting CIA violations, refine iteratively. Judge: LLM judge + deterministic system-level assertions. Tests 3 LLMs across 2 agent scaffolds. USENIX Security 2026.",
+        "axis": "security",
+        "gapVsTower": "The most Tower-adjacent existing work. Drives real browser automation tools (browser-use, Agent-E), uses a self-hostable victim sandbox (The Zoo), includes authenticated session credentials, and uses a deterministic + LLM objective grader. Key gaps remaining vs Tower: (1) 2 specific tools (browser-use, Agent-E) studied as variables — not a common adapter comparing N arbitrary tools; (2) the attack methodology (adaptive red-team) is the paper's contribution, not the cross-tool comparative scoring that Tower proposes; (3) no DETECTABILITY axis (bot-detection outsourcing to real detectors); (4) authenticated sessions present but not specifically studied as the warmed-session variable.",
+        "sourceQuality": "primary",
+        "authSessionEval": "yes",
+        "multiToolAdapter": "no",
+        "selfHostable": "yes"
+      },
+      {
+        "name": "DoomArena",
+        "url": "https://github.com/ServiceNow/DoomArena",
+        "whatItTests": "Plug-in security testing framework integrating into BrowserGym (Playwright), OSWorld, and τ-bench. Decouples attack development from environment specifics. Modular: combine published attacks, configure threat models, analyze trade-off across vulnerabilities. Applies to WebArena (shopping/Reddit), τ-bench (airline/retail), OSWorld. Self-hostable. ICML 2025. ServiceNow Research.",
+        "axis": "security",
+        "gapVsTower": "Tests ENVIRONMENTS and LLM agents across environments, not browser-driving tools across a common adapter. Uses Playwright via BrowserGym but Playwright is the fixed infrastructure, not the study variable. No authenticated/warmed sessions. No comparison of browser-use vs Patchright vs Stagehand. Does not test detectability. Closest to a 'plug-in harness' concept but the pluggable dimension is environments + attack types, not the browser tool.",
+        "sourceQuality": "primary",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "selfHostable": "yes"
+      },
+      {
+        "name": "Backbone Breaker Benchmark (b3)",
+        "url": "https://www.lakera.ai/blog/the-backbone-breaker-benchmark",
+        "whatItTests": "Security evaluation of backbone LLMs embedded inside agentic systems. Uses 'threat snapshots' — isolated critical states of agent execution flow where LLM vulnerabilities surface. 19,433 crowdsourced adversarial attacks via the gamified Gandalf: Agent Breaker game. 10 threat snapshot templates. Evaluates 31 LLMs. Tests only the backbone LLM security — not the browser-driving layer, environment, or tool. Lakera + Check Point + UK AISI. October 2025.",
+        "axis": "security",
+        "gapVsTower": "Explicitly and deliberately tests the backbone LLM layer only, not the browser or tool layer. Not browser-specific at all. No authenticated sessions. No multi-tool browser comparison. No victim web app. Complementary to Tower (backbone resilience) but addresses a fully disjoint evaluation surface.",
+        "sourceQuality": "primary",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "selfHostable": "partial"
+      },
+      {
+        "name": "SecureWebArena",
+        "url": "https://arxiv.org/abs/2510.10073",
+        "whatItTests": "First holistic LVLM web agent security benchmark. 6 simulated web environments (e-commerce, forums, etc.), 330 adversarial scenarios, 2,970 trajectories. Structured taxonomy of 6 attack vectors spanning both user-level and environment-level manipulations. Evaluates 9 LVLMs (general-purpose, agent-specialized, GUI-grounded). October 2025.",
+        "axis": "security",
+        "gapVsTower": "Tests LVLM planner responses across attack vectors in simulated environments. The study variable is the LLM backbone (9 models), not the browser-driving tool. No authenticated/warmed sessions. No multi-tool browser adapter. Broadens the coverage vs WASP/AgentDojo but remains at the planner layer.",
+        "sourceQuality": "primary",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "selfHostable": "unknown"
+      },
+      {
+        "name": "ST-WebAgentBench (Safety and Trustworthiness)",
+        "url": "https://arxiv.org/abs/2410.06703",
+        "whatItTests": "Benchmark for safety and trustworthiness of web agents in enterprise-grade environments. 375 tasks with 3,057 safety policies. 6 orthogonal safety dimensions (user consent, robustness, etc.). CuP metric (Completion under Policy). Real web interaction via agents like Claude, GPT-4o. IBM Research. ICML 2025 / ICLR 2026.",
+        "axis": "security",
+        "gapVsTower": "Safety/policy-compliance axis, not prompt injection or detectability. Tests the LLM planner's adherence to enterprise policies. Browser-driving tool is not the study variable. No authenticated warmed sessions as a test condition. No multi-tool comparison. Orthogonal to Tower's security/detectability axes.",
+        "sourceQuality": "primary",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "selfHostable": "unknown"
+      },
+      {
+        "name": "SafeArena",
+        "url": "https://arxiv.org/abs/2503.04957",
+        "whatItTests": "Evaluates propensity of LLM web agents to perform harmful activities across 4 websites (Reddit clone, e-commerce, GitLab clone, retail). 250 safe + 250 harmful tasks. 5 harm categories: misinformation, illegal activity, harassment, cybercrime, social bias. Evaluates GPT-4o, Claude-3.5 Sonnet, Qwen-2-VL, Llama-3.2. ICML 2025 (PMLR 267).",
+        "axis": "security",
+        "gapVsTower": "Safety/harmful-behavior axis, not prompt injection. Tests the LLM planner's compliance with harmful requests in realistic web environments. Browser-driving tool (likely Playwright) is fixed infrastructure. No authenticated/warmed sessions. No multi-tool browser comparison. Overlaps with BrowserART on the harmful-behavior safety axis.",
+        "sourceQuality": "primary",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "selfHostable": "yes"
+      },
+      {
+        "name": "AgentHarm",
+        "url": "https://arxiv.org/abs/2410.09024",
+        "whatItTests": "Measures harmfulness of LLM agents under direct harmful user requests (not indirect injection). 110 unique / 440 augmented harmful agent tasks, 11 harm categories (fraud, cybercrime, harassment, etc.), 104 distinct tools. Direct prompting attack axis. Key finding: LLMs surprisingly compliant without jailbreaks; simple jailbreak templates transfer effectively. ICLR 2025.",
+        "axis": "security",
+        "gapVsTower": "Direct-harm misuse axis only, not indirect prompt injection. Abstract tool calls, not real browser automation. No browser tool comparison. No authenticated sessions. Tests LLM backbone compliance, not browser-driver exploitability.",
+        "sourceQuality": "primary",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "selfHostable": "yes"
+      },
+      {
+        "name": "OS-Harm",
+        "url": "https://github.com/tml-epfl/os-harm",
+        "whatItTests": "Safety benchmark for computer-use agents operating at OS level. Built on OSWorld. 150 tasks: deliberate user misuse, prompt injection attacks, and model misbehavior. Covers real OS applications including browser, email client, code editor. Automated judge (F1 0.76-0.79 vs humans). Evaluates o4-mini, Claude 3.7 Sonnet, Gemini 2.5 Pro. NeurIPS 2025 Spotlight. EPFL TML.",
+        "axis": "security",
+        "gapVsTower": "Tests CUA planner at OS-interaction level (screenshots/accessibility trees), not the browser-driving tool layer. The browser is one of many OS apps tested. Does not compare Playwright vs browser-use vs Patchright. No authenticated/warmed-session scenario. Closest to RedTeamCUA in scope. Confirms agent prompt injection risk at OS level but doesn't isolate the browser tool as the study variable.",
+        "sourceQuality": "primary",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "selfHostable": "yes"
+      },
+      {
+        "name": "AgentDyn",
+        "url": "https://arxiv.org/abs/2602.03117",
+        "whatItTests": "Dynamic open-ended agent security benchmark with 60 tasks and 560 injection test cases across Shopping, GitHub, and Daily Life environments. Addresses flaws in prior static benchmarks: requires dynamic planning, includes helpful third-party instructions, and evaluates 10 SOTA defenses. Finds all defenses fail — either insecure or over-defensive. 2026 paper from SaFo-Lab.",
+        "axis": "security",
+        "gapVsTower": "Abstract tool-calling evaluation, not real browser automation. Study variable is the defense strategy or LLM, not the browser-driving tool. No authenticated/warmed sessions. No multi-tool browser comparison.",
+        "sourceQuality": "primary",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "selfHostable": "yes"
+      },
+      {
+        "name": "OWASP Top 10 for LLM Applications (2025) + Top 10 for Agentic Applications (2026)",
+        "url": "https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/",
+        "whatItTests": "Taxonomy/framework, not a testable bench. LLM Top 10 (2025): prompt injection #1, excessive agency #6. Agentic Top 10 (2026): agent goal hijacking, tool misuse, memory/context poisoning, delegation risks. Establishes the vocabulary and risk classification used by most academic benchmarks. No grader, no victim app, no testable harness.",
+        "axis": "other",
+        "gapVsTower": "Taxonomy only. No runnable harness, no comparative multi-tool study, no authenticated-session test, no detectability grader. Defines the attack classes that Tower operationalizes.",
+        "sourceQuality": "primary",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "selfHostable": "no"
+      },
+      {
+        "name": "techinz/browsers-benchmark (Stealth Detectability Bench)",
+        "url": "https://github.com/techinz/browsers-benchmark",
+        "whatItTests": "Detectability-only benchmark for browser automation tools. Measures bypass success rate against Cloudflare, DataDome, reCAPTCHA, Kasada, Imperva, Akamai, PerimeterX, and others. Tests Playwright, Camoufox, Patchright, Selenium, SeleniumBase, NoDriver, ZenDriver, AdsPower. Also measures memory/CPU, page load times, CreepJS fingerprint scores. Fresh-session testing with proxy emphasis.",
+        "axis": "detectability",
+        "gapVsTower": "The only existing project that comparatively benchmarks multiple browser-driving TOOLS on detectability — the closest thing to Tower's detectability axis. Critical gaps vs Tower: (1) no LLM agent layer — it tests raw tool detection, not agent-driven task detection; (2) fresh sessions only, not authenticated/warmed-session scenarios; (3) no injection/exploitability axis; (4) outsources grading to real bot detectors but without authenticated-context or agent-behavior signals. Tower extends this by layering an LLM agent on top, adding authenticated sessions, and adding the exploitability axis.",
+        "sourceQuality": "primary",
+        "authSessionEval": "no",
+        "multiToolAdapter": "yes",
+        "selfHostable": "yes"
+      },
+      {
+        "name": "MUZZLE: The Zoo (victim environment)",
+        "url": "https://arxiv.org/abs/2602.09222",
+        "whatItTests": "The Zoo is the self-hostable Docker multi-application victim environment developed specifically for MUZZLE. Supports realistic multi-app workflows (email, social networks, e-commerce, collaborative tools) deployed as interconnected Docker containers. Exposes full backend state, supports deterministic re-initialization, reduces rendered-content footprint 16x vs WebArena-style environments. Fully open source. First purpose-built victim sandbox for LLM web agent security eval that supports cross-application injection scenarios.",
+        "axis": "security",
+        "gapVsTower": "The Zoo is a genuine Juice-Shop-equivalent for agentic browser security — the first deliberate multi-app victim sandbox for agent injection tests. Tower could target The Zoo. Gap: it was designed for MUZZLE's red-team methodology, not a multi-tool comparative bench. No detectability axis built in.",
+        "sourceQuality": "primary",
+        "authSessionEval": "yes",
+        "multiToolAdapter": "no",
+        "selfHostable": "yes"
+      }
+    ],
+    "occupiedVsGap": "OCCUPIED: The LLM-planner security layer is thoroughly occupied. AgentDojo (NeurIPS 2024), InjecAgent (ACL 2024), ASB (ICLR 2025), WASP (NeurIPS 2025), RedTeamCUA (ICLR 2026 Oral), SecureWebArena (Oct 2025), SafeArena (ICML 2025), MUZZLE (USENIX 2026), DoomArena (ICML 2025), and AgentDyn (2026) collectively cover indirect prompt injection, data exfiltration, CIA-triad attacks, and harmful-action safety for web/browser agents. There is a legitimate deliberate-victim-sandbox (The Zoo, from MUZZLE, 2026) — the Juice-Shop-for-agents gap is newly filled. Backbone-layer evaluation is covered by b3/Lakera (Oct 2025). Raw browser-tool detectability (no LLM layer) is covered by techinz/browsers-benchmark. OCCUPIED BUT THIN: MUZZLE (2026) is the first work to drive real browser automation tools (browser-use, Agent-E) against a self-hostable multi-app victim with authenticated credentials and objective graders, representing the closest existing work to Tower's security axis. GENUINELY OPEN: (1) No existing bench treats the BROWSER-DRIVING TOOL LAYER as the study variable — every agent security bench fixes the browser tool (or uses abstract APIs) and varies the LLM backbone or attack strategy. No project asks 'does it matter whether the agent uses Patchright vs browser-use vs Stagehand vs nodriver in terms of exploitability or detectability?' (2) No existing bench combines DETECTABILITY (graded by real external bot detectors) with EXPLOITABILITY (graded by objective attack success) in a single multi-tool harness — the two axes currently live in entirely separate siloed projects. (3) No existing bench systematically evaluates AUTHENTICATED/WARMED-SESSION agent behavior as a first-class variable — MUZZLE passes credentials but does not study whether warmed-session state changes attack surface or detectability. This is a real gap, not just a small extension: the authentication surface is where agentic browsers are most dangerous (cross-site exfiltration of logged-in state) and most distinctive from fresh-session automation.",
+    "keyClaims": [
+      "Every existing agent-security benchmark (AgentDojo, WASP, InjecAgent, RedTeamCUA, DoomArena, SafeArena, SecureWebArena) fixes the browser-driving tool as invisible infrastructure and varies only the LLM backbone or attack strategy; no published bench treats the tool layer (browser-use vs Patchright vs Stagehand vs nodriver) as the study variable, leaving comparative multi-tool exploitability scoring genuinely unoccupied as of June 2026.",
+      "The only project that comparatively benchmarks multiple browser-driving tools on detectability (techinz/browsers-benchmark) has zero LLM agent layer, zero exploitability/injection axis, and zero authenticated-session coverage; the only project that drives real browser tools against a self-hostable victim with authenticated credentials and objective graders (MUZZLE, USENIX 2026) tests only 2 tools as scaffolds, not as a pluggable N-tool adapter — meaning a single harness combining the detectability and exploitability axes across N arbitrary agentic tools does not yet exist.",
+      "Authenticated/warmed-session agentic browser security is a structurally underexplored surface: MUZZLE passes credentials but treats them as execution prerequisite rather than test variable; all other security benches reset environments to fresh state; no published bench asks whether a warmed-session agent is more or less exploitable or detectable than a fresh-session agent, despite this being the highest-stakes deployment scenario (cross-site exfiltration of a logged-in user's trusted session is the primary real-world threat)."
+    ]
+  },
+  {
+    "category": "Commercial/Industry Agentic-Browser Eval Products AND Authenticated/Warmed-Session Eval Niche",
+    "entries": [
+      {
+        "name": "BrowserBench (Halluminate)",
+        "url": "https://github.com/Halluminate/BrowserBench",
+        "whatItTests": "Stealth failure rate of cloud browser INFRASTRUCTURE PROVIDERS (Anchor, Browserbase, Steel, Hyperbrowser) against 292 tasks across real bot-protected websites. Uses browser-use as the driving agent. Common provider-adapter architecture (create_session/cleanup_session contract). Human annotators + LLM judge (90.4% alignment). Measures whether the agent gets blocked by proxies, CAPTCHAs, or bot-detection — not task success.",
+        "axis": "detectability",
+        "authSessionEval": "no",
+        "multiToolAdapter": "yes",
+        "selfHostable": "yes",
+        "sourceQuality": "primary",
+        "gapVsTower": "Tests cloud infrastructure providers, not the underlying browser automation tools (Playwright vs Patchright vs nodriver vs Feather). Zero authenticated-session eval. Scope is stealth-failure rate only — no security (prompt injection / exfiltration) axis. Tower would extend to: (a) the driver-tool layer rather than just cloud infra, (b) authenticated/warmed sessions, (c) combined detectability+security grading."
+      },
+      {
+        "name": "Browser-Use Stealth Benchmark (internal)",
+        "url": "https://browser-use.com/posts/stealth-benchmark",
+        "whatItTests": "Tests 6 cloud browser providers (BU Cloud, Anchor, Onkernel, Steel, Browserbase, Hyperbrowser) against 71 websites protected by Cloudflare, PerimeterX, DataDome, Akamai, reCAPTCHA, Kasada. Uses bu-2-0 model + gemini-2.5-flash judge. Explicitly excludes authenticated sessions ('No auth'). Run by Browser-Use itself — not neutral.",
+        "axis": "detectability",
+        "authSessionEval": "no",
+        "multiToolAdapter": "yes",
+        "selfHostable": "partial",
+        "sourceQuality": "primary",
+        "gapVsTower": "Vendor-run (Browser-Use grades itself as winner), so neutrality is absent. Tests cloud providers only, not the tool/driver layer. No authenticated sessions. No security axis. Tower provides a neutral third-party harness that tests the driver-tool layer and includes auth/warmed-session eval."
+      },
+      {
+        "name": "Ian Paterson anti-detect browser benchmark 2026",
+        "url": "https://ianlpaterson.com/blog/anti-detect-browser-benchmark-patchright-nodriver-curl-cffi/",
+        "whatItTests": "Comparative stealth benchmark of 7 low-level browser automation tools (nodriver, CloakBrowser, curl_cffi, Patchright, Camoufox, vanilla Playwright, rebrowser-playwright) against 31 targets (JS-layer panels, TLS fingerprint endpoints, live Cloudflare, content sites). 651 verdicts; 4-way classifier (ok/gated/blocked/error). Single residential IP, one night, 5+ hours.",
+        "axis": "detectability",
+        "authSessionEval": "no",
+        "multiToolAdapter": "yes",
+        "selfHostable": "yes",
+        "sourceQuality": "primary",
+        "gapVsTower": "Tests the driver-tool layer (Playwright, Patchright, nodriver) which is the right layer — but in a scraping context, NOT in an agentic LLM workflow. No authenticated sessions. No security axis. Tower would add: LLM-agent-in-the-loop as the driving entity (not raw scripts), authenticated/warmed-session scenarios, and security grading alongside detectability."
+      },
+      {
+        "name": "techinz/browsers-benchmark (GitHub OSS)",
+        "url": "https://github.com/techinz/browsers-benchmark",
+        "whatItTests": "Multi-tool comparative benchmark for 10+ browser automation engines (Playwright, Selenium, Camoufox, Patchright, NoDriver, ZenDriver, AdsPower, etc.) against Cloudflare, DataDome, Amazon, Google, Ticketmaster/Imperva, Akamai, PerimeterX, Kasada, Reddit. Measures bypass success rate, fingerprinting resistance, CPU/memory. Visualization dashboards.",
+        "axis": "detectability",
+        "authSessionEval": "no",
+        "multiToolAdapter": "yes",
+        "selfHostable": "yes",
+        "sourceQuality": "primary",
+        "gapVsTower": "Scraping-/multi-accounting-oriented, not LLM-agent-workflow-oriented. No authenticated-session scenario. No security axis. Tower would cover the same driver-tool layer but in agent-driving context with: LLM agent-in-the-loop, authenticated/warmed session eval, and prompt-injection/exfiltration grading."
+      },
+      {
+        "name": "WebTrap Park (Fudan University, 2026)",
+        "url": "https://arxiv.org/abs/2601.08406",
+        "whatItTests": "Automated security eval platform. 1,226 tasks across 3 threat categories: Malicious User Prompts (MUP), Malicious Prompt Injection (MPI), Deceptive Website Design (DWD). Tests Browser Use (text+vision), Skyvern-AI, Agent-E, SeeAct. Docker-containerized tasks for reproducibility. Action-based assessment without agent modification. Live page environments.",
+        "axis": "security",
+        "authSessionEval": "no",
+        "multiToolAdapter": "yes",
+        "selfHostable": "yes",
+        "sourceQuality": "primary",
+        "gapVsTower": "Closest existing work to Tower's security axis — multi-tool, objective, systematic. But: (a) zero detectability axis (doesn't ask 'does this tool pass as human?'), (b) no authenticated/warmed-session eval, (c) covers only 4 frameworks (no Playwright/Patchright/nodriver/Feather-style tools at the driver layer). Tower extends by combining detectability + security in one harness and adding auth-session scenarios."
+      },
+      {
+        "name": "WASP: Benchmarking Web Agent Security Against Prompt Injection",
+        "url": "https://arxiv.org/abs/2504.18575",
+        "whatItTests": "End-to-end evaluation of web agents against prompt injection attacks in realistic scenarios (filing taxes, paying bills). Tests top-tier LLMs with advanced reasoning. Finds attacks partially succeed in up to 86% of cases. Publicly available benchmark.",
+        "axis": "security",
+        "authSessionEval": "unknown",
+        "multiToolAdapter": "no",
+        "selfHostable": "yes",
+        "sourceQuality": "primary",
+        "gapVsTower": "Single-tool/model focus (grades LLMs, not browser tools comparatively). No detectability axis. Authentication status unclear but likely unauthenticated. Tower would add: comparative multi-tool (N tools, one harness), detectability grading alongside security, authenticated session scenarios."
+      },
+      {
+        "name": "MUZZLE: Adaptive Agentic Red-Teaming (2026)",
+        "url": "https://arxiv.org/abs/2602.09222",
+        "whatItTests": "Automated adaptive red-teaming framework for indirect prompt injection on web agents. Discovers novel attack vectors (37 attacks on 4 web apps, 10 adversarial objectives, 3 cross-application IPI attacks). First to demonstrate cross-application prompt injection. Powered by AutoGen + GPT-4o.",
+        "axis": "security",
+        "authSessionEval": "unknown",
+        "multiToolAdapter": "no",
+        "selfHostable": "yes",
+        "sourceQuality": "primary",
+        "gapVsTower": "Attack generation and discovery tool, not a comparative scorer across N tools. No detectability axis. No authenticated-session eval. Tower's comparative harness with objective scoring across N tools and a warmed-session axis is distinct from MUZZLE's role as an adaptive attack generator."
+      },
+      {
+        "name": "ST-WebAgentBench (2024)",
+        "url": "https://arxiv.org/abs/2410.06703",
+        "whatItTests": "Benchmark for safety and trustworthiness in web agents. Models multi-dimensional safety policies. Traces safety violations to concrete UI actions. Evaluates robustness against prompt injection and private data protection.",
+        "axis": "security",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "selfHostable": "yes",
+        "sourceQuality": "primary",
+        "gapVsTower": "No detectability axis. No comparative multi-tool harness. No authenticated-session eval. Older (2024) and less systematic than WebTrap Park. Tower's key distinction: neutral multi-tool adapter + detectability + auth sessions."
+      },
+      {
+        "name": "WebBench (Halluminate, 2025/2026)",
+        "url": "https://www.halluminate.ai/blog/benchmark",
+        "whatItTests": "2,454 tasks across 452 real websites. Tests 7 agent/infra setups: Skyvern 2.0, OpenAI CUA, Anthropic Computer Use, OpenAI Operator, Convergence AI, Browser Use Cloud, Browserbase. DOES include tasks requiring user authentication (team creates accounts, credentials provided dynamically). Primary axis: task success. NOT testing detectability or security.",
+        "axis": "task-success",
+        "authSessionEval": "yes",
+        "multiToolAdapter": "yes",
+        "selfHostable": "unknown",
+        "sourceQuality": "primary",
+        "gapVsTower": "Includes login flows (cold login, not pre-warmed sessions). Authors explicitly acknowledge 'many real-world applications start from a pre-logged-in state' is not covered — they name the gap themselves. No detectability or security eval. Tower's warmed-session axis is orthogonal to WebBench's cold-login approach, and Tower adds detectability+security grading."
+      },
+      {
+        "name": "WebSP-Eval (2026)",
+        "url": "https://arxiv.org/abs/2604.06367",
+        "whatItTests": "200-task eval across 28 websites measuring agent ability to execute website security and privacy tasks (cookie consent, account settings, session revocation). Uses sockpuppet accounts for authenticated access. Tests 8 MLLM backbone models (Gemini, Claude, GPT, Gemma). Single agent scaffold (WebVoyager-based). Task-success graded by multimodal LLM judge.",
+        "axis": "task-success",
+        "authSessionEval": "yes",
+        "multiToolAdapter": "no",
+        "selfHostable": "yes",
+        "sourceQuality": "primary",
+        "gapVsTower": "Tests MODELS not browser tools comparatively. No detectability axis. Sessions are cold (agent performs the login task itself, not riding a human-warmed session). Security/privacy tasks are what the agent does FOR the user, not threats TO the agent. Tower's framing is inverted: how detectable/exploitable is the tool itself."
+      },
+      {
+        "name": "Browserbase Evaluations Platform",
+        "url": "https://www.browserbase.com/evaluations",
+        "whatItTests": "Commercial eval infrastructure running WebVoyager and OnlineMind2Web benchmarks against real websites. Deterministic isolated browser environments. Human-verified results, session recordings, latency metrics. Concurrent execution.",
+        "axis": "task-success",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "selfHostable": "no",
+        "sourceQuality": "primary",
+        "gapVsTower": "No detectability or security eval. No comparative multi-tool grading. Evaluates browser-use-on-Browserbase rather than N tools via a common adapter. Commercial vendor running its own infrastructure benchmarks. Tower is neutral, open-source, and explicitly targets detectability + security with a pluggable adapter."
+      },
+      {
+        "name": "LangSmith / Braintrust / Arize / Galileo",
+        "url": "https://www.braintrust.dev/articles",
+        "whatItTests": "General LLM observability and eval platforms. Trace capture, CI/CD eval gates, hallucination detection, drift monitoring. Braintrust supports structured evals with CI integration. Arize has embedding drift detection. Galileo has peer-reviewed hallucination metrics (ChainPoll, Luna). None are browser-specific.",
+        "axis": "other",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "selfHostable": "partial",
+        "sourceQuality": "secondary",
+        "gapVsTower": "None measure browser-agent detectability against real bot detectors or security against prompt injection. None compare multiple agentic browser tools. None handle warmed-session scenarios. These platforms measure LLM output quality, not browser-tool stealthiness or agent exploitability. Entirely different eval surface."
+      },
+      {
+        "name": "Stagehand Evals (Browserbase)",
+        "url": "https://docs.stagehand.dev/v3/basics/evals",
+        "whatItTests": "Evaluates Stagehand's act/extract/observe primitives and agent workflows. Compares LLM backends against each other (model override). Connects to WebBench and GAIA external benchmarks. Primary metrics: task success, token usage, inference time, reliability.",
+        "axis": "task-success",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "selfHostable": "yes",
+        "sourceQuality": "primary",
+        "gapVsTower": "Tests Stagehand only (not a neutral multi-tool harness). No detectability or security axis. No authenticated-session eval. Model comparison is the main comparative dimension, not tool comparison."
+      },
+      {
+        "name": "agentcookie (OSS tool, not a bench)",
+        "url": "https://github.com/mvanhorn/agentcookie",
+        "whatItTests": "macOS tool that continuously syncs human browser session state (cookies, bearer tokens) from a daily-driver Mac to an agent Mac over AES-256-GCM encrypted Tailscale. Makes agents 'wake up authenticated' without per-site ceremony. NOT a benchmark — no eval metrics, no scoring.",
+        "axis": "other",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "selfHostable": "yes",
+        "sourceQuality": "primary",
+        "gapVsTower": "This is an INFRASTRUCTURE tool that implements the 'Cookie Mine' pattern (human-warmed session piggybacked by agent), not an eval harness. Its existence confirms the concept is real and being built, but nobody is yet MEASURING how much better agent detectability or task success is when riding a warmed session. Tower would be the first to grade this axis."
+      },
+      {
+        "name": "Anchor Browser (commercial cloud platform)",
+        "url": "https://docs.anchorbrowser.io/essentials/authentication-and-identity",
+        "whatItTests": "Cloud browser platform for AI agents. Features: persistent session profiles (cookies/localStorage across runs), login-handling via MCP/CDP, CAPTCHA solving, RBAC. Best login-handling reputation per Reddit consensus. $6M seed. Provides the authenticated-session CAPABILITY but publishes no eval on how this changes detectability or task success.",
+        "axis": "other",
+        "authSessionEval": "no",
+        "multiToolAdapter": "no",
+        "selfHostable": "no",
+        "sourceQuality": "primary",
+        "gapVsTower": "Anchor is a product that provides warmed-session infrastructure. It does not evaluate its own detectability or security formally, nor does it compare itself against other tools under controlled conditions. Tower would be the external, neutral bench that grades Anchor and its peers on these axes."
+      },
+      {
+        "name": "WorkArena / WorkArena++ (ServiceNow, 2024-2025)",
+        "url": "https://github.com/ServiceNow/workarena",
+        "whatItTests": "682 multi-step browser tasks in a ServiceNow environment requiring authenticated enterprise state. Tests planning, memory, retrieval, arithmetic across browser sessions. Task success axis only.",
+        "axis": "task-success",
+        "authSessionEval": "yes",
+        "multiToolAdapter": "no",
+        "selfHostable": "yes",
+        "sourceQuality": "primary",
+        "gapVsTower": "Uses authenticated sessions (ServiceNow login required) but as a scaffold constraint, not as an eval axis. Does not measure detectability or security. Single environment (ServiceNow), not comparative across tools. No 'warmed by a human first' scenario. Tower's warmed-session axis is novel relative to this work."
+      }
+    ],
+    "occupiedVsGap": "**DETECTABILITY (multi-tool comparative):** Partially occupied — but only at the raw-browser-tool layer (scraping context) or at the cloud-provider-infrastructure layer, never at the agentic-LLM-driver layer across frameworks. Ian Paterson's benchmark and techinz/browsers-benchmark cover the tool layer (Playwright vs Patchright vs nodriver) but are scraping-oriented, not LLM-agent-in-the-loop. BrowserBench and Browser-Use's stealth benchmark cover cloud-provider infrastructure but not the driver tool itself, and both exclude authenticated sessions. No single public bench runs N agentic browser tools (Feather, browser-use, Stagehand, Patchright, nodriver, Skyvern) through one neutral adapter and grades detectability against real bot detectors in an agent workflow.\n\n**SECURITY (multi-tool comparative):** Partially occupied — WebTrap Park (Jan 2026, Fudan) is the closest prior art: Docker-containerized, 1,226 tasks, tests 4 frameworks (Browser Use, Skyvern, Agent-E, SeeAct), 3 threat categories, publicly accessible. But it has zero detectability axis and zero authenticated-session eval.\n\n**COMBINED DETECTABILITY + SECURITY (one harness, N tools):** Not occupied. The two families (detectability graders vs. security graders) are currently in separate, non-overlapping bodies of work. No existing bench runs both in a unified adapter.\n\n**AUTHENTICATED/WARMED-SESSION as an EVAL AXIS:** Genuinely under-served. Session persistence/authentication exists as an INFRASTRUCTURE FEATURE in Anchor, Browserbase Contexts, Steel Profiles, Notte Session Profiles, and agentcookie. Some task-success benchmarks (WebBench) include cold-login tasks and explicitly acknowledge the pre-warmed-session gap in their own text. WorkArena and WebSP-Eval use authenticated sessions as scaffolding, not as an independent eval dimension. Zero benchmarks measure: (a) how detectability changes with a human-warmed session vs cold session, or (b) how security exposure changes in an authenticated agent session. The 'Cookie Mine' concept as an eval axis has no existing benchmark representation.\n\n**COMMERCIAL PLATFORMS (LangSmith, Braintrust, Arize, Galileo, Browserbase Evals):** None measure browser-agent detectability or security at all. They occupy a completely different eval surface (LLM output quality, task success). Not competitors to Tower.",
+    "keyClaims": [
+      "No existing benchmark combines detectability (outsourced-grader, real bot-detector targets) and security (prompt injection/exfiltration) in a single harness that drives N agentic browser tools via a common adapter — WebTrap Park occupies the security side with multi-tool support but has zero detectability axis, and every detectability bench either targets only cloud infra providers or only raw browser tools in a scraping context with no LLM agent in the loop.",
+      "Authenticated/warmed-session eval is a genuine gap as an independent eval AXIS: while session persistence is a commodity infrastructure feature in Anchor, Browserbase, and Steel, and WebBench explicitly names 'pre-logged-in state' as underserved in its own text, no benchmark measures how much detectability improves (or security exposure changes) when an agent rides a human-warmed session versus a cold fresh session — making the 'Cookie Mine' eval axis novel.",
+      "The Browser-Use and Halluminate stealth benchmarks that occupy the detectability space are vendor-run (Browser-Use grades itself first) and cloud-provider-scoped (they test Anchor/Browserbase/Steel/Hyperbrowser, not the underlying driver tools like Patchright/nodriver/Feather), so a neutral, open-source harness that grades the driver-tool layer in an agent workflow — not just the cloud infrastructure around it — is unbuilt."
+    ]
+  }
+]

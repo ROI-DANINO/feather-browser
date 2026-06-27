@@ -1,0 +1,187 @@
+[
+  {
+    "design": "A",
+    "lens": "buildability",
+    "score": 3,
+    "strengths": [
+      "The two-mode insight (normalized capability vs driver-transparent detectability) is correct and load-bearing, and §0 names the real failure (attaching CDP pollutes the L2 Runtime.enable measurement) — this is genuine architecture, not hand-waving.",
+      "The one net-new persistent service is a ~150-LOC Fastify/Zod out-of-band verdict sink — the single place that lands squarely in the builder's TS comfort zone, and it doubles as the structural guard keeping the harness off the measured CDP channel.",
+      "The adapter contract (Python ABC, run_transparent/warm_takeover) is clean and language-neutral; Feather-as-HTTP is honestly the easiest adapter (~40 lines httpx) and honors the no-src-import rule.",
+      "Manifest-driven registration (towers.yaml) makes new tools/detectors/levels mostly data, not code — good growth ergonomics IF the Python spine ever stabilizes."
+    ],
+    "weaknesses": [
+      "Hard Python-framework lock-in (browsergym-core + agentlab + ray + gym/gymnasium env semantics) imposed on a solo TS/Node-first builder who per project memory has no technical background. The design's own §1.1/§8.3 admit the ramp; for this persona 'become fluent enough to debug ray scheduling and Study internals' is weeks-to-months, not a side cost.",
+      "It discards an already-working TS tower. The repo TODAY has tower/behavioral.ts + classify.ts running live detectors (incolumitas behavioral, real recorded BLOCKED/UNSCORED runs). Design A throws this out to re-platform on Python — negative progress before any new signal.",
+      "The '~2 focused days' MVP estimate is fantasy. PR-1 bundles: a Python agentlab package, two cross-language adapters, Dockerized rebrowser-bot-detector, AND the WASP/VisualWebArena GitLab sandbox (multi-GB, notoriously finicky to stand up) + AgentDojo + RedTeamCUA k=3 grading + browser-use-in-process (its own LLM keys/config). None of these are things the builder controls or knows. Realistic: weeks of cross-language + Docker yak-shaving before first result.",
+      "Cross-language failure debugging (tool subprocess died vs harness exception vs Docker victim app down vs sink didn't receive POST) is exactly the multi-surface mess a no-background solo builder is worst-equipped to diagnose — and the design adds 3-4 such surfaces at once in PR-1.",
+      "Chrome >=136 user-data-dir/CDP restriction and AgentLab's 2-4 parallelism ceiling are real friction the builder inherits without leverage to fix."
+    ],
+    "killShot": "The MVP defers the entire justification for going Python. The stated reason to inherit BrowserGym/AgentLab is the expensive runner — seeded reproducibility, crash-recovery, parallel scheduling, ReproducibilityAgent (§1.1). But PR-1 explicitly skips capability stepwise and runs everything in free-run/transparent mode (§1.4, §7), where AgentLab's Study is reduced to a result-dir + seed wrapper doing almost nothing the existing TS tower can't already do. So the builder pays the FULL Python + ray + gym onboarding tax (plus Dockerized WASP + rebrowser + browser-use) to get a glorified ExpArgs loop around two free-running tools — maximum buildability cost for near-zero of the claimed benefit, on top of discarding working TS code. For a solo TS-no-background vibecoder this stalls in cross-language/infra setup long before first signal."
+  },
+  {
+    "design": "A",
+    "lens": "validity",
+    "score": 8,
+    "strengths": [
+      "Resolves the make-or-break tension correctly: explicitly refuses to reuse HighLevelActionSet/BrowserEnv.step() in detectability runs, so the tool's own launch flags + kinematics + CDP transport reach the detector unmodified. The two-mode split is structural (separate ABC methods act() vs run_transparent()), not a forgettable flag.",
+      "The L2 no-attach rule is the correct, load-bearing validity property: harness never attaches Playwright/CDP to the measured context (which would itself emit Runtime.enable), verdicts arrive only via an out-of-band 127.0.0.1 sink. The rebrowser Runtime.enable mechanism is cited accurately.",
+      "nodriver included specifically as a transparency proof — a CDP-only/no-Playwright tool that must yield a genuinely different L2 ordinal — and the MVP proposes a guard test that Feather vs nodriver produce different L2 ordinals. That is a real falsification test that the signal was not normalized away.",
+      "Objective security grader: three state probes (secret_egress, state_mutation, injection_obeyed) read from app state diffs, never LLM opinion; ASR any-of-3 pinned to a published convention.",
+      "Names and defends against the 'security by incompetence' confound — mandatory intermediate injection_obeyed probe so an incapable agent is not scored as safe. This is a subtle validity insight most designs miss.",
+      "Honest statistical discipline: N_rep >= 10, Clopper-Pearson CIs, explicit 'never rank tools with overlapping CIs', radar profile as primary artifact over the scalar BTS.",
+      "Behavioral Isolation Delta (scripted no-LLM replay) to separate agent-loop signal from kinematic signal — correct diagnostic instinct for the L3/warm-cold axis."
+    ],
+    "weaknesses": [
+      "Matched-pair launch-provenance asymmetry (unacknowledged): the warmed browser is launched by a human ritual forced into a non-default user-data-dir + --remote-debugging-port for handoff, while the cold run uses the tool's native launch. An open remote-debugging listener and a foreign parent-process/launch-flag provenance is exactly the kind of variable a detector can pick up — and it is injected into the very warm/cold delta the bench exists to measure. The risks section names L2 contamination and Chrome>=136 but omits this one.",
+      "Cross-mode capability-gate seam: ASS_cap is measured in NORMALIZED mode (BrowserGym's reliable Playwright executes the action plan), but detectability/security are measured in TRANSPARENT mode (the tool drives its own, possibly flaky, browser). The gate certifies 'can operate a browser' on a different action substrate than the runs it gates, so a tool can pass the gate without being able to operate its own browser at the cadence actually measured.",
+      "Statistical power of the novel axis: WD = FDS_warmed - FDS_cold depends on a ~5-min human warm ritual per run. N_rep >= 10 x per-tool x per-level human warm-ups is operationally brutal, likely forcing small N on the warm side; combined with LLM action-sampling variance dominating run-to-run kinematics, the headline signature delta risks never clearing its CI. The §3 'matched pair' framing understates that this needs distributions, not a pair.",
+      "L4 commercial verdicts arrive via a separate post-run DOM read over a fresh CDP/Playwright connection — a different, contamination-prone path than the L1-L3 sink. Flagged as 'slightly less pure', but it means the commercial boss-fight verdicts are not measured on the same clean channel as the rest.",
+      "Sink data-integrity bias: the ordinal is computed by detector JS inside the measured browser and POSTed to localhost; a tool that intercepts/blocks/rewrites requests, or CORS/mixed-content, can silently drop verdicts — missing data correlated with tool behavior, which biases rather than just thins the sample."
+    ],
+    "killShot": "The matched-pair is not actually held constant on launch provenance: the warmed browser must be human-launched into a non-default profile with --remote-debugging-port open for handoff, while the cold run uses the tool's native launch — injecting an uncontrolled, detector-visible variable (open debug listener, foreign parent process/flags) into the warm/cold delta that is the bench's novel reason to exist. It is serious because it is the one major confound the otherwise-honest risks section fails to name — but it is fixable (force byte-identical launch flags, including the debug port, on BOTH arms), so it degrades rather than invalidates the measurement."
+  },
+  {
+    "design": "A",
+    "lens": "extensibility",
+    "score": 7,
+    "strengths": [
+      "Strong structural backbone: levels/towers compile to AgentLab ExpArgs rows, so the scheduler, retry, and result store absorb new levels with zero harness change (the §6 closing claim is the most credible lever in the doc).",
+      "New detector is genuinely data-driven: Docker service + a detector_page manifest row + a run_id-joined POST to the out-of-band sink; the uniform {ok,gated,blocked,error} ordinal and single ordinal_sink grader.kind mean only a thresholds data-profile is new.",
+      "Uniform ASS_<angle> directionality-normalization to [0,1] makes the leaderboard fold angle-agnostic at the record level, and TowerRunRecord gives a clean append-only contract Strand 4 can fold over.",
+      "Manifest cleanly registers towers, levels, targets, graders, and difficulty weights as declarative data, so new themed towers are essentially free."
+    ],
+    "weaknesses": [
+      "A 4th angle is sold as 'extend the manifest' but is actually aggregation surgery: BTS is a fixed-arity 0.50/0.30/0.20 formula, weights is a fixed 3-key map, and the primary RADAR PROFILE artifact is explicitly a hardcoded triangle — plus a new grader.kind and ASS_<angle> normalizer (both code).",
+      "The TowerAgentRunner ABC forces both act() (normalized) and run_transparent() on every tool, so capability-only or free-run-only tools carry dead abstract methods; '50-120 LOC, one file' understates per-tool obs-translation and the Stagehand stdio bridge.",
+      "Attack extensibility is bounded by a fixed three-probe schema (secret_egress/state_mutation/injection_obeyed); an attack that doesn't map to those needs a new probe + grader change, not data.",
+      "L4 commercial levels break the uniform sink contract (separate post-run DOM read instead of an ordinal POST), and adding target.type handlers (detector_page/victim_app/commercial) is code — so detectability already has two sub-mechanisms.",
+      "Composing multiple themed towers into a single BOSS meta-verdict is not a manifest construct; §5 folds only within-angle and BTS only across the three fixed angles."
+    ],
+    "killShot": "Not fatal, but the most serious extensibility flaw is that the design's own marquee axis — adding new angles and composing toward the boss tower — is the least extensible part: the radar is hardcoded to a triangle and BTS to three fixed weights, so a 4th angle requires surgery on the aggregation + record + radar layers, contradicting the 'new angle → extend the manifest' claim. Day-to-day tool/detector/tower/level additions stay genuinely cheap, which is why this isn't a dealbreaker."
+  },
+  {
+    "design": "B",
+    "lens": "buildability",
+    "score": 7,
+    "strengths": [
+      "Core lands squarely on the builder's native stack — Fastify/Zod/Vitest/TS ESM — so the orchestration brain (runner, scheduler, grader-dispatch, RunRecord store) is all code the vibecoder already writes daily. No foreign runtime sits on the critical path of the part they must own and keep correct.",
+      "Explicitly rejects BrowserGym/AgentLab Python-core inheritance, which would have forced a whole second language as the spine. The 'pay the polyglot tax once from TS, not twice from Python' argument (§0, §8.7) is a genuinely buildability-positive central decision for this builder, not hand-waving.",
+      "The Feather adapter — the first and most important one — is HTTP-driven (§1.3), POSTing to an API Feather already exposes. That is the easiest possible first adapter and means a real end-to-end signal needs almost no new browser-control code.",
+      "Genuinely scoped MVP (§7): PR-1 names concrete deliverables, an explicit deferral list (WebArena Docker, L3/L4, full WD harness, parallelism, BID), and a 'why this is the right first cut' rationale. Most designs hand-wave the first cut; this one sizes it.",
+      "Manifest-driven growth (§6): new tower/level/detector/adapter = one Zod-validated YAML + a folder, four registries loaded at boot. That is a clean, low-friction growth path that won't require core rework as the bench scales.",
+      "Reuses heavy assets (WebArena-Verified grader, WebJudge, FCaptcha) as version-pinned subprocess/HTTP graders rather than imports, keeping the core monolingual and the foreign code behind a uniform interface."
+    ],
+    "weaknesses": [
+      "PR-1 front-loads three of the hardest cross-language/networking seams at once: a TLS-terminating mitmproxy capturing JA3/JA4 + HTTP/2 frame order, a Python browser-use subprocess, and a WASP-style security victim app. For a self-described no-technical-background solo builder, the JA3/wire-capture piece alone is deep networking territory and is the opposite of a weekend-to-first-signal task.",
+      "The '~60-line Python shim' for browser-use (§1.3) is optimistic ops-wise: it still means a maintained Python venv, model keys, browser_use.Agent setup, and a stdio JSON contract to debug — plus the same shape repeated for WebArena/WebJudge graders. The aggregate Python + Go/Docker + Node side-by-side surface (acknowledged honestly in §8.7) is a real daily drag for one person.",
+      "The provenance/driver-transparency enforcement (canary detector, JA3 cross-check, PROVENANCE_VIOLATION drift alarm, §1.4) is non-trivial code the builder must get correct for the core thesis to hold, and §8.1 admits a subtle adapter can still bias results. It is both load-bearing and fragile.",
+      "Rebuilding the runner/scheduler/trace store natively (§8.2) is bounded but is still net-new correctness-critical code with no framework backstop — exactly the kind of plumbing that quietly eats solo-builder weeks.",
+      "WASP / GitLab victim-app setup in PR-1 is heavy Docker orchestration in its own right; calling it 'one security level' understates the standup cost.",
+      "Statistical machinery in the aggregator (Clopper–Pearson CIs, overlapping-CI tie rule) is correct and good but is yet another precise sub-system to implement and Vitest-cover before the first ranked result."
+    ],
+    "killShot": "No single project-killing flaw — the native-TS-core thesis is the most buildable choice for this specific builder. The closest thing to one is PR-1 over-scoping: it bundles mitmproxy JA3 wire-capture, a Python browser-use subprocess, AND a WASP victim app into the 'first cut', so 'first result' is realistically multi-week of cross-language/networking yak-shaving for a no-background solo builder, undercutting the weekend-to-signal promise. It is resequenceable (ship Feather-adapter + vendored rebrowser page + aggregator + SQLite for a real first signal; slip mitmproxy and browser-use to PR-2), which is why it caps rather than kills the score."
+  },
+  {
+    "design": "B",
+    "lens": "validity",
+    "score": 6,
+    "strengths": [
+      "Nails the conceptual crux: the two-boundary split (capability normalized THROUGH the adapter via TowerResult; detectability observed AROUND it) is the correct validity stance, and the argument that BrowserGym structurally measures the harness's own CDP/launch fingerprint rather than the tool's is genuinely right. This is the single most important validity insight and the design earns it.",
+      "Adapter-honesty is enforced mechanically, not by trust: detectability verdicts read the detector page + wire capture, never adapter-reported `metadata`; provenance assertion + drift alarm flags PROVENANCE_VIOLATION; the canary detector page proves the adapter stayed a control channel and didn't sit in the data path. The 'an adapter cannot fake what the detector JS sees because it doesn't sit between browser and detector' argument is sound for the JS-level (L1) signals.",
+      "Objective security grader is properly objective: SecurityHooks read state (per-run canary exfil token, pre/post state diff, injection marker fired) with no LLM judgment, ASR any-of-3 with k pinned. This is a true objective boundary-crossing measure, not a judge.",
+      "Strong reproducibility discipline that protects validity: hard reproducible flag splitting L1-L3 (vendored, version-pinned) from L4/live (diagnostic-only, never ranked), Clopper-Pearson CIs, 'never rank tools with overlapping CIs -> tie', N_rep>=10, full pin set (agent/tower/taskset/grader/env/ip). The radar-as-primary, BTS-as-secondary framing avoids a false single-number ranking.",
+      "Capability-as-gate (ASS_cap>=0.40 else UNTESTABLE) prevents the classic invalid comparison of detectability/security scores for a tool that can't actually do the task.",
+      "Honest risk section that names the central fragility (driver-transparency is asserted not proven; subtle stealth-flag bias survives the canary) and the WD low-N human-in-loop problem instead of hiding them."
+    ],
+    "weaknesses": [
+      "TLS-terminating proxy contaminates the JA3/JA4 it claims to read. The design points the tool's browser at a 'mitmproxy (or Node TLS-terminating proxy)' via proxyUrl to capture JA3/JA4. A terminating proxy MITMs TLS: the ClientHello any far-side detector (L4 DataDome/Cloudflare, which key heavily on JA3/JA4) sees is the PROXY's OpenSSL/Python stack, not the browser's. It also requires installing a root CA into the tool's profile — itself a detectable artifact that perturbs trust behavior. The design conflates passive 'capture' with active MITM 'proxy'; reading JA3 transparently needs an on-path L2/pcap/eBPF tap, never a terminating proxy. The JA3 leg of the provenance drift alarm is therefore measuring the proxy.",
+      "The 'passive' CDP observer is itself CDP activity on the browser-under-test and can trip the very L2 signal it measures. The CDP-attach shape and the passive observer attach a Tower-owned CDP session to the tool's cdpEndpoint. L2 detection (rebrowser, Runtime.enable leak) keys on CDP/Runtime activity against the browser; a second client's attach/Runtime.enable can leak into the detector page's context. This is unaddressed and it hits L2 — a leaderboard-eligible reproducible level shipped in the MVP.",
+      "WD matched pair does not hold the treatment's confound constant. The warm arm has a human generate ~5min of real mouse/keyboard/scroll entropy and interaction history baked into the session that L3 behavioral detectors read. FDS_warmed-FDS_cold thus bundles (a) network/cookie trust context with (b) residual human behavioral fingerprint. BID separates agent-vs-scripted WITHIN an arm but never separates these two mechanisms ACROSS arms, so WD on L3 is confounded and the design doesn't name it.",
+      "Fairness asymmetry between adapter shapes: Feather (the builder's own tool) gets first-class HTTP-driven control while foreign tools get a thin subprocess shim that may not expose their best/native configuration, risking a systematic downward bias on foreign-tool capability — a validity-of-comparison issue the honesty guards don't catch (they catch fingerprint lies, not config under-representation).",
+      "Detector pages served 'under task pretext' are not representative task surfaces; L3 kinematic/cadence signals depend on what task the agent believes it's doing, so behavioral detectability measured on a bare detector page may not generalize to real-site cadence."
+    ],
+    "killShot": "The design's marquee validity claim — external observation reads the tool's real fingerprint unmodified — is broken by both of its own external observers at exactly the two layers detectability lives at. The TLS-terminating proxy rewrites the JA3/JA4 it purports to capture (and forces a detectable root-CA install), and the 'passive' CDP observer is itself CDP traffic on the browser-under-test that can trip the L2 Runtime.enable leak it is trying to measure. The harness contaminates the fingerprint at the TLS and CDP layers — the precise contamination it (correctly) accuses BrowserGym of — and neither is acknowledged. It is mechanism-level, not architecture-level (the thin core is still the right call, and L1 + capability + security remain valid), but it dents the one thing the lens calls make-or-break."
+  },
+  {
+    "design": "B",
+    "lens": "extensibility",
+    "score": 7,
+    "strengths": [
+      "Four-shape adapter taxonomy (HTTP-driven / CDP-attach / subprocess-CLI / library-in-worker) all behind one TowerAgentRunner means adding a tool is 'pick a shape + write a manifest'; the ~60-line browser-use Python shim concretely proves the polyglot seam works WITHOUT the core importing Python (spawn, not import).",
+      "Uniform DetectorReport Zod schema + DetectorRegistry + grader.kind dispatch (subprocess / HTTP / in-process) make a new detector or foreign grader a vendored folder + manifest entry: JS detectors self-post their verdict, Go/Docker FCaptcha speaks HTTP, WebArena-Verified/WebJudge are subprocess calls. This is the genuinely strongest axis.",
+      "The `reproducible` boolean scales cleanly with zero core change: L4 commercial + live-site just flip the flag to false and are config-only (URL + challenge signature), never vendored, never entering a ranked cell.",
+      "AttackRegistry + explicit DoomArena-pluggable-attacks hook = new security scenarios are manifest-adds; the registry-at-boot pattern (§6, four Zod-validated manifest dirs) is consistently applied and holds up for towers/levels/detectors/adapters/attacks."
+    ],
+    "weaknesses": [
+      "No AngleRegistry. The angle count is hardcoded across the entire spine: BTS = 0.50*cap + 0.30*det + 0.20*sec is a fixed three-term formula, RunRecord.angleScores = {cap; det; sec} is a fixed-shape object (not a map), the pass-gate is angle-specific (ASS_cap >= 0.40), and the radar is cap/det/sec. A 4th angle is surgery on formula + schema + gate + renderer simultaneously — directly contradicting the stated 'new 4th angle with low rework' goal.",
+      "Per-detector 'native thresholds' + directionality normalization mean each new detector needs a hand-authored ordinal mapping and calibrated thresholds; the manifest references ordinalMap: ian-paterson but the numeric thresholds are bespoke — drop-in-plus-calibration, not pure drop-in.",
+      "Tool-reachability ceiling: the detectability boundary requires pointing the tool's own browser at the Tower's mitmproxy (proxyUrl) and serving it the detector page. A cloud-hosted agent (Operator-as-a-service) fits none of the four shapes and cannot be wired to the proxy or fed the page — so 'add any tool' is really 'add any locally-runnable, proxy-pointable tool.'",
+      "SecurityHooks is a fixed 3-method interface (exfil/state/injection); a new outcome category is interface + victim-app surgery, not a manifest add. WD/BID are named optional fields on RunRecord.diagnostics — the same hardcode-a-named-field anti-pattern as the angles, so new diagnostics are schema changes."
+    ],
+    "killShot": "The angle dimension is the one extension axis that is NOT a registry citizen: it is hardcoded into the BTS formula, the RunRecord.angleScores schema, the radar renderer, and the capability-specific pass-gate, with no AngleRegistry to mirror the four registries the design does build. Because the lens explicitly asks 'does a 4th angle stay cheap?' and the design explicitly advertises low-rework angles, this is a citable contradiction between claim and mechanism — though bounded, since angles are by far the rarest add while tools/detectors/attacks (the common case) are genuinely cheap."
+  },
+  {
+    "design": "C",
+    "lens": "buildability",
+    "score": 3,
+    "strengths": [
+      "Control/data plane split genuinely contains the cross-language problem: the Python browser-use code lives in its own image and the TS orchestrator never imports it, avoiding in-process Node/Python pain that Philosophy A would force.",
+      "The runner-feather shim (map TowerTask -> Feather HTTP session, never import src/) matches what actually exists in the repo (Fastify server + warm-session) and honors AGENTS.md's 'tower never imports src/' rule.",
+      "The @tower/contract Zod/JSON-Schema package is squarely in the vibecoder's TS comfort zone and is a clean, honest seam.",
+      "Manifest-driven growth (towers/*.tower.yaml, runners/registry.yaml, grader-kind registry) means adding a detector/tool/attack is config, not orchestrator code — a clean scaling story once the engine exists.",
+      "The MVP is honestly descoped: cold-leg only, k=1, no warm broker / egress-gw / L4 / aggregation, and it names the load-bearing claim it tests."
+    ],
+    "weaknesses": [
+      "Enormous front-loaded infra gap: the tower today is ONE ts-node file with no Docker at all; the MVP demands authoring 2 Dockerfiles (Feather has none), a docker-compose two-plane bridge network, and sha256 image-digest pinning — weeks of unfamiliar ops for a self-described no-technical-background TS vibecoder before any signal.",
+      "A Python FastAPI shim for browser-use is mandatory in the FIRST PR — exactly the cross-language lock-in the lens penalizes — so the builder maintains a Python image and stack before earning a single TS-only datum.",
+      "Directly fights ADR-0004 (host-primary runtime, Podman CI-only); Design C makes containers the primary plane, an architectural reversal the project already declined.",
+      "Container fingerprint contamination (the design's own Risk #2, 'threatens the core metric') confounds the MVP's only output — absolute FDS — and the WD delta that would rescue it is explicitly deferred OUT of the MVP, so the first datum is the contaminated one.",
+      "Growth path piles on heavy solo ops: egress-gw doing TCP TLS-passthrough + JA3 logging + IP-class pinning, ghcr image publishing/maintenance, and admitted per-tool image rot on every upstream breaking change.",
+      "The conformance test that enforces the whole 'too thin to launder a fingerprint' invariant (healthz fingerprint must equal a bare native launch) is hand-waved as something that 'should gate' images — unbuilt yet load-bearing."
+    ],
+    "killShot": "The entire Docker tax is justified by ONE claim — fingerprint transparency — but containerizing Chromium changes the fingerprint (Risk #2, self-admitted 'threatens the core metric': SwiftShader/software-GL, no audio device, Docker network stack) AND diverges from Feather's real host-primary runtime (ADR-0004). So a no-background solo TS vibecoder pays the maximal, most-unfamiliar infra cost (compose, digest-pinned images, a Python shim, egress-gw) to measure a container artifact that isn't even the shipped product, and the MVP's only signal is the contaminated absolute FDS because the WD delta that would launder the confound is deferred. The heaviest-to-build path has its sole justification voided exactly where it costs the most."
+  },
+  {
+    "design": "C",
+    "lens": "validity",
+    "score": 7,
+    "strengths": [
+      "Transport-transparency is structurally (not by discipline) achieved: orchestrator stays off the data plane, detectors self-instrument via verdict-by-nonce, so the detector's nginx receives the tool's unmediated Chromium/CDP/TLS. egress-gw forwards at TCP without terminating TLS, so real JA3 reaches L4. This is the correct and best answer to the core tension among A/B/C.",
+      "Objective security graders: state oracle queried by run-nonce (canary tokens, attributable mutation log, injection registry, DoomArena SuccessFilter shape), ASR computed from app state not agent text. WASP ASR-intermediate vs end-to-end split preserved. This angle is genuinely valid.",
+      "Honest confound disclosure: the container-fingerprint problem (Risk 2), the warm-handoff coverage gap reported as N/A not faked, L4 non-reproducibility quarantined from BTS, and thin-protocol leakage (Risk 7) are all surfaced rather than hidden.",
+      "Reproducibility envelope is strong: pinned image digests, printed grader_versions, Clopper-Pearson CIs, no-rank-on-overlapping-CI, cap<0.40 UNTESTABLE gate prevents scoring detectability on a tool that cannot operate the page.",
+      "Self-declared /healthz metadata is explicitly barred from normalization (display/pinning only), and a conformance test gates runner images against fingerprint laundering."
+    ],
+    "weaknesses": [
+      "Container-Chromium contamination likely SATURATES L1 (BotD/CreepJS return a near-certain bot verdict on any headless containerized Chromium regardless of tool), giving that detector zero discriminating power across tools; the same container bias (SwiftShader, no GPU/audio, Docker net) propagates into L3/L4. The headline detectability angle is biased by C's own thesis.",
+      "The warmed-vs-cold matched pair is NOT matched on driver mode: warm leg attaches via connectOverCDP to an externally-launched browser, cold leg self-launches. connectOverCDP and self-launch have different CDP footprints — exactly what L2/L3 measure — so WD conflates session-warmth with an attach-vs-launch artifact. This is unacknowledged and contaminates the make-or-break metric.",
+      "The design's escape from the container confound ('trust the WD delta, not absolute FDS') is undercut by the matched-pair confound above: the delta meant to cancel the container bias is itself driver-mode-biased.",
+      "The /healthz conformance gate checks only static fingerprint against a bare launch; it does not check runtime input cadence / CDP-call patterns, which is the L3 behavioral surface most exposed to seed/max_steps shim monkey-patching. The 'too thin to launder' guarantee is intent, not enforced where it matters.",
+      "GPU passthrough / --use-gl=angle to rescue L3 validity is only 'considered'; if adopted it breaks reproducibility (host GPU varies), leaving the L3-validity-vs-reproducibility tension unresolved.",
+      "Timing/step cross-check relies on runner-self-reported steps[].t; control-plane wall-clock includes shim/HTTP latency and is useless for the in-page cadence L3 actually grades."
+    ],
+    "killShot": "The signature metric is structurally confounded twice over: containerized Chromium injects a large, tool-independent fingerprint that biases (and at L1 likely saturates) the detectability angle, AND the WD delta nominated to cancel that bias is itself contaminated because the warm leg uses connectOverCDP-attach while the cold leg self-launches — two different CDP/driver footprints that L2/L3 directly measure. So both the absolute detectability scores and the warmed-vs-cold delta meant to rescue them are biased, leaving the make-or-break signature angle without a clean, tool-attributable measurement."
+  },
+  {
+    "design": "C",
+    "lens": "extensibility",
+    "score": 8,
+    "strengths": [
+      "Adding a tool is genuinely drop-in and language-agnostic: §6 registry.yaml entry + one image implementing the ~150-line §1.2 shim, nothing else. Because each tool is its own container speaking only the JSON control contract, a Python browser-use and a TS Feather coexist with zero shared-process collision — the MVP (§7) already proves two-language tool addition. This is the single best-engineered extensibility axis in the design.",
+      "Adding a detector stays cheap and orchestrator-free: §6 detectability.tower.yaml shows a new detector = new detector-* image + one levels[] entry, with the detector self-instrumenting its own /verdict/:nonce. The orchestrator never learns about specific detectors — it just polls by nonce — so the detector battery (L1->L4) scales by data, not code.",
+      "The 'orchestrator is a fixed engine' invariant (§6: load manifests -> schedule cells -> drive runners -> dispatch graders by kind -> emit records) is the right backbone for extensibility — content additions provably never touch the engine, which is what keeps rework near-zero for the common cases.",
+      "Grader extensibility is correctly tiered: a new grader *kind* (program-html / webjudge / ordinal-detector / state-oracle) is one module behind grade(task, oracleOrVerdict) -> AngleScore; everything within an existing kind is pure manifest. New attacks reuse the DoomArena AttackConfig{AttackableComponent, AttackChoice, SuccessFilter} shape against an already-exposed oracle (§4.2), so attacks-within-family are config-only.",
+      "Themed-tower / boss-tower composition holds up: a tower is just a manifest bundle of (target, grader, angle) triples, and BTS aggregates angle scores it does not need to understand structurally, so adding a new themed tower is a new *.tower.yaml with no engine change.",
+      "The ResultSink.put(record) interface (§5) cleanly defers storage to Strand 4, so the leaderboard can extend (SQLite/Postgres/flat) without touching the orchestrator — a good seam for future growth."
+    ],
+    "weaknesses": [
+      "A 4th *angle* is NOT cheap — it is surgery, the one place the manifest abstraction breaks. §5 hardcodes the structure: BTS = 0.50·cap + 0.30·det + 0.20·sec, the gate is specifically `if ASS_cap < 0.40 -> UNTESTABLE`, the radar is cap/det/sec spokes, and ASS normalization is per-angle bespoke (1−detection_rate, 1−ASR). The weights are 'versioned + overridable' but the *number and identity* of angles is baked into the aggregation, gate, and radar. Adding (say) a cost/efficiency angle touches the formula, the gate logic, the normalization switch, and the radar renderer — exactly the rework the design otherwise avoids.",
+      "Per-tool image maintenance is a permanent recurring extensibility tax the design itself concedes (Risk #1): adding a tool is cheap, but *keeping* it working means a maintained image per tool that rots on upstream breaking changes. Extensibility-to-add is excellent; extensibility-to-sustain is the weakest of the three philosophies, for a solo vibecoder.",
+      "The signature angle does not extend uniformly across tools: warm-handoff (§3.1) requires the tool to expose attach-to-CDP. Self-launch-only tools get cold-only and WD = N/A. So 'add any tool' is true for capability/detectability but the headline WD metric has structural coverage gaps that grow with each non-CDP tool — the radar must show holes rather than fill them.",
+      "A genuinely *new* security family (beyond the 3 in §2.3) requires editing the fixed oracle JSON shape in §4.2 (new fields like a new exfil_channel class) AND the victim app that implements it — so attack extensibility is config-only only inside the pre-modeled three families; a 4th family is a schema + app change, not a manifest entry.",
+      "Every detector/runner manifest entry pins images by @sha256 digest (§6). Great for reproducibility, but it means even a trivial detector tweak is a rebuild-and-repin cycle, adding friction to the otherwise 'drop-in' detector story, and a conformance gate (Risk #7) must pass before any new runner image is admitted.",
+      "Two shims per contract (TS + Python) plus a JSON-Schema contract package (Risk #5) means each contract evolution is a multi-shim change; if the contract grows a field, every runner image must be revised in lockstep or drift — a coupling cost that scales with tool count."
+    ],
+    "killShot": "none — the manifest/registry architecture genuinely holds up for the high-frequency additions (tools, detectors, attacks-within-family), which is where extensibility matters most, and the fixed-engine invariant is real. The 4th-angle rigidity and per-tool image-rot tax are concrete weaknesses but not disqualifying: a 4th angle is a rare event, and image maintenance is the deliberate, disclosed price of C's fingerprint-transparency rather than an architectural defect."
+  }
+]
