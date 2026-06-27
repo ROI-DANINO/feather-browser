@@ -68,7 +68,7 @@ async function shoot(sid: string, label: string): Promise<string | null> {
     copyFileSync(path, dest);
     return dest;
   } catch (e) {
-    console.warn(`[gym] screenshot failed (non-fatal): ${e instanceof Error ? e.message : String(e)}`);
+    console.warn(`[tower] screenshot failed (non-fatal): ${e instanceof Error ? e.message : String(e)}`);
     return null;
   }
 }
@@ -134,7 +134,7 @@ function appendResult(v: Verdict, shot: string | null, motion: string): void {
 
 async function run(): Promise<void> {
   const sid = await launchHeaded();
-  console.log(`[gym] session ${sid} — behavioral diagnostic vs bot.incolumitas.com (headed; watch it)`);
+  console.log(`[tower] session ${sid} — behavioral diagnostic vs bot.incolumitas.com (headed; watch it)`);
   try {
     await navigate(sid, "https://bot.incolumitas.com/");
     // Generate a real cursor trajectory — the signal the behavioral classifier needs to score us.
@@ -152,10 +152,10 @@ async function run(): Promise<void> {
     const verdict = classify(raw, SCORE_CONFIG, detectorDown);
     const shot = await shoot(sid, verdict.outcome);
 
-    console.log(`\n[gym] raw score field: ${raw === null ? "(absent)" : JSON.stringify(raw)}`);
-    console.log(`[gym] ${verdict.state} ${verdict.score ?? ""} -> ${verdict.outcome}`);
-    console.log(`[gym] ${verdict.reason}`);
-    console.log(`[gym] evidence: ${shot ?? "(screenshot failed)"}`);
+    console.log(`\n[tower] raw score field: ${raw === null ? "(absent)" : JSON.stringify(raw)}`);
+    console.log(`[tower] ${verdict.state} ${verdict.score ?? ""} -> ${verdict.outcome}`);
+    console.log(`[tower] ${verdict.reason}`);
+    console.log(`[tower] evidence: ${shot ?? "(screenshot failed)"}`);
     appendResult(verdict, shot, MOTION.label);
   } finally {
     await close(sid);
@@ -167,5 +167,5 @@ run().catch((e) => {
   process.exit(1);
 });
 
-// The gym's reusable Feather HTTP-client surface (for Step 2's scoreboard wire to reuse).
+// The tower's reusable Feather HTTP-client surface (for Step 2's scoreboard wire to reuse).
 export { feather, launchHeaded, navigate, snapshot, shoot, close, sleep, move };

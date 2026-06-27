@@ -43,8 +43,8 @@ This demo showcases the "Cookie Mine" foundation: an agent piggybacks on your ex
 
 *Highlight:* Feather's on-page **Resume banner** appears during Google login — you log in (completing
 any 2-step / 2FA yourself, if Google challenges you), the agent resumes automatically once you're in,
-then drafts the ChatGPT reply into your Gmail (the finished draft is the last frame). Full ~49s run
-end to end: [`demo-hero-mfa.mp4`](demo-hero-mfa.mp4).
+then drafts the ChatGPT reply into your Gmail (the finished draft is the last frame). The GIF above
+is the ~15s login-handoff highlight of the full ~49s run.
 
 ```bash
 npm run demo:hero

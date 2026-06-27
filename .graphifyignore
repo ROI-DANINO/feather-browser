@@ -12,7 +12,6 @@ docs/
 journal/
 blog/
 research/
-inbox/
 skills/        # custom Claude skills — intent, not wiring
 .claude/
 .remember/

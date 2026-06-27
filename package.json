@@ -13,7 +13,7 @@
     "daily:scratch": "bash scripts/start-daily-driver.sh scratch",
     "daily:stop": "bash scripts/stop-daily-driver.sh",
     "warm-session": "ts-node src/tools/warm-session.ts",
-    "gym:behavioral": "ts-node gym/behavioral.ts",
+    "tower:behavioral": "ts-node tower/behavioral.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --config vitest.config.ts",
     "test:coverage": "vitest run --config vitest.config.ts --coverage",

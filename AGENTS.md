@@ -8,6 +8,18 @@ Feather Browser is a minimalist, stability-first browser project. Its current sh
 
 Long-term vision: a Hybrid Browser — a hyper-lightweight Chromium-compatible daily driver with a Zen-inspired shell, and a "Cookie Mine" where human browsing builds a shared persistent trust context that local AI agents piggyback on via the Fastify MCP-compatible hub. The human browser (Phase 4) is the trust foundation that Phase 5+ agent automation depends on.
 
+## Repository Layout (Seams)
+
+One clean **monorepo** (not a split — a deliberate portfolio-story choice, 2026-06-27). Three legible seams:
+
+- **Product** — `src/`, `tests/`, `examples/`, `skills/`, plus the runnable surface (`scripts/`, `package.json`). What a stranger clones and runs. Greets visitors first.
+- **Spine** (build-in-the-open) — `journal/`, `docs/`, `research/`, `blog/`. Design history + the `start/next/stop` continuity system. Demoted in presentation but **co-located on purpose**: the continuity pointers assume it lives here. Don't relocate it.
+- **Tower** — `tower/` — the outward **bench** that drives & scores agentic browser tools (reframe: how *detectable* + *exploitable* any agentic browser tool is). It drives Feather over the HTTP API only and **never imports `src/`**. (`tower/` is the promoted former `gym/`, renamed 2026-06-27.) Run artifacts live in `tower/runs/` (gitignored); the `tower/results.md` scoreboard is committed.
+
+**Split-trigger** (decided, not yet acted on): `tower/` leaves for its own repo when it needs **its own dependency tree / build** (a separate `package.json`) — most likely forced the day it adapts a second, non-Feather agentic tool. Until then it stays in the monorepo, sharing the product's toolchain. Do not extract early; the research loop defines the tower's real shape first.
+
+Personal scratch (test recordings, demo captures) goes in `local/` (gitignored), never the repo root.
+
 ## Mission And Role
 
 Act as a Senior Software Architect and elite pair programmer. Focus on production-ready code, technical research, architecture decisions, and implementation plans. Keep work centered on technical design and practical build progress.
