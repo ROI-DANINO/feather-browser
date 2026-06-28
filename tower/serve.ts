@@ -10,7 +10,10 @@ import { stubAdapter, stubLevel, stubTower } from "./core/stubs";
 const RESULTS = join(__dirname, "results", "runs.jsonl");
 
 async function main(): Promise<void> {
-  const app = buildServer({ onReport: (r) => console.log("[tower] sink report", r.detectorId, r.verdict) });
+  const app = buildServer({
+    onReport: (r) => console.log("[tower] sink report", r.detectorId, r.verdict),
+    resultsFile: RESULTS,
+  });
 
   // Prove the spine: drive a stub tower once and persist the record.
   const tower = stubTower("tower-1", [
