@@ -71,12 +71,21 @@ describe("renderRun", () => {
       totalMs: 1, parts: [],
     }));
     const html = renderRun({ ...record, levels: four, stoppedAtLevel: null });
-    for (const o of ["WIN", "PARTIAL", "FAIL", "UNTESTABLE"]) expect(html).toContain(o);
+    for (const [o, cls] of [["WIN", "win"], ["PARTIAL", "partial"], ["FAIL", "fail"], ["UNTESTABLE", "untestable"]]) {
+      expect(html).toContain(o);
+      expect(html).toContain(`class="chip ${cls}"`);
+    }
   });
 
   it("escapes a grader-authored cause containing markup", () => {
     const html = renderRun({ ...record, levels: [{ ...failLevel, cause: "<script>x</script>" }] });
     expect(html).not.toContain("<script>x</script>");
     expect(html).toContain("&lt;script&gt;x&lt;/script&gt;");
+  });
+
+  it("escapes a grader-authored suggestedFix containing markup", () => {
+    const html = renderRun({ ...record, levels: [{ ...failLevel, suggestedFix: "<img src=x onerror=alert(1)>" }] });
+    expect(html).not.toContain("<img src=x onerror=alert(1)>");
+    expect(html).toContain("&lt;img src=x onerror=alert(1)&gt;");
   });
 });
