@@ -1,28 +1,27 @@
 // tower/serve.ts — runnable entrypoint. Boots the control plane; on boot also runs a stub tower
 // once and persists the record, so `npm run tower:serve` proves the whole spine on a clean checkout.
 import { join } from "node:path";
+import { performance } from "node:perf_hooks";
 import { buildServer } from "./core/server";
 import { runTower } from "./core/runner";
 import { appendRun } from "./core/store";
 import { stubAdapter, stubLevel, stubTower } from "./core/stubs";
-import type { DetectorReport } from "./core/types";
 
 const RESULTS = join(__dirname, "results", "runs.jsonl");
 
 async function main(): Promise<void> {
-  const reports: DetectorReport[] = [];
-  const app = buildServer({ onReport: (r) => reports.push(r) });
+  const app = buildServer({ onReport: (r) => console.log("[tower] sink report", r.detectorId, r.verdict) });
 
   // Prove the spine: drive a stub tower once and persist the record.
   const tower = stubTower("tower-1", [
     stubLevel("detect", { verdict: "ok", cause: null, suggestedFix: null }),
     stubLevel("security", { verdict: "blocked", cause: "stub canary leaked", suggestedFix: "add an injection guard" }),
   ]);
-  const base = Date.now();
+  const base = performance.now();
   const rec = await runTower(tower, stubAdapter(), {
     runId: `serve-${new Date().toISOString()}`,
     startedAt: new Date().toISOString(),
-    now: () => Date.now() - base,
+    now: () => performance.now() - base,
   });
   appendRun(RESULTS, rec);
   console.log(`[tower] stub run persisted -> ${RESULTS} (stoppedAtLevel=${rec.stoppedAtLevel})`);

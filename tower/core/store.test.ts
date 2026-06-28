@@ -29,4 +29,14 @@ describe("jsonl store", () => {
   it("rejects a record that fails schema validation", () => {
     expect(() => appendRun(file, { runId: "bad" } as unknown as RunRecord)).toThrow();
   });
+
+  it("tolerates a corrupt/truncated line and returns only the valid records", () => {
+    appendRun(file, rec("r1"));
+    // Append a truncated (invalid JSON) line directly — simulates a mid-write crash
+    const { appendFileSync } = require("node:fs");
+    appendFileSync(file, '{"runId":"oops"\n'); // truncated — no closing }
+    const back = readRuns(file);
+    expect(back).toHaveLength(1);
+    expect(back[0].runId).toBe("r1");
+  });
 });

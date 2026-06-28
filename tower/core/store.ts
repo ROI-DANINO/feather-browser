@@ -10,11 +10,18 @@ export function appendRun(file: string, rec: RunRecord): void {
   appendFileSync(file, JSON.stringify(valid) + "\n");
 }
 
-/** Read all RunRecords. Missing file ⇒ []. Blank lines skipped. */
+/** Read all RunRecords. Missing file ⇒ []. Blank lines skipped. Corrupt/truncated lines are skipped
+ *  with a console.warn — one bad line never loses the whole history. */
 export function readRuns(file: string): RunRecord[] {
   if (!existsSync(file)) return [];
-  return readFileSync(file, "utf8")
-    .split("\n")
-    .filter((line) => line.trim().length > 0)
-    .map((line) => RunRecord.parse(JSON.parse(line)));
+  const records: RunRecord[] = [];
+  for (const line of readFileSync(file, "utf8").split("\n")) {
+    if (line.trim().length === 0) continue;
+    try {
+      records.push(RunRecord.parse(JSON.parse(line)));
+    } catch (e) {
+      console.warn(`[tower/store] skipping bad line in ${file}: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+  return records;
 }

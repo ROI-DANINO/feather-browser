@@ -24,6 +24,7 @@ export function buildServer(deps: ServerDeps): FastifyInstance {
     if (!parsed.success) {
       return reply.code(400).send({ ok: false, error: "invalid DetectorReport" });
     }
+    // TODO(chunk-2): validate nonce against a per-run registry — currently any caller controlling both params + body passes.
     if (parsed.data.nonce !== nonce) {
       return reply.code(400).send({ ok: false, error: "nonce mismatch" });
     }

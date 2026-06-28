@@ -1,5 +1,6 @@
 // tower/core/runner.ts
-import type { Adapter, Grade, LevelResult, RunRecord, Tower } from "./types";
+import type { Adapter, LevelResult, RunRecord, Tower } from "./types";
+import { Grade } from "./types";
 import { stopwatch } from "./timing";
 import { decideOutcome } from "./verdict";
 
@@ -23,7 +24,7 @@ export async function runTower(tower: Tower, adapter: Adapter, deps: RunDeps): P
     let grade: Grade;
     try {
       await sw.part("drive", () => adapter.run(level.task));
-      grade = await sw.part("grade", () => level.grade());
+      grade = Grade.parse(await sw.part("grade", () => level.grade()));
     } catch (e) {
       grade = {
         verdict: "error",

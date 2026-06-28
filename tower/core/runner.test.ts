@@ -59,4 +59,17 @@ describe("runTower", () => {
     const rec = await runTower(tower, stubAdapter(), deps());
     expect(rec.levels[0].parts.map((p) => p.part)).toEqual(["drive", "grade"]);
   });
+
+  it("a grader returning an invalid verdict becomes error / UNTESTABLE and stops", async () => {
+    const badLevel = {
+      id: "a",
+      task: { levelId: "a", url: "http://example.com", goal: "test" },
+      grade: async () => ({ verdict: "bogus", cause: null, suggestedFix: null } as any),
+    };
+    const tower = { id: "tower-1", levels: [badLevel] };
+    const rec = await runTower(tower, stubAdapter(), deps());
+    expect(rec.levels[0].verdict).toBe("error");
+    expect(rec.levels[0].outcome).toBe("UNTESTABLE");
+    expect(rec.stoppedAtLevel).toBe("a");
+  });
 });
