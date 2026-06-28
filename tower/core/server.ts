@@ -1,10 +1,15 @@
 // tower/core/server.ts
 import Fastify, { type FastifyInstance } from "fastify";
+import { join } from "node:path";
 import { DetectorReport } from "./types";
+import { readRuns } from "./store";
+import { renderRun } from "./render";
 
 export interface ServerDeps {
   /** Called with a validated, nonce-matched detector report from the out-of-band sink. */
   onReport: (report: DetectorReport) => void;
+  /** Append-only run log GET / renders. Defaults to the path serve.ts writes. */
+  resultsFile?: string;
 }
 
 const PLACEHOLDER_HTML = `<!DOCTYPE html>
@@ -15,6 +20,12 @@ const PLACEHOLDER_HTML = `<!DOCTYPE html>
 /** The Tower control plane + page host. No CDP/Playwright — it never drives the measured browser. */
 export function buildServer(deps: ServerDeps): FastifyInstance {
   const app = Fastify();
+  const resultsFile = deps.resultsFile ?? join(__dirname, "..", "results", "runs.jsonl");
+
+  app.get("/", async (_req, reply) => {
+    const runs = readRuns(resultsFile);
+    return reply.code(200).type("text/html").send(renderRun(runs.at(-1) ?? null));
+  });
 
   app.get("/health", async () => ({ ok: true }));
 

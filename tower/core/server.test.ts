@@ -2,6 +2,10 @@
 import { describe, it, expect } from "vitest";
 import { buildServer } from "./server";
 import type { DetectorReport } from "./types";
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import type { RunRecord } from "./types";
 
 describe("buildServer", () => {
   it("GET /health -> ok", async () => {
@@ -45,6 +49,35 @@ describe("buildServer", () => {
     expect(res.statusCode).toBe(200);
     expect(res.headers["content-type"]).toContain("text/html");
     expect(res.body).toContain("Tower placeholder level");
+    await app.close();
+  });
+
+  it("GET / with a fixture run renders the run page", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "tower-render-"));
+    const file = join(dir, "runs.jsonl");
+    const rec: RunRecord = {
+      runId: "r1", towerId: "tower-1", toolId: "feather",
+      startedAt: "2026-06-28T00:00:00.000Z",
+      levels: [{ levelId: "security", verdict: "blocked", outcome: "FAIL",
+        cause: "stub canary leaked", suggestedFix: "add an injection guard",
+        totalMs: 310, parts: [{ part: "drive", ms: 250 }] }],
+      stoppedAtLevel: "security",
+    };
+    writeFileSync(file, JSON.stringify(rec) + "\n");
+    const app = buildServer({ onReport: () => {}, resultsFile: file });
+    const res = await app.inject({ method: "GET", url: "/" });
+    expect(res.statusCode).toBe(200);
+    expect(res.headers["content-type"]).toContain("text/html");
+    expect(res.body).toContain("feather");
+    expect(res.body).toContain("security");
+    await app.close();
+  });
+
+  it("GET / with no results file renders the empty state", async () => {
+    const app = buildServer({ onReport: () => {}, resultsFile: join(tmpdir(), "tower-nope", "missing.jsonl") });
+    const res = await app.inject({ method: "GET", url: "/" });
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toContain("No runs recorded yet");
     await app.close();
   });
 });
