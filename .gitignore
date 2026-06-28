@@ -45,6 +45,7 @@ journal/raw/_inbox/*
 
 # tower run artifacts (the results.md scoreboard IS committed; the PNGs/run outputs are not)
 tower/runs/
+tower/results/
 
 # local/ — personal scratch (test recordings, demo captures) kept out of the repo
 local/

@@ -14,6 +14,7 @@
     "daily:stop": "bash scripts/stop-daily-driver.sh",
     "warm-session": "ts-node src/tools/warm-session.ts",
     "tower:behavioral": "ts-node tower/behavioral.ts",
+    "tower:serve": "ts-node tower/serve.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --config vitest.config.ts",
     "test:coverage": "vitest run --config vitest.config.ts --coverage",
