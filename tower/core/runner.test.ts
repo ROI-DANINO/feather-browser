@@ -49,6 +49,7 @@ describe("runTower", () => {
     expect(rec.levels[0].outcome).toBe("UNTESTABLE");
     expect(rec.levels[0].cause).toContain("stub adapter failure");
     expect(rec.stoppedAtLevel).toBe("a");
+    expect(rec.levels[0].parts.map((p) => p.part)).toEqual(["drive"]);
   });
 
   it("records per-part timing for each level", async () => {
