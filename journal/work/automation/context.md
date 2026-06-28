@@ -195,3 +195,28 @@ assigns them and cuts tasks into work sessions.
   `subagent-artifacts/<run>_<agent>_<step>_meta.json` with the recorded `model` (+ `modelAttempts`). The
   agent's prose self-ID **lies** (coder reported "Claude Sonnet 4" while running `glm-5.1`). This retires
   the old "verify via UI badge" note above — `meta.json` is the authoritative source.
+
+## Tower adapters — the brain/body pattern (durable, 2026-06-29 — Chunk 2a shipped to `dev`)
+
+`gym/` → **`tower/`** (renamed 2026-06-27). The Tower drives agentic tools through **adapters** that
+conform to the Chunk-1 `Adapter` interface (`{ id; run(task): Promise<void> }`). An adapter **drives,
+never grades** — returns void on a finished drive (done/give_up/budget/timeout), throws only on a real
+drive error; all verdicts come from *outside* the adapter (the level page self-reports / the victim app
+observes state).
+
+**`adapter.feather` (`tower/core/adapters/feather.ts`)** — Feather is a browser *body* with no LLM, so the
+adapter wires a **small Tower-owned Claude "brain"** in front of it: `tower/core/agent/brain.ts`
+`driveToGoal` runs observe→decide→act over **Feather's HTTP API only** (`tower/core/adapters/feather-client.ts`,
+**never imports `src/`** — the no-attach honesty rule). The brain is **throwaway-small and Tower-owned, NOT
+fable/iroh** ("integrate by driving, never merge"). Action vocabulary is exactly **four verbs**
+(click/type/done/give_up) via Claude **forced tool-use**, Zod-validated before acting. Loop is bounded by a
+**step budget + a wall-clock timeout** (injectable clock → deterministic tests). DI seams
+(`BrowserSessionClient` + `Decide`) keep brain+adapter unit-testable with mocked LLM + mocked browser (no
+key/net); real composition runs only in the opt-in `npm run tower:smoke:feather` (real Feather + real Claude,
+NOT in CI). Provider = Claude/Anthropic (`@anthropic-ai/sdk` in root pkg), default `claude-opus-4-8`.
+
+**Durable conventions (carry forward to 2b browser-use + future adapters):**
+- **Drive over the tool's external boundary, never weld in** — HTTP for Feather, subprocess+stdin/stdout JSON
+  for browser-use. The Tower stays off the browser↔site data path (no Playwright/CDP attach to the measured browser).
+- **Verdicts external, never adapter-reported.** Capability is stubbed in PR-1; the adapter never reports task success/fail.
+- **Live runs are real/costed/nondeterministic** — honest wander/give_up is a first-class outcome, not a hidden defect.

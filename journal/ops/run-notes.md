@@ -393,3 +393,17 @@ not polygon); D6 12 borrowed attack classes + purpose-owned victim app + own-are
 
 **NEXT:** doc-hygiene batch (<1hr: `tower/decisions.md` + GLOSSARY + finish gym→tower rename + docs-map),
 THEN build PR-1 MVP (2 adapters, 1 detectability + 1 security level, aggregator v0 with CIs).
+
+## 2026-06-29 01:54 — Tower Chunk 2a shipped; orientation; split deferred to interview
+- **Chunk 2a `adapter.feather` DONE+merged to `dev`** (FF, branch deleted, LOCAL). Feather + Tower-owned
+  minimal Claude brain (observe→decide→act over HTTP, never imports `src/`, drive-never-grade, step +
+  wall-clock budget). `@anthropic-ai/sdk@^0.106.0` in root pkg, default `claude-opus-4-8`. 7 commits
+  `fccde32..94ce173`, 555 green. Built via subagent-driven-development (sonnet impl / opus review).
+- **Final review fixed 3:** createSession profile body (verified vs `docs/api-reference.md`; would've 400'd
+  the smoke) + its test + the spec's wall-clock timeout the plan had dropped.
+- **Decisions:** (1) next session = **orientation interview** before more building (Roi: "get oriented",
+  learns by seeing/using); (2) **repo split deferred** — decide in interview, execute at Chunk-2b boundary
+  (documented split-trigger; code coupling already zero). Memories: `tower-next-orientation-interview`,
+  `tower-two-web-interfaces-idea`.
+- **Flag:** push-state discrepancy — local `origin/dev`=`7ce69b2` implies prior work pushed; contradicts
+  "~19 unpushed" breadcrumb. Nothing pushed this session. `git fetch` to verify before trusting counts.

@@ -7,68 +7,57 @@ checklist → `journal/ops/tasks.md`; machine pointer → `journal/ops/phase.md`
 
 ## Current pointer
 
-- **NOW (2026-06-28 20:01 — UI SLICE SHIPPED+MERGED; CHUNK 2 DESIGNED; 2a PLAN READY TO EXECUTE).**
-  The "render the run" UI slice is built, reviewed (READY-TO-MERGE), and **merged to `dev` with Chunk 1**
-  (fast-forward, branch `tower-core-skeleton` deleted; 531 green; **LOCAL/UNPUSHED**, `dev` ~19 ahead of origin).
-  Chunk 2 (the two adapters) is designed; the **Chunk-2a plan is written**.
-  **RECOMMEND NEXT (Roi's call):** fresh chat → branch off `dev` → execute
-  `docs/plans/2026-06-28-tower-chunk2a-feather-adapter.md` via **subagent-driven-development** (6 TDD tasks).
-- **Chunk 2 decisions (2026-06-28):** Feather gets a **minimal Tower-owned Claude brain** (observe→act loop over
-  its HTTP API, never imports `src/`) so "Feather+brain" can attempt both detectability AND security levels;
-  **browser-use runs for real** as a Python subprocess (2b); **stay in the monorepo** (Anthropic SDK→root
-  `package.json`, Python isolated under `tower/adapters/browser-use/`; split deferred past PR-1). Spec:
-  `docs/specs/2026-06-28-tower-pr1-chunk2-adapters-design.md`. Split: 2a (Feather adapter) → 2b (browser-use).
-- **The locked identity (D2):** an open, self-hostable, **tool-agnostic** TS/Node bench that drives ANY
-  agentic web tool and scores it on **ALL angles** — capability (gate) / detectability (signature =
-  warmed-vs-cold session delta) / security — into a per-tool cap/det/sec **profile**, toward a "boss tower."
-  Broad framework, NOT a niche (Roi: "too niche"). Multi-tower = design intention, not built now.
-- **The chosen build (Design B):** a thin TS/Node core that **extends `tower/`** (not a re-platform);
-  capability measured *through* a normalizing adapter, detectability measured *around* it (tool drives its
-  own browser, Tower observes off the data path, no-attach rule, passive JA3 tap). Full plan:
-  `tower/research/2026-06-27-00-SYNTHESIS.md`; decisions D1–D6: `tower/research/raw/README.md`.
-- **Doc-hygiene batch — DONE 2026-06-28 (`93e6686`):** `tower/decisions.md` (D1–D6, grep-able; D6
-  WASP→RedTeamCUA wording fix applied), `docs/GLOSSARY.md`, `tower/` indexed in `journal/docs-map.md`;
-  `gym→tower` rename confirmed done for live front-doors. Corpus is now searchable.
-- **CHUNK-1 BUILT (2026-06-28 — engine + website skeleton).** Executed the 8-task plan
-  `docs/plans/2026-06-28-tower-pr1-chunk1-skeleton.md` via **subagent-driven-development** (sonnet
-  implementers, opus reviewers; fresh impl + opus task-review per task, one fix loop, final whole-branch
-  review). **10 commits `bde78e2..24798a3` on branch `tower-core-skeleton`** (off `dev`, **NOT merged, NOT
-  pushed**). Full suite **521 passing, typecheck clean, final review READY TO MERGE.** Shipped `tower/core/`:
-  types (Zod records + `Adapter`/`Level`/`Tower`) · verdict (PARTIAL invariant) · timing · store (tolerant
-  JSONL reads) · stubs · runner (stop-on-first-non-WIN, Grade-validated seam) · server (`/health`, out-of-band
-  `POST /sink/:nonce`, `GET /levels/placeholder`) · `tower/serve.ts` + **`npm run tower:serve`** + e2e smoke.
-  `behavioral.ts`/`classify.ts` untouched. Build ledger: `.superpowers/sdd/progress.md`.
-- **TRY-IT-OUT done (2026-06-28):** ran `npm run tower:serve` live — health/placeholder/sink all worked;
-  persisted RunRecord showed WIN→FAIL stop-at-security with cause+fix + per-part timing. Roi saw the bare
-  placeholder page (screenshot sent) and wants the *real* website.
-- **UI SLICE — DONE+MERGED (2026-06-28).** `tower/core/render.ts` (pure `renderRun`: result cards, all 4 outcome
-  chips styled, escaping, AI-placeholder slot every card, empty state) + `GET /` route + `resultsFile` dep on
-  `buildServer` + `serve.ts` wiring. Commits `a00d84f`,`8e49f30`,`8049004`,`275c0f6` (test hardening). Built via
-  subagent-driven-development; final opus review READY-TO-MERGE; live-verified (screenshot of WIN/FAIL cards sent).
-  Spec `docs/specs/2026-06-28-tower-render-run-ui-slice-design.md`, plan `docs/plans/2026-06-28-tower-render-run-ui-slice.md`.
-- **EVERYTHING SINCE THE LOOP IS LOCAL/UNPUSHED on `dev`** (~19 commits ahead of origin: Chunk 1 + UI slice +
-  the design/plan commits). Roi: "keep it local for now." Push when he wants it public.
+- **NOW (2026-06-29 01:54 — CHUNK 2a SHIPPED+MERGED; NEXT SESSION = ORIENTATION INTERVIEW).**
+  Tower **Chunk 2a (`adapter.feather`)** is built, reviewed (final = WITH-FIXES, all 3 fixed), and **merged
+  to `dev`** (fast-forward, branch `tower-feather-adapter` deleted; **555 green**; **LOCAL/UNPUSHED**).
+  Gave Feather a small **Tower-owned Claude brain** (observe→decide→act over HTTP, never imports `src/`).
+  7 commits `fccde32..94ce173`.
+- **RECOMMEND NEXT (Roi's call): the next session STARTS as an interview** — build Roi's mental model of
+  what the Tower is *before* more building (he asked: "I just want to get oriented"; he learns by seeing/
+  using). Two memories auto-load it: **`tower-next-orientation-interview`** + **`tower-two-web-interfaces-idea`**.
+  Interview outputs → (a) clearer picture, (b) the **repo-split decision**. THEN **Chunk 2b** (browser-use).
+- **REPO SPLIT — DEFERRED, decide in the interview (2026-06-29).** Roi wants Tower out of feather-browser
+  ("they dont need to share a home") — instinct confirmed sound. NOT now: it's invisible structural work at
+  the moment he wants to orient, and it forces a "what journal/design-history travels" sub-decision. If yes,
+  **execute at the Chunk-2b boundary** (documented `AGENTS.md` split-trigger = first non-Feather tool).
+  Code coupling is already zero (HTTP-only, no `src/` import).
+- **Chunk 2a build facts:** `tower/core/agent/{action,brain,decide-claude}.ts` + `tower/core/adapters/
+  {feather-client,feather}.ts` + `tower/smoke/feather.ts` + `npm run tower:smoke:feather`. New dep
+  `@anthropic-ai/sdk@^0.106.0` (root `package.json`), default model `claude-opus-4-8`. Brain loop bounded by
+  **step budget + wall-clock timeout**. `featherAdapter` drives-never-grades (`finally`-close; throws only on
+  drive error). Honesty props intact: no `src/`, no-attach, `Adapter` unchanged, brain Tower-owned (not fable/iroh).
+  Final-review fix `94ce173`: createSession profile body (verified vs `docs/api-reference.md`) + its test + the timeout.
+- **TO RUN THE LIVE SMOKE (Roi, manual — the one deferred step):** terminal 1 `npm run dev` (writes
+  endpoint.json); terminal 2 `export ANTHROPIC_API_KEY=…` then `npm run tower:smoke:feather`. Costs ~cents;
+  a small model may wander/give_up on the trivial page — that's a first-class honest outcome, not a failure.
+  Free zero-key alternative to *see the website*: `npm run tower:serve` → open the URL (result cards).
 
 ## Key facts for next session
-- **Documentation pattern (Roi's standing rule):** keep sources + findings + decisions, **copied verbatim**
-  into a docs dir, never rewritten — each strand = readable digest + verbatim JSON receipts. Memory
-  `research-documentation-preference`. The Tower's research home is `tower/research/` (+ `raw/` receipts).
-- **Scope is locked broad (D2):** don't re-narrow the Tower to a single niche. Memory
-  `feather-gymnasium-direction` (broadened). Warmed-session detectability is the *signature level*, not the
-  whole identity.
-- **Profiles / server / operating Feather:** unchanged — see `docs/agent-playbook.md` + the agent skills;
-  `scratch` is the only profile on disk.
+- **The locked identity (D2):** an open, self-hostable, **tool-agnostic** TS/Node bench driving ANY agentic
+  web tool, scoring **all angles** — capability (gate) / detectability (warmed-vs-cold signature) / security
+  — into a per-tool cap/det/sec **profile** → "boss tower." Broad framework, NOT a niche. Decisions `tower/decisions.md`.
+- **The build arc (PR-1):** Chunk 1 ✓ (engine + website skeleton) · UI slice ✓ (render-the-run) · **2a ✓**
+  (Feather+brain adapter) · 2b (browser-use subprocess — next) · 3 (real levels: L2 `runtime_enable`
+  detectability + `comment_injection` security) · 4 (scoring CIs + AI report + real site). Roi's named gaps
+  ("how detection tech is mixed", "how to test browser-use") = Chunks 3 + 2b — genuinely not built yet.
+- **Documentation pattern (standing rule):** sources+findings+decisions **copied verbatim**, never rewritten
+  (memory `research-documentation-preference`). Tower research home = `tower/research/` (+ `raw/` receipts).
+- **Profiles / server / operating Feather:** unchanged — `docs/agent-playbook.md` + agent skills; `scratch`
+  is the only profile on disk.
+
+## Push-state — RECONCILE
+- Local `origin/dev` ref sits at `7ce69b2`, which implies the prior Chunk-1 + UI-slice work **was already
+  pushed** at some point — this **contradicts earlier breadcrumbs that said "~19 commits unpushed."** Nothing
+  was pushed this session (the 7 Chunk-2a commits `fccde32..94ce173` are local). **Before trusting any
+  ahead/behind count, `git fetch` and check `origin/dev` directly** rather than the journal's claim. Push only
+  when Roi wants it public.
 
 ## Recent completed context
-- **2026-06-28 Tower research loop (this session):** 5 strands + synthesis, adversarial-verified, ~140
-  agents. Locked the broad all-angles framework (D2), the scoring (capability=gate, driver-transparent
-  detectability, warmed-vs-cold signature, D3), Design B (thin TS/Node core, D4), JSONL-truth store + stay-
-  on-grep + radar-conflict-resolved (D5), the security axis (D6). Output `tower/research/2026-06-27-0{0..5}`.
-  Commits `9ff93de`+`4e69b2e` on dev, NOT pushed. Handoff `journal/ops/sessions/the-loop-that-killed-its-darlings-20260628-0027.md`.
-- **2026-06-27 Stage-1 monorepo orientation:** `gym/`→`tower/` git-rename + seams (AGENTS.md) + hygiene;
-  typecheck + 491/491 green. (Now committed `9ff93de`.)
-- **2026-06-27 Mouse-motion + gym BLOCKED state:** mouse-path.ts + MoveHandler + `/move`; premise debunked
-  (bot.incolumitas backend was down 502, not "no cursor path"); gym BLOCKED state. Commits `fbea1d7..0d19cbd` (pushed).
-- **2026-06-26 Gym Step 1:** the bot gymnasium's first station (`tower/behavioral.ts` + `classify.ts`,
-  HTTP-only drive of bot.incolumitas). Blog 0026.
-- **2026-06-24 "My Own Gym" pivot** (Blog 0025) + **Phase 3 SHOW IT OFF** (Blog 0024) — Phases 0–3 complete.
+- **2026-06-29 Chunk 2a (this session):** the Feather minimal-brain adapter, merged. See handoff
+  `journal/ops/sessions/the-brain-i-gave-the-body-20260629-0154.md`.
+- **2026-06-28 UI slice + Chunk-1 build + Chunk-2 design:** render-the-run page merged; engine skeleton;
+  the two-adapter spec + 2a plan. (Folded from the consumed `next.md` bridge.)
+- **2026-06-28 Tower research loop:** 5 strands + synthesis, adversarial-verified (~140 agents). Locked the
+  broad framework (D2), scoring (D3), Design B (D4), store (D5), security axis (D6). Blog 0027.
+- **2026-06-26/27 Gym Step 1 + mouse-motion:** `tower/behavioral.ts`+`classify.ts` HTTP-drive of
+  bot.incolumitas; mouse-motion built, premise debunked (detector backend down), gym BLOCKED state. Blogs 0026.
