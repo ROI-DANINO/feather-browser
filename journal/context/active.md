@@ -45,12 +45,13 @@ checklist → `journal/ops/tasks.md`; machine pointer → `journal/ops/phase.md`
 - **Profiles / server / operating Feather:** unchanged — `docs/agent-playbook.md` + agent skills; `scratch`
   is the only profile on disk.
 
-## Push-state — RECONCILE
-- Local `origin/dev` ref sits at `7ce69b2`, which implies the prior Chunk-1 + UI-slice work **was already
-  pushed** at some point — this **contradicts earlier breadcrumbs that said "~19 commits unpushed."** Nothing
-  was pushed this session (the 7 Chunk-2a commits `fccde32..94ce173` are local). **Before trusting any
-  ahead/behind count, `git fetch` and check `origin/dev` directly** rather than the journal's claim. Push only
-  when Roi wants it public.
+## Push-state — RESOLVED (verified via `git fetch` 2026-06-29)
+- **`origin/dev` = `7ce69b2`.** Chunk 1 + the UI slice + the Chunk-2 design/plan commits **are ALREADY
+  PUBLIC** on origin (the repo is public). The old **"~19 unpushed" breadcrumb was WRONG** — that work was
+  pushed at some point despite the "keep local" notes.
+- **Only this session's 8 commits `fccde32..170bb00` (Chunk 2a + the `/stop`) are genuinely local/unpushed.**
+  Roi's call 2026-06-29: **keep 2a local for now**; push later when he wants it public. (origin/dev sits 8
+  behind local — expected, not a problem.)
 
 ## Recent completed context
 - **2026-06-29 Chunk 2a (this session):** the Feather minimal-brain adapter, merged. See handoff

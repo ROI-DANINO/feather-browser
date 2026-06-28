@@ -407,3 +407,11 @@ THEN build PR-1 MVP (2 adapters, 1 detectability + 1 security level, aggregator 
   `tower-two-web-interfaces-idea`.
 - **Flag:** push-state discrepancy — local `origin/dev`=`7ce69b2` implies prior work pushed; contradicts
   "~19 unpushed" breadcrumb. Nothing pushed this session. `git fetch` to verify before trusting counts.
+
+## 2026-06-29 02:10 — Push-state resolved (the "~19 unpushed" note was wrong)
+- `git fetch` verified: **`origin/dev` = `7ce69b2`** (fetch didn't move it → real remote state). Chunk 1 +
+  UI slice + Chunk-2 design/plan commits **are already public** on origin (repo is public). The repeated
+  "~19 commits unpushed / keep local" breadcrumb was **factually wrong** — that work was pushed at some point.
+- Only this session's **8 commits `fccde32..170bb00`** (Chunk 2a + the `/stop`) are genuinely local.
+- **Roi's call: keep Chunk 2a local for now**; push later when he wants today's adapter work public.
+  Corrected the breadcrumb in active.md / tasks.md / phase.md.
