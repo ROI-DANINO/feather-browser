@@ -47,7 +47,7 @@ export class FeatherClient implements BrowserSessionClient {
   }
 
   async createSession(): Promise<string> {
-    const d = await this.call<{ sessionId: string }>("POST", "/v1/sessions", {});
+    const d = await this.call<{ sessionId: string }>("POST", "/v1/sessions", { profile: { kind: "disposable" } });
     return d.sessionId;
   }
 

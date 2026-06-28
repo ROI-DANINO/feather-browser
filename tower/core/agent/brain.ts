@@ -27,16 +27,18 @@ export interface BrowserDriver {
 export type Decide = (input: { goal: string; observation: Observation; step: number }) => Promise<Action>;
 
 export interface DriveResult {
-  outcome: "done" | "gave_up" | "budget_exhausted";
+  outcome: "done" | "gave_up" | "budget_exhausted" | "timed_out";
   steps: number;
 }
 
 export interface DriveOptions {
   maxSteps?: number;
+  timeoutMs?: number;
+  now?: () => number;
   onStep?: (info: { step: number; action: Action }) => void;
 }
 
-/** observe → decide → act, until done | give_up | the step budget runs out. Never grades. */
+/** observe → decide → act, until done | give_up | the step budget runs out | wall-clock deadline. Never grades. */
 export async function driveToGoal(
   driver: BrowserDriver,
   goal: string,
@@ -44,7 +46,12 @@ export async function driveToGoal(
   opts: DriveOptions = {},
 ): Promise<DriveResult> {
   const maxSteps = opts.maxSteps ?? 12;
+  const now = opts.now ?? (() => Date.now());
+  const startTime = now();
   for (let step = 0; step < maxSteps; step++) {
+    if (opts.timeoutMs !== undefined && now() - startTime >= opts.timeoutMs) {
+      return { outcome: "timed_out", steps: step };
+    }
     const observation = await driver.observe();
     const action = await decide({ goal, observation, step });
     opts.onStep?.({ step, action });

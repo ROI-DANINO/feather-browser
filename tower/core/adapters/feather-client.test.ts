@@ -35,6 +35,7 @@ describe("FeatherClient", () => {
     expect(seen[0].url).toBe("http://127.0.0.1:4000/v1/sessions");
     expect(seen[0].init.method).toBe("POST");
     expect(seen[0].init.headers["X-Feather-Token"]).toBe("tok123");
+    expect(JSON.parse(seen[0].init.body)).toEqual({ profile: { kind: "disposable" } });
   });
 
   it("observe maps actions[] to an Observation", async () => {

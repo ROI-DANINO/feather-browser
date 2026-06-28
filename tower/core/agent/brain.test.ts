@@ -67,4 +67,31 @@ describe("driveToGoal", () => {
       { onStep: ({ action }) => seen.push(action) });
     expect(seen).toEqual([{ kind: "click", ref: "obs.e1" }, { kind: "done" }]);
   });
+
+  it("returns timed_out when wall-clock deadline is exceeded, stops calling driver", async () => {
+    // Fake clock: starts at 0, each call advances by 100ms
+    let t = 0;
+    const now = () => (t += 100);
+    const d = fakeDriver();
+    // Never-finishing: always clicks, never done — same as budget test
+    const res = await driveToGoal(
+      d,
+      "log in",
+      scripted([{ kind: "click", ref: "obs.e1" }]),
+      { maxSteps: 20, timeoutMs: 250, now },
+    );
+    // now() is called once before loop (t=100 = startTime), then once at top of each
+    // iteration: iter0→t=200 (200-100=100 < 250, runs), iter1→t=300 (300-100=200 < 250, runs),
+    // iter2→t=400 (400-100=300 >= 250, timed_out with steps=2)
+    expect(res.outcome).toBe("timed_out");
+    expect(res.steps).toBe(2);
+    // Driver should have been called exactly as many steps as completed
+    expect(d.observe).toHaveBeenCalledTimes(2);
+  });
+
+  it("behaves identically to before when timeoutMs is unset", async () => {
+    const d = fakeDriver();
+    const res = await driveToGoal(d, "log in", scripted([{ kind: "click", ref: "obs.e1" }]), { maxSteps: 3 });
+    expect(res).toEqual({ outcome: "budget_exhausted", steps: 3 });
+  });
 });
