@@ -17,14 +17,16 @@ profile → boss tower. Broad framework, NOT a niche. Build = Design B (thin TS/
 - [x] **Decisions D1–D6** logged; scope corrected to D2 broad framework; radar conflict resolved.
 - [x] **Documentation pattern** (digest + verbatim receipts) + memory `research-documentation-preference`.
 
-## NEXT — doc-hygiene batch (recommend FIRST; <1hr; Strand-4 flagged)
-- [ ] **Promote the decisions log → standalone `tower/decisions.md`** (D1…Dn index, grep-able by ID).
-      Apply the **D6 wording fix** the synthesis noted: WASP-intermediate → RedTeamCUA execution-marker probe.
-- [ ] **Add `docs/GLOSSARY.md`** mapping synonym clusters to canonical terms (gym/gymnasium/bench → tower;
-      stealth/evasion/fingerprint → detectability; warmed/cookie-mine/logged-in → authenticated).
-- [ ] **Finish the `gym→tower` rename** across `docs/specs`/`docs/plans`/`blog`/`AGENTS.md` (functional +
-      prose; leave true historical refs).
-- [ ] **Index `tower/` in `journal/docs-map.md`** (the research digests + decisions log as authoritative surfaces).
+## DONE — doc-hygiene batch (2026-06-28, committed `93e6686`)
+- [x] **Promoted the decisions log → standalone `tower/decisions.md`** (D1–D6, grep-able by ID); applied
+      the **D6 wording fix** (RedTeamCUA execution-marker probe, not WASP's human-labeled intermediate);
+      `raw/README.md` now points to it.
+- [x] **Added `docs/GLOSSARY.md`** mapping synonym clusters to canonical terms (gym/gymnasium/bench → tower;
+      stealth/evasion → detectability; warmed/cookie-mine/logged-in → authenticated session).
+- [x] **`gym→tower` rename:** confirmed already done for live front-doors in `9ff93de` (the one `gym` left
+      in AGENTS.md is the intentional "promoted former gym/" note); historical docs/blog left as-is (the
+      glossary reconciles them — no build-in-public history rewrite).
+- [x] **Indexed `tower/` in `journal/docs-map.md`** (decisions.md + synthesis + research dir as authoritative).
 
 ## THEN — the BUILD PHASE (PR-1 MVP, per the synthesis; ~1 week solo)
 - [ ] **`tower-core` skeleton** extending `tower/`: Fastify control plane, Zod `TowerTask`/`TowerResult`/

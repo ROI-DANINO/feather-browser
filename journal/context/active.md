@@ -21,16 +21,15 @@ checklist → `journal/ops/tasks.md`; machine pointer → `journal/ops/phase.md`
   capability measured *through* a normalizing adapter, detectability measured *around* it (tool drives its
   own browser, Tower observes off the data path, no-attach rule, passive JA3 tap). Full plan:
   `tower/research/2026-06-27-00-SYNTHESIS.md`; decisions D1–D6: `tower/research/raw/README.md`.
-- **RECOMMEND NEXT (Roi's call):**
-  1. **Doc-hygiene batch first** (<1hr, makes the corpus searchable for the build): promote the decisions
-     log → standalone `tower/decisions.md` (apply the D6 WASP→RedTeamCUA wording fix the synthesis flagged);
-     add `docs/GLOSSARY.md`; finish the `gym→tower` rename across `docs/specs`/`docs/plans`/`blog`/`AGENTS.md`;
-     index `tower/` in `journal/docs-map.md`. THEN
-  2. **The BUILD PHASE — PR-1 MVP:** extend `tower/`; 2 adapters (Feather HTTP + browser-use subprocess);
-     1 detectability level (rebrowser `runtime_enable`, self-post by nonce, no-attach); 1 security level
-     (WASP-style comment injection, ASR k=3); aggregator v0 with Clopper-Pearson CIs + the **small-multiples**
-     profile render (NOT a radar). Honest failure = success.
-  - **Push** `9ff93de..4e69b2e` whenever Roi wants it public.
+- **Doc-hygiene batch — DONE 2026-06-28 (`93e6686`):** `tower/decisions.md` (D1–D6, grep-able; D6
+  WASP→RedTeamCUA wording fix applied), `docs/GLOSSARY.md`, `tower/` indexed in `journal/docs-map.md`;
+  `gym→tower` rename confirmed done for live front-doors. Corpus is now searchable.
+- **NEXT = THE BUILD PHASE — PR-1 MVP** (best started in a FRESH chat — load the synthesis clean):
+  extend `tower/`; 2 adapters (Feather HTTP + browser-use subprocess); 1 detectability level (rebrowser
+  `runtime_enable`, self-post by nonce, no-attach); 1 security level (WASP-style comment injection, ASR
+  k=3); aggregator v0 with Clopper-Pearson CIs + the **small-multiples** profile render (NOT a radar).
+  Honest failure = success. Plan: `tower/research/2026-06-27-00-SYNTHESIS.md` §"Build this first".
+- **Pushed** through `deac0d6` (loop + stop). `93e6686` (doc-hygiene) committed; **push when ready.**
 
 ## Key facts for next session
 - **Documentation pattern (Roi's standing rule):** keep sources + findings + decisions, **copied verbatim**
