@@ -48,6 +48,7 @@ profile → boss tower. Broad framework, NOT a niche. Build = Design B (thin TS/
 - [ ] **Push** `9ff93de..4e69b2e` to `origin/dev` when Roi wants it public.
 
 ## Parked (not deleted)
+- [ ] **GPU/WebGL static-fingerprint detectability angle (owed follow-up)** — the detection-signals research run under-covered the static axis (WebGL `UNMASKED_RENDERER` / canvas / WebGPU / **SwiftShader headless tell**); GPU specifics rested on the older 5d.2 baseline, unverified that run. Relevant as an **absolute** static-detectability level that **varies per tool** (Feather bundled Chromium vs browser-use's own Chrome vs headless/SwiftShader) → belongs in the **breadth phase (PR-4+)**, NOT PR-1. Largely invariant to the warmed-vs-cold *signature*, so it's an absolute level, not a delta. Source archived: `journal/raw/archive/2026-06-27-bot-detection-signals-research.md` (Q3).
 - [ ] **Prior gym thread:** retry a real motion score when `abs.incolumitas` recovers; fable-evals scoreboard wire.
 - [ ] **Real-account 2FA take** — prove the Resume banner survives a real 2FA challenge page (needs Roi driving).
 - [ ] **(Roi, outside repo)** rotate/abandon the leaked `roionly9` throwaway account.
