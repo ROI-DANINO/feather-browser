@@ -95,13 +95,17 @@ The Tower can be "AI-powered," inside one hard boundary:
 > the Tower's credibility is gone. *(The one sanctioned future exception is capability's WebJudge — a
 > deliberately fenced, reliability-reported LLM grader — and it is PR-2, not PR-1.)*
 
-**In PR-1, behind the user's own LLM API key, the AI does exactly two jobs**, firing only on a
-non-WIN outcome:
-1. **Failure summary** — turn the structured record into plain English.
-2. **Fix suggestion** — read the logs, work out what actually happened, propose what to fix and how.
+**In PR-1, behind the user's own LLM API key, the AI does exactly two jobs:**
+1. **Level summary — every level, every outcome (including WIN).** A plain-English "what the Tower
+   saw this level" paragraph, grounded in the structured record + logs. This is the *headline* a human
+   reads — even on a FAIL, the summary leads and the raw dump is folded underneath, never the first
+   thing shown.
+2. **Fix suggestion** — read the logs, work out what went wrong, propose what to fix and how.
+   **Required on PARTIAL** (per §4: no fix → downgrade to FAIL), **welcome on FAIL**, **not produced on
+   WIN** (nothing to fix).
 
-Job 2 is *load-bearing for the PARTIAL verdict itself* (per §4: no fix → downgrade to FAIL). Live
-run-narration and any other AI role are out of PR-1.
+Both jobs only *describe* — they never decide the verdict. Live run-narration and any other AI role
+are out of PR-1.
 
 ## 6. Two webpages — only one is in PR-1
 
