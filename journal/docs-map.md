@@ -18,6 +18,10 @@ One line per doc surface: what it is authoritative for. If two docs disagree, th
 | `journal/raw/_inbox/` | Research findings, rough notes, spike results. |
 | `docs/specs/` | Specs and ADRs (decisions). |
 | `docs/plans/` | Implementation plans (tracked). |
+| `docs/GLOSSARY.md` | Canonical terms ↔ their historical synonyms (gym→tower, stealth→detectability, …). Prefer the canonical term in new docs. |
+| `tower/decisions.md` | **The Tower's decisions log (D1…Dn), grep-able by ID.** Authoritative for what was decided + why. |
+| `tower/research/2026-06-27-00-SYNTHESIS.md` | The Tower's buildable plan (capstone of the research loop). Authoritative for the design + MVP. |
+| `tower/research/` | The Tower research-loop digests (`…-0N-*.md`) + verbatim receipts (`raw/`). Design history for the bench. |
 | `journal/README.md` | Definition of the operating-file system itself. |
 | `journal/work/<desk>/context.md` | Desk-specific working context (browser/product/automation/general). |
 
