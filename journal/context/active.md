@@ -45,13 +45,11 @@ checklist → `journal/ops/tasks.md`; machine pointer → `journal/ops/phase.md`
 - **Profiles / server / operating Feather:** unchanged — `docs/agent-playbook.md` + agent skills; `scratch`
   is the only profile on disk.
 
-## Push-state — RESOLVED (verified via `git fetch` 2026-06-29)
-- **`origin/dev` = `7ce69b2`.** Chunk 1 + the UI slice + the Chunk-2 design/plan commits **are ALREADY
-  PUBLIC** on origin (the repo is public). The old **"~19 unpushed" breadcrumb was WRONG** — that work was
-  pushed at some point despite the "keep local" notes.
-- **Only this session's 8 commits `fccde32..170bb00` (Chunk 2a + the `/stop`) are genuinely local/unpushed.**
-  Roi's call 2026-06-29: **keep 2a local for now**; push later when he wants it public. (origin/dev sits 8
-  behind local — expected, not a problem.)
+## Push-state — IN SYNC (pushed 2026-06-29)
+- **`dev` == `origin/dev` == `5317da2`.** Chunk 2a (+ all prior Tower work) is **pushed and public**. Roi's
+  call 2026-06-29: **"make Tower public until we split it"** — so the default now is push-as-you-go, the
+  repo is public, and the Tower lives here until the split (decided in the interview, executed at the
+  Chunk-2b boundary). The old "~19 unpushed / keep local" breadcrumb was wrong and is retired.
 
 ## Recent completed context
 - **2026-06-29 Chunk 2a (this session):** the Feather minimal-brain adapter, merged. See handoff

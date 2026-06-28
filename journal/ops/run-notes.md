@@ -415,3 +415,9 @@ THEN build PR-1 MVP (2 adapters, 1 detectability + 1 security level, aggregator 
 - Only this session's **8 commits `fccde32..170bb00`** (Chunk 2a + the `/stop`) are genuinely local.
 - **Roi's call: keep Chunk 2a local for now**; push later when he wants today's adapter work public.
   Corrected the breadcrumb in active.md / tasks.md / phase.md.
+
+## 2026-06-29 02:15 — Tower pushed public (push-as-you-go until split)
+- Roi: **"make Tower public until we split it."** Secret-scanned the 9 local commits (clean — code + docs,
+  key is env-only), pushed `dev` → `origin/dev`. **`dev`==`origin/dev`==`5317da2`, in sync.**
+- New default: **push-as-you-go**; repo is public; Tower stays in feather-browser until the split (decided in
+  the interview, executed at the Chunk-2b boundary). "Keep local" / "~19 unpushed" breadcrumbs retired.

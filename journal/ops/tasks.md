@@ -49,10 +49,8 @@ profile → boss tower. Broad framework, NOT a niche. Build = Design B (thin TS/
       guard) → PR-3 (warmed-vs-cold signature harness) → PR-4+ breadth.
 
 ## Housekeeping
-- [x] **Push-state: RESOLVED** (verified via `git fetch` 2026-06-29). `origin/dev`=`7ce69b2`; Chunk 1 + UI
-      slice + Chunk-2 design **already public** on origin. The "~19 unpushed" breadcrumb was wrong.
-- [ ] **Push Chunk 2a** (`fccde32..170bb00`, 8 commits) **— DEFERRED, keep local per Roi 2026-06-29.** Push
-      when he wants today's adapter work public.
+- [x] **Push-state: IN SYNC** (pushed 2026-06-29). `dev`==`origin/dev`==`5317da2`; Chunk 2a + all prior
+      Tower work is public. Roi: **"make Tower public until we split it"** → default is push-as-you-go.
 
 ## Parked (not deleted)
 - [ ] **GPU/WebGL static-fingerprint detectability angle (owed follow-up)** — belongs in the breadth phase
