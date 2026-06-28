@@ -29,10 +29,26 @@ profile → boss tower. Broad framework, NOT a niche. Build = Design B (thin TS/
 - [x] **Indexed `tower/` in `journal/docs-map.md`** (decisions.md + synthesis + research dir as authoritative).
 
 ## THEN — the BUILD PHASE (PR-1 MVP, per the synthesis; ~1 week solo)
-- [ ] **`tower-core` skeleton** extending `tower/`: Fastify control plane, Zod `TowerTask`/`TowerResult`/
-      `DetectorReport`, 4 manifest registries, sequential runner, **JSONL-in-git result log + SQLite read-index**.
-- [ ] **2 adapters:** `adapter.feather` (HTTP-driven, never imports `src/`) + `adapter.browser-use`
-      (subprocess-CLI, ~60-line Python stdin/stdout shim — proves the no-import polyglot seam).
+- [x] **PR-1 design spec** (2026-06-28) — `docs/specs/2026-06-28-tower-pr1-mvp-design.md` (`5eec9ce`+`104d57d`):
+      website-first identity, win/partial/fail/untestable verdict model, PARTIAL invariant, AI-explains-never-scores.
+- [x] **Chunk-1 implementation plan** (2026-06-28) — `docs/plans/2026-06-28-tower-pr1-chunk1-skeleton.md` (`dd06101`):
+      8 TDD tasks for `tower/core/`. **NEXT = branch `tower-core-skeleton` off `dev`, execute via subagent-driven-development.**
+- [x] **Chunk-1 build (engine + website skeleton)** — DONE 2026-06-28 via subagent-driven-development (8 TDD tasks).
+      10 commits `bde78e2..24798a3` on branch `tower-core-skeleton` (off `dev`, **UNMERGED/UNPUSHED**). 521 green,
+      typecheck clean, final whole-branch review READY TO MERGE. **NEXT = try it out (`npm run tower:serve`) then plan chunks 2–4.**
+- [x] **`tower-core` skeleton** extending `tower/`: Fastify control plane (`/health`, out-of-band `POST /sink/:nonce`,
+      `GET /levels/placeholder`), Zod `TowerTask`/`LevelResult`+`RunRecord`/`DetectorReport`, sequential runner
+      (stop-on-first-non-WIN, Grade-validated seam), **append-only JSONL result log (tolerant reads)**. (Deferred to
+      chunks 2–3: the 4 manifest registries + SQLite read-index — per plan self-review.)
+- [x] **UI SLICE (render-the-run page)** — DONE+MERGED 2026-06-28 (deviation from plan order, Roi's call).
+      `renderRun` + `GET /` + `resultsFile` dep; 4 commits `a00d84f..275c0f6`; merged to `dev` w/ Chunk 1
+      (branch deleted, 531 green, LOCAL/UNPUSHED). Spec+plan `2026-06-28-tower-render-run-ui-slice*`.
+- [~] **Chunk 2 — 2 adapters** (DESIGNED; 2a plan written, ready to execute). Spec
+      `docs/specs/2026-06-28-tower-pr1-chunk2-adapters-design.md`. Decisions: Feather gets a minimal Tower-owned
+      Claude brain (observe→act over HTTP, never imports `src/`); browser-use runs for real as a Python subprocess;
+      stay in monorepo (split deferred). Split: **2a** `adapter.feather` (plan
+      `docs/plans/2026-06-28-tower-chunk2a-feather-adapter.md`, 6 TDD tasks — **NEXT = execute via
+      subagent-driven-development on a fresh branch**) → **2b** `adapter.browser-use` (subprocess shim; own plan TBD).
 - [ ] **1 detectability level — L2 `runtime_enable`:** vendor + pin rebrowser-bot-detector; both tools load
       it under task pretext; page **self-posts its `{ok|gated|blocked}` ordinal by `nonce`** to an out-of-band
       sink; **NO Playwright/CDP attach to the measured browser** (the correctness property to demonstrate).

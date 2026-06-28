@@ -7,12 +7,17 @@ checklist → `journal/ops/tasks.md`; machine pointer → `journal/ops/phase.md`
 
 ## Current pointer
 
-- **NOW (2026-06-28 — THE TOWER RESEARCH-AND-DESIGN LOOP IS COMPLETE; READY TO BUILD).** Session 2 ran a
-  self-paced `/loop` firing one adversarially-verified Workflow per strand (sweep → 3-vote refutation →
-  synthesis), + a final synthesis (draft → critic → reconciled). **~140 agents, ~5M subagent tokens. No
-  product code.** The whole **Tower** bench is now designed on paper, each claim adversarially stress-tested
-  (the honesty pass killed ~half the scoring decisions — that's the point). Committed `9ff93de` (Stage-1
-  reorg) + `4e69b2e` (loop output). **Both UNPUSHED on `dev`.**
+- **NOW (2026-06-28 20:01 — UI SLICE SHIPPED+MERGED; CHUNK 2 DESIGNED; 2a PLAN READY TO EXECUTE).**
+  The "render the run" UI slice is built, reviewed (READY-TO-MERGE), and **merged to `dev` with Chunk 1**
+  (fast-forward, branch `tower-core-skeleton` deleted; 531 green; **LOCAL/UNPUSHED**, `dev` ~19 ahead of origin).
+  Chunk 2 (the two adapters) is designed; the **Chunk-2a plan is written**.
+  **RECOMMEND NEXT (Roi's call):** fresh chat → branch off `dev` → execute
+  `docs/plans/2026-06-28-tower-chunk2a-feather-adapter.md` via **subagent-driven-development** (6 TDD tasks).
+- **Chunk 2 decisions (2026-06-28):** Feather gets a **minimal Tower-owned Claude brain** (observe→act loop over
+  its HTTP API, never imports `src/`) so "Feather+brain" can attempt both detectability AND security levels;
+  **browser-use runs for real** as a Python subprocess (2b); **stay in the monorepo** (Anthropic SDK→root
+  `package.json`, Python isolated under `tower/adapters/browser-use/`; split deferred past PR-1). Spec:
+  `docs/specs/2026-06-28-tower-pr1-chunk2-adapters-design.md`. Split: 2a (Feather adapter) → 2b (browser-use).
 - **The locked identity (D2):** an open, self-hostable, **tool-agnostic** TS/Node bench that drives ANY
   agentic web tool and scores it on **ALL angles** — capability (gate) / detectability (signature =
   warmed-vs-cold session delta) / security — into a per-tool cap/det/sec **profile**, toward a "boss tower."
@@ -24,12 +29,25 @@ checklist → `journal/ops/tasks.md`; machine pointer → `journal/ops/phase.md`
 - **Doc-hygiene batch — DONE 2026-06-28 (`93e6686`):** `tower/decisions.md` (D1–D6, grep-able; D6
   WASP→RedTeamCUA wording fix applied), `docs/GLOSSARY.md`, `tower/` indexed in `journal/docs-map.md`;
   `gym→tower` rename confirmed done for live front-doors. Corpus is now searchable.
-- **NEXT = THE BUILD PHASE — PR-1 MVP** (best started in a FRESH chat — load the synthesis clean):
-  extend `tower/`; 2 adapters (Feather HTTP + browser-use subprocess); 1 detectability level (rebrowser
-  `runtime_enable`, self-post by nonce, no-attach); 1 security level (WASP-style comment injection, ASR
-  k=3); aggregator v0 with Clopper-Pearson CIs + the **small-multiples** profile render (NOT a radar).
-  Honest failure = success. Plan: `tower/research/2026-06-27-00-SYNTHESIS.md` §"Build this first".
-- **Pushed** through `deac0d6` (loop + stop). `93e6686` (doc-hygiene) committed; **push when ready.**
+- **CHUNK-1 BUILT (2026-06-28 — engine + website skeleton).** Executed the 8-task plan
+  `docs/plans/2026-06-28-tower-pr1-chunk1-skeleton.md` via **subagent-driven-development** (sonnet
+  implementers, opus reviewers; fresh impl + opus task-review per task, one fix loop, final whole-branch
+  review). **10 commits `bde78e2..24798a3` on branch `tower-core-skeleton`** (off `dev`, **NOT merged, NOT
+  pushed**). Full suite **521 passing, typecheck clean, final review READY TO MERGE.** Shipped `tower/core/`:
+  types (Zod records + `Adapter`/`Level`/`Tower`) · verdict (PARTIAL invariant) · timing · store (tolerant
+  JSONL reads) · stubs · runner (stop-on-first-non-WIN, Grade-validated seam) · server (`/health`, out-of-band
+  `POST /sink/:nonce`, `GET /levels/placeholder`) · `tower/serve.ts` + **`npm run tower:serve`** + e2e smoke.
+  `behavioral.ts`/`classify.ts` untouched. Build ledger: `.superpowers/sdd/progress.md`.
+- **TRY-IT-OUT done (2026-06-28):** ran `npm run tower:serve` live — health/placeholder/sink all worked;
+  persisted RunRecord showed WIN→FAIL stop-at-security with cause+fix + per-part timing. Roi saw the bare
+  placeholder page (screenshot sent) and wants the *real* website.
+- **UI SLICE — DONE+MERGED (2026-06-28).** `tower/core/render.ts` (pure `renderRun`: result cards, all 4 outcome
+  chips styled, escaping, AI-placeholder slot every card, empty state) + `GET /` route + `resultsFile` dep on
+  `buildServer` + `serve.ts` wiring. Commits `a00d84f`,`8e49f30`,`8049004`,`275c0f6` (test hardening). Built via
+  subagent-driven-development; final opus review READY-TO-MERGE; live-verified (screenshot of WIN/FAIL cards sent).
+  Spec `docs/specs/2026-06-28-tower-render-run-ui-slice-design.md`, plan `docs/plans/2026-06-28-tower-render-run-ui-slice.md`.
+- **EVERYTHING SINCE THE LOOP IS LOCAL/UNPUSHED on `dev`** (~19 commits ahead of origin: Chunk 1 + UI slice +
+  the design/plan commits). Roi: "keep it local for now." Push when he wants it public.
 
 ## Key facts for next session
 - **Documentation pattern (Roi's standing rule):** keep sources + findings + decisions, **copied verbatim**
