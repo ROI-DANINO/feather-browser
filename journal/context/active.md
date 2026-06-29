@@ -54,6 +54,16 @@ checklist → `journal/ops/tasks.md`; machine pointer → `journal/ops/phase.md`
   push-as-you-go, repo public, Tower lives here until the split (D10: re-ask at the Chunk-2b boundary).
   Never push `master`.
 
+## Workspace lanes (git worktrees) — added 2026-06-30
+- **Two intermergeable lanes share one git repo.** `~/Desktop/Projects/feather-browser` (this folder,
+  branch `dev`) = **Roi's own work**. `~/Desktop/Projects/feather-browser-lead` (branch `lead-tasks`,
+  off `dev` @ `2b461e9`) = **lead-assigned tasks** for the new project that leans on Feather+Tower.
+  Drive the lead lane from a *separate* Claude session in that folder.
+- **Intermerge either direction:** `git merge lead-tasks` (whole branch) or `git cherry-pick <commit>`
+  (one change). Setup-only, no product code. Lead's final destination (own remote vs Roi's) deferred —
+  "not sure yet". TODO offered/not-done: add `feather-browser-lead/` to the spine ignore list.
+  Handoff `journal/ops/sessions/the-second-self-20260630-0227.md`.
+
 ## Recent completed context
 - **2026-06-30 Orientation interview + planning pass (this session):** Roi re-derived the locked design,
   sharpened it → D7–D10 + memory `tower-arena-imitates-sites-real-guards` + blog 0029. No product code.

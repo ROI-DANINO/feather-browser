@@ -9,7 +9,7 @@ If this list is empty, nothing is owed.
 
 ## Owed
 
-_(empty — nothing owed)_
+- `journal/ops/sessions/the-second-self-20260630-0227.md` — feather grew a second self: a `lead-tasks` git worktree giving Roi two intermergeable lanes (his own work vs lead-assigned), one shared git brain — 2026-06-30
 
 <!-- One line per deferred session:
 - `journal/ops/sessions/<nickname>-<timestamp>.md` — <one-line hook> — <YYYY-MM-DD>
