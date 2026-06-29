@@ -7,20 +7,23 @@ checklist → `journal/ops/tasks.md`; machine pointer → `journal/ops/phase.md`
 
 ## Current pointer
 
-- **NOW (2026-06-29 01:54 — CHUNK 2a SHIPPED+MERGED; NEXT SESSION = ORIENTATION INTERVIEW).**
-  Tower **Chunk 2a (`adapter.feather`)** is built, reviewed (final = WITH-FIXES, all 3 fixed), and **merged
-  to `dev`** (fast-forward, branch `tower-feather-adapter` deleted; **555 green**; **LOCAL/UNPUSHED**).
-  Gave Feather a small **Tower-owned Claude brain** (observe→decide→act over HTTP, never imports `src/`).
-  7 commits `fccde32..94ce173`.
-- **RECOMMEND NEXT (Roi's call): the next session STARTS as an interview** — build Roi's mental model of
-  what the Tower is *before* more building (he asked: "I just want to get oriented"; he learns by seeing/
-  using). Two memories auto-load it: **`tower-next-orientation-interview`** + **`tower-two-web-interfaces-idea`**.
-  Interview outputs → (a) clearer picture, (b) the **repo-split decision**. THEN **Chunk 2b** (browser-use).
-- **REPO SPLIT — DEFERRED, decide in the interview (2026-06-29).** Roi wants Tower out of feather-browser
-  ("they dont need to share a home") — instinct confirmed sound. NOT now: it's invisible structural work at
-  the moment he wants to orient, and it forces a "what journal/design-history travels" sub-decision. If yes,
-  **execute at the Chunk-2b boundary** (documented `AGENTS.md` split-trigger = first non-Feather tool).
-  Code coupling is already zero (HTTP-only, no `src/` import).
+- **NOW (2026-06-30 — ORIENTATION INTERVIEW DONE; VISION RECONCILED; NEXT = CHUNK 2b).**
+  Ran the orientation interview (Roi declared himself oriented). He re-derived the three angles
+  (capability/detectability/security) + boss tower unprompted, and **sharpened the design with four
+  decisions logged D7–D10 in `tower/decisions.md`**: (D7) one **shared task pool, three lenses** — the
+  capability tower authors errands once, the other towers reuse them per-angle; (D8) **difficulty = page
+  structural messiness** (DOM depth/popups/layered markup; mine past Feather sessions); (D9) **real
+  commercial guards (Cloudflare/DataDome) hosted over the Tower's OWN arena** — own-arena ethics extended
+  to detectability, levels IMITATE hard sites and never drive them; (D10) **repo split → KEEP IN
+  feather-browser for now, re-ask at the Chunk-2b boundary**. New memory `tower-arena-imitates-sites-real-guards`.
+  No product code this session — planning/reconciliation pass only.
+- **RECOMMEND NEXT: Chunk 2b — `adapter.browser-use`** (real browser-use as a Python subprocess; spec §6/§9;
+  own plan TBD). It is also the **documented repo-split re-ask point** (D10) — surface the split question to
+  Roi when reaching it. Roi's vision (D7–D8) feeds the **level-design session** the synthesis deferred; it
+  does NOT resequence PR-1 (capability stays gate-stubbed there).
+- **Chunk 2a build facts (still current):** `adapter.feather` built, reviewed (final WITH-FIXES, all 3
+  fixed), merged to `dev` (FF, branch deleted; **555 green**), and **pushed/public**. Tower-owned Claude
+  brain (observe→decide→act over HTTP, never imports `src/`). Commits `fccde32..94ce173`.
 - **Chunk 2a build facts:** `tower/core/agent/{action,brain,decide-claude}.ts` + `tower/core/adapters/
   {feather-client,feather}.ts` + `tower/smoke/feather.ts` + `npm run tower:smoke:feather`. New dep
   `@anthropic-ai/sdk@^0.106.0` (root `package.json`), default model `claude-opus-4-8`. Brain loop bounded by
@@ -45,14 +48,17 @@ checklist → `journal/ops/tasks.md`; machine pointer → `journal/ops/phase.md`
 - **Profiles / server / operating Feather:** unchanged — `docs/agent-playbook.md` + agent skills; `scratch`
   is the only profile on disk.
 
-## Push-state — IN SYNC (pushed 2026-06-29)
-- **`dev` == `origin/dev` == `5317da2`.** Chunk 2a (+ all prior Tower work) is **pushed and public**. Roi's
-  call 2026-06-29: **"make Tower public until we split it"** — so the default now is push-as-you-go, the
-  repo is public, and the Tower lives here until the split (decided in the interview, executed at the
-  Chunk-2b boundary). The old "~19 unpushed / keep local" breadcrumb was wrong and is retired.
+## Push-state — IN SYNC (pushed 2026-06-30)
+- **`dev` == `origin/dev`** after this `/stop` push (tracking/docs only, no product code: `tower/decisions.md`
+  D7–D10 + blog 0029 + journal pointers). Roi's standing call: **"make Tower public until we split it"** →
+  push-as-you-go, repo public, Tower lives here until the split (D10: re-ask at the Chunk-2b boundary).
+  Never push `master`.
 
 ## Recent completed context
-- **2026-06-29 Chunk 2a (this session):** the Feather minimal-brain adapter, merged. See handoff
+- **2026-06-30 Orientation interview + planning pass (this session):** Roi re-derived the locked design,
+  sharpened it → D7–D10 + memory `tower-arena-imitates-sites-real-guards` + blog 0029. No product code.
+  Handoff `journal/ops/sessions/the-plan-i-already-had-20260630-0153.md`.
+- **2026-06-29 Chunk 2a:** the Feather minimal-brain adapter, merged. See handoff
   `journal/ops/sessions/the-brain-i-gave-the-body-20260629-0154.md`.
 - **2026-06-28 UI slice + Chunk-1 build + Chunk-2 design:** render-the-run page merged; engine skeleton;
   the two-adapter spec + 2a plan. (Folded from the consumed `next.md` bridge.)

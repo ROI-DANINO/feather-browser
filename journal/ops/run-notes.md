@@ -421,3 +421,16 @@ THEN build PR-1 MVP (2 adapters, 1 detectability + 1 security level, aggregator 
   key is env-only), pushed `dev` → `origin/dev`. **`dev`==`origin/dev`==`5317da2`, in sync.**
 - New default: **push-as-you-go**; repo is public; Tower stays in feather-browser until the split (decided in
   the interview, executed at the Chunk-2b boundary). "Keep local" / "~19 unpushed" breadcrumbs retired.
+
+## 2026-06-30 01:53 — Orientation interview DONE; Tower vision sharpened (D7–D10); no product code
+- Ran the deferred orientation interview to completion. Roi **re-derived the locked 3-angle design**
+  (capability/detectability/security + boss tower) unprompted, then sharpened it. Four decisions logged
+  in `tower/decisions.md`:
+  - **D7** one shared task pool, three lenses (capability tower authors errands once; others reuse per-angle).
+  - **D8** difficulty = page structural messiness (DOM depth/popups/layered markup; mine past Feather sessions).
+  - **D9** real guards (Cloudflare/DataDome) hosted over the Tower's OWN arena = own-arena ethics extended to
+    detectability; levels IMITATE hard sites, never drive them; peaceful/ToS-respecting.
+  - **D10** repo split: **keep in feather-browser for now; re-ask Roi at the Chunk-2b boundary.**
+- Vision feeds the deferred level-design session; does NOT resequence PR-1 (capability stays gate-stubbed).
+- Durable facts promoted to global memory: `tower-arena-imitates-sites-real-guards`; interview memory marked DONE.
+- Blog 0029 written. NEXT = Chunk 2b (browser-use) = also the D10 split re-ask point. Push-as-you-go at this /stop.

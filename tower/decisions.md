@@ -120,7 +120,40 @@ ADR-0004 (host-primary). B wins with grafts that fix its validity holes:
   no weaponizable exploits shipped → a `tower/SECURITY-TESTING-POLICY.md`.
 - **MVP level order:** L1 WASP-style GitLab-comment IPI → L2 contextual exfiltration → L6 relay/second-order.
 
+## D7 — Level structure = one shared task pool, three lenses (Roi, 2026-06-30 orientation interview)
+The **capability ("real-life tasks") tower is the AUTHORING layer.** It defines the errands once (book a
+flight, scrape a forum, post/comment, read email); the **detectability and security towers REUSE the same
+tasks**, each making it hard *on its own angle*. "Structure each tower once — don't reinvent per angle."
+The task, not the angle, is the shared unit; the angle is the lens applied over it. This fills the level
+model the synthesis explicitly deferred ("Tower levels are not fully designed here — that is the build
+session after this synthesis", `tower/research/2026-06-27-00-SYNTHESIS.md` cut-line). Input to the
+level-design session that follows PR-1; does NOT resequence PR-1 (capability stays gate-stubbed there).
+
+## D8 — Capability difficulty ladder = page structural complexity (Roi, 2026-06-30)
+A capability level's **difficulty is defined by how hard the PAGE is to operate** — DOM depth/messiness,
+popups/modals, layered or obfuscated markup — the things that trip agents, not task semantics. Human-legible
+axis complementing WebArena difficulty-weighting (D3). **Source data already exists:** mine past Feather
+driving sessions for easy→nightmare page examples. (Research-reuse, not new data collection.)
+
+## D9 — Detectability L4 made reproducible via real guards over OUR OWN arena (Roi, 2026-06-30)
+Roi will **host the Tower's own arena pages BEHIND real commercial bot-defenses** (Cloudflare Bot
+Management / DataDome / Turnstile — paid). This tests world-class detection **honestly without touching
+anyone else's property**: own the page, put the real guard in front, point the agent at *your* guarded
+page — real detection tech, zero ToS violation. **Extends own-arena ethics (D6) from security to
+detectability** and partly de-risks the synthesis's "L4 = live, non-reproducible, diagnostic-only" hole
+(`SYNTHESIS` open-question 6). The arena **IMITATES** hard real sites (Facebook/gov/insurance) for realism;
+it never operates the real ones. Real sites that *explicitly welcome* agents MAY be added as a separate
+live track. The Tower is a **peaceful, ToS-respecting** project. See memory `tower-arena-imitates-sites-real-guards`.
+
+## D10 — Repo split: stay in feather-browser for now; re-ask at the browser-use boundary (Roi, 2026-06-30)
+The identity question ("is the Tower its own product?") is held **OPEN**. Decision: **KEEP the Tower inside
+feather-browser for now**; **ask Roi again when we reach the documented split-trigger = Chunk 2b** (first
+non-Feather tool = browser-use). Code coupling is already zero (HTTP-only, never imports `src/`), so a
+later split stays clean. Unresolved sub-question for that day: what journal/design-history travels with it.
+See memory `tower-two-web-interfaces-idea`.
+
 ---
 
 _Decision history: D1 superseded by D2. The radar-polygon rendering (proposed in D3) was overturned in D5.
+D7–D10 added 2026-06-30 from Roi's orientation interview (level model + repo-split call).
 The full final tie-together is `tower/research/2026-06-27-00-SYNTHESIS.md`._

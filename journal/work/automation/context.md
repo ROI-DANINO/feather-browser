@@ -220,3 +220,28 @@ NOT in CI). Provider = Claude/Anthropic (`@anthropic-ai/sdk` in root pkg), defau
   for browser-use. The Tower stays off the browser↔site data path (no Playwright/CDP attach to the measured browser).
 - **Verdicts external, never adapter-reported.** Capability is stubbed in PR-1; the adapter never reports task success/fail.
 - **Live runs are real/costed/nondeterministic** — honest wander/give_up is a first-class outcome, not a hidden defect.
+
+## Tower level model + arena ethics (durable, 2026-06-30 — Roi's orientation interview, decisions D7–D10)
+
+Roi re-derived the locked 3-angle design (capability/detectability/security + boss tower) unprompted and
+sharpened it. These are durable architecture decisions for the level-design session that follows PR-1 (they
+do **not** resequence PR-1; capability stays gate-stubbed there). Full text → `tower/decisions.md` D7–D10.
+
+- **One shared task pool, three lenses (D7).** The capability ("real-life tasks") tower **authors** the
+  errands once (book a flight, scrape a forum, post/comment, read email); the detectability + security
+  towers **reuse the same tasks**, each making it hard on its own angle. The task is the shared unit; the
+  angle is the lens. Fills the "levels not designed yet" gap the synthesis deferred.
+- **Difficulty = page structural messiness (D8).** A capability level's difficulty is how hard the *page* is
+  to operate (DOM depth, popups/modals, layered/obfuscated markup), NOT task semantics. Source data exists —
+  mine past Feather driving sessions for easy→nightmare examples.
+- **Own-arena ethics extends to detectability (D9).** The Tower hosts **real commercial guards**
+  (Cloudflare Bot Management / DataDome / Turnstile — paid) **in front of its OWN arena pages**: own the
+  page, put the real guard on it, point the agent at your own guarded page → real detection tech, zero ToS
+  violation (makes the synthesis's "L4 = live/non-reproducible" guards partly reproducible). Levels
+  **IMITATE** hard real sites (Facebook/gov/insurance) for realism; the Tower **never drives the real ones**.
+  Real sites that *explicitly welcome* agents may be a separate live track. **The Tower is a peaceful,
+  ToS-respecting project** — the same anti-bot-testing line as the rest of the repo. Memory:
+  `tower-arena-imitates-sites-real-guards`. Relief on build cost: copy each level's *mechanism* (the guard /
+  the injectable spot / the task shape), not a pixel-clone of the site.
+- **Repo split deferred (D10).** Tower stays in feather-browser for now; re-ask Roi at the Chunk-2b boundary
+  (first non-Feather tool = browser-use). Coupling is already zero (HTTP-only, never imports `src/`).
