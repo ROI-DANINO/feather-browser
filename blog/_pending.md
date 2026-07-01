@@ -10,6 +10,7 @@ If this list is empty, nothing is owed.
 ## Owed
 
 - `journal/ops/sessions/the-second-self-20260630-0227.md` — feather grew a second self: a `lead-tasks` git worktree giving Roi two intermergeable lanes (his own work vs lead-assigned), one shared git brain — 2026-06-30
+- `journal/ops/sessions/the-body-i-didnt-build-from-memory-20260702-0019.md` — built the browser-use adapter (Chunk 2b) by probing the REAL installed package in a venv instead of trusting my memory — which caught a stale model-id the web-research had confidently asserted; honest deferral of the paid live smokes — 2026-07-02
 
 <!-- One line per deferred session:
 - `journal/ops/sessions/<nickname>-<timestamp>.md` — <one-line hook> — <YYYY-MM-DD>

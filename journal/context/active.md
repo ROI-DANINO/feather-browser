@@ -7,33 +7,30 @@ checklist → `journal/ops/tasks.md`; machine pointer → `journal/ops/phase.md`
 
 ## Current pointer
 
-- **NOW (2026-06-30 — ORIENTATION INTERVIEW DONE; VISION RECONCILED; NEXT = CHUNK 2b).**
-  Ran the orientation interview (Roi declared himself oriented). He re-derived the three angles
-  (capability/detectability/security) + boss tower unprompted, and **sharpened the design with four
-  decisions logged D7–D10 in `tower/decisions.md`**: (D7) one **shared task pool, three lenses** — the
-  capability tower authors errands once, the other towers reuse them per-angle; (D8) **difficulty = page
-  structural messiness** (DOM depth/popups/layered markup; mine past Feather sessions); (D9) **real
-  commercial guards (Cloudflare/DataDome) hosted over the Tower's OWN arena** — own-arena ethics extended
-  to detectability, levels IMITATE hard sites and never drive them; (D10) **repo split → KEEP IN
-  feather-browser for now, re-ask at the Chunk-2b boundary**. New memory `tower-arena-imitates-sites-real-guards`.
-  No product code this session — planning/reconciliation pass only.
-- **RECOMMEND NEXT: Chunk 2b — `adapter.browser-use`** (real browser-use as a Python subprocess; spec §6/§9;
-  own plan TBD). It is also the **documented repo-split re-ask point** (D10) — surface the split question to
-  Roi when reaching it. Roi's vision (D7–D8) feeds the **level-design session** the synthesis deferred; it
-  does NOT resequence PR-1 (capability stays gate-stubbed there).
-- **Chunk 2a build facts (still current):** `adapter.feather` built, reviewed (final WITH-FIXES, all 3
-  fixed), merged to `dev` (FF, branch deleted; **555 green**), and **pushed/public**. Tower-owned Claude
-  brain (observe→decide→act over HTTP, never imports `src/`). Commits `fccde32..94ce173`.
-- **Chunk 2a build facts:** `tower/core/agent/{action,brain,decide-claude}.ts` + `tower/core/adapters/
-  {feather-client,feather}.ts` + `tower/smoke/feather.ts` + `npm run tower:smoke:feather`. New dep
-  `@anthropic-ai/sdk@^0.106.0` (root `package.json`), default model `claude-opus-4-8`. Brain loop bounded by
-  **step budget + wall-clock timeout**. `featherAdapter` drives-never-grades (`finally`-close; throws only on
-  drive error). Honesty props intact: no `src/`, no-attach, `Adapter` unchanged, brain Tower-owned (not fable/iroh).
-  Final-review fix `94ce173`: createSession profile body (verified vs `docs/api-reference.md`) + its test + the timeout.
-- **TO RUN THE LIVE SMOKE (Roi, manual — the one deferred step):** terminal 1 `npm run dev` (writes
-  endpoint.json); terminal 2 `export ANTHROPIC_API_KEY=…` then `npm run tower:smoke:feather`. Costs ~cents;
-  a small model may wander/give_up on the trivial page — that's a first-class honest outcome, not a failure.
-  Free zero-key alternative to *see the website*: `npm run tower:serve` → open the URL (result cards).
+- **NOW (2026-07-02 — CHUNK 2b DONE+MERGED+PUSHED; CHUNK 3 DESIGNED; NEXT = ULTRACODE CHUNK 3 build).**
+  Roi's standing instruction at this `/stop`: **"ultracode Chunk 3"** — build both levels via workflow
+  orchestration. Design of record → `docs/specs/2026-07-02-tower-pr1-chunk3-levels-design.md`.
+- **Chunk 2b — `adapter.browser-use` — MERGED to `dev`, PUSHED** (`dev`==`origin/dev`==`94a63c3`). The
+  polyglot seam: Tower spawns a Python shim, one-line JSON over stdin/stdout, knows nothing of browser-use
+  internals. TS `tower/core/adapters/browser-use.ts` (+16 mocked tests, injectable `spawnImpl`, SIGKILL
+  wall-clock timeout, last-parseable-line wins) + Python `tower/adapters/browser-use/{shim.py,
+  requirements.txt,README.md}` (pinned `browser-use==0.13.1`, `enable_signal_handler=False`, `is_successful()`
+  None=error, every failure path stays protocol-clean) + `tower/smoke/browser-use.ts` +
+  `npm run tower:smoke:browser-use`. **572 green.** Commits `9b8c8a0..a1a0e5d` + pyc-cleanup `94a63c3`.
+- **D10 ANSWERED (2026-07-01):** Tower **stays in feather-browser** (Python isolated under
+  `tower/adapters/browser-use/` w/ own `requirements.txt` — dep seam, not a separate build).
+- **RESEARCH persisted verbatim** (Roi's ask — "save the data that came out for the tokens"):
+  `tower/research/2026-07-01-session-outputs-index.md` indexes all 3 workflows (browser-use API 46-agent
+  + chunk-2b build 6-agent + chunk-3 design 29-agent); raw receipts in `tower/research/raw/2026-07-0*.json`.
+- **NEXT = Chunk 3a (detectability + sink registry) then 3b (security + trials).** Both levels self-report
+  by nonce but from different sides: L2 = in-page probe → same-origin `127.0.0.1` sink (no-attach,
+  single-shot); comment_injection = Tower-owned WASP victim app, 3 server hooks, any-of-k=3. New plumbing:
+  `sink-registry.ts`, `trials.ts`, `text/plain` beacon parser. **Load-bearing unknown:** V8's 2025
+  getter-guard may false-negative the classic `Error.stack` probe → §5.5 calibration gate decides
+  empirically; ship `gated` if dead, merge either way.
+- **DEFERRED TO ROI (paid live smokes):** `tower:smoke:browser-use` (needs `ANTHROPIC_API_KEY` + one-time
+  `uvx playwright install chromium`) + the still-owed `tower:smoke:feather`. Everything up to the paid
+  boundary is proven (venv protocol probes launched a real headless browser, stayed protocol-pure).
 
 ## Key facts for next session
 - **The locked identity (D2):** an open, self-hostable, **tool-agnostic** TS/Node bench driving ANY agentic

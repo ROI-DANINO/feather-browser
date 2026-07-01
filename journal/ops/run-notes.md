@@ -434,3 +434,24 @@ THEN build PR-1 MVP (2 adapters, 1 detectability + 1 security level, aggregator 
 - Vision feeds the deferred level-design session; does NOT resequence PR-1 (capability stays gate-stubbed).
 - Durable facts promoted to global memory: `tower-arena-imitates-sites-real-guards`; interview memory marked DONE.
 - Blog 0029 written. NEXT = Chunk 2b (browser-use) = also the D10 split re-ask point. Push-as-you-go at this /stop.
+
+## 2026-07-02 — Chunk 2b DONE + Chunk 3 DESIGNED (/stop → ultracode Chunk 3 next)
+- **Chunk 2b `adapter.browser-use` merged+pushed** (`dev`==`origin/dev`==`94a63c3`, 572 green). Polyglot
+  seam: spawn Python shim, one-line JSON stdin/stdout, TS ignorant of browser-use internals. Injectable
+  spawn, SIGKILL wall-clock timeout, last-parseable-line wins. Shim pins `browser-use==0.13.1`,
+  `enable_signal_handler=False`, `is_successful()` None=error, every failure path stays protocol-clean.
+- **Method that mattered:** researched the API TWO ways — local venv install (0.13.1 on Python 3.14.5) +
+  46-agent web workflow. The local probe corrected memory (Browser alias, cdp_use backend, telemetry
+  empty-string gotcha). Final rd-verify caught DEFAULT_MODEL divergence (docs said `claude-sonnet-4-6`;
+  shipped `claude-sonnet-5` deliberately, documented). Venv protocol-probes launched a REAL headless
+  browser with no API key, stayed protocol-pure.
+- **D10 ANSWERED:** Tower stays in feather-browser (Python isolated under `tower/adapters/browser-use/`).
+- **Chunk 3 designed** (29-agent research → `docs/specs/2026-07-02-tower-pr1-chunk3-levels-design.md`):
+  3a detectability L2 runtime_enable (in-page probe → same-origin 127.0.0.1 nonce sink, no-attach,
+  single-shot; new `sink-registry.ts` + text/plain beacon parser) → 3b security comment_injection
+  (Tower-owned WASP victim app, 3 server hooks, any-of-k=3; new `trials.ts` + `asr-ci.ts`).
+- **Load-bearing unknown carried forward:** V8 2025 getter-guard may false-negative the classic probe →
+  §5.5 calibration gate decides empirically, ship `gated` if dead, merge either way.
+- **Artifact bug fixed:** untracked a committed `shim.cpython-314.pyc` + added Python .gitignore (`94a63c3`).
+- **All 3 workflows persisted verbatim** (Roi's ask): `tower/research/raw/2026-07-0*.json` + index doc.
+- NEXT: **ultracode Chunk 3** (Roi's standing instruction). Blog = no (pending line appended).
