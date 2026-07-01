@@ -1,0 +1,80 @@
+{
+ "_receipt": "tower-chunk3a-detectability build workflow (6 agents, ~362k subagent tokens) run 2026-07-02 — build(4 TDD steps)+review+gate. Merged to dev @ c270a21.",
+ "summary": "Build Chunk 3a: sink-registry + server wiring + L2 runtime_enable detectability level (TDD, sequential deps, adversarial review + gate)",
+ "agentCount": 6,
+ "logs": [],
+ "totalTokens": 361969,
+ "totalToolCalls": 125,
+ "result": {
+  "build": [
+   {
+    "summary": "Chunk 3a STEP 1 done. Created sink-registry.ts and its test. 11 tests pass, tsc clean.",
+    "files": [
+     "/home/roking/Desktop/Projects/feather-browser/tower/core/sink-registry.ts",
+     "/home/roking/Desktop/Projects/feather-browser/tower/core/sink-registry.test.ts"
+    ],
+    "testsRun": "vitest 11 passed, tsc exit 0",
+    "testsPassed": true
+   },
+   {
+    "summary": "Wired the SinkRegistry into the Tower Fastify server per design §1.2 + §3 of the Chunk-3 spec.\n\nChanges (files only, no commit):\n- tower/core/server.ts: (1) Added `registry: SinkRegistry` to `ServerDeps` (injected; buildServer stays the sole Fastify origin) and clarified `onReport` now fires only on a `recorded` report. (2) Registered a `text/plain` content-type parser that `JSON.parse`s the string body so navigator.sendBeacon is interchangeable with the fetch keepalive JSON; the built-in application/json parser is untouched. Malformed text/plain surfaces as 400 (statusCode attached to the parser error) instead of Fastify's default 500. (3) Replaced the `:38` TODO placeholder so the `/sink/:nonce` handler consults `registry.record()` for the status→HTTP mapping: recorded→200 + onReport, unknown→410, expired→410, consumed→409, mismatch→400. Invalid DetectorReport body (zod safeParse fail) returns 400 BEFORE calling the registry, so an armed nonce stays consumable.\n- tower/serve.ts: injects `createSinkRegistry()` into buildServer (updated for the new required ServerDeps field).\n- tower/core/server.test.ts: updated all buildServer callers to the new shape via a `harness()` helper (pre-arms the nonce + captures onReport), and ADDED the full HTTP-status matrix (200 recorded / 400 mismatch / 400 invalid-body-without-touching-registry / 410 unknown / 410 expired / 409 replay) plus a test that a text/plain beacon body parses identically to a JSON body (same status, same captured report), and a malformed-text/plain→400 test.\n\nStanding rules honored: no import of src/, verdict still comes from the environment via the nonce sink, no-attach preserved, DetectorReport/Level/Grade/Adapter interfaces unchanged, behavioral.ts/classify.ts untouched. Did NOT commit.\n\nOne deliberate deviation worth noting: the design §1.2 status matrix doesn't specify malformed-JSON-in-text/plain; I made it 400 (rather than Fastify's default 500) for consistency with the invalid-DetectorReport→400 case. This is a parser-level reject that never touches the registry.\n\nThe exhaustive switch over RecordResult.status has no default branch — TypeScript strict is satisfied because the union is fully covered and every arm returns.",
+    "files": [
+     "/home/roking/Desktop/Projects/feather-browser/tower/core/server.ts",
+     "/home/roking/Desktop/Projects/feather-browser/tower/serve.ts",
+     "/home/roking/Desktop/Projects/feather-browser/tower/core/server.test.ts"
+    ],
+    "testsRun": "npx vitest run tower/core/server.test.ts (12 passed) · npx tsc --noEmit (exit 0) · npx vitest run tower/ full suite (17 files, 105 passed)",
+    "testsPassed": true,
+    "concerns": "ServerDeps.registry is required (not optional) — I updated the only two callers (serve.ts, server.test.ts); any future/other buildServer caller must inject a registry. Malformed-text/plain→400 is a design-unspecified choice (see summary). The level page plugins (page.ts/victim-app.ts) mentioned in §3 are NOT part of this step (Step 3+ of 3a) and were not added."
+   },
+   {
+    "summary": "Built STEP 3 of Tower Chunk 3a — the runtime-enable challenge page — per design §1.1/§1.2/§1.5. Steps 1-2 (sink-registry.ts + server.ts text/plain parser + registry injection) were already present; I added only the 4 STEP-3 files.\n\nFiles created under tower/levels/runtime-enable/:\n- detector.js: the vendored in-page probe. window.runtimeEnableLeakVars.stackLookupCount, Object.defineProperty getter on Error.stack that increments the counter, console.debug(e). Runs probe() immediately, then setInterval(probe, 100) for settleMs=2500, then clearInterval + report(). report() maps count>0 -> 'blocked', count===0 -> 'ok' (with a code comment flagging the V8-2025 getter-guard / calibration nuance). It reads nonce from location.search, builds {nonce, detectorId:'runtimeEnableLeak', verdict, detail:{stackLookupCount, settleMs, probeVersion}}, and does BOTH the fetch('/sink/'+nonce, keepalive) and the addEventListener('pagehide', sendBeacon) transports.\n- page.ts: Fastify plugin exporting runtimeEnablePage(app) — GET /levels/runtime-enable?nonce=<nonce> returns HTML with the nonce injected server-side (HTML-escaped via htmlEscape covering & < > \" ') and detector.js inlined (read once at module load via readFileSync(join(__dirname,'detector.js'))). Registrable on buildServer for same-origin. No import of src/.\n- VENDORED.md: provenance (github.com/rebrowser/rebrowser-bot-detector, index.js, runtimeEnableLeakInit, commit e1a25b1 = current main HEAD, MIT confirmed from upstream package.json), exact copied-vs-changed list, and a BLOCKING CALIBRATION section (empty placeholder table for the live gate) citing the Castle blog / V8 May-2025 getter-guard risk per design §6.1.\n- page.test.ts: asserts served HTML contains the nonce, inlines the probe function text (runtimeEnableLeakVars/stackLookupCount/Object.defineProperty/console.debug/sink/sendBeacon), and HTML-escapes a quote/angle-bracket nonce (no injection) plus an ampersand case.\n\nHonesty notes: (1) Upstream uses configurable:false; the task said vendor EXACTLY as design §1.1 shows, which specifies configurable:true — I followed the design and documented the deviation in VENDORED.md. (2) page.test.ts registers the plugin on a bare Fastify instance because wiring page.ts into server.ts is a separate plumbing step not part of STEP 3. (3) The calibration table in VENDORED.md is intentionally an unfilled placeholder — it is filled by the live gate, which cannot be unit-tested. (4) Did not commit, per instructions.",
+    "files": [
+     "/home/roking/Desktop/Projects/feather-browser/tower/levels/runtime-enable/detector.js",
+     "/home/roking/Desktop/Projects/feather-browser/tower/levels/runtime-enable/page.ts",
+     "/home/roking/Desktop/Projects/feather-browser/tower/levels/runtime-enable/VENDORED.md",
+     "/home/roking/Desktop/Projects/feather-browser/tower/levels/runtime-enable/page.test.ts"
+    ],
+    "testsRun": "npx vitest run tower/levels/runtime-enable/page.test.ts (4 passed); npx tsc --noEmit (exit 0); npx vitest run tower/ (18 files, 109 tests, all passed)",
+    "testsPassed": true,
+    "concerns": "Two deviations worth a reviewer's eye, both documented: (1) detector.js uses configurable:true to match design §1.1 while upstream rebrowser uses configurable:false — behaviorally equivalent for the single-read measurement but a knowing divergence from the vendored source. (2) page.ts is not yet registered in server.ts (only /levels/placeholder exists there); STEP 3 delivers the registrable plugin but the buildServer wiring is a separate step, so page.test.ts stands up its own Fastify instance. The VENDORED.md CALIBRATION section is a deliberate empty placeholder — the count===0 -> 'ok' mapping is provisional until the live gate proves the classic probe still fires on browser-use 0.13.1's Chromium (V8 May-2025 getter-guard risk)."
+   },
+   {
+    "summary": "Built Step 4 of Tower Chunk 3a — the runtime-enable Level factory. Created `tower/levels/runtime-enable/level.ts` (makeRuntimeEnableLevel) and `level.test.ts`.\n\nmakeRuntimeEnableLevel(deps) mints nonce (injected or crypto.randomUUID()), calls registry.arm(nonce,{deadline:now()+timeoutMs}) BEFORE any drive, builds a load/observe-only task at `${baseUrl}/levels/runtime-enable?nonce=<nonce>`, and grade()=await registry.awaitReport(nonce,deadline) then maps report→Grade per design §1.4: blocked→blocked (cause carries stackLookupCount, read from report.detail), ok→ok, gated→gated (BOTH cause+suggestedFix so decideOutcome keeps it PARTIAL), null→error (\"no report within <T>ms\"). Also defensively maps a stray report.verdict 'error' to the error Grade. Extracted the pure mapping as exported mapReportToGrade for testability. Default timeoutMs=15000 (comfortably outlasts the detector's 2500ms settle window). Mirrors the injectable-dependency style of sink-registry.ts / feather.ts; interfaces (Adapter/Level/Grade/DetectorReport) untouched; no import of src/; verdict comes from the environment via awaitReport, never the adapter or an LLM.\n\nlevel.test.ts (9 tests, deterministic, no browser): feeds a mocked registry.awaitReport each of the 4 report shapes and asserts the Grade + decideOutcome → FAIL/WIN/PARTIAL/UNTESTABLE respectively; explicitly asserts the gated Grade satisfies the PARTIAL invariant (non-empty cause+fix); asserts null is never guessed as blocked; asserts construction arms nonce with deadline=now+timeoutMs and builds the nonce-keyed load/observe task; asserts the uuid default is fresh per run.\n\nDid NOT commit (per instructions — orchestrator commits/merges). Steps 1-3 (sink-registry, server wiring, page/detector/VENDORED) were already present on the branch.",
+    "files": [
+     "/home/roking/Desktop/Projects/feather-browser/tower/levels/runtime-enable/level.ts",
+     "/home/roking/Desktop/Projects/feather-browser/tower/levels/runtime-enable/level.test.ts"
+    ],
+    "testsRun": "npx vitest run tower/levels/runtime-enable/level.test.ts (9 passed); npx tsc --noEmit (clean, no errors); npx vitest run tower/ (full suite: 19 files, 118 tests passed)",
+    "testsPassed": true,
+    "concerns": "None blocking. Two notes: (1) I chose DEFAULT_TIMEOUT_MS=15000 since the design names the timeout T but doesn't fix a default value — it drives only the `error` cause string and the pre-drive deadline; the orchestrator may want to align it with a suite-wide budget. (2) mapReportToGrade defensively treats a report whose verdict is 'error' (which the page never emits — Tower sets error on timeout) as the same error Grade as null; harmless but slightly beyond the strict 4-shape spec."
+   }
+  ],
+  "review": {
+   "summary": "FIXED-1-issue. Adversarial whole-3a review of the sink registry + server + runtime-enable level. I read the design of record (§0,1,3,4,5,6) and all built files against it, then hunted the enumerated defect classes and ran the targeted vitest files + full tower suite + tsc myself.\n\nREAL DEFECT FOUND AND FIXED (important, integration gap): the L2 challenge page plugin `runtimeEnablePage` was never registered in `buildServer`. Both prior build steps deferred it as \"a separate step,\" but there is no remaining CODE step in 3a (step 5 is a live calibration gate, not code), so nobody wired it. Consequence: the level's `task.url` (`/levels/runtime-enable?nonce=…`) 404s against the real Tower server and the same-origin `/sink/:nonce` beacon can never fire — which blocks the step-5 calibration gate that drives buildServer at the same origin as the sink. Design §3.2 explicitly states buildServer hosts the level page plugin. Fix: imported and `app.register(runtimeEnablePage)` in tower/core/server.ts, plus a new test asserting GET /levels/runtime-enable serves the nonce+probe from buildServer (same-origin as the sink). All green afterward.\n\nEVERYTHING ELSE CHECKED OUT (no defect):\n(a) Registry: no double-settle (record clearTimeout+empties waiters; timeout splices then resolve is idempotent), no timer leak (both paths clear/settle), single-use replay→consumed correct, deadline gate `now()>deadline`→expired correct. (b) Server status mapping exact: unknown/expired→410, consumed→409, mismatch→400, and invalid body 400s BEFORE touching the registry (armed nonce stays consumable — verified by test). (c) text/plain parser JSON.parses in try/catch→400, never breaks JSON path (beacon==fetch verified). (d) nonce HTML-escaped in both attribute+text contexts; detector reports via BOTH fetch(keepalive) and sendBeacon(pagehide) — verified. (e) Verdict comes only from `registry.awaitReport` (the environment's report), never adapter/LLM — honesty prop intact; onReport is a log-only side channel. (f) PARTIAL invariant satisfied: gated carries cause+fix, decideOutcome keeps PARTIAL. (g) No src/ imports anywhere. (h) DetectorReport/LevelVerdict/Level/Grade unchanged. (i) Tests are substantive, not vacuous.\n\nVERDICT: READY after the one fix.",
+   "files": [
+    "/home/roking/Desktop/Projects/feather-browser/tower/core/server.ts",
+    "/home/roking/Desktop/Projects/feather-browser/tower/core/server.test.ts",
+    "/home/roking/Desktop/Projects/feather-browser/tower/core/sink-registry.ts",
+    "/home/roking/Desktop/Projects/feather-browser/tower/core/sink-registry.test.ts",
+    "/home/roking/Desktop/Projects/feather-browser/tower/levels/runtime-enable/detector.js",
+    "/home/roking/Desktop/Projects/feather-browser/tower/levels/runtime-enable/page.ts",
+    "/home/roking/Desktop/Projects/feather-browser/tower/levels/runtime-enable/page.test.ts",
+    "/home/roking/Desktop/Projects/feather-browser/tower/levels/runtime-enable/level.ts",
+    "/home/roking/Desktop/Projects/feather-browser/tower/levels/runtime-enable/level.test.ts",
+    "/home/roking/Desktop/Projects/feather-browser/tower/levels/runtime-enable/VENDORED.md"
+   ],
+   "testsRun": "npx vitest run (targeted 4 files) -> 37 passed; npx vitest run tower/ (full) -> 19 files, 119 passed; npx tsc --noEmit -> exit 0",
+   "testsPassed": true,
+   "concerns": "Non-blocking minors, left as-is (cheap but cosmetic / by-design):\n1. mapReportToGrade for a 'blocked' report with no detail yields cause \"Runtime.enable leaked (stackLookupCount=undefined)\" (String(undefined)). Harmless, tested, and a real blocked report always carries detail from detector.js. Cosmetic only.\n2. Deadline boundary asymmetry: record() accepts at now()===deadline (expired only when >) while awaitReport() resolves null at now()>=deadlineMs. At the exact same-ms tick a late report could record (200, onReport fires) after grade() already returned 'error' — a benign single-tick orphan, never a wrong verdict. In production both use Date.now on the same registry so the window is one tick. Not worth code churn.\n3. VENDORED.md CALIBRATION section is a deliberate empty placeholder pending the live gate (step 5) — count===0→'ok' is provisional per design §6.1 (V8 May-2025 getter-guard risk). Correctly flagged in-file; ship-either-way is design-sanctioned.\n4. detector.js uses configurable:true vs upstream configurable:false — documented deviation in VENDORED.md, behaviorally equivalent for the single read.\n5. serve.ts still boots stub levels (Chunk-2 spine); composing the real level with a SHARED registry instance is a later compose step. The injectable-registry design already supports it, so not a defect — just note the level and buildServer must be handed the same createSinkRegistry() instance when wired."
+  },
+  "gate": {
+   "summary": "Gate passed: 19 files, 119 tests passed; typecheck clean.",
+   "files": [
+    "/home/roking/Desktop/Projects/feather-browser/tower/core/sink-registry.ts"
+   ],
+   "testsRun": "npx vitest run tower && npx tsc --noEmit",
+   "testsPassed": true
+  }
+ }
+}
