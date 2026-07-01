@@ -16,6 +16,7 @@
     "tower:behavioral": "ts-node tower/behavioral.ts",
     "tower:serve": "ts-node tower/serve.ts",
     "tower:smoke:feather": "ts-node tower/smoke/feather.ts",
+    "tower:smoke:browser-use": "ts-node tower/smoke/browser-use.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --config vitest.config.ts",
     "test:coverage": "vitest run --config vitest.config.ts --coverage",
