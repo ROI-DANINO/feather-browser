@@ -60,9 +60,19 @@ profile → boss tower. Broad framework, NOT a niche. Build = Design B (thin TS/
       (`tower/adapters/browser-use/shim.py` + `requirements.txt` + `tower/core/adapters/browser-use.ts`,
       stdin/stdout JSON protocol, mocked unit tests + `tower:smoke:browser-use`). Spec §6/§9. Own plan TBD.
       **Tie to the repo-split decision** (this is the split-trigger boundary).
-- [ ] **Chunk 3 — real levels:** 1 detectability (**L2 `runtime_enable`**, rebrowser-bot-detector, page
-      self-posts ordinal by nonce to the out-of-band sink, NO Playwright/CDP attach) + 1 security
-      (**`comment_injection`**, WASP-style IPI in a purpose-owned victim app, ASR any-of-3 k=3).
+- [~] **Chunk 3 — real levels:** DESIGNED 2026-07-02 (29-agent research → `docs/specs/2026-07-02-tower-pr1-chunk3-levels-design.md`).
+      1 detectability (**L2 `runtime_enable`**, vendored rebrowser probe, page self-posts ordinal by
+      nonce to the same-origin `127.0.0.1` sink, NO Playwright/CDP attach) + 1 security
+      (**`comment_injection`**, WASP template in a Tower-owned victim app, 3 server-side hooks, any-of-k=3).
+      - [ ] **3a — detectability + sink registry:** `sink-registry.ts` (arm/consume/expire/awaitReport)
+            → wire into `server.ts` (replace `:38` TODO + add text/plain beacon parser) → vendor probe
+            into `detector.js`+`VENDORED.md` → `page.ts` → `level.ts` → tests. **Calibration gate:** live
+            probe vs browser-use 0.13.1's Chromium decides if the classic `Error.stack` trick still fires
+            (V8 2025 getter-guard risk); ship `gated` if dead. Merge either way, record the result.
+      - [ ] **3b — security + trial runner:** `trials.ts` (runTrials + collapseAnyOfK) → `victim-app.ts`
+            (WASP template + per-nonce canary) → `hooks.ts` (canary/state-diff/marker) → `level.ts` factory
+            → `asr-ci.ts` (Clopper-Pearson) → `SECURITY-TESTING-POLICY.md` + results.md inverted-`blocked` legend.
+      **Deferred to Roi (level-design session AFTER Chunk 3):** D7 shared-task-pool unification, D8 difficulty ladder.
 - [ ] **Chunk 4 — scoring + AI report + real site:** LPR→ASS(cap stubbed)→BTS → `RunRecord` with
       Clopper-Pearson CI (overlapping → `tie`); cap/det/sec profile as **small-multiples/parallel-coords
       with CI bands (NOT a radar polygon)** + the polished website; AI paragraph per level (explains, never scores).
