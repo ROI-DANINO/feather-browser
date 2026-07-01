@@ -6,6 +6,7 @@ import type { SinkRegistry } from "./sink-registry";
 import { readRuns } from "./store";
 import { renderRun } from "./render";
 import { runtimeEnablePage } from "../levels/runtime-enable/page";
+import { commentInjectionVictimApp, type VictimAppStore } from "../levels/comment-injection/victim-app";
 
 export interface ServerDeps {
   /** The nonce lifecycle store the sink consults for the status→HTTP mapping (arm/record/await). */
@@ -14,6 +15,12 @@ export interface ServerDeps {
   onReport: (report: DetectorReport) => void;
   /** Append-only run log GET / renders. Defaults to the path serve.ts writes. */
   resultsFile?: string;
+  /**
+   * The comment_injection victim-app store (design §2). Optional + backward-compatible: when present,
+   * the victim-app plugin is registered so /levels/comment-injection/* are real same-origin routes.
+   * The level factory MUST be given the SAME store instance (it seeds; the routes mutate; hooks read).
+   */
+  victimStore?: VictimAppStore;
 }
 
 const PLACEHOLDER_HTML = `<!DOCTYPE html>
@@ -76,6 +83,12 @@ export function buildServer(deps: ServerDeps): FastifyInstance {
   // POST /sink/:nonce beacon is loopback→loopback (no CORS/PNA) and the level's task.url resolves
   // against the real server (not a 404). Design §3.2: buildServer hosts the level page plugins.
   app.register(runtimeEnablePage);
+
+  // The comment_injection security victim app (design §2), same-origin so its POST /comment mutation
+  // and the level's task.url resolve against the real server. Only registered when a store is supplied.
+  if (deps.victimStore) {
+    app.register(commentInjectionVictimApp, { store: deps.victimStore });
+  }
 
   return app;
 }

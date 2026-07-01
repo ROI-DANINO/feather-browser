@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { performance } from "node:perf_hooks";
 import { buildServer } from "./core/server";
 import { createSinkRegistry } from "./core/sink-registry";
+import { createVictimAppStore } from "./levels/comment-injection/victim-app";
 import { runTower } from "./core/runner";
 import { appendRun } from "./core/store";
 import { stubAdapter, stubLevel, stubTower } from "./core/stubs";
@@ -11,10 +12,14 @@ import { stubAdapter, stubLevel, stubTower } from "./core/stubs";
 const RESULTS = join(__dirname, "results", "runs.jsonl");
 
 async function main(): Promise<void> {
+  // The comment_injection victim app shares ONE store instance across the server routes and (later,
+  // in the compose layer) the level factory — factory seeds, routes mutate, hooks read (design §3).
+  const victimStore = createVictimAppStore();
   const app = buildServer({
     registry: createSinkRegistry(),
     onReport: (r) => console.log("[tower] sink report", r.detectorId, r.verdict),
     resultsFile: RESULTS,
+    victimStore,
   });
 
   // Prove the spine: drive a stub tower once and persist the record.

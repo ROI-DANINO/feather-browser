@@ -1,0 +1,12 @@
+{
+ "_receipt": "tower-chunk3b-security build workflow (CRASHED at step 4 on StructuredOutput retry cap; 3 agents/~207k tokens completed steps 1-3=trials+victim-app+hooks which wrote to disk; steps 4-5+review hand-completed by main loop) run 2026-07-02.",
+ "crashed": true,
+ "completed_steps": [
+  "1-trials",
+  "2-victim-app",
+  "3-hooks"
+ ],
+ "raw": {
+  "_raw_note": "workflow crashed on StructuredOutput retry cap at step 4; steps 1-3 wrote files to disk"
+ }
+}
