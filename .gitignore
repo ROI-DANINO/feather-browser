@@ -14,6 +14,10 @@ docs/superpowers/
 .claude/plugins/claude-council/
 skills/council-execution/
 node_modules/
+# Python (tower/adapters/browser-use shim): regenerable / local venv
+__pycache__/
+*.pyc
+.venv/
 # Graphify: regenerable knowledge-graph artifacts (rebuilt by post-commit hook)
 graphify-out/
 .browser-profile/
