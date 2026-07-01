@@ -1,0 +1,406 @@
+[
+ {
+  "claim": "Latest browser-use release is v0.13.3 on GitHub (published 2026-07-01T15:06Z); PyPI's latest published wheel is 0.13.1 (requires Python >=3.11,<4.0) \u2014 GitHub is slightly ahead of PyPI as of today. Install: `uv add browser-use` or `pip install browser-use`.",
+  "source": "https://github.com/browser-use/browser-use/releases/latest (tag 0.13.3) and https://pypi.org/pypi/browser-use/json (0.13.1)",
+  "version": "0.13.3 (GitHub) / 0.13.1 (PyPI), 2026-07-01",
+  "confidence": "confirmed",
+  "angle": "agent-api",
+  "verified": true,
+  "verifyReason": "Both cited sources confirm the claim as of 2026-07-01: GitHub releases/latest shows tag 0.13.3 published 01 July at 15:06 UTC (matching 2026-07-01T15:06Z), and PyPI's JSON API reports info.version 0.13.1 with requires_python \">=3.11,<4.0\". GitHub is indeed one patch release ahead of PyPI. The 0.13.x line is the current version (release notes reference the new CLI 3.0 / Browser Harness), not a renamed/removed old API, and the install commands match the actual PyPI package name."
+ },
+ {
+  "claim": "Import paths: everything needed is exported (lazily) from the top-level `browser_use` package: `Agent`, `Browser` (an alias for `BrowserSession`), `BrowserProfile`, `BrowserSession`, `AgentHistoryList`, and the chat model classes `ChatBrowserUse`, `ChatOpenAI`, `ChatGoogle`, `ChatAnthropic`, `ChatGroq`, `ChatOllama`, etc. So the minimal import is `from browser_use import Agent, ChatBrowserUse` (or ChatOpenAI/ChatAnthropic/...).",
+  "source": "https://github.com/browser-use/browser-use/blob/0.13.3/browser_use/__init__.py",
+  "code": "'Agent': ('browser_use.agent.service', 'Agent'),\n'Browser': ('browser_use.browser', 'BrowserSession'),  # Alias for BrowserSession\n'ChatOpenAI': ('browser_use.llm.openai.chat', 'ChatOpenAI'),\n'ChatBrowserUse': ('browser_use.llm.browser_use.chat', 'ChatBrowserUse'),",
+  "version": "0.13.3",
+  "confidence": "confirmed",
+  "angle": "agent-api",
+  "verified": true,
+  "verifyReason": "Fetched https://github.com/browser-use/browser-use/blob/0.13.3/browser_use/__init__.py directly: it contains a _LAZY_IMPORTS mapping served via module-level __getattr__ that exports every claimed name \u2014 'Agent': ('browser_use.agent.service', 'Agent'), 'Browser': ('browser_use.browser', 'BrowserSession') (alias for BrowserSession as claimed), plus BrowserProfile, BrowserSession, AgentHistoryList, ChatBrowserUse, ChatOpenAI, ChatGoogle, ChatAnthropic, ChatGroq, and ChatOllama, all present in the mapping and __all__. Version currency confirmed via GitHub releases API: 0.13.3 is the latest release, published 2026-07-01 (today), so this reflects the current API, not a renamed/removed old one. Therefore `from browser_use import Agent, ChatBrowserUse` (or ChatOpenAI/ChatAnthropic/...) is a valid minimal import. The claim survives adversarial verification. (Note: a PyPI JSON fetch returned a garbled summary denying 0.13.3 exists, but the authoritative GitHub tag/blob and releases API both confirm it; the PyPI summarization was unreliable, not the claim.)"
+ },
+ {
+  "claim": "Agent constructor signature (relevant leading params): `Agent(task: str, llm: BaseChatModel | None = None, ..., browser_session: BrowserSession | None = None, browser: Browser | None = None, ...)`. `browser` is the preferred alias for `browser_session`; passing BOTH raises ValueError ('Use \"browser\" for the cleaner API'). If no llm is given it defaults (llm is Optional in 0.13.x); if no browser is given the Agent creates its own BrowserSession. Docs confirm `browser_session` exists as a backwards-compatible alias for `browser`.",
+  "source": "https://github.com/browser-use/browser-use/blob/0.13.3/browser_use/agent/service.py (Agent.__init__, lines ~135-142, ~289-292) and https://docs.browser-use.com/customize/agent-settings",
+  "code": "def __init__(\n\tself,\n\ttask: str,\n\tllm: BaseChatModel | None = None,\n\t...\n\tbrowser_session: BrowserSession | None = None,\n\tbrowser: Browser | None = None,  # Alias for browser_session\n...\nif browser and browser_session:\n\traise ValueError('Cannot specify both \"browser\" and \"browser_session\" parameters. Use \"browser\" for the cleaner API.')",
+  "version": "0.13.3",
+  "confidence": "confirmed",
+  "angle": "agent-api",
+  "verified": true,
+  "verifyReason": "Verified directly against the cited sources at the pinned version. (1) Fetched https://raw.githubusercontent.com/browser-use/browser-use/0.13.3/browser_use/agent/service.py: Agent.__init__ signature matches \u2014 `task: str` required, `llm: BaseChatModel | None = None`, then `browser_profile`, `browser_session: BrowserSession | None = None`, `browser: Browser | None = None,  # Alias for browser_session` (verbatim). The dual-pass guard is exactly `raise ValueError('Cannot specify both \"browser\" and \"browser_session\" parameters. Use \"browser\" for the cleaner API.')` \u2014 exception class confirmed as ValueError. If llm is None it defaults (CONFIG.DEFAULT_LLM else ChatBrowserUse()); if no browser/browser_session is given the Agent constructs its own BrowserSession from browser_profile/DEFAULT_BROWSER_PROFILE. (2) https://docs.browser-use.com/customize/agent-settings currently documents `browser` as the primary parameter and lists `browser_session` under \"Backwards Compatibility\" as an alias for `browser` \u2014 confirming the claim and that this is the current API, not a removed/renamed one. Attempted refutation found only one trivial nuance: the source comment phrases `browser` as the \"Alias for browser_session\" while docs phrase `browser_session` as the alias \u2014 the claim quotes both accurately, so nothing is contradicted."
+ },
+ {
+  "claim": "How to run: `agent.run()` is an async coroutine, so you wrap it in an async function and call `asyncio.run(main())`. This is the canonical pattern in both the official quickstart docs and the README. Minimal official quickstart example: `from browser_use import Agent, ChatBrowserUse; import asyncio; async def main(): agent = Agent(task=\"Find the number 1 post on Show HN\", llm=ChatBrowserUse()); await agent.run(); asyncio.run(main())` (docs also use `from dotenv import load_dotenv; load_dotenv()` for API keys).",
+  "source": "https://docs.browser-use.com/quickstart and https://github.com/browser-use/browser-use/blob/0.13.3/README.md",
+  "code": "import asyncio\nfrom browser_use import Agent, ChatBrowserUse\n\nasync def main():\n    agent = Agent(\n        task=\"Find the number of stars of the browser-use repo\",\n        llm=ChatBrowserUse(model='openai/gpt-5.5'),\n    )\n    ...await agent.run()\n\nasyncio.run(main())",
+  "version": "0.13.3 (README) / docs 'latest' as of 2026-07-01",
+  "confidence": "confirmed",
+  "angle": "agent-api",
+  "verified": true,
+  "verifyReason": "Both sources verified directly. The live quickstart docs (docs.browser-use.com/quickstart) show exactly the claimed pattern: `from browser_use import Agent, ChatBrowserUse`, dotenv load_dotenv for API keys, `async def main()` with `await agent.run()`, and `asyncio.run(main())`. The README at tag 0.13.3 contains verbatim the claim's CODE block (imports, ChatBrowserUse(model='openai/gpt-5.5'), await agent.run(), asyncio.run(main())), with minor extras not contradicting the claim (a browser_profile arg and `history = await agent.run(); print(history.final_result())`). The API is current \u2014 not an old renamed/removed pattern."
+ },
+ {
+  "claim": "Max steps: `max_steps` is a parameter of `run()`, NOT of the Agent constructor. Exact signature in 0.13.3: `async def run(self, max_steps: int = 500, on_step_start=None, on_step_end=None) -> AgentHistoryList[AgentStructuredOutput]`. So limit steps with `await agent.run(max_steps=10)`. Note the default is 500 in 0.13.3 source; a web-search summary claimed default 100 (likely from an older version) \u2014 the 500 figure is verified directly from tagged source and wins. When max_steps is hit, the agent is forced to call the 'done' tool on the last step.",
+  "source": "https://github.com/browser-use/browser-use/blob/0.13.3/browser_use/agent/service.py (line ~2492)",
+  "code": "async def run(\n\tself,\n\tmax_steps: int = 500,\n\ton_step_start: AgentHookFunc | None = None,\n\ton_step_end: AgentHookFunc | None = None,\n) -> AgentHistoryList[AgentStructuredOutput]:",
+  "version": "0.13.3",
+  "confidence": "confirmed",
+  "angle": "agent-api",
+  "verified": true,
+  "verifyReason": "Fetched the tagged 0.13.3 source directly (raw.githubusercontent.com/browser-use/browser-use/0.13.3/browser_use/agent/service.py). The file contains exactly the claimed signature: `async def run(self, max_steps: int = 500, on_step_start: AgentHookFunc | None = None, on_step_end: AgentHookFunc | None = None) -> AgentHistoryList[AgentStructuredOutput]`. Default is 500, matching the claim (not 100). Agent.__init__ has no max_steps parameter \u2014 it belongs to run() only, so `await agent.run(max_steps=10)` is correct. The forced-done behavior is also confirmed: `_force_done_after_last_step()` injects the message \"You reached max_steps - this is your last step. Your only tool available is the 'done' tool.\" and swaps AgentOutput to DoneAgentOutput, restricting the final step to the done action. Since the fetch was pinned to the 0.13.3 tag, this is the current claimed version, not an older renamed API. Claim stands."
+ },
+ {
+  "claim": "Return value: `agent.run()` returns an `AgentHistoryList` (generic over AgentStructuredOutput; importable as `from browser_use import AgentHistoryList`, defined in browser_use/agent/views.py). Success vs failure: `history.is_done() -> bool` (agent issued its final 'done' action); `history.is_successful() -> bool | None` (True/False = the agent's own success judgment on the done step, None = never finished, e.g. ran out of max_steps); `history.final_result() -> str | None` (extracted_content of the last action, None if none); plus `history.has_errors() -> bool` and `history.errors() -> list[str | None]`. So the standard check is: result = await agent.run(); if result.is_successful(): ... (treat None as not-done/failure).",
+  "source": "https://github.com/browser-use/browser-use/blob/0.13.3/browser_use/agent/views.py (AgentHistoryList, lines ~595-745)",
+  "code": "def is_done(self) -> bool:\n\tif self.history and len(self.history[-1].result) > 0:\n\t\tlast_result = self.history[-1].result[-1]\n\t\treturn last_result.is_done is True\n\treturn False\n\ndef is_successful(self) -> bool | None:\n\t\"\"\"...the agent decides in the last step if it was successful or not. None if not done yet.\"\"\"\n\tif self.history and len(self.history[-1].result) > 0:\n\t\tlast_result = self.history[-1].result[-1]\n\t\tif last_result.is_done is True:\n\t\t\treturn last_result.success\n\treturn None",
+  "version": "0.13.3",
+  "confidence": "confirmed",
+  "angle": "agent-api",
+  "verified": true,
+  "verifyReason": "Verified directly against the cited source at tag 0.13.3 (raw.githubusercontent.com). browser_use/agent/views.py defines `class AgentHistoryList(BaseModel, Generic[AgentStructuredOutput])` with is_done(), is_successful() (returns None if not done, else last_result.success), final_result() (extracted_content or None), has_errors(), and errors() -> list[str | None] \u2014 all matching the claimed code verbatim. browser_use/__init__.py exports AgentHistoryList in its lazy-import map and __all__, so `from browser_use import AgentHistoryList` works. Agent.run in agent/service.py is annotated `-> AgentHistoryList[AgentStructuredOutput]`. Version check: 0.13.3 is the latest GitHub release (published 2026-07-01), so this describes the current API, not a stale/renamed one."
+ },
+ {
+  "claim": "LLM choice: the official quickstart recommends `ChatBrowserUse()` (their hosted model, 'highest accuracy + fastest speed + lowest token cost', 5 free tasks, needs BROWSER_USE_API_KEY), but `ChatOpenAI(model='gpt-5.5')`, `ChatAnthropic(model='claude-opus-4-8')`, `ChatGoogle`, `ChatOllama` etc. are drop-in alternatives shown in the README/docs \u2014 browser-use ships its own Chat* wrappers, it does NOT use langchain chat models in current versions.",
+  "source": "https://docs.browser-use.com/quickstart and https://github.com/browser-use/browser-use/blob/0.13.3/README.md and https://github.com/browser-use/browser-use/blob/0.13.3/browser_use/__init__.py (browser_use.llm.*.chat modules)",
+  "version": "0.13.3",
+  "confidence": "confirmed",
+  "angle": "agent-api",
+  "verified": true,
+  "verifyReason": "All three sources confirm the claim for version 0.13.3. The quickstart recommends ChatBrowserUse verbatim as \"optimized for browser automation tasks (highest accuracy + fastest speed + lowest token cost)\" with 5 free tasks, and shows ChatGoogle/ChatOpenAI/ChatAnthropic as drop-in alternatives. The 0.13.3 README imports ChatBrowserUse from browser_use and shows commented alternatives ChatOpenAI(model='gpt-5.5') and ChatAnthropic(model='claude-opus-4-8') exactly as claimed, plus BROWSER_USE_API_KEY. browser_use/__init__.py at tag 0.13.3 exports browser-use's own Chat* wrappers (ChatBrowserUse, ChatOpenAI, ChatAnthropic, ChatGoogle, ChatOllama, plus Groq/Mistral/AzureOpenAI/Vercel/LiteLLM/OCIRaw) from browser_use.llm.*.chat modules with no langchain imports \u2014 confirming current versions do not use langchain chat models.",
+  "correction": "Minor nuance only: the quickstart's own code examples use gemini-flash-latest / gpt-4.1-mini / claude-sonnet-4-0; the gpt-5.5 and claude-opus-4-8 examples appear in the README (which the claim correctly attributes them to)."
+ },
+ {
+  "claim": "Complete minimal one-task script for mid-2026 (synthesized strictly from the verified pieces above): import asyncio; from browser_use import Agent, ChatBrowserUse (or ChatOpenAI); agent = Agent(task='...', llm=ChatBrowserUse()); history = await agent.run(max_steps=25); then check history.is_successful() / history.final_result(). Optionally pass browser=Browser(...) (BrowserSession alias) to control the browser.",
+  "source": "Synthesis of https://docs.browser-use.com/quickstart + https://github.com/browser-use/browser-use tag 0.13.3 source (service.py, views.py, __init__.py)",
+  "code": "import asyncio\nfrom browser_use import Agent, ChatBrowserUse\n\nasync def main():\n    agent = Agent(\n        task=\"Find the number 1 post on Show HN\",\n        llm=ChatBrowserUse(),\n    )\n    history = await agent.run(max_steps=25)  # returns AgentHistoryList\n    print(history.is_done(), history.is_successful())  # bool, bool|None (None = didn't finish)\n    print(history.final_result())  # str | None\n\nasyncio.run(main())",
+  "version": "0.13.3",
+  "confidence": "confirmed",
+  "angle": "agent-api",
+  "verified": true,
+  "verifyReason": "Claim CONFIRMED against all cited sources for the current version. (1) docs.browser-use.com/quickstart shows exactly this minimal pattern: `from browser_use import Agent, ChatBrowserUse` (ChatOpenAI also offered), `Agent(task=\"Find the number 1 post on Show HN\", llm=ChatBrowserUse())`, `await agent.run()`. (2) Tag 0.13.3 `browser_use/__init__.py` lazy-exports Agent, ChatBrowserUse, ChatOpenAI, and Browser with the explicit comment `'Browser': ('browser_use.browser', 'BrowserSession'), # Alias for BrowserSession`. (3) Tag 0.13.3 `agent/service.py`: `async def run(self, max_steps: int = 500, ...) -> AgentHistoryList[AgentStructuredOutput]`, so `run(max_steps=25)` is valid and returns AgentHistoryList; `Agent.__init__` accepts `browser: Browser | None = None  # Alias for browser_session`. (4) Tag 0.13.3 `agent/views.py`: AgentHistoryList has `is_done() -> bool`, `is_successful() -> bool | None` (None = not finished), `final_result() -> None | str` \u2014 matching the claim's annotations exactly. (5) Version currency: 0.13.3 is the latest release on GitHub, dated 2026-07-01 (today), so this is the current API, not a renamed/removed one. Only nuance: quickstart itself doesn't show max_steps/history methods (those come from source, as the claim's synthesis note states), and the docstring's return-type comment in final_result/is_successful confirms the claim rather than contradicting it."
+ },
+ {
+  "claim": "The Agent-settings docs page does not document what run() returns or the max_steps default; those had to be verified from source. Other Agent config knobs documented there: tools, use_vision (default 'auto'), max_failures (3), llm_timeout (90s), step_timeout (120s), max_actions_per_step (4 \u2014 actions per step, distinct from max_steps).",
+  "source": "https://docs.browser-use.com/customize/agent-settings",
+  "version": "docs 'latest' as of 2026-07-01",
+  "confidence": "confirmed",
+  "angle": "agent-api",
+  "verified": true,
+  "verifyReason": "Fetched https://docs.browser-use.com/customize/agent-settings (latest docs, 2026-07-01). The page confirms all parts of the claim: (1) it does NOT document what Agent.run() returns; (2) it has NO mention of max_steps or its default; (3) it documents tools (\"Registry of tools the agent can call\"), use_vision (default \"auto\"), max_failures (default 3, \"Maximum retries for steps with errors\"), llm_timeout (default 90 seconds), step_timeout (default 120 seconds), and max_actions_per_step (default 4, \"Maximum actions per step, e.g. for form filling the agent can output 4 fields at once\" \u2014 clearly distinct from max_steps). No renamed/removed-API discrepancy found; the fetched page is the current live docs."
+ },
+ {
+  "claim": "browser-use now ships its OWN LLM wrapper classes and no longer uses langchain_anthropic. ChatAnthropic is a native browser-use class living at browser_use/llm/anthropic/chat.py, exported (lazily via __getattr__) from browser_use.llm and re-exported at top level, alongside ChatOpenAI, ChatGoogle, ChatAnthropicBedrock, ChatBrowserUse, etc.",
+  "code": "ChatAnthropic -> browser_use.llm.anthropic.chat (also: ChatAnthropicBedrock -> browser_use.llm.aws.chat_anthropic)",
+  "source": "https://raw.githubusercontent.com/browser-use/browser-use/HEAD/browser_use/llm/__init__.py",
+  "version": "browser-use HEAD (current ~0.13.1, mid-2026)",
+  "confidence": "confirmed",
+  "angle": "anthropic-llm",
+  "verified": true,
+  "verifyReason": "Fetched the cited source (browser_use/llm/__init__.py at HEAD) plus the top-level browser_use/__init__.py. The llm __init__ confirms: (1) ChatAnthropic is lazily exported via __getattr__ with the exact mapping 'ChatAnthropic': ('browser_use.llm.anthropic.chat', 'ChatAnthropic'); (2) ChatOpenAI, ChatGoogle, ChatAnthropicBedrock, and ChatBrowserUse are also exported from browser_use.llm; (3) there are no langchain/langchain_anthropic imports \u2014 only a transition comment stating \"We have switched all of our code from langchain to openai.types.chat.chat_completion_message_param\". The top-level browser_use/__init__.py also re-exports ChatAnthropic lazily with the same mapping and no langchain imports. This is HEAD (current) source, so it reflects the current API, not an old renamed one.",
+  "correction": "One minor inaccuracy: ChatAnthropicBedrock is exported from browser_use.llm but is NOT re-exported at the top level (no entry in the top-level _LAZY_IMPORTS or __all__). The claim's \"alongside ... ChatAnthropicBedrock\" holds for browser_use.llm, but only ChatAnthropic (not Bedrock) is confirmed at the browser_use top level."
+ },
+ {
+  "claim": "Current PyPI version of browser-use is 0.13.1, released 2026-06-10.",
+  "source": "https://pypi.org/project/browser-use/",
+  "version": "0.13.1",
+  "confidence": "confirmed",
+  "angle": "anthropic-llm",
+  "verified": true,
+  "verifyReason": "Fetched https://pypi.org/project/browser-use/ directly; the page header shows \"browser-use 0.13.1\" with \"Released: Jun 10, 2026\", exactly matching the claim. PyPI's project page always reflects the latest release, so this is the current version, not a stale/renamed API."
+ },
+ {
+  "claim": "Canonical wiring per the official docs Anthropic page: import from top-level browser_use and pass to Agent. Exact code: from browser_use import Agent, ChatAnthropic; llm = ChatAnthropic(model=\"claude-sonnet-4-6\"); agent = Agent(task=\"...\", llm=llm). API key is taken from the ANTHROPIC_API_KEY environment variable.",
+  "code": "from browser_use import Agent, ChatAnthropic\n\nllm = ChatAnthropic(model=\"claude-sonnet-4-6\")\nagent = Agent(task=\"...\", llm=llm)\n# .env: ANTHROPIC_API_KEY=",
+  "source": "https://docs.browser-use.com/customize/supported-models (docs now also live at https://docs.browser-use.com/open-source/supported-models)",
+  "version": "docs current as of 2026-07-01",
+  "confidence": "confirmed",
+  "angle": "anthropic-llm",
+  "verified": true,
+  "verifyReason": "Fetched https://docs.browser-use.com/customize/supported-models (live, current docs as of 2026-07-01). The page shows exactly the claimed wiring: from browser_use import Agent, ChatAnthropic; llm = ChatAnthropic(model=\"claude-sonnet-4-6\"); agent = Agent(task=\"...\", llm=llm); with ANTHROPIC_API_KEY= as the .env variable. The import is confirmed to be from the top-level browser_use package (not a submodule), matching the current API. Claim verified verbatim."
+ },
+ {
+  "claim": "ChatAnthropic constructor (dataclass) signature in the repo: model: str | ModelParam (required; ModelParam comes from anthropic.types.model_param, i.e. the official Anthropic SDK type), max_tokens: int = 8192, temperature/top_p/seed optional, plus thinking, betas, output_config, fallbacks, inference_geo, and client params api_key/auth_token/base_url/timeout/max_retries(=10)/default_headers/default_query/http_client. It wraps AsyncAnthropic from the official anthropic SDK.",
+  "code": "model: str | ModelParam\nmax_tokens: int = 8192\napi_key: str | None = None\n... return AsyncAnthropic(**client_params)",
+  "source": "https://raw.githubusercontent.com/browser-use/browser-use/HEAD/browser_use/llm/anthropic/chat.py",
+  "version": "browser-use HEAD (current ~0.13.1, mid-2026)",
+  "confidence": "confirmed",
+  "angle": "anthropic-llm",
+  "verified": true,
+  "verifyReason": "Fetched the cited source (browser_use/llm/anthropic/chat.py at HEAD) directly. It confirms every element of the claim: ChatAnthropic is a @dataclass with model: str | ModelParam required (ModelParam imported from anthropic.types.model_param, the official Anthropic SDK), max_tokens: int = 8192, optional temperature/top_p/seed, plus thinking, betas, output_config, fallbacks, inference_geo, and client params api_key, auth_token, base_url, timeout, max_retries=10, default_headers, default_query, http_client. get_client() returns AsyncAnthropic from the official anthropic SDK. This is the current HEAD of the repo, so it reflects the present API, not a renamed/removed one."
+ },
+ {
+  "claim": "ANTHROPIC_API_KEY handling: ChatAnthropic does not read env vars itself; if api_key is None it is delegated to the underlying AsyncAnthropic client, whose SDK default reads ANTHROPIC_API_KEY from the environment. The browser-use README's .env section explicitly lists '# ANTHROPIC_API_KEY=your-key'. So exporting ANTHROPIC_API_KEY and constructing ChatAnthropic(model=...) with no api_key argument is the supported pattern.",
+  "source": "https://raw.githubusercontent.com/browser-use/browser-use/HEAD/browser_use/llm/anthropic/chat.py and https://raw.githubusercontent.com/browser-use/browser-use/HEAD/README.md",
+  "version": "browser-use HEAD (current ~0.13.1, mid-2026)",
+  "confidence": "confirmed",
+  "angle": "anthropic-llm",
+  "verified": true,
+  "verifyReason": "Fetched both cited sources at HEAD (2026-07-01). browser_use/llm/anthropic/chat.py defines ChatAnthropic with api_key: str | None = None, never reads os.environ/os.getenv itself, and forwards 'api_key': self.api_key into AsyncAnthropic(**client_params) \u2014 so a None key falls through to the Anthropic SDK, which by default resolves ANTHROPIC_API_KEY from the environment. The current README's .env section literally contains the commented line '# ANTHROPIC_API_KEY=your-key' and lists ChatAnthropic as a quickstart alternative. All parts of the claim hold for the current HEAD version."
+ },
+ {
+  "claim": "Accepted Claude model names: the model field is a plain string typed str | ModelParam, so any Anthropic model id is accepted. Names actually shown in official sources: 'claude-sonnet-4-6' (docs example), 'claude-opus-4-8' (README quickstart comment: \"llm=ChatAnthropic(model='claude-opus-4-8'),  # Sonnet also works well.\"). Docs additionally state coordinate clicking is automatically enabled for 'claude-sonnet-4-*' and 'claude-opus-4-*' model families, and link to Anthropic's official model list for the full set.",
+  "code": "# llm=ChatAnthropic(model='claude-opus-4-8'),  # Sonnet also works well.",
+  "source": "https://docs.browser-use.com/customize/supported-models and https://raw.githubusercontent.com/browser-use/browser-use/HEAD/README.md",
+  "version": "docs + README current as of 2026-07-01 (browser-use ~0.13.1)",
+  "confidence": "confirmed",
+  "angle": "anthropic-llm",
+  "verified": true,
+  "verifyReason": "All parts of the claim verified against current sources (fetched 2026-07-01). (1) https://docs.browser-use.com/customize/supported-models shows 'claude-sonnet-4-6' as the ChatAnthropic example model, states \"Coordinate clicking is automatically enabled for claude-sonnet-4-* and claude-opus-4-* models\", and links to Anthropic's official model list (docs.anthropic.com/en/docs/about-claude/models). (2) The current README (raw.githubusercontent.com/browser-use/browser-use/HEAD/README.md) quickstart contains the exact commented line: \"# llm=ChatAnthropic(model='claude-opus-4-8'),  # Sonnet also works well.\" (3) The current source (browser_use/llm/anthropic/chat.py at HEAD) declares the field exactly as `model: str | ModelParam`, so any Anthropic model id string is accepted. All checks are against HEAD/current docs, not an old renamed API."
+ },
+ {
+  "claim": "A WebFetch summary of browser_use/llm/anthropic/chat.py reported internal validation logic referencing 'claude-fable-5' and 'claude-mythos-5' model ids, suggesting Claude 5-family names are also recognized. This came from a single summarized read of the file and was not verified verbatim \u2014 treat as likely but unconfirmed.",
+  "source": "https://raw.githubusercontent.com/browser-use/browser-use/HEAD/browser_use/llm/anthropic/chat.py (summarized fetch, 2026-07-01)",
+  "version": "browser-use HEAD",
+  "confidence": "likely",
+  "angle": "anthropic-llm",
+  "verified": true,
+  "verifyReason": "Verified verbatim, not just via summary. I downloaded the raw file from the cited URL (browser-use HEAD, fetched 2026-07-01, 442 lines) and grepped it: the literal strings 'claude-fable-5' and 'claude-mythos-5' each appear twice, at lines 89 and 93 of browser_use/llm/anthropic/chat.py. They are real validation logic, not comments: _is_adaptive_thinking_only_model() returns True when the lowercased model name contains either id; _requires_auto_tool_choice() forces auto tool choice for those models; and _validate_thinking_config() raises ValueError if a fable-5/mythos-5 model is given thinking type 'enabled'/'disabled' or a 'budget_tokens' key, directing users to adaptive thinking (e.g. {\"type\": \"adaptive\", \"display\": \"summarized\"}). This is the current HEAD of the file (the raw.githubusercontent.com/.../HEAD/ path resolves to the default branch), so it is not a stale/renamed old API. A separate WebFetch summarized read of the same URL independently reported the same three methods and the same two model ids, consistent with the verbatim grep. The claim's cautious framing ('likely but unconfirmed') is now upgraded: confirmed.",
+  "correction": "No correction needed to the substance. Only the hedge is outdated: the claim is no longer 'unconfirmed' \u2014 the Claude 5-family ids 'claude-fable-5' and 'claude-mythos-5' are verbatim present in browser-use HEAD's browser_use/llm/anthropic/chat.py (lines 88-108), used for adaptive-thinking-only validation and auto tool-choice selection."
+ },
+ {
+  "claim": "Conflict resolved: an earlier summarized fetch of the PyPI page rendered the README example as 'from browser_use.beta import Agent, ChatAnthropic', but a direct verbatim quote of the GitHub HEAD README shows the quickstart imports 'from browser_use import Agent, BrowserProfile, ChatBrowserUse' (with ChatAnthropic commented as an alternative) \u2014 top-level browser_use, NOT browser_use.beta. The docs Anthropic page also uses 'from browser_use import Agent, ChatAnthropic'. Use top-level browser_use.",
+  "source": "https://raw.githubusercontent.com/browser-use/browser-use/HEAD/README.md (verbatim) vs https://pypi.org/project/browser-use/ (summarized, 2026-07-01)",
+  "version": "browser-use 0.13.1 / HEAD",
+  "confidence": "confirmed",
+  "angle": "anthropic-llm",
+  "verified": true,
+  "verifyReason": "The actionable conclusion survives adversarial checking: GitHub HEAD README verbatim (line 82) imports 'from browser_use import Agent, BrowserProfile, ChatBrowserUse' with ChatAnthropic commented as an alternative; the docs use 'from browser_use import Agent, ChatAnthropic'; and browser_use/__init__.py at tag 0.13.1 lazily exports Agent, ChatAnthropic, and ChatBrowserUse at top level, so top-level imports work on the currently released 0.13.1. Verified against raw (non-summarized) fetches via curl.",
+  "correction": "One characterization in the claim is wrong: the earlier PyPI fetch was NOT a summarization artifact. The README at release tag 0.13.1 (which PyPI displays) genuinely uses 'from browser_use.beta import Agent, BrowserProfile, ChatBrowserUse' (line 76, with ChatAnthropic as a commented beta import) and states \"The new Rust-powered beta agent is 'from browser_use.beta import Agent'.\" browser_use.beta is a real module in the current release. Nuance: on installed 0.13.1, top-level 'from browser_use import Agent' is the classic Python agent while browser_use.beta.Agent is the new Rust-core agent; unreleased HEAD promotes the new agent to top-level. So \"use top-level browser_use\" is correct and works, but on 0.13.1 it gets the classic agent, not the Rust beta agent."
+ },
+ {
+  "claim": "Alternative Anthropic routes shipped by browser-use: ChatAnthropicBedrock (Anthropic-on-AWS-Bedrock, from browser_use.llm.aws.chat_anthropic) and the ChatBrowserUse cloud wrapper which accepts provider-prefixed ids like ChatBrowserUse(model='anthropic/claude-sonnet-4-6') using a single BROWSER_USE_API_KEY instead of ANTHROPIC_API_KEY.",
+  "source": "https://raw.githubusercontent.com/browser-use/browser-use/HEAD/browser_use/llm/__init__.py and https://raw.githubusercontent.com/browser-use/browser-use/HEAD/README.md",
+  "version": "browser-use HEAD (~0.13.1)",
+  "confidence": "confirmed",
+  "angle": "anthropic-llm",
+  "verified": true,
+  "verifyReason": "Both cited sources confirm the claim at current HEAD. (1) browser_use/llm/__init__.py at HEAD lazy-exports 'ChatAnthropicBedrock' from ('browser_use.llm.aws.chat_anthropic', 'ChatAnthropicBedrock') and lists it in __all__; it likewise exports 'ChatBrowserUse' from browser_use.llm.browser_use.chat and lists it in __all__ \u2014 so these are current, not renamed/removed APIs. (2) The HEAD README shows exactly the claimed usage: \"llm = ChatBrowserUse(model='anthropic/claude-sonnet-4-6')  # or 'openai/gpt-5.5', 'google/gemini-3-pro'\" and states \"a single BROWSER_USE_API_KEY reaches all of them \u2014 no separate OpenAI/Anthropic/Google keys required\". Minor caveat: ChatAnthropicBedrock is confirmed by the code export, not the README (the README does not mention it), but the claim's sourcing covers both files, so this does not refute it."
+ },
+ {
+  "claim": "Latest released browser-use version on PyPI is 0.13.1, uploaded 2026-06-10 (preceded by 0.13.0 on 2026-06-08 and the 0.12.x series through May 2026).",
+  "source": "https://pypi.org/pypi/browser-use/json (canonical JSON API for https://pypi.org/project/browser-use/); upload_time fields: 0.13.1 = 2026-06-10T01:02:04",
+  "version": "0.13.1",
+  "confidence": "confirmed",
+  "angle": "install-compat",
+  "verified": true,
+  "verifyReason": "Fetched the canonical PyPI JSON (https://pypi.org/pypi/browser-use/json) and inspected the raw data directly. info.version = 0.13.1 (latest, nothing newer); 0.13.1 upload_time = 2026-06-10T01:02:04 exactly as claimed; 0.13.0 uploaded 2026-06-08T22:08:43; 0.12.0\u20130.12.9 span 2026-02-26 to 2026-05-26 (through May 2026). All parts of the claim confirmed against the current live source. Note: a first-pass WebFetch summary gave hallucinated dates, so verification was done on the raw JSON via curl, which is authoritative."
+ },
+ {
+  "claim": "The repo's main-branch pyproject.toml is already at version 0.13.3 (unreleased, ahead of PyPI). Its optional [core] extra there pins browser-use-core==0.13.2.",
+  "source": "https://raw.githubusercontent.com/browser-use/browser-use/main/pyproject.toml",
+  "version": "0.13.3 (main branch, unreleased as of 2026-07-01)",
+  "confidence": "confirmed",
+  "angle": "install-compat",
+  "verified": true,
+  "verifyReason": "Fetched https://raw.githubusercontent.com/browser-use/browser-use/main/pyproject.toml directly: [project] version = \"0.13.3\", and the [project.optional-dependencies] \"core\" extra pins browser-use-core==0.13.2 (five platform-marker entries, all ==0.13.2). Cross-checked PyPI (https://pypi.org/pypi/browser-use/json): latest released version is 0.13.1 with no 0.13.3 release, confirming 0.13.3 on main is unreleased and ahead of PyPI as of 2026-07-01. Claim fully supported by the current source."
+ },
+ {
+  "claim": "requires-python is >=3.11,<4.0 (PyPI metadata shows '<4.0,>=3.11' for 0.13.1; repo main pyproject.toml has requires-python = \">=3.11,<4.0\").",
+  "source": "https://pypi.org/pypi/browser-use/json and https://raw.githubusercontent.com/browser-use/browser-use/main/pyproject.toml",
+  "code": "requires-python = \">=3.11,<4.0\"",
+  "version": "0.13.1 (and main)",
+  "confidence": "confirmed",
+  "angle": "install-compat",
+  "verified": true,
+  "verifyReason": "Both sources verified live on 2026-07-01. PyPI JSON metadata for browser-use shows latest version 0.13.1 with requires_python \"<4.0,>=3.11\" (equivalent to the claimed constraint). The repo's main pyproject.toml shows requires-python = \">=3.11,<4.0\" verbatim. Minor note: main's version field is 0.13.3 (ahead of the 0.13.1 PyPI release), but the requires-python constraint is identical in both, so the claim is accurate for the current version and current main."
+ },
+ {
+  "claim": "Python 3.14: the requires-python range (<4.0) permits installing on 3.14, but upstream gives no positive signal that it works there \u2014 CI's package-install matrix tests only Python 3.11 and 3.13, the repo's .python-version pins 3.12, docs quickstart uses 'uv venv --python 3.12', and the only trove classifier is 'Programming Language :: Python :: 3' (no 3.14 classifier). Whether it actually works on 3.14 is unknown/untested by upstream.",
+  "source": "https://raw.githubusercontent.com/browser-use/browser-use/main/.github/workflows/package.yaml (matrix python-version: [\"3.11\", \"3.13\"]), https://raw.githubusercontent.com/browser-use/browser-use/main/.python-version (3.12), https://docs.browser-use.com/quickstart, https://raw.githubusercontent.com/browser-use/browser-use/main/pyproject.toml",
+  "code": "python-version: [\"3.11\", \"3.13\"]",
+  "version": "0.13.x / main",
+  "confidence": "confirmed",
+  "angle": "install-compat",
+  "verified": true,
+  "verifyReason": "All four cited sources verified live against current main (pyproject version = 0.13.3, matching claimed 0.13.x). (1) package.yaml test matrix is exactly python-version: [\"3.11\", \"3.13\"] (build step uses 3.12); (2) .python-version contains exactly \"3.12\"; (3) pyproject.toml has requires-python = \">=3.11,<4.0\" and the only Python trove classifier is the generic \"Programming Language :: Python :: 3\" \u2014 no version-specific (and no 3.14) classifier; (4) docs quickstart uses \"uv venv --python 3.12\" and never mentions 3.14. Therefore the range permits install on 3.14 but upstream provides no positive signal (no CI coverage, no pin, no classifier, no docs mention) that 3.14 works \u2014 exactly as claimed, and about the current version, not an old API."
+ },
+ {
+  "claim": "Playwright is NOT a package dependency of browser-use 0.13.1. It appears nowhere in requires_dist on PyPI nor anywhere in the main-branch pyproject.toml. Browser control is via its own CDP stack: cdp-use==1.4.5 and bubus==1.5.6 (event bus), plus browser-use-sdk==3.4.2 and browser-harness==0.1.4. (This is a major change vs older releases that depended on playwright directly \u2014 training knowledge is stale here.)",
+  "source": "https://pypi.org/pypi/browser-use/json (requires_dist) and https://raw.githubusercontent.com/browser-use/browser-use/main/pyproject.toml",
+  "code": "cdp-use==1.4.5, bubus==1.5.6, browser-use-sdk==3.4.2, browser-harness==0.1.4",
+  "version": "0.13.1",
+  "confidence": "confirmed",
+  "angle": "install-compat",
+  "verified": true,
+  "verifyReason": "Core claim CONFIRMED by fetching both cited sources today (2026-07-01). PyPI JSON for browser-use 0.13.1: requires_dist contains no playwright entry anywhere (verified programmatically across all extras), and includes cdp-use==1.4.5, bubus==1.5.6, browser-use-sdk==3.4.2 exactly as claimed. Main-branch pyproject.toml (now version 0.13.3) also has zero playwright references and pins cdp-use==1.4.5, bubus==1.5.6, browser-use-sdk==3.4.2, browser-harness==0.1.4. This reflects the current API, not a stale one. One inaccuracy found (see correction): browser-harness is not part of the 0.13.1 release's requires_dist.",
+  "correction": "browser-harness==0.1.4 is a dependency only in the main-branch pyproject.toml (version 0.13.3), NOT in the 0.13.1 PyPI release's requires_dist. In 0.13.1 the native browser control extra is browser-use-core==0.13.1 (platform-conditional, behind the [core] extra) alongside cdp-use==1.4.5 and bubus==1.5.6. Everything else in the claim is accurate."
+ },
+ {
+  "claim": "Heavyweight/notable required deps of 0.13.1 (all exact-pinned): the full set of LLM SDKs openai==2.16.0, anthropic==0.76.0, google-genai==1.65.0, groq==1.0.0, ollama==0.6.1; plus aiohttp==3.13.4, httpx, mcp==1.26.0, pillow==12.2.0, pypdf, python-docx, reportlab, posthog (telemetry), psutil, pydantic==2.12.5; pyobjc==12.1 on macOS only. No selenium, no playwright pip dep.",
+  "source": "https://pypi.org/pypi/browser-use/json (requires_dist for 0.13.1)",
+  "version": "0.13.1",
+  "confidence": "confirmed",
+  "angle": "install-compat",
+  "verified": true,
+  "verifyReason": "Fetched https://pypi.org/pypi/browser-use/json (latest version is 0.13.1, so the claim covers the CURRENT release) and the version-pinned endpoint for 0.13.1. requires_dist confirms every item: openai==2.16.0, anthropic==0.76.0, google-genai==1.65.0, groq==1.0.0, ollama==0.6.1, aiohttp==3.13.4, httpx (pinned at 0.28.1), mcp==1.26.0, pillow==12.2.0, pypdf==6.10.2, python-docx==1.2.0, reportlab==4.4.9, posthog==7.7.0, psutil==7.2.2, pydantic==2.12.5, and pyobjc==12.1 with marker platform_system == \"darwin\" (macOS only). All base deps are exact-pinned (==). Neither \"selenium\" nor \"playwright\" appears anywhere in requires_dist (base or extras) \u2014 browser control comes via cdp-use==1.4.5 and the optional browser-use-core \"core\" extra instead.",
+  "correction": "None needed. Minor note only: the claim's list is the notable subset, not exhaustive \u2014 other required deps exist (e.g. cdp-use, bubus, browser-use-sdk, google-api-python-client, requests, rich), which the claim's \"heavyweight/notable\" framing already allows."
+ },
+ {
+  "claim": "Optional extras: [core] installs a platform-specific native runtime wheel browser-use-core==0.13.1 (darwin arm64/x86_64, linux x86_64/aarch64, win32 AMD64/x86_64) described as 'Native Browser Use runtime for your platform'; other extras are [aws] boto3, [oci], [video] imageio[ffmpeg]+numpy, [cli] (empty group), [eval], [examples], [all].",
+  "source": "https://pypi.org/pypi/browser-use/json and https://raw.githubusercontent.com/browser-use/browser-use/main/pyproject.toml",
+  "code": "browser-use-core==0.13.1; (sys_platform == \"linux\" and platform_machine == \"x86_64\") and extra == \"core\"",
+  "version": "0.13.1",
+  "confidence": "confirmed",
+  "angle": "install-compat",
+  "verified": false,
+  "verifyReason": "Mostly accurate but two parts fail for the stated version 0.13.1. (1) '[cli] (empty group)' is wrong: PyPI 0.13.1 metadata has 'textual==7.4.0; extra == \"cli\"' and the 0.13.1 tag's pyproject.toml has cli = [\"textual==7.4.0\"]; the empty cli = [] exists only on unreleased main (version 0.13.3, which also bumps core to browser-use-core==0.13.2) \u2014 the claim mixed main's pyproject with the 0.13.1 release. (2) The extras enumeration omits [cli-oci] (= browser-use[cli,oci]), present in both 0.13.1 and main. Everything else verified: the core wheel matrix and the quoted environment-marker line match PyPI 0.13.1 requires_dist verbatim; the README phrase 'the [core] extra installs the native Browser Use runtime for your platform' is real; [aws]=boto3, [oci]=oci, [video]=imageio[ffmpeg]+numpy, and [eval]/[examples]/[all] all exist.",
+  "correction": "For browser-use 0.13.1 (current PyPI release): optional extras are [core] (platform-specific browser-use-core==0.13.1 wheels: darwin arm64/x86_64, linux x86_64/aarch64, win32 AMD64/x86_64 \u2014 README: 'installs the native Browser Use runtime for your platform'), [aws]=boto3, [oci]=oci, [video]=imageio[ffmpeg]+numpy, [cli]=textual==7.4.0 (NOT empty in 0.13.1; empty only on unreleased main/0.13.3), [cli-oci]=browser-use[cli,oci], [eval], [examples], [all]."
+ },
+ {
+  "claim": "Post-install browser download step: the official docs quickstart says install with 'uv pip install browser-use' then run 'uvx browser-use install' to download Chromium. Under the hood (browser_use/cli.py on main), the install command is a thin wrapper that subprocess-runs 'uvx playwright install chromium --no-shell' (adding '--with-deps' on Linux) \u2014 i.e. Chromium is still fetched via Playwright's installer/CDN, but playwright is invoked as an external uvx tool rather than being a pip dependency of the package.",
+  "source": "https://docs.browser-use.com/quickstart and https://raw.githubusercontent.com/browser-use/browser-use/main/browser_use/cli.py",
+  "code": "cmd = ['uvx', 'playwright', 'install', 'chromium']\nif platform.system() == 'Linux':\n\tcmd.append('--with-deps')\ncmd.append('--no-shell')",
+  "version": "main branch (0.13.3-dev), documented for 0.13.x",
+  "confidence": "confirmed",
+  "angle": "install-compat",
+  "verified": true,
+  "verifyReason": "Both cited sources verify on fetch (2026-07-01). (1) The docs quickstart's \"Installing Browser-Use\" section shows exactly 'uv pip install browser-use' followed by 'uvx browser-use install' as the browser download step. (2) browser_use/cli.py on main defines an install command whose code matches the claim's snippet verbatim: cmd = ['uvx', 'playwright', 'install', 'chromium']; '--with-deps' appended only when platform.system() == 'Linux'; '--no-shell' appended last; then subprocess.run(cmd). So Chromium is fetched via Playwright's installer invoked as an external uvx tool, exactly as claimed, and this is the current main-branch API, not a renamed/removed one. The only sub-point not directly re-verified is that playwright is absent from the package's pip dependencies, but the cli.py evidence (invoking playwright via uvx rather than importing/relying on a local install) is consistent with it and nothing contradicts the claim."
+ },
+ {
+  "claim": "Corroborating detail: browser-use locates the Chromium that Playwright's installer places on disk; GitHub issue #3779 ('Does not detect chromium installed by playwright 1.57.0') shows browser-use depends on Playwright's browser cache paths and broke when Playwright 1.57 changed the install directory. This applies to a slightly earlier version window than 0.13.1 but confirms the Playwright-installed-Chromium model.",
+  "source": "https://github.com/browser-use/browser-use/issues/3779",
+  "version": "0.12.x\u20130.13.x era",
+  "confidence": "likely",
+  "angle": "install-compat",
+  "verified": true,
+  "verifyReason": "The source checks out. Issue #3779 is titled exactly \"Bug: Does not detect chromium installed by playwright 1.57.0\" and describes browser-use failing to find Chromium because Playwright 1.57.0 changed its install path to `$playwright_path/chromium-*/chrome-linux64/`, breaking browser-use's hardcoded watchdog paths (\"causing the existing watchdog paths to fail to find the browser\"). This directly confirms the claim's substance: browser-use locates Chromium via Playwright's browser cache paths, i.e. the Playwright-installed-Chromium model. The fix (PR #3778) merely globbed the path pattern (`chrome-linux` \u2192 `chrome-linux*`), so the model still holds in the current version rather than being a renamed/removed API.",
+  "correction": "Minor version detail: the issue reporter was running browser-use 0.11.2 (with Playwright 1.57.0), not the \"0.12.x\u20130.13.x era\" stated in the claim. The claim already hedges this as \"a slightly earlier version window than 0.13.1,\" which is accurate, but the precise version in the issue is 0.11.2."
+ },
+ {
+  "claim": "One conflicting data point: a summarized read of the PyPI JSON reported the 0.13.1 release date as 'January 31, 2025' \u2014 this is wrong; the raw JSON upload_time for the 0.13.1 files is 2026-06-10T01:02:04 (verified directly via curl against the JSON API). Use 2026-06-10.",
+  "source": "https://pypi.org/pypi/browser-use/json (raw upload_time fields, fetched 2026-07-01)",
+  "version": "0.13.1",
+  "confidence": "confirmed",
+  "angle": "install-compat",
+  "verified": true,
+  "verifyReason": "Fetched https://pypi.org/pypi/browser-use/json directly today (2026-07-01). The raw JSON confirms the claim exactly: 0.13.1 is the current latest version (info.version = 0.13.1), and its files carry upload_time 2026-06-10T01:02:04 (wheel) and 2026-06-10T01:02:03 (sdist). The 'January 31, 2025' date from the summarized read is wrong; 2026-06-10 is the correct release date for 0.13.1."
+ },
+ {
+  "claim": "Current pip-installable version is browser-use 0.13.1 (released 2026-06-10, requires Python >=3.11,<4.0). GitHub has newer tags 0.13.2 (2026-06-12) and 0.13.3 (2026-07-01, released today) that are NOT on PyPI yet \u2014 so a shim built today with pip gets 0.13.1. Verify at install time.",
+  "source": "https://pypi.org/project/browser-use/ and https://github.com/browser-use/browser-use/releases (checked via `curl pypi.org/pypi/browser-use/json` and `gh api repos/browser-use/browser-use/releases` on 2026-07-01)",
+  "version": "0.13.1 (PyPI) / 0.13.3 (GitHub)",
+  "confidence": "confirmed",
+  "angle": "headless-oneshot",
+  "verified": true,
+  "verifyReason": "Verified against both cited sources on 2026-07-01. PyPI JSON API (https://pypi.org/pypi/browser-use/json) reports info.version = 0.13.1, requires_python = \"<4.0,>=3.11\", uploaded 2026-06-10T01:02:04 \u2014 matching the claim; 0.13.2/0.13.3 are absent from PyPI (0.13.1 is the latest release there, also confirmed via WebFetch of the PyPI project page). GitHub releases API (repos/browser-use/browser-use/releases) shows 0.13.3 published 2026-07-01T15:06:07Z (today), 0.13.2 published 2026-06-12T22:45:04Z, and 0.13.1 published 2026-06-10T01:00:59Z \u2014 matching the claimed GitHub-ahead-of-PyPI gap. So `pip install browser-use` today gets 0.13.1. All checks refer to the current package, not a renamed/removed API. Attempted refutation failed; claim stands."
+ },
+ {
+  "claim": "Headless config: `Browser` is an exact alias for `BrowserSession` (same class). Simplest form is `Browser(headless=True)` or `BrowserSession(headless=True)`; you can also pass `BrowserProfile(headless=True)` via `browser_profile=`. `headless` accepts True (force headless), False (force UI), None (auto-detect by display availability; None is the default). Pass to the agent as `Agent(task=..., llm=..., browser_profile=BrowserProfile(headless=True, ...))` (quickstart shape) or hand it a pre-built Browser/BrowserSession.",
+  "source": "https://docs.browser-use.com/customize/browser/all-parameters and https://pypi.org/project/browser-use/ (quickstart shows Agent(browser_profile=BrowserProfile(headless=False, allowed_domains=[...]))) ; alias confirmed in browser_use/__init__.py at tag 0.13.3: 'Browser': ('browser_use.browser', 'BrowserSession')",
+  "version": "0.13.x",
+  "code": "session = BrowserSession(headless=True, user_data_dir='./profile')  # from BrowserSession docstring, browser_use/browser/session.py @0.13.3",
+  "confidence": "confirmed",
+  "angle": "headless-oneshot",
+  "verified": true,
+  "verifyReason": "All parts of the claim verify against current sources. (1) docs.browser-use.com/customize/browser/all-parameters explicitly states \"Browser is an alias for BrowserSession - they are exactly the same class\" and documents `headless` (default: None) as \"Run browser without UI. Auto-detects based on display availability (True/False/None)\", including the `BrowserProfile(headless=...)` \u2192 `Browser(browser_profile=profile)` pattern. (2) PyPI README quickstart shows exactly Agent(task=..., llm=ChatBrowserUse(), browser_profile=BrowserProfile(headless=False, allowed_domains=[\"*.github.com\"])). (3) browser_use/__init__.py at tag 0.13.3 contains 'Browser': ('browser_use.browser', 'BrowserSession'),  # Alias for BrowserSession, and exports BrowserProfile and Agent. This is the current 0.13.x API (PyPI latest shows 0.13.1, Jun 10 2026; tag 0.13.3 exists on GitHub), not a renamed/removed old API.",
+  "correction": "None needed. One nuance worth noting: 0.13 also introduced a Rust-powered beta agent (`from browser_use.beta import Agent`); the classic `from browser_use import Agent` path the claim describes remains valid."
+ },
+ {
+  "claim": "There is also a BROWSER_USE_HEADLESS env-var override (used by the MCP/default-profile config path): if set, it forces browser_profile['headless']. Direct constructor args are the primary mechanism; the env var exists in browser_use/config.py FlatEnvConfig.",
+  "source": "https://github.com/browser-use/browser-use/blob/0.13.3/browser_use/config.py \u2014 Config._load_config(): `if env_config.BROWSER_USE_HEADLESS is not None: config['browser_profile']['headless'] = env_config.BROWSER_USE_HEADLESS`",
+  "version": "0.13.3",
+  "confidence": "confirmed",
+  "angle": "headless-oneshot",
+  "verified": true,
+  "verifyReason": "Verified against the cited source. browser_use/config.py at tag 0.13.3 defines `BROWSER_USE_HEADLESS: bool | None = Field(default=None)` in FlatEnvConfig (line ~323), and Config._load_config contains the exact quoted code: `if env_config.BROWSER_USE_HEADLESS is not None: config['browser_profile']['headless'] = env_config.BROWSER_USE_HEADLESS` (lines ~452-453). Version currency confirmed: 0.13.3 is the latest browser-use release (published 2026-07-01), so this reflects the current API, not a removed/renamed one."
+ },
+ {
+  "claim": "Telemetry: disabled with env var ANONYMIZED_TELEMETRY=false (default is enabled/true). Parsing is `os.getenv('ANONYMIZED_TELEMETRY', 'true').lower()[:1] in 'ty1'` \u2014 i.e. any value NOT starting with t/y/1 disables it. The docs page confirms `ANONYMIZED_TELEMETRY=false`. Set it BEFORE importing browser_use: historical issue #1584 documents that setting it after import failed; in 0.13.x CONFIG re-reads env vars on every access (Config.__getattr__ creates a fresh OldConfig per access) so late-setting mostly works, but import-time side effects (logging setup, dotenv load) still argue for setting it before import / in the subprocess env.",
+  "source": "https://docs.browser-use.com/development/telemetry ; https://github.com/browser-use/browser-use/blob/0.13.3/browser_use/config.py lines 57-59 and 360-384 ; https://github.com/browser-use/browser-use/issues/1584 ; https://github.com/browser-use/browser-use/issues/939",
+  "version": "0.13.3 (code), docs current 2026-07-01",
+  "code": "return os.getenv('ANONYMIZED_TELEMETRY', 'true').lower()[:1] in 'ty1'",
+  "confidence": "confirmed",
+  "angle": "headless-oneshot",
+  "verified": true,
+  "verifyReason": "All parts verified against the cited sources. (1) docs.browser-use.com/development/telemetry (fetched 2026-07-01) explicitly says to disable telemetry by setting ANONYMIZED_TELEMETRY=false and that it is enabled by default. (2) browser_use/config.py at tag 0.13.3 contains the exact line `return os.getenv('ANONYMIZED_TELEMETRY', 'true').lower()[:1] in 'ty1'` at lines 57-59 as cited, and the Config class __getattr__ (~lines 370-380, within the cited 360-384 range) creates a fresh OldConfig per attribute access with a docstring stating env vars are re-read on every access. (3) Issue #1584 documents the historical failure when setting the env var after import, requiring it be set before importing browser_use. The claim's version scoping (0.13.3) and reasoning about import-time side effects are consistent with the code.",
+  "correction": "Minor edge case only: \"any value NOT starting with t/y/1 disables it\" has one exception \u2014 an empty string value keeps telemetry ENABLED, because ''[:1] == '' and '' in 'ty1' evaluates True in Python. Otherwise the claim stands as written."
+ },
+ {
+  "claim": "Even when enabled, telemetry only logs one INFO line through the logging system ('Using anonymized telemetry, see ...') and sends events to PostHog \u2014 it does not prompt. Telemetry check: `telemetry_disabled = not CONFIG.ANONYMIZED_TELEMETRY` in browser_use/telemetry/service.py.",
+  "source": "https://github.com/browser-use/browser-use/blob/0.13.3/browser_use/telemetry/service.py lines 28-59",
+  "version": "0.13.3",
+  "confidence": "confirmed",
+  "angle": "headless-oneshot",
+  "verified": true,
+  "verifyReason": "Fetched the cited source (browser_use/telemetry/service.py at the 0.13.3 tag) directly. The file contains exactly `telemetry_disabled = not CONFIG.ANONYMIZED_TELEMETRY`; when telemetry is disabled `self.posthog_client = None`, and when enabled it logs the single INFO line `logger.info('Using anonymized telemetry, see https://docs.browser-use.com/development/monitoring/telemetry.')` and initializes a PostHog client for event sending. There is no interactive prompt anywhere \u2014 behavior is controlled purely by the env/config flag. The URL is pinned to the 0.13.3 tag, so this is the claimed version, not an old renamed API. The claim is accurate."
+ },
+ {
+  "claim": "Cloud sync has been REMOVED from the Agent in 0.13.x: `Agent.authenticate_cloud_sync()` now just logs 'Cloud sync has been removed and is no longer available' and returns False (verified at both 0.13.1 and 0.13.3). The CloudSync class still exists in browser_use/sync/service.py but is not instantiated anywhere in the agent path (GitHub code search: only sync/ and tests reference it). The BROWSER_USE_CLOUD_SYNC env var is still parsed (defaults to the ANONYMIZED_TELEMETRY value) but is effectively inert for Agent runs; setting BROWSER_USE_CLOUD_SYNC=false alongside ANONYMIZED_TELEMETRY=false is harmless belt-and-suspenders. No cloud auth prompt occurs in a normal scripted run.",
+  "source": "https://github.com/browser-use/browser-use/blob/0.13.1/browser_use/agent/service.py line 4037 and 0.13.3 line 4038; https://github.com/browser-use/browser-use/blob/0.13.3/browser_use/config.py lines 61-63; GitHub code search q=CloudSync repo:browser-use/browser-use",
+  "version": "0.13.1 and 0.13.3",
+  "code": "self.logger.warning('Cloud sync has been removed and is no longer available')",
+  "confidence": "confirmed",
+  "angle": "headless-oneshot",
+  "verified": true,
+  "verifyReason": "Verified against the cited sources directly. (1) Fetched browser_use/agent/service.py at both tags: `async def authenticate_cloud_sync(...)` contains exactly `self.logger.warning('Cloud sync has been removed and is no longer available')` followed by `return False` \u2014 at line 4037 in tag 0.13.1 and line 4038 in tag 0.13.3, matching the claim's line numbers exactly. (2) Currency confirmed: GitHub releases API reports 0.13.3 as the latest release as of 2026-07-01, so this is the current API, not a stale one. (3) config.py at 0.13.3 lines 61-63 has the `BROWSER_USE_CLOUD_SYNC` property with default `str(self.ANONYMIZED_TELEMETRY)` parsed via `.lower()[:1] in 'ty1'` \u2014 matches the claim (env var still parsed, defaults to ANONYMIZED_TELEMETRY). (4) GitHub code search q=CloudSync repo:browser-use/browser-use returns only browser_use/sync/service.py, browser_use/sync/__init__.py, and tests/ci/conftest.py \u2014 the CloudSync class exists (sync/service.py line 16) but is not referenced/instantiated in agent/service.py (grep of the full file at both tags finds no CloudSync usage, only comments mentioning cloud sync). Every checkable assertion holds; the interpretive parts (env var effectively inert for Agent runs, setting it false is harmless, no cloud auth prompt) follow directly from the verified code."
+ },
+ {
+  "claim": "Interactive stdin: the ONLY stdin interaction in the library path is the Ctrl+C SignalHandler \u2014 on first SIGINT it prints 'Paused the agent... Press [Enter] to resume' to stdout and calls input(). Disable it for a subprocess shim with `Agent(..., enable_signal_handler=True->False)` \u2014 the constructor exposes `enable_signal_handler: bool = True` (verified at 0.13.1 line 211 and 0.13.3), passed as `disabled=not self.enable_signal_handler` to SignalHandler. No other input() calls exist in agent/browser/sync code; the cloud device-auth print/poll code in sync/auth.py is unreachable in normal runs (cloud sync removed).",
+  "source": "https://github.com/browser-use/browser-use/blob/0.13.3/browser_use/agent/service.py lines 211, 3899-3907, 2516-2524; https://github.com/browser-use/browser-use/blob/0.13.3/browser_use/utils.py line ~392 (`input()  # This will raise KeyboardInterrupt on Ctrl+C`)",
+  "version": "0.13.1 and 0.13.3",
+  "code": "enable_signal_handler: bool = True,  # Agent.__init__ param",
+  "confidence": "confirmed",
+  "angle": "headless-oneshot",
+  "verified": true,
+  "verifyReason": "Verified against the actual 0.13.3 and 0.13.1 git tags cloned from GitHub. (1) `enable_signal_handler: bool = True` is at agent/service.py line 211 in both versions; (2) it is passed as `disabled=not self.enable_signal_handler` to SignalHandler (0.13.3 line 2522, 0.13.1 line 2521); (3) pause() at 0.13.3 line 3899 prints the 'Paused the agent... Press [Enter] to resume' message; (4) the only builtin input() in the library run path is utils.py line 392 inside SignalHandler, with the exact cited comment; (5) other `input(` hits are playground scripts and a tool action named `input` (async def input \u2014 not a stdin call), and cli.py stdin reads are CLI-only; (6) sync/auth.py has print/poll but no input() and is imported only by browser/cloud/cloud.py, not the normal Agent path. The claim is accurate for the current 0.13.3 API.",
+  "correction": "Minor nuance only: the 'Press [Enter] to resume...' prompt immediately preceding the input() call in utils.py is written to stderr, while pause()'s 'Paused the agent' message goes to stdout. Does not change the claim's substance."
+ },
+ {
+  "claim": "Clean shutdown: `Agent.run()` already calls `await self.close()` in its finally block; `Agent.close()` calls `await self.browser_session.kill()` unless `browser_profile.keep_alive` is truthy (keep_alive default None). For explicit control: `await browser_session.kill()` (force-kill browser process + save storage state + reset), `await browser_session.stop()` (graceful, keeps browser process for reconnect), `await browser_session.close()` (alias for stop()). So a shim that awaits agent.run() with keep_alive unset gets the browser killed automatically; calling kill() again is safe.",
+  "source": "https://github.com/browser-use/browser-use/blob/0.13.3/browser_use/agent/service.py lines 2714 (finally: await self.close()), 3958-3968; https://github.com/browser-use/browser-use/blob/0.13.3/browser_use/browser/session.py lines 726-773; keep_alive documented (default None) at https://docs.browser-use.com/customize/browser/all-parameters",
+  "version": "0.13.1 and 0.13.3",
+  "code": "async def close(self) -> None:\n\t\"\"\"Alias for stop().\"\"\"\n\tawait self.stop()",
+  "confidence": "confirmed",
+  "angle": "headless-oneshot",
+  "verified": true,
+  "verifyReason": "Verified directly against the cited sources at tag 0.13.3 (and cross-checked 0.13.1, which is the latest PyPI release, so this is the current API). browser_use/agent/service.py: run() defined at line 2492 with finally: at 2665 whose last statement is `await self.close()` at line 2714; Agent.close() at ~3958 calls `await self.browser_session.kill()` unless `browser_profile.keep_alive` is truthy (else it only stops the event bus). browser_use/browser/session.py: kill() at line 726 saves storage state (SaveStorageStateEvent) then force-stops and resets; stop() at 746 is graceful and keeps the browser process for reconnect; close() at 771-773 is verbatim `\"\"\"Alias for stop().\"\"\"` / `await self.stop()`. keep_alive default is None (profile.py line 629: `keep_alive: bool | None = Field(default=None, ...)`) and the docs page confirms \"keep_alive (default: None)\". Every cited line number matched. Only soft spot: \"calling kill() again is safe\" is a reasonable inference (kill() resets state and installs a fresh event bus, so a second kill dispatches no-op events) but is not explicitly documented as idempotent in the source."
+ },
+ {
+  "claim": "stdout noise / JSON-line safety: in 0.13.x browser-use's logging DEFAULTS TO STDERR, not stdout \u2014 `setup_logging()` uses `logging.StreamHandler(stream or sys.stderr)` (verified verbatim at tags 0.13.1 and 0.13.3; note the docstring above it stale-says 'default: sys.stdout'). Logging is configured automatically at `import browser_use` time unless BROWSER_USE_SETUP_LOGGING=false. CDP logs also go to `stream or sys.stderr`. So the shim CAN own stdout for its JSON-line protocol: browser-use INFO/step logs land on stderr by default. Residual stdout risk: only the Ctrl+C pause `print()`s (eliminated by enable_signal_handler=False) and sync/auth.py error print()s (unreachable). Recommended shim shape: print result JSON to stdout yourself, leave logs on stderr, optionally set BROWSER_USE_LOGGING_LEVEL=result or =error-ish ('result' level prints only final result via logging, still to stderr).",
+  "source": "https://github.com/browser-use/browser-use/blob/0.13.1/browser_use/logging_config.py line 115 and 0.13.3 line 115; https://github.com/browser-use/browser-use/blob/0.13.3/browser_use/__init__.py lines 6-19 (BROWSER_USE_SETUP_LOGGING gate, comment: 'Only set up logging if not in MCP mode')",
+  "version": "0.13.1 and 0.13.3",
+  "code": "console = logging.StreamHandler(stream or sys.stderr)",
+  "confidence": "confirmed",
+  "angle": "headless-oneshot",
+  "verified": true,
+  "verifyReason": "Verified verbatim against both cited tags. At 0.13.1 and 0.13.3, browser_use/logging_config.py contains exactly `console = logging.StreamHandler(stream or sys.stderr)`, so the console handler defaults to stderr, and the docstring indeed stale-says 'stream: Output stream for logs (default: sys.stdout)' \u2014 the noted docstring/code mismatch is real. CDP logging is also configured with `stream=stream or sys.stderr` via setup_cdp_logging in both tags. browser_use/__init__.py at 0.13.3 gates auto-setup with `if os.environ.get('BROWSER_USE_SETUP_LOGGING', 'true').lower() != 'false':` under the comment 'Only set up logging if not in MCP mode or if explicitly requested', so logging is configured at import time unless BROWSER_USE_SETUP_LOGGING=false. The 'result' log level (custom level 35, message-only formatter on the same stderr console handler) exists as claimed. All checks are against the cited current 0.13.x tags themselves, not an older renamed API. Secondary residual-stdout details (Ctrl+C pause print()s, sync/auth.py) were not independently re-verified but do not affect the core claim, which holds: browser-use 0.13.x logs default to stderr and a shim can own stdout for JSON lines."
+ },
+ {
+  "claim": "The launched Chromium subprocess cannot pollute the shim's stdout either: LocalBrowserWatchdog launches the browser with `asyncio.create_subprocess_exec(..., stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)` \u2014 browser output is piped, not inherited.",
+  "source": "https://github.com/browser-use/browser-use/blob/0.13.3/browser_use/browser/watchdogs/local_browser_watchdog.py lines 146-150",
+  "version": "0.13.3",
+  "confidence": "confirmed",
+  "angle": "headless-oneshot",
+  "verified": true,
+  "verifyReason": "Fetched the cited file at the pinned tag 0.13.3 (raw.githubusercontent.com/browser-use/browser-use/0.13.3/browser_use/browser/watchdogs/local_browser_watchdog.py). Lines 146-151 contain exactly `subprocess = await asyncio.create_subprocess_exec(browser_path, *launch_args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)` inside LocalBrowserWatchdog's launch path. Since the source was fetched at the exact version the claim cites (0.13.3), there is no renamed/removed-API concern. The launched browser's stdout/stderr are piped, not inherited, so the claim holds."
+ },
+ {
+  "claim": "Log verbosity control: env var BROWSER_USE_LOGGING_LEVEL (default 'info'; accepted: 'debug', 'info', 'result' \u2014 'result' emits only the final result text with bare '%(message)s' format). Must be set before `import browser_use` since setup_logging runs at import. There is no documented env var to route logs to a file only, but setup_logging(stream=sys.stderr, force_setup=True, ...) can be re-called manually, and BROWSER_USE_SETUP_LOGGING=false skips auto-setup entirely so the shim can configure Python logging itself.",
+  "source": "https://github.com/browser-use/browser-use/blob/0.13.3/browser_use/logging_config.py lines 64-131 and config.py lines 53-55; __init__.py lines 6-15",
+  "version": "0.13.3",
+  "confidence": "confirmed",
+  "angle": "headless-oneshot",
+  "verified": true,
+  "verifyReason": "Verified directly against the 0.13.3 tag on GitHub. (1) config.py line ~53 (OldConfig) and FlatEnvConfig both define BROWSER_USE_LOGGING_LEVEL with default 'info'; logging_config.py maps 'result' -> custom level 35 with a bare '%(message)s' formatter, 'debug' -> DEBUG, anything else -> INFO \u2014 so accepted values debug/info/result is accurate. (2) __init__.py calls setup_logging at import time (guarded by `os.environ.get('BROWSER_USE_SETUP_LOGGING', 'true').lower() != 'false'`), so the level env var must indeed be set before `import browser_use`, and BROWSER_USE_SETUP_LOGGING=false skips auto-setup exactly as claimed. (3) setup_logging's signature is `setup_logging(stream=None, log_level=None, force_setup=False, debug_log_file=None, info_log_file=None)` with `StreamHandler(stream or sys.stderr)`, so manual re-call with stream/force_setup works as claimed. (4) The 'file only' claim survives an attempted refutation: env-backed fields BROWSER_USE_DEBUG_LOG_FILE / BROWSER_USE_INFO_LOG_FILE do exist (FlatEnvConfig lines ~119-120) and add file handlers, but the console StreamHandler is always added regardless, so there is genuinely no env var for file-ONLY output. All of this is the current cited version (0.13.3), not an old API.",
+  "correction": "Minor nuance, not a refutation: the claim could mislead by omission \u2014 env vars BROWSER_USE_DEBUG_LOG_FILE and BROWSER_USE_INFO_LOG_FILE DO route logs to files (in addition to the always-present stderr console handler); only file-exclusive output lacks an env var. Also, BROWSER_USE_SETUP_LOGGING is read via os.environ directly in __init__.py, not defined in config.py."
+ },
+ {
+  "claim": "Recommended subprocess-shim shape for 0.13.1 (synthesis of the confirmed pieces): set env {ANONYMIZED_TELEMETRY:'false', BROWSER_USE_CLOUD_SYNC:'false', BROWSER_USE_LOGGING_LEVEL:'result' or 'info'} before import; then `from browser_use import Agent, Browser`; `browser = Browser(headless=True)`; `agent = Agent(task=..., llm=..., browser_session=browser, enable_signal_handler=False)`; `history = await agent.run(max_steps=N)`; read `history.final_result()`; browser is auto-killed by run()'s finally (keep_alive unset); print one JSON line to stdout. Note: the exact Agent kwarg for attaching a session ('browser_session=' vs 'browser=' vs 'browser_profile=') \u2014 docs show `browser_profile=BrowserProfile(...)` on the quickstart; the all-parameters page confirms Browser(headless=True) direct instantiation; I did not verify every accepted Agent kwarg alias, so check Agent.__init__ signature at install time (unknown which aliases beyond browser_profile are accepted in 0.13.1).",
+  "source": "Synthesis of: https://pypi.org/project/browser-use/ quickstart, https://docs.browser-use.com/customize/browser/all-parameters, https://github.com/browser-use/browser-use/blob/0.13.1/browser_use/agent/service.py",
+  "version": "0.13.1",
+  "confidence": "likely",
+  "angle": "headless-oneshot",
+  "verified": true,
+  "verifyReason": "Verified against the cited sources for the CURRENT version (PyPI confirms 0.13.1, released 2026-06-10, is latest as of 2026-07-01). Every load-bearing piece checks out in the 0.13.1 tag source: (1) browser_use/agent/service.py at tag 0.13.1 \u2014 Agent.__init__ accepts browser_profile (line 140), browser_session (line 141), AND browser as an alias (line 142, 'browser' takes precedence, error if both browser and browser_session given, line 289-291); enable_signal_handler: bool = True exists (line 211); run(max_steps: int = 500) (line 2491-2493); run()'s cleanup calls await self.browser_session.kill() when keep_alive is falsy/unset (lines 3960-3965); history.final_result() is a real API used internally (lines 1587, 2161). (2) PyPI quickstart matches: Agent(task=..., llm=..., browser_profile=BrowserProfile(...)); history = await agent.run(); print(history.final_result()). (3) Env vars confirmed in 0.13.1 browser_use/config.py: ANONYMIZED_TELEMETRY (default true), BROWSER_USE_CLOUD_SYNC (defaults to ANONYMIZED_TELEMETRY value, so setting both to 'false' is correct), BROWSER_USE_LOGGING_LEVEL (default 'info'); 'result' is a valid level (logging_config.py lines 118-127). (4) Browser(headless=True) direct instantiation works: Browser is an alias for BrowserSession (docs all-parameters page), and BrowserSession.__init__ local-mode overload accepts headless directly (session.py line 182). The claim's own hedge about kwarg aliases is resolved: all three aliases are accepted in 0.13.1.",
+  "correction": "Two minor refinements, neither invalidating the claim: (a) the all-parameters docs page does not literally show Browser(headless=True) \u2014 it shows BrowserProfile passed to Browser() and states Browser==BrowserSession; the direct-kwarg form is instead confirmed by BrowserSession.__init__ in the 0.13.1 source (headless: bool | None in the local-mode overload). (b) The open question in the claim is now answered: Agent in 0.13.1 accepts browser_profile=, browser_session=, and browser= (alias for browser_session, takes precedence; passing both raises ValueError). browser_session=Browser(headless=True) as proposed is valid; run(max_steps=N) default is 500."
+ },
+ {
+  "claim": "Historical telemetry gotchas (context for why env-before-import matters): issue #939 'Can't disable ANONYMIZED_TELEMETRY' and issue #1584 'Setting env variables must be done before importing browser_use in order to disable telemetry' \u2014 both are older issues; the 0.13.x Config re-reads env per access which mitigates but does not remove the import-order concern (logging level and dotenv load still happen at import).",
+  "source": "https://github.com/browser-use/browser-use/issues/939 ; https://github.com/browser-use/browser-use/issues/1584 ; https://github.com/browser-use/browser-use/issues/1912",
+  "version": "older versions; mitigation verified in 0.13.3 config.py",
+  "confidence": "confirmed",
+  "angle": "headless-oneshot",
+  "verified": true,
+  "verifyReason": "All cited sources check out. Issue #939 is titled exactly \"Can't disable ANONYMIZED_TELEMETRY\" (opened 2025-03-04, closed) and reports ANONYMIZED_TELEMETRY=false not disabling telemetry. Issue #1584 is titled exactly \"Setting env variables must be done before importing browser_use in order to disable telemetry\" (opened 2025-05-05, closed), reporting os.environ set before Agent creation but after import failed to disable telemetry. Issue #1912 (bug label, closed, v0.2.5, 2025-06-05) corroborates the same class of problem. Both are correctly framed as older issues (2025, pre-0.13). Current-version check: GitHub latest release is 0.13.3 (released 2026-07-01), so 0.13.x is the current line. In 0.13.3 browser_use/config.py, the CONFIG object's __getattr__ explicitly creates fresh OldConfig()/FlatEnvConfig() instances \"on every access\" with a comment \"This ensures env vars are re-read on every access\" \u2014 confirming the claimed mitigation. In 0.13.3 browser_use/__init__.py, unless BROWSER_USE_SETUP_LOGGING=false, setup_logging() runs at module import (reading CONFIG, whose FlatEnvConfig has env_file='.env', so .env/logging config is consumed during import) \u2014 confirming that logging setup still happens at import and the import-order concern is mitigated but not fully removed.",
+  "correction": "Minor nuance only: there is no explicit load_dotenv() call at import in 0.13.3; .env loading is via pydantic-settings (env_file='.env') inside FlatEnvConfig, which is instantiated at import (through the CONFIG access in __init__.py's logging setup) but is also re-instantiated on every later CONFIG access, so the .env read is not a one-time import-frozen load \u2014 the import-frozen part is the logging setup itself."
+ }
+]

@@ -38,6 +38,25 @@ synthesis) cross-checks against official docs; its synthesis is appended below w
   map `history.is_successful()` to `{"status":"ok"|"error","error":…}` on stdout → exit 0/1.
 - Env the TS side sets when spawning: `ANONYMIZED_TELEMETRY=false`, `BROWSER_USE_CLOUD_SYNC=false`.
 
-## Web-research synthesis (appended when the workflow completes)
+## Web-research synthesis (landed 2026-07-01)
 
-_Pending — workflow `browser-use-api-research` (sweep 4 angles → 2-lens refutation → synthesis)._
+→ `2026-07-01-browser-use-api-web-synthesis.md` (verbatim; 46 agents, 40/41 claims survived
+refutation; receipts `raw/2026-07-01-browser-use-claims.json`). Key deltas it added over the local
+probe, then **re-verified locally against the installed 0.13.1** (second probe, all confirmed):
+
+- `from browser_use import Agent, Browser, ChatAnthropic` all work top-level; `Agent` is the
+  **classic** agent (`browser_use.agent.service`, not the Rust beta); `Browser is BrowserSession`;
+  `Browser(headless=True)` constructs fine; `Agent(browser=…)` alias param exists.
+- **`enable_signal_handler=False`** exists on `Agent.__init__` and must be set in a subprocess
+  (otherwise Ctrl+C pause `print()`/`input()` machinery exists — the one stdout risk).
+- `is_successful()` returns `bool | None` — **treat `None` (never finished / step cap) as failure**;
+  `has_errors()` exists.
+- Telemetry env parse gotcha: value is truthy if it *starts with* t/y/1 — an **empty string keeps
+  telemetry ON**; set the literal `"false"`. Set env **before** `import browser_use`.
+- `BROWSER_USE_LOGGING_LEVEL=result` (custom level 35, stderr) quiets step logs.
+- Python range `>=3.11,<4.0`; upstream tests only 3.11–3.13 (3.14 unsupported-but-works — our probe
+  machine runs it fine; README should recommend 3.12 for strangers).
+- **Browser provisioning:** `pip install` downloads NO browser. Provisioning step =
+  `uvx playwright install chromium --with-deps --no-shell` (what `uvx browser-use install` runs on
+  Linux). Known fragility: browser-use resolves Chromium from Playwright's cache paths (issue #3779).
+- PyPI latest = 0.13.1 (tags 0.13.2/0.13.3 exist on GitHub only) — pin stands.
