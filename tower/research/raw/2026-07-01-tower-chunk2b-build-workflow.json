@@ -1,0 +1,84 @@
+{
+ "_receipt": "tower-chunk2b-build workflow (6 agents, ~234k subagent tokens) run 2026-07-01 — impl+adversarial-review+fix per task",
+ "summary": "Build Chunk 2b: browser-use adapter (TS + Python shim + smoke), TDD with per-task adversarial review",
+ "agentCount": 6,
+ "logs": [],
+ "totalTokens": 234081,
+ "totalToolCalls": 79,
+ "result": {
+  "built": [
+   {
+    "task": "A-ts-adapter",
+    "impl": {
+     "summary": "Built tower/core/adapters/browser-use.ts + browser-use.test.ts via TDD (tests written first, verified failing, then implemented). browserUseAdapter(cfg) returns an Adapter with id \"adapter.browser-use\"; the Adapter interface in types.ts is unchanged and nothing imports src/. Behavior: spawns the shim (default [\"python3\", <__dirname-resolved tower/adapters/browser-use/shim.py>], cwd-independent) with env {...process.env, ...cfg.env, ANONYMIZED_TELEMETRY:\"false\", BROWSER_USE_CLOUD_SYNC:\"false\"}; writes one JSON stdin line {url, goal, maxSteps} then ends stdin; buffers stdout and takes the LAST parseable {\"status\":\"ok\"|\"error\",\"error\":string|null} line (zod-validated, noise lines ignored, chunk-split lines handled). Resolves iff status===\"ok\" AND exit 0; throws with stderr tail (last 800 chars, diagnostics only, never parsed for protocol) on: status \"error\", non-zero exit, no parseable result line, spawn error, and wall-clock timeout (default 180_000ms) which SIGKILLs the process. spawnImpl is injectable (SpawnedProcess/SpawnImpl exported types) mirroring feather-client's fetchImpl; unit tests use a scriptable FakeChild (EventEmitter-based) and vi fake timers for the timeout — no real process, no Python, no network. 16 tests cover: id, ok+exit0 resolve, status-error throw (message includes shim error + stderr tail), ok-line-but-nonzero-exit throw, garbage stdout throw, empty stdout throw, spawn-error throw, timeout SIGKILL+throw, no-timeout-when-fast, env vars (telemetry off, process.env passthrough via PATH, cfg.env merge), default shim command, custom shimCommand, stdin single-line write+close with maxSteps, last-parseable-status-line-wins over noise and an earlier stale error line, split-chunk result line, and stderr-never-rescues-protocol.",
+     "files": [
+      "/home/roking/Desktop/Projects/feather-browser/tower/core/adapters/browser-use.ts",
+      "/home/roking/Desktop/Projects/feather-browser/tower/core/adapters/browser-use.test.ts"
+     ],
+     "testsRun": "cd /home/roking/Desktop/Projects/feather-browser && npx vitest run tower/core/adapters/browser-use.test.ts (16/16 passed); npx tsc --noEmit (clean, exit 0); npx vitest run tower (full tower suite regression check: 16 files, 87/87 passed)",
+     "testsPassed": true,
+     "concerns": "1) Defaults I chose where the task left them open: DEFAULT_MAX_STEPS = 25 (the stdin protocol line always includes maxSteps per the plan; the shim may also have its own default — worth aligning with Task B), timeout 180_000ms as suggested, stderr tail capped at 800 chars. 2) Error-precedence ordering on close: a parsed status:\"error\" line throws with the shim's error message even when exit code is also non-zero (shim message is more informative than the bare exit code) — check this matches reviewer expectation. 3) \"Last parseable status line wins\" means an earlier status:\"error\" line followed by a status:\"ok\" line resolves — explicitly per the task spec, but it is a lenient choice; a strict shim emits exactly one line anyway. 4) Default shim path resolves via __dirname (CommonJS, matching tower/serve.ts / server.ts style) rather than process.cwd(); under vitest __dirname points at the source tree so tests pass, and it is cwd-independent at runtime — but if the build ever emits to dist/ with a different depth the relative hop (../../adapters/...) would break. 5) tower/adapters/browser-use/ (shim.py etc., Task B) already existed untracked in the worktree from a sibling task — untouched by me. 6) Nothing committed, per instructions."
+    },
+    "review": {
+     "verdict": "READY",
+     "findings": [
+      {
+       "severity": "minor",
+       "issue": "Default maxSteps mismatch across the seam: tower/core/adapters/browser-use.ts uses DEFAULT_MAX_STEPS = 25 while tower/adapters/browser-use/shim.py uses DEFAULT_MAX_STEPS = 15. No runtime effect through the adapter (it always sends maxSteps on the stdin line), only divergence for bare manual shim runs.",
+       "fix": "At whole-branch review (Task E), align the two constants or add a README note that the shim default only applies to bare runs. One-line change; not a blocker for Task A.",
+       "file": "/home/roking/Desktop/Projects/feather-browser/tower/core/adapters/browser-use.ts"
+      }
+     ]
+    },
+    "fixed": false
+   },
+   {
+    "task": "B-python-shim",
+    "impl": {
+     "summary": "Built the browser-use Python shim per the plan (Task B) using exactly the locally-probed browser_use 0.13.1 API: shim.py reads one JSON line ({url, goal, maxSteps}) from stdin, builds ChatAnthropic (model from BROWSER_USE_MODEL, default claude-sonnet-5; api_key implicit from ANTHROPIC_API_KEY), runs Agent(task=f\"Go to {url} and {goal}\", llm, browser_session=BrowserSession(headless=True)) via asyncio.run(agent.run(max_steps)), maps history.is_successful() (None/False = not-success, errors() captured into the error field) to exactly one stdout JSON line {\"status\",\"error\"} and exit 0/1. All shim logging routed to stderr; browser_use imports live inside the try so every failure path (malformed stdin, missing key, missing package, agent exception) emits the JSON error line + exit 1 — never a traceback on stdout. headless=True is the only non-default flag, declared in a comment per spec §11. requirements.txt pins browser-use==0.13.1. README.md (9 lines) covers venv creation, pip install, env vars (ANTHROPIC_API_KEY required; telemetry/cloud-sync set false by the TS side), and an echo-pipe manual test. Nothing committed.",
+     "files": [
+      "/home/roking/Desktop/Projects/feather-browser/tower/adapters/browser-use/shim.py",
+      "/home/roking/Desktop/Projects/feather-browser/tower/adapters/browser-use/requirements.txt",
+      "/home/roking/Desktop/Projects/feather-browser/tower/adapters/browser-use/README.md"
+     ],
+     "testsRun": "python3 -m py_compile tower/adapters/browser-use/shim.py; then four no-deps protocol probes (system python3, browser_use NOT installed): `echo 'not json' | python3 shim.py`, `echo '{\"url\":\"...\"}' | python3 shim.py` (missing goal key), `echo '<valid task json>' | python3 shim.py` (hits the in-try import → ModuleNotFoundError path), and empty stdin. All four printed exactly one JSON {\"status\":\"error\",\"error\":\"...\"} line on stdout and exited 1.",
+     "testsPassed": true,
+     "concerns": "The happy path (real Agent run) is NOT executed — no venv/API key here; that is Task D/live smoke per the plan. Two judgment calls to scrutinize: (1) is_successful() returning None (agent hit max_steps without done) is treated as status:\"error\" + exit 1 per the task instruction \"treat None/False as not-success\" — the TS adapter will throw on that, which arguably blurs drive-error vs task-failure, but it matches the plan's protocol. (2) BrowserSession import path is `from browser_use.browser import BrowserSession` per the ground-truth doc's `browser_use.browser.BrowserSession` notation; if 0.13.1 also exports it top-level that would work too — the venv probe (Task D) will confirm the import resolves. errors() item shape is assumed str-able (ground truth doesn't specify element type); str() coercion should be safe regardless."
+    },
+    "review": {
+     "findings": [
+      {
+       "severity": "minor",
+       "issue": "Telemetry opt-out is not enforced by the shim itself: ground truth (tower/research/2026-07-01-browser-use-api-groundtruth.md line 28) says 'Shim must set both to false' for ANONYMIZED_TELEMETRY / BROWSER_USE_CLOUD_SYNC, but shim.py sets neither. The plan assigns this to the TS side, so the Tower-driven path is covered — but the README's documented manual echo-pipe test and the Task D venv probes run the shim bare, so those invocations send anonymized telemetry and cloud-sync defaults to on, contradicting the project's deliberate opt-out posture.",
+       "fix": "In shim.py, before the browser_use import, add os.environ.setdefault(\"ANONYMIZED_TELEMETRY\", \"false\") and os.environ.setdefault(\"BROWSER_USE_CLOUD_SYNC\", \"false\") (setdefault keeps TS-side values authoritative), or alternatively prefix the README manual-test command with both env vars.",
+       "file": "/home/roking/Desktop/Projects/feather-browser/tower/adapters/browser-use/shim.py"
+      }
+     ],
+     "verdict": "WITH-FIXES"
+    },
+    "fixed": true,
+    "fixResult": {
+     "summary": "Applied the minor telemetry fix: shim.py now calls os.environ.setdefault(\"ANONYMIZED_TELEMETRY\", \"false\") and os.environ.setdefault(\"BROWSER_USE_CLOUD_SYNC\", \"false\") at module level (before any browser_use import, which happens inside main's try), so bare invocations (README echo-pipe test, Task D venv probes) get the opt-out while TS-side spawn env stays authoritative via setdefault. README updated to note the shim also defaults both to false. Re-verified: py_compile OK; garbage stdin emits one JSON error line on stdout + exit 1 (traceback confined to stderr); valid input without browser_use installed emits the ModuleNotFoundError JSON line + exit 1 with clean stdout.",
+     "files": [
+      "/home/roking/Desktop/Projects/feather-browser/tower/adapters/browser-use/shim.py",
+      "/home/roking/Desktop/Projects/feather-browser/tower/adapters/browser-use/README.md",
+      "/home/roking/Desktop/Projects/feather-browser/tower/adapters/browser-use/requirements.txt"
+     ],
+     "testsRun": "python3 -m py_compile tower/adapters/browser-use/shim.py; echo 'garbage' | python3 tower/adapters/browser-use/shim.py (exit 1, JSON error line); echo '{\"url\":\"https://example.com\",\"goal\":\"x\"}' | python3 tower/adapters/browser-use/shim.py 2>/dev/null (exit 1, only the JSON line on stdout)",
+     "testsPassed": true,
+     "concerns": "The setdefault placement is module-level, which is correct ordering-wise since browser_use is imported lazily inside main(); telemetry behavior with the real package installed was not re-probed here (no venv in this pass) — the happy path (env vars actually honored by browser_use 0.13.1) rests on the ground-truth doc. System python is 3.14, which the no-deps tests ran under; the venv used for Task D may differ."
+    }
+   }
+  ],
+  "smokeResult": {
+   "summary": "Built tower/smoke/browser-use.ts mirroring tower/smoke/feather.ts: opt-in live smoke (not a unit test) with a header comment covering prereqs (venv per tower/adapters/browser-use/README.md, ANTHROPIC_API_KEY, agent-may-wander is a first-class outcome). It constructs browserUseAdapter with maxSteps 8 and timeoutMs 180_000; BROWSER_USE_PYTHON env overrides the python binary (builds shimCommand [python, <in-repo shim.py>]), otherwise shimCommand is left undefined so the adapter's default (python3 + resolved shim path) applies. Runs the same trivial task as the feather smoke ({levelId:\"smoke\", url:\"https://example.com\", goal:\"Click the 'More information' link.\"}) and prints honest completion or FAILED + exit 1. Added \"tower:smoke:browser-use\": \"ts-node tower/smoke/browser-use.ts\" to package.json directly under tower:smoke:feather; nothing else in package.json touched. No imports from src/; adapter interface untouched; nothing committed.",
+   "files": [
+    "/home/roking/Desktop/Projects/feather-browser/tower/smoke/browser-use.ts",
+    "/home/roking/Desktop/Projects/feather-browser/package.json"
+   ],
+   "testsRun": "npx tsc --noEmit && npx vitest run tower/core/adapters/browser-use.test.ts",
+   "testsPassed": true,
+   "concerns": "The smoke itself was NOT run live (needs venv + ANTHROPIC_API_KEY + real Chromium, costs money — plan defers this to Roi as a standing honest block). Minor divergence from feather.ts: no onStep logging, because the browser-use adapter's subprocess protocol has no per-step callback (browser-use step logs go to the shim's stderr, which the adapter only surfaces on failure as a tail). BROWSER_USE_MODEL is read by the shim itself, so the smoke doesn't handle model selection."
+  }
+ }
+}
