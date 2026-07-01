@@ -18,8 +18,26 @@ profile → boss tower. Broad framework, NOT a niche. Build = Design B (thin TS/
       `tower-arena-imitates-sites-real-guards`. No product code (planning pass).
 - [x] **REPO-SPLIT DECISION** → **D10: KEEP in feather-browser for now; re-ask Roi at the Chunk-2b boundary**
       (documented split-trigger). Code coupling already zero (HTTP-only, no `src/`).
-- [ ] **CHUNK 2b — `adapter.browser-use`** (now the next build, see "THEN" below). At this boundary,
-      **surface the repo-split question to Roi again** (D10).
+- [x] **D10 SPLIT RE-ASK — answered 2026-07-01:** Roi chose **stay in feather-browser**; Python isolated
+      under `tower/adapters/browser-use/` with its own `requirements.txt` (dep seam, not a separate build).
+      Also chose scope: **2b, then roll into Chunk 3 if green** (autonomous run).
+- [ ] **CHUNK 2b — `adapter.browser-use`** — IN PROGRESS 2026-07-01, branch `tower-browser-use-adapter`.
+      Gapped tasks (autonomous run; spec §6/§9 of chunk-2 design):
+      - [ ] 2b.0 Research browser-use CURRENT API (workflow: sweep→refute→synthesize) + local venv
+            install probe (Python 3.14 compat is an open risk). Findings verbatim → `tower/research/`.
+      - [ ] 2b.1 Plan doc `docs/plans/2026-07-01-tower-pr1-chunk2b-browser-use.md` (TDD task list from
+            the research synthesis).
+      - [ ] 2b.2 `tower/core/adapters/browser-use.ts` + mocked `browser-use.test.ts` (fake child process:
+            ok→resolve; error/non-zero/unreadable/timeout-kill→throw). TS side speaks ONLY the
+            one-line-JSON stdin/stdout protocol.
+      - [ ] 2b.3 `tower/adapters/browser-use/shim.py` + pinned `requirements.txt` (+ README run recipe).
+            Result line on stdout ONLY; logs→stderr; telemetry off.
+      - [ ] 2b.4 `tower/smoke/browser-use.ts` + `npm run tower:smoke:browser-use` (opt-in live, NOT CI).
+      - [ ] 2b.5 Shim protocol probe in the venv (no API key needed: bad-input / import-check paths);
+            full live smoke = **BLOCK → Roi** (needs ANTHROPIC_API_KEY + browser download, costs money).
+      - [ ] 2b.6 Final whole-branch review + fix loop → merge FF to `dev` → push (push-as-you-go).
+      **Blocks (honest, deferred to Roi):** live `tower:smoke:browser-use` run; live `tower:smoke:feather`
+      run (still owed from 2a).
 
 ## DONE — Tower PR-1 build so far
 - [x] **Chunk 1 — engine + website skeleton** (merged): `tower/core/` types/verdict(PARTIAL invariant)/
