@@ -38,6 +38,31 @@ synthesis) cross-checks against official docs; its synthesis is appended below w
   map `history.is_successful()` to `{"status":"ok"|"error","error":…}` on stdout → exit 0/1.
 - Env the TS side sets when spawning: `ANONYMIZED_TELEMETRY=false`, `BROWSER_USE_CLOUD_SYNC=false`.
 
+## Venv protocol-probe receipts (2026-07-01, Task 2b.5 — verbatim, no API key spent)
+
+Run against the REAL installed browser-use 0.13.1 in the scratch venv (Python 3.14.5):
+
+```
+--- probe 1: malformed stdin ---
+{"status": "error", "error": "JSONDecodeError: Expecting value: line 1 column 1 (char 0)"}
+exit=1
+--- probe 2: missing goal key ---
+{"status": "error", "error": "KeyError: 'goal'"}
+exit=1
+--- probe 3: valid input, real browser_use import, NO API key (unset) ---
+{"status": "error", "error": "\"Could not resolve authentication method. Expected either api_key
+or auth_token to be set. ...\"; Failed to complete task in maximum steps"}
+exit=1
+--- probe 3 stderr tail ---
+INFO:browser_use.BrowserSession... [SessionManager] Cleared all owned data (targets, sessions, mappings)
+INFO:browser_use.BrowserSession...: Browser session reset complete
+```
+
+Probe 3 is the strong one: the shim **launched a real headless browser** (BrowserSession lifecycle
+on stderr), ran the agent loop to the auth boundary, kept stdout protocol-pure (exactly one JSON
+line), and exited 1 with an honest reason. `enable_signal_handler=False` accepted. The only
+unexecuted path is the paid LLM call — the deferred live smoke.
+
 ## Web-research synthesis (landed 2026-07-01)
 
 → `2026-07-01-browser-use-api-web-synthesis.md` (verbatim; 46 agents, 40/41 claims survived

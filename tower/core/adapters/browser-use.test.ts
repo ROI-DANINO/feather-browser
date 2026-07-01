@@ -66,6 +66,14 @@ describe("browserUseAdapter", () => {
       .rejects.toThrow(/agent exploded[\s\S]*shim log/);
   });
 
+  it("throws on a status:error result line even when the process exits 0", async () => {
+    const { spawnImpl } = fakeSpawn((child) => {
+      child.stdout.emit("data", '{"status":"error","error":"task failed"}\n');
+      child.emit("close", 0);
+    });
+    await expect(browserUseAdapter({ spawnImpl }).run(TASK)).rejects.toThrow(/task failed/);
+  });
+
   it("throws on non-zero exit even when the result line says ok", async () => {
     const { spawnImpl } = fakeSpawn((child) => {
       child.stdout.emit("data", OK_LINE);

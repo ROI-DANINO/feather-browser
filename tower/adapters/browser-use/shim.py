@@ -21,6 +21,9 @@ import os
 import sys
 
 DEFAULT_MAX_STEPS = 25  # matches the TS adapter's default (browser-use.ts)
+# claude-sonnet-5 = current Sonnet tier (Claude 5 family, newer than the id in
+# browser-use's own docs); ChatAnthropic passes any model-id string through to
+# the Anthropic SDK. Override with BROWSER_USE_MODEL.
 DEFAULT_MODEL = "claude-sonnet-5"
 
 # Telemetry opt-out (ground truth line 28: shim must set both to false). The TS
