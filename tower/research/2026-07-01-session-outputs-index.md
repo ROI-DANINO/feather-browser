@@ -15,6 +15,10 @@ ephemeral `/tmp` scratch. Per the standing rule (`research-documentation-prefere
 - **Verbatim receipt:** `raw/2026-07-01-tower-chunk2b-build-workflow.json` (per-task impl summary + adversarial-review verdict + fix). Task-A review READY; Task-B review WITH-FIXES→fixed (telemetry setdefault); Task-C smoke READY.
 - **Final whole-branch review (rd-verify, fresh context):** verdict WITH-FIXES, 3 minor — (1) added the `status:error`+exit-0 unit test, (2) documented `DEFAULT_MODEL` divergence from docs, (3) recorded venv-probe receipts. All applied. **572 tests green.**
 
+## Build workflows — Chunk 3 (3a + 3b)
+- **3a — detectability (L2 runtime_enable):** built via `tower-chunk3a-detectability` workflow (6 agents, ~362k tokens) — 4 TDD steps + adversarial review (caught+fixed the page-registration gap) + gate. Merged `c270a21`. Receipt `raw/2026-07-02-tower-chunk3a-build-workflow.json`.
+- **3b — security (comment_injection):** `tower-chunk3b-security` workflow **CRASHED** on a StructuredOutput retry cap after steps 1–3 (trials/victim-app/hooks had written to disk); steps 4–5 (level factory, ASR-CI) + the review were **hand-completed by the main loop**. rd-verify final review = WITH-FIXES (1 honesty: content-agnostic state-diff was collapsing an honest double-poster to `blocked` → split into ownership-proof=blocked vs ambiguous=gated; +2 minor) → all applied. Merged `32ca437`. Receipt `raw/2026-07-02-tower-chunk3b-build-workflow-CRASHED.json`. **Chunk 3 complete: 190 tower tests green.**
+
 ## Workflow 3 — Chunk 3 level-mechanism research (29 agents, ~875k subagent tokens)
 - **Design doc:** `docs/specs/2026-07-02-tower-pr1-chunk3-levels-design.md` (buildable, grounded in the live `server.ts`/`types.ts`).
 - **Verbatim receipt:** `raw/2026-07-02-tower-chunk3-level-research-workflow.json` (full result: design + all 24 mechanism claims with verify verdicts, across 4 angles: rebrowser runtime_enable / no-attach sink / WASP comment-injection / ASR k=3).
