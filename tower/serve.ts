@@ -3,6 +3,7 @@
 import { join } from "node:path";
 import { performance } from "node:perf_hooks";
 import { buildServer } from "./core/server";
+import { createSinkRegistry } from "./core/sink-registry";
 import { runTower } from "./core/runner";
 import { appendRun } from "./core/store";
 import { stubAdapter, stubLevel, stubTower } from "./core/stubs";
@@ -11,6 +12,7 @@ const RESULTS = join(__dirname, "results", "runs.jsonl");
 
 async function main(): Promise<void> {
   const app = buildServer({
+    registry: createSinkRegistry(),
     onReport: (r) => console.log("[tower] sink report", r.detectorId, r.verdict),
     resultsFile: RESULTS,
   });
